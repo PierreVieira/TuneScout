@@ -2,6 +2,20 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Data
+
+**Paging by growing limit.** The iTunes Search API has no offset or cursor and caps `limit` at
+200. `SearchSongsPagingSource` therefore asks for `delivered + pageSize` items and keeps the tail
+it has not delivered yet, dropping any id already seen. Paging 3 still gives the list its load
+states, retry and prefetch. Cost: page N re-downloads pages 1..N-1. Mitigated by Ktor's HTTP
+cache, which honours the API's one-day `Cache-Control`, so the first page of a repeated search is
+served locally and the throttling limit of about 20 calls per minute is rarely touched.
+
+**Offline first where it matters.** The history and every song that ever appeared on screen are
+stored in Room, so Player and Album open without a network. Search results are not persisted per
+query: the challenge asks for the recently played list to work offline, and caching search pages
+would add a table and an eviction policy without changing the experience.
+
 ## 2026-09-18 — Playback
 
 **One ExoPlayer, shared by the app and the media service.** `PlaybackController` wraps the

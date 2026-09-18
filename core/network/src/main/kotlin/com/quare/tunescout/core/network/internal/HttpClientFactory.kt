@@ -3,6 +3,7 @@ package com.quare.tunescout.core.network.internal
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.expectSuccess
@@ -28,6 +29,7 @@ internal fun createHttpClient(engine: HttpClientEngine): HttpClient = HttpClient
             contentType = ContentType.Any,
         )
     }
+    install(HttpCache)
     install(HttpTimeout) {
         requestTimeoutMillis = 15.seconds.inWholeMilliseconds
         connectTimeoutMillis = 10.seconds.inWholeMilliseconds
