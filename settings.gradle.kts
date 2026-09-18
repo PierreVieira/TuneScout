@@ -48,4 +48,6 @@ include(":ui:theme")
 include(":ui:component")
 include(":ui:utils")
 
+include(":feature:songs")
+
 include(":tools:ktlint-custom-rules")
