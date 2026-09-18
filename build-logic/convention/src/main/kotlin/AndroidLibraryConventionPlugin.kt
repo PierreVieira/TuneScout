@@ -2,6 +2,7 @@ import com.android.build.api.dsl.LibraryExtension
 import com.quare.tunescout.buildlogic.addInstrumentedTestDependencies
 import com.quare.tunescout.buildlogic.addUnitTestDependencies
 import com.quare.tunescout.buildlogic.configureAndroid
+import com.quare.tunescout.buildlogic.configureJUnitPlatform
 import com.quare.tunescout.buildlogic.libs
 import com.quare.tunescout.buildlogic.minSdkVersion
 import org.gradle.api.Plugin
@@ -40,5 +41,6 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         }
         addUnitTestDependencies()
         addInstrumentedTestDependencies()
+        configureJUnitPlatform()
     }
 }

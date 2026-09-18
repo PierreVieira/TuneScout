@@ -38,4 +38,6 @@ dependencies {
     implementation(projects.feature.songs)
     implementation(projects.feature.player)
     implementation(projects.feature.album)
+
+    androidTestImplementation(projects.core.testing)
 }

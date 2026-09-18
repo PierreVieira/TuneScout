@@ -1,6 +1,8 @@
 package com.quare.tunescout.buildlogic
 
+import de.mannodermaus.gradle.plugins.junit5.dsl.AndroidJUnitPlatformExtension
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
 /**
@@ -31,5 +33,18 @@ fun Project.addInstrumentedTestDependencies() {
         add("androidTestImplementation", libs.findLibrary("junit-jupiter-params").get())
         add("androidTestImplementation", libs.findLibrary("truth").get())
         add("androidTestImplementation", libs.findLibrary("androidx-test-runner").get())
+        add("androidTestImplementation", libs.findLibrary("androidx-test-espresso-core").get())
+    }
+}
+
+/**
+ * AGP's instrumentation runner cannot quote an empty `configurationParameters` value, which
+ * android-junit5 emits by default, so the argument is dropped entirely.
+ */
+fun Project.configureJUnitPlatform() {
+    extensions.configure<AndroidJUnitPlatformExtension> {
+        instrumentationTests {
+            useConfigurationParameters.set(false)
+        }
     }
 }
