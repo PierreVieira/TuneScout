@@ -1,13 +1,14 @@
 package com.pierre.tunescout.core.testing.fixture
 
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.Song
 
 fun album(
     id: Long = 10,
     title: String = "Random Access Memories",
     artistName: String = "Daft Punk",
-    artworkUrl: String = "https://example.com/album/$id.jpg",
+    artwork: Artwork = Artwork("https://example.com/album/$id/100x100bb.jpg"),
     songs: List<Song> = listOf(
         song(id = 1, albumId = id, trackNumber = 1),
         song(id = 2, albumId = id, trackNumber = 2),
@@ -16,6 +17,6 @@ fun album(
     id = id,
     title = title,
     artistName = artistName,
-    artworkUrl = artworkUrl,
+    artwork = artwork,
     songs = songs,
 )

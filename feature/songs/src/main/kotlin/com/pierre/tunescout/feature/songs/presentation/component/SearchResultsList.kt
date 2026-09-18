@@ -70,7 +70,7 @@ internal fun SearchResultsList(
                 SongRow(
                     title = song.title,
                     subtitle = song.artistName,
-                    artworkUrl = song.artworkUrl,
+                    artworkUrl = song.artwork.thumbnailUrl,
                     onClick = {
                         onEvent(SongsUiEvent.OnSongClicked(song = song, queue = searchResults.itemSnapshotList.items))
                     },

@@ -1,5 +1,6 @@
 package com.pierre.tunescout.core.network.mapper
 
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.network.dto.ResultDto
 import kotlin.time.Duration.Companion.milliseconds
@@ -15,7 +16,7 @@ internal fun ResultDto.toSongOrNull(): Song? {
         artistName = artistName ?: return null,
         albumId = collectionId ?: return null,
         albumTitle = collectionName.orEmpty(),
-        artworkUrl = artworkUrl100.orEmpty(),
+        artwork = Artwork(artworkUrl100.orEmpty()),
         previewUrl = previewUrl ?: return null,
         duration = (trackTimeMillis ?: 0L).milliseconds,
         trackNumber = trackNumber ?: 0,

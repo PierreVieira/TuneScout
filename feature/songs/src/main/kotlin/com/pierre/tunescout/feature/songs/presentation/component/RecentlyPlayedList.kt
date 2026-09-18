@@ -54,7 +54,7 @@ internal fun RecentlyPlayedList(
             SongRow(
                 title = song.title,
                 subtitle = song.artistName,
-                artworkUrl = song.artworkUrl,
+                artworkUrl = song.artwork.thumbnailUrl,
                 isHighlighted = song.id == nowPlayingId,
                 onClick = { onEvent(SongsUiEvent.OnSongClicked(song = song, queue = songs)) },
                 onMoreClick = { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) },

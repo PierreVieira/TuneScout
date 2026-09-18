@@ -1,6 +1,7 @@
 package com.pierre.tunescout.core.database.mapper
 
 import com.pierre.tunescout.core.database.entity.SongEntity
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.Song
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -10,7 +11,7 @@ internal fun SongEntity.toSong(): Song = Song(
     artistName = artistName,
     albumId = albumId,
     albumTitle = albumTitle,
-    artworkUrl = artworkUrl,
+    artwork = Artwork(artworkUrl),
     previewUrl = previewUrl,
     duration = durationMillis.milliseconds,
     trackNumber = trackNumber,
@@ -22,7 +23,7 @@ internal fun Song.toEntity(): SongEntity = SongEntity(
     artistName = artistName,
     albumId = albumId,
     albumTitle = albumTitle,
-    artworkUrl = artworkUrl,
+    artworkUrl = artwork.sourceUrl,
     previewUrl = previewUrl,
     durationMillis = duration.inWholeMilliseconds,
     trackNumber = trackNumber,

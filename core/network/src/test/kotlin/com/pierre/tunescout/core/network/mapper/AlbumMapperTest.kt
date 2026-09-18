@@ -1,6 +1,7 @@
 package com.pierre.tunescout.core.network.mapper
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.network.dto.ResultDto
 import org.junit.jupiter.api.Test
 
@@ -21,6 +22,7 @@ class AlbumMapperTest {
         assertThat(album?.id).isEqualTo(10L)
         assertThat(album?.title).isEqualTo("Random Access Memories")
         assertThat(album?.artistName).isEqualTo("Daft Punk")
+        assertThat(album?.artwork).isEqualTo(Artwork("https://example.com/album/100x100bb.jpg"))
         assertThat(album?.songs?.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
     }
 
@@ -54,5 +56,5 @@ internal fun collectionResult(): ResultDto = ResultDto(
     collectionId = 10L,
     collectionName = "Random Access Memories",
     artistName = "Daft Punk",
-    artworkUrl100 = "https://example.com/album.jpg",
+    artworkUrl100 = "https://example.com/album/100x100bb.jpg",
 )

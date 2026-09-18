@@ -1,5 +1,6 @@
 package com.pierre.tunescout.core.testing.fixture
 
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.Song
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -10,7 +11,7 @@ fun song(
     artistName: String = "Daft Punk",
     albumId: Long = 10,
     albumTitle: String = "Random Access Memories",
-    artworkUrl: String = "https://example.com/art/$id.jpg",
+    artwork: Artwork = Artwork("https://example.com/art/$id/100x100bb.jpg"),
     previewUrl: String = "https://example.com/preview/$id.m4a",
     duration: Duration = 30.seconds,
     trackNumber: Int = 1,
@@ -20,7 +21,7 @@ fun song(
     artistName = artistName,
     albumId = albumId,
     albumTitle = albumTitle,
-    artworkUrl = artworkUrl,
+    artwork = artwork,
     previewUrl = previewUrl,
     duration = duration,
     trackNumber = trackNumber,

@@ -143,7 +143,7 @@ private fun Song.toMediaItem(): MediaItem = MediaItem
             .setTitle(title)
             .setArtist(artistName)
             .setAlbumTitle(albumTitle)
-            .setArtworkUri(Uri.parse(artworkUrl))
+            .setArtworkUri(Uri.parse(artwork.mediumUrl))
             .build(),
     ).build()
 
