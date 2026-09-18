@@ -28,6 +28,10 @@ ktlint_function_signature_body_expression_wrapping = default
 [**/src/{test,androidTest}/**]
 ktlint_tunescout-style_value-returning-function-naming = disabled
 
+# core/testing ships fixtures to other modules' tests, so the same naming applies to its main sources
+[core/testing/src/**]
+ktlint_tunescout-style_value-returning-function-naming = disabled
+
 # Markdown files
 [*.md]
 trim_trailing_whitespace = false

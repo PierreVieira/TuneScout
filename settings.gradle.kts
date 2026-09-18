@@ -41,6 +41,8 @@ include(":core:model")
 include(":core:utils")
 include(":core:navigation")
 include(":core:network")
+include(":core:database")
+include(":core:testing")
 
 include(":ui:theme")
 include(":ui:component")

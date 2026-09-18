@@ -28,6 +28,7 @@ dependencies {
     implementation(projects.core.utils)
     implementation(projects.core.navigation)
     implementation(projects.core.network)
+    implementation(projects.core.database)
     implementation(projects.ui.theme)
     implementation(projects.ui.component)
     implementation(projects.ui.utils)
