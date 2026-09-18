@@ -1,0 +1,20 @@
+package com.pierre.tunescout.feature.songs.presentation.model
+
+import com.pierre.tunescout.core.model.Song
+
+sealed interface SongsUiEvent {
+    data class OnQueryChanged(
+        val query: String,
+    ) : SongsUiEvent
+
+    data object OnClearQueryClicked : SongsUiEvent
+
+    data class OnSongClicked(
+        val song: Song,
+        val queue: List<Song>,
+    ) : SongsUiEvent
+
+    data class OnSongOptionsClicked(
+        val song: Song,
+    ) : SongsUiEvent
+}

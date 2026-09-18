@@ -347,7 +347,7 @@ does not compile when `Outer` is generic, because `Outer::x` is read as a member
 type argument:
 
 ```kotlin
-import com.quare.tunescout.core.model.Outer.Nested
+import com.pierre.tunescout.core.model.Outer.Nested
 
 value = selectedSong?.title?.uppercase()?.let(::Nested) ?: Outer.Empty
 ```

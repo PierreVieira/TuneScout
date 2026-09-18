@@ -1,5 +1,5 @@
-import com.quare.tunescout.buildlogic.addUnitTestDependencies
-import com.quare.tunescout.buildlogic.libs
+import com.pierre.tunescout.buildlogic.addUnitTestDependencies
+import com.pierre.tunescout.buildlogic.libs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project

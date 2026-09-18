@@ -2,7 +2,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "com.quare.tunescout.buildlogic"
+group = "com.pierre.tunescout.buildlogic"
 
 repositories {
     google()

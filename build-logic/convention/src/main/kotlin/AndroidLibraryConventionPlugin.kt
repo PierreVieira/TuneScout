@@ -1,10 +1,10 @@
 import com.android.build.api.dsl.LibraryExtension
-import com.quare.tunescout.buildlogic.addInstrumentedTestDependencies
-import com.quare.tunescout.buildlogic.addUnitTestDependencies
-import com.quare.tunescout.buildlogic.configureAndroid
-import com.quare.tunescout.buildlogic.configureJUnitPlatform
-import com.quare.tunescout.buildlogic.libs
-import com.quare.tunescout.buildlogic.minSdkVersion
+import com.pierre.tunescout.buildlogic.addInstrumentedTestDependencies
+import com.pierre.tunescout.buildlogic.addUnitTestDependencies
+import com.pierre.tunescout.buildlogic.configureAndroid
+import com.pierre.tunescout.buildlogic.configureJUnitPlatform
+import com.pierre.tunescout.buildlogic.libs
+import com.pierre.tunescout.buildlogic.minSdkVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure

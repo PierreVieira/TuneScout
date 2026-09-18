@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout.feature.album"
+    namespace = "com.pierre.tunescout.feature.album"
 }
 
 dependencies {

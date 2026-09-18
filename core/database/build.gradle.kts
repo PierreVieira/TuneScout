@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout.core.database"
+    namespace = "com.pierre.tunescout.core.database"
 }
 
 dependencies {

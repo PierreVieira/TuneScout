@@ -19,7 +19,7 @@ val playerModule: Module = module {
 - `viewModelOf(::ViewModel)` — a ViewModel scoped to its navigation entry; route arguments arrive through
   `parametersOf(route)` at the call site (see [navigation.md](navigation.md))
 
-**Register the new module** in `app/src/main/kotlin/com/quare/tunescout/di/AppModules.kt`:
+**Register the new module** in `app/src/main/kotlin/com/pierre/tunescout/di/AppModules.kt`:
 
 ```kotlin
 val appModules: List<Module> = listOf(

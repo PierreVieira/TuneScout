@@ -32,7 +32,7 @@ Pure JVM modules (`core/model`, `core/utils`) use `src/main/kotlin` and `src/tes
 ### Within every `feature/` module
 
 ```
-src/main/kotlin/com/quare/tunescout/feature/<name>/
+src/main/kotlin/com/pierre/tunescout/feature/<name>/
 ├── data/
 │   ├── datasource/      # Local or remote data access
 │   ├── dto/             # Raw data transfer objects (JSON parsing)

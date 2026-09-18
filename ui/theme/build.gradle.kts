@@ -3,5 +3,5 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout.ui.theme"
+    namespace = "com.pierre.tunescout.ui.theme"
 }

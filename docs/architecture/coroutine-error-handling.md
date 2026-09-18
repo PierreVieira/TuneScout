@@ -27,7 +27,7 @@ suspend fun invoke(): Result<Unit> = try {
 Use `suspendRunCatching` from `core/utils` whenever you need to wrap a suspend call in a `Result` at the top level of a `suspend fun`:
 
 ```kotlin
-import com.quare.tunescout.core.utils.suspendRunCatching
+import com.pierre.tunescout.core.utils.suspendRunCatching
 
 suspend fun invoke(songId: Long): Result<Unit> = suspendRunCatching {
     doWork(songId)

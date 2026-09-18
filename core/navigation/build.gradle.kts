@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout.core.navigation"
+    namespace = "com.pierre.tunescout.core.navigation"
 }
 
 dependencies {

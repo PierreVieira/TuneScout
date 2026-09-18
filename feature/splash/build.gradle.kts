@@ -3,5 +3,5 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout.feature.splash"
+    namespace = "com.pierre.tunescout.feature.splash"
 }

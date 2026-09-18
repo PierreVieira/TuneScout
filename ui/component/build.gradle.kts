@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout.ui.component"
+    namespace = "com.pierre.tunescout.ui.component"
 }
 
 dependencies {

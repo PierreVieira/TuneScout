@@ -3,10 +3,10 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout"
+    namespace = "com.pierre.tunescout"
 
     defaultConfig {
-        applicationId = "com.quare.tunescout"
+        applicationId = "com.pierre.tunescout"
         versionCode = 1
         versionName = "1.0.0"
     }

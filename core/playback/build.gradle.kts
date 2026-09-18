@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.quare.tunescout.core.playback"
+    namespace = "com.pierre.tunescout.core.playback"
 }
 
 dependencies {

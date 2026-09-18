@@ -1,8 +1,8 @@
 # Keep the serializable navigation keys so Navigation 3 can restore the back stack after process death
--keep,includedescriptorclasses class com.quare.tunescout.**$$serializer { *; }
--keepclassmembers class com.quare.tunescout.** {
+-keep,includedescriptorclasses class com.pierre.tunescout.**$$serializer { *; }
+-keepclassmembers class com.pierre.tunescout.** {
     *** Companion;
 }
--keepclasseswithmembers class com.quare.tunescout.** {
+-keepclasseswithmembers class com.pierre.tunescout.** {
     kotlinx.serialization.KSerializer serializer(...);
 }

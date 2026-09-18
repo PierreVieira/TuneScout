@@ -87,7 +87,7 @@ For shared-element transitions, the entry's animation scope is `LocalNavAnimated
 ### 4. Register in `TuneScoutNavDisplay`
 
 ```kotlin
-// app/src/main/kotlin/com/quare/tunescout/navigation/TuneScoutNavDisplay.kt
+// app/src/main/kotlin/com/pierre/tunescout/navigation/TuneScoutNavDisplay.kt
 entryProvider = entryProvider<NavKey> {
     splash()
     songs()
