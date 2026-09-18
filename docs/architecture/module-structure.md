@@ -22,7 +22,8 @@ feature/
 ├── player/
 └── album/
 tools/
-└── ktlint-custom-rules/ # The tunescout-style ktlint ruleset
+├── ktlint-custom-rules/ # The tunescout-style ktlint ruleset
+└── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
 build-logic/             # Convention plugins (tunescout.android.feature, tunescout.jvm.library, ...)
 ```
 

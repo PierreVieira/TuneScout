@@ -4,14 +4,26 @@ Search the iTunes catalog, play 30-second previews, and pick up where you left o
 native Android app written for the Music AI Android code challenge.
 
 <p align="center">
-  <img src="docs/screenshots/splash.png" width="120" alt="Splash" />
-  <img src="docs/screenshots/songs.png" width="120" alt="Recently played" />
-  <img src="docs/screenshots/search.png" width="120" alt="Search results" />
-  <img src="docs/screenshots/player.png" width="120" alt="Player" />
-  <img src="docs/screenshots/options.png" width="120" alt="Song options" />
-  <img src="docs/screenshots/album.png" width="120" alt="Album" />
-  <img src="docs/screenshots/notification.png" width="120" alt="Media controls" />
+  <img src="docs/screenshots/splash.png" width="270" alt="Splash" />
+  <img src="docs/screenshots/songs.png" width="270" alt="Recently played" />
+  <img src="docs/screenshots/search.png" width="270" alt="Search results" />
 </p>
+
+<p align="center">
+  <img src="docs/screenshots/player.png" width="270" alt="Player" />
+  <img src="docs/screenshots/options.png" width="270" alt="Song options" />
+  <img src="docs/screenshots/album.png" width="270" alt="Album" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/notification.png" width="290" alt="Media controls in the notification shade" />
+  <br />
+  <em>Media controls in the notification shade and on the lock screen</em>
+</p>
+
+The six screens above are generated from the app's own composables, under Robolectric, by
+`./scripts/screenshots.sh`; the notification shade is a device capture, since it is not a
+composable. See [docs/screenshots.md](docs/screenshots.md).
 
 ## What it does
 
@@ -73,6 +85,7 @@ feature/
   splash/  songs/  player/  album/     data / domain / presentation in each
 tools/
   ktlint-custom-rules/
+  screenshots/       renders the README's screenshots from the app's own composables
 ```
 
 **Dependency rules are enforced, not hoped for.** Features never depend on features, core never

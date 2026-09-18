@@ -2,9 +2,9 @@ package com.pierre.tunescout.feature.player.presentation.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,30 +28,61 @@ private val subtitleHeight = 16.dp
 private val timelineHeight = 8.dp
 private val playButtonSize = 72.dp
 private val skipButtonSize = 36.dp
-private val controlsGap = 28.dp
+private val repeatButtonSize = 24.dp
 private const val TITLE_WIDTH_FRACTION = 0.7f
 private const val SUBTITLE_WIDTH_FRACTION = 0.45f
 
 @Composable
-internal fun ColumnScope.PlayerSkeleton(
-    artworkTopSpacing: Dp,
+internal fun PlayerSkeleton(
+    isSideBySide: Boolean,
     artworkSize: Dp,
+    artworkTopSpacing: Dp,
     artworkCornerRadius: Dp,
 ) {
     val description = stringResource(R.string.ui_loading)
-    Spacer(modifier = Modifier.height(artworkTopSpacing))
-    ShimmerBox(
-        shape = RoundedCornerShape(artworkCornerRadius),
-        modifier = Modifier
-            .size(artworkSize)
-            .align(Alignment.CenterHorizontally)
-            .semantics { contentDescription = description },
-    )
-    Spacer(modifier = Modifier.weight(1f))
+    val artwork = @Composable {
+        ShimmerBox(
+            shape = RoundedCornerShape(artworkCornerRadius),
+            modifier = Modifier
+                .size(artworkSize)
+                .semantics { contentDescription = description },
+        )
+    }
+    if (isSideBySide) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
+            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.large),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            artwork()
+            DetailsSkeleton(modifier = Modifier.weight(1f))
+        }
+    } else {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(modifier = Modifier.height(artworkTopSpacing))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                artwork()
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            DetailsSkeleton(
+                modifier = Modifier.padding(
+                    horizontal = TuneScoutSpacing.large,
+                    vertical = TuneScoutSpacing.medium,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun DetailsSkeleton(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.medium),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen),
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small)) {
@@ -74,12 +105,14 @@ internal fun ColumnScope.PlayerSkeleton(
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(controlsGap, Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.large),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ShimmerBox(shape = CircleShape, modifier = Modifier.size(skipButtonSize))
             ShimmerBox(shape = CircleShape, modifier = Modifier.size(playButtonSize))
             ShimmerBox(shape = CircleShape, modifier = Modifier.size(skipButtonSize))
+            ShimmerBox(shape = CircleShape, modifier = Modifier.size(skipButtonSize))
+            Spacer(modifier = Modifier.weight(1f))
+            ShimmerBox(shape = CircleShape, modifier = Modifier.size(repeatButtonSize))
         }
     }
 }

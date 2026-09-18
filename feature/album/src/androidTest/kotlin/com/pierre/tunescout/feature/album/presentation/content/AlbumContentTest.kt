@@ -1,7 +1,9 @@
 package com.pierre.tunescout.feature.album.presentation.content
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -14,6 +16,8 @@ import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import de.mannodermaus.junit5.compose.createComposeExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+
+private const val TITLE_IN_TOP_BAR_AND_HEADER = 2
 
 @OptIn(ExperimentalTestApi::class)
 class AlbumContentTest {
@@ -40,7 +44,7 @@ class AlbumContentTest {
             }
         }
 
-        onNodeWithText("Random Access Memories").assertIsDisplayed()
+        onAllNodesWithText("Random Access Memories").assertCountEquals(TITLE_IN_TOP_BAR_AND_HEADER)
         onNodeWithText("Give Life Back to Music").assertIsDisplayed()
         onNodeWithText("The Game of Love").performClick()
 

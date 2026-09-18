@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="player_now_playing">Tocando agora</string>
     <string name="player_not_found_title">Esta música não está disponível</string>
     <string name="player_not_found_description">Ela pode ter sido removida do catálogo. Volte e escolha outra.</string>
     <string name="player_failed">Não foi possível tocar esta prévia. Verifique sua conexão e tente de novo.</string>

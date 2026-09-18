@@ -52,7 +52,7 @@ class SearchToAlbumFlowTest {
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Get Lucky").performClick()
 
-        waitUntilAtLeastOneExists(hasText("Random Access Memories"), SCREEN_TIMEOUT_MILLIS)
+        waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("More options").performClick()
         waitUntilAtLeastOneExists(hasText("View album"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("View album").performClick()

@@ -2,19 +2,21 @@ package com.pierre.tunescout.feature.player.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.player.R
 import com.pierre.tunescout.feature.player.presentation.component.PlaybackControls
@@ -31,9 +33,11 @@ import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
 
-private val artworkTopSpacing = 100.dp
-private val artworkSize = 264.dp
+private val maxArtworkSize = 264.dp
+private val minArtworkSize = 120.dp
+private val maxArtworkTopSpacing = 100.dp
 private val artworkCornerRadius = 32.dp
+private val detailsHeight = 260.dp
 
 @Composable
 fun PlayerContent(
@@ -44,67 +48,149 @@ fun PlayerContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .navigationBarsPadding(),
+            .safeDrawingPadding(),
     ) {
         TopBar(
-            title = (uiState as? PlayerUiState.Loaded)?.song?.albumTitle.orEmpty(),
+            title = stringResource(R.string.player_now_playing),
             onBackClick = { onEvent(PlayerUiEvent.OnBackClicked) },
             actions = {
                 if (uiState is PlayerUiState.Loaded) {
                     TopBarAction(
-                        iconRes = TuneScoutIcons.moreMenu,
+                        icon = TuneScoutIcons.moreMenu,
                         contentDescription = stringResource(ComponentR.string.ui_more_options),
                         onClick = { onEvent(PlayerUiEvent.OnMoreClicked) },
                     )
                 }
             },
         )
-        when (uiState) {
-            PlayerUiState.Loading -> PlayerSkeleton(
-                artworkTopSpacing = artworkTopSpacing,
-                artworkSize = artworkSize,
-                artworkCornerRadius = artworkCornerRadius,
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val isSideBySide = maxWidth > maxHeight
+            val artworkSize = getArtworkSize(
+                maxWidth = maxWidth,
+                maxHeight = maxHeight,
+                isSideBySide = isSideBySide,
             )
+            when (uiState) {
+                PlayerUiState.Loading -> PlayerSkeleton(
+                    isSideBySide = isSideBySide,
+                    artworkSize = artworkSize,
+                    artworkTopSpacing = getArtworkTopSpacing(maxHeight = maxHeight, artworkSize = artworkSize),
+                    artworkCornerRadius = artworkCornerRadius,
+                )
 
-            PlayerUiState.NotFound -> StateMessage(
-                title = stringResource(R.string.player_not_found_title),
-                description = stringResource(R.string.player_not_found_description),
-            )
+                PlayerUiState.NotFound -> StateMessage(
+                    title = stringResource(R.string.player_not_found_title),
+                    description = stringResource(R.string.player_not_found_description),
+                )
 
-            is PlayerUiState.Loaded -> LoadedContent(uiState = uiState, onEvent = onEvent)
+                is PlayerUiState.Loaded -> if (isSideBySide) {
+                    SideBySideContent(
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        artworkSize = artworkSize,
+                    )
+                } else {
+                    StackedContent(
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        artworkSize = artworkSize,
+                        artworkTopSpacing = getArtworkTopSpacing(maxHeight = maxHeight, artworkSize = artworkSize),
+                    )
+                }
+            }
         }
     }
 }
 
+private fun getArtworkSize(
+    maxWidth: Dp,
+    maxHeight: Dp,
+    isSideBySide: Boolean,
+): Dp = when {
+    isSideBySide -> minOf(maxHeight - TuneScoutSpacing.medium, maxWidth / 2)
+    else -> minOf(maxWidth - TuneScoutSpacing.large * 2, maxHeight - detailsHeight)
+}.coerceIn(minArtworkSize, maxArtworkSize)
+
+private fun getArtworkTopSpacing(
+    maxHeight: Dp,
+    artworkSize: Dp,
+): Dp = ((maxHeight - detailsHeight - artworkSize) / 2).coerceIn(0.dp, maxArtworkTopSpacing)
+
 @Composable
-private fun ColumnScope.LoadedContent(
+private fun StackedContent(
     uiState: PlayerUiState.Loaded,
     onEvent: (PlayerUiEvent) -> Unit,
+    artworkSize: Dp,
+    artworkTopSpacing: Dp,
 ) {
-    Spacer(modifier = Modifier.height(artworkTopSpacing))
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Artwork(
-            url = uiState.song.artwork.largeUrl,
-            contentDescription = stringResource(ComponentR.string.ui_artwork_of, uiState.song.albumTitle),
-            cornerRadius = artworkCornerRadius,
-            modifier = Modifier.size(artworkSize),
+    Column(modifier = Modifier.fillMaxSize()) {
+        Spacer(modifier = Modifier.height(artworkTopSpacing))
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center,
+        ) {
+            SongArtwork(uiState = uiState, size = artworkSize)
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        PlayerDetails(
+            uiState = uiState,
+            onEvent = onEvent,
+            modifier = Modifier.padding(
+                horizontal = TuneScoutSpacing.large,
+                vertical = TuneScoutSpacing.medium,
+            ),
         )
     }
-    Spacer(modifier = Modifier.weight(1f))
-    Column(
+}
+
+@Composable
+private fun SideBySideContent(
+    uiState: PlayerUiState.Loaded,
+    onEvent: (PlayerUiEvent) -> Unit,
+    artworkSize: Dp,
+) {
+    Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.medium),
+            .fillMaxSize()
+            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
+        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.large),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SongArtwork(uiState = uiState, size = artworkSize)
+        PlayerDetails(
+            uiState = uiState,
+            onEvent = onEvent,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun SongArtwork(
+    uiState: PlayerUiState.Loaded,
+    size: Dp,
+) {
+    Artwork(
+        url = uiState.song.artwork.largeUrl,
+        contentDescription = stringResource(ComponentR.string.ui_artwork_of, uiState.song.albumTitle),
+        cornerRadius = artworkCornerRadius,
+        modifier = Modifier.size(size),
+    )
+}
+
+@Composable
+private fun PlayerDetails(
+    uiState: PlayerUiState.Loaded,
+    onEvent: (PlayerUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen),
     ) {
         SongHeading(
             title = uiState.song.title,
             artistName = uiState.song.artistName,
-            isRepeatEnabled = uiState.isRepeatEnabled,
-            onRepeatClick = { onEvent(PlayerUiEvent.OnRepeatClicked) },
         )
         PlaybackTimeline(
             progress = uiState.progress,
@@ -118,9 +204,11 @@ private fun ColumnScope.LoadedContent(
             isPlaying = uiState.isPlaying,
             hasPrevious = uiState.hasPrevious,
             hasNext = uiState.hasNext,
+            isRepeatEnabled = uiState.isRepeatEnabled,
             onPlayPauseClick = { onEvent(PlayerUiEvent.OnPlayPauseClicked) },
             onPreviousClick = { onEvent(PlayerUiEvent.OnSkipPreviousClicked) },
             onNextClick = { onEvent(PlayerUiEvent.OnSkipNextClicked) },
+            onRepeatClick = { onEvent(PlayerUiEvent.OnRepeatClicked) },
         )
     }
 }

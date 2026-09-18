@@ -9,7 +9,7 @@ android {
 dependencies {
     implementation(projects.ui.theme)
 
-    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.compose.shimmer)
     runtimeOnly(libs.coil.network.ktor)

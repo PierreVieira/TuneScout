@@ -55,3 +55,4 @@ include(":feature:album")
 include(":feature:player")
 
 include(":tools:ktlint-custom-rules")
+include(":tools:screenshots")
