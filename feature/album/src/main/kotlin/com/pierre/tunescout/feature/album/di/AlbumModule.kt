@@ -8,14 +8,14 @@ import com.pierre.tunescout.feature.album.domain.usecase.impl.ObserveAlbumUseCas
 import com.pierre.tunescout.feature.album.domain.usecase.impl.RefreshAlbumUseCase
 import com.pierre.tunescout.feature.album.presentation.viewmodel.AlbumViewModel
 import org.koin.core.module.Module
-import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val albumModule: Module = module {
-    factoryOf(::AlbumRepositoryImpl) { bind<AlbumRepository>() }
-    factoryOf(::ObserveAlbumUseCase) { bind<ObserveAlbum>() }
-    factoryOf(::RefreshAlbumUseCase) { bind<RefreshAlbum>() }
+    factoryOf(::AlbumRepositoryImpl).bind<AlbumRepository>()
+    factoryOf(::ObserveAlbumUseCase).bind<ObserveAlbum>()
+    factoryOf(::RefreshAlbumUseCase).bind<RefreshAlbum>()
     viewModelOf(::AlbumViewModel)
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    The Android 11 and lower counterpart of data_extraction_rules.xml, which only applies from
+    Android 12. Same intent: nothing here is worth restoring, so every storage root is excluded.
+-->
+<full-backup-content>
+    <exclude domain="root" path="." />
+    <exclude domain="device_root" path="." />
+    <exclude domain="external" path="." />
+</full-backup-content>

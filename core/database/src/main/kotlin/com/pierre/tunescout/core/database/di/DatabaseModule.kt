@@ -6,6 +6,9 @@ import com.pierre.tunescout.core.database.AlbumLocalDataSource
 import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.SongLocalDataSource
 import com.pierre.tunescout.core.database.TuneScoutDatabase
+import com.pierre.tunescout.core.database.dao.AlbumDao
+import com.pierre.tunescout.core.database.dao.RecentlyPlayedDao
+import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.internal.RoomAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomRecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomSongLocalDataSource
@@ -13,6 +16,8 @@ import com.pierre.tunescout.core.database.internal.TimestampProvider
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 private const val DATABASE_NAME = "tunescout.db"
@@ -26,19 +31,16 @@ val databaseModule: Module = module {
             .setQueryCoroutineContext(Dispatchers.IO)
             .build()
     }
+    single<SongDao> { get<TuneScoutDatabase>().songDao() }
+    single<AlbumDao> { get<TuneScoutDatabase>().albumDao() }
+    single<RecentlyPlayedDao> { get<TuneScoutDatabase>().recentlyPlayedDao() }
     single<TimestampProvider> { TimestampProvider(System::currentTimeMillis) }
-    single<SongLocalDataSource> { RoomSongLocalDataSource(songDao = get<TuneScoutDatabase>().songDao()) }
-    single<AlbumLocalDataSource> {
-        RoomAlbumLocalDataSource(
-            albumDao = get<TuneScoutDatabase>().albumDao(),
-            songDao = get<TuneScoutDatabase>().songDao(),
-            timestampProvider = get(),
-        )
-    }
+    singleOf(::RoomSongLocalDataSource).bind<SongLocalDataSource>()
+    singleOf(::RoomAlbumLocalDataSource).bind<AlbumLocalDataSource>()
     single<RecentlyPlayedLocalDataSource> {
         RoomRecentlyPlayedLocalDataSource(
-            recentlyPlayedDao = get<TuneScoutDatabase>().recentlyPlayedDao(),
-            songDao = get<TuneScoutDatabase>().songDao(),
+            recentlyPlayedDao = get(),
+            songDao = get(),
             timestampProvider = get(),
             maxEntries = MAX_RECENTLY_PLAYED,
         )

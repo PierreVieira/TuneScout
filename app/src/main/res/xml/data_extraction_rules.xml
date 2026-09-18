@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    TuneScout keeps nothing worth restoring: the Room database is a cache of iTunes results and of
+    what was played recently, all of it re-fetchable. `android:allowBackup="false"` already rules out
+    cloud backup, but on Android 12+ it does not reliably stop device-to-device transfer, so both
+    channels are excluded explicitly here.
+
+    Excluding each storage root covers its subdirectories (files, databases and shared preferences).
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="external" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="external" path="." />
+    </device-transfer>
+</data-extraction-rules>
