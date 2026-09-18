@@ -127,6 +127,9 @@ Coil 3 · Media3 ExoPlayer · ktlint with project rules · JUnit 6 · Truth · M
 
 - The design uses the Articulat CF typeface, which is commercial; the app ships the system
   sans-serif with the same sizes and weights.
+- The splash window Android draws before the app's first frame only accepts a flat colour, so it
+  shows the same note over the gradient's average colour; the gradient itself starts with the
+  first frame the app draws.
 - Dark theme only, matching the Figma file. The theme is one object, so a light scheme is a
   small change.
 - The 200-item cap of the API is the end of every search; there is no "load more" beyond it.

@@ -2,6 +2,24 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Splash
+
+**The system splash screen is themed to continue into the app splash.** Since API 31 every cold
+start begins with a splash window drawn by the system, and by default it shows the launcher icon
+over `?android:colorBackground`. `Theme.TuneScout.Splash` (through `core-splashscreen`, so API 26
+behaves the same) replaces that icon with the same note artwork the Compose splash draws, sized
+and centred to land on the exact same pixels, and removes the system exit animation so the icon
+never jumps or scales. Cost: the note lives in `feature:splash` and the theme in `app` references
+it across modules, and the icon size is expressed as a fraction of the 288 dp icon canvas.
+
+**The system splash uses the average colour of the splash artwork.** That window only accepts a
+solid colour — a gradient is not a valid value for `windowSplashScreenBackground` — so it is set
+to `#000E11`, the mean colour of the designed gradient, which is also its colour at the centre of
+the screen where the note sits. The app's own splash then draws the gradient from the Figma file
+unchanged and without any fade, so the design is never shown half-rendered. Cost: while the
+system window is up, the teal glow at the top is missing; nothing but a platform change can fix
+that.
+
 ## 2026-09-18 — Loading states
 
 **Skeletons with shimmer instead of spinners.** Every loading state (search results, next page,

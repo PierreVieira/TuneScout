@@ -24,6 +24,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.core.splashscreen)
+
     implementation(projects.core.model)
     implementation(projects.core.utils)
     implementation(projects.core.navigation)
