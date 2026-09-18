@@ -19,6 +19,23 @@ interface ITunesApi {
 Suspend calls that can fail are wrapped at the repository boundary with `suspendRunCatching` and
 returned as `Result<T>` — see [coroutine-error-handling.md](coroutine-error-handling.md).
 
+#### Artwork sizes
+
+The [search results](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/UnderstandingSearchResults.html)
+only carry `artworkUrl60` and `artworkUrl100`, both far too small for the album header or the player —
+stretched to 264dp, the 100×100 thumbnail is visibly pixelated. The size is a segment of the file name
+(`.../source/100x100bb.jpg`), and Apple's image host renders whatever size that segment asks for, so
+`core/model` wraps the url the API returned in an `Artwork` value class that rewrites that segment:
+
+| Property | Pixels | Used by |
+|---|---|---|
+| `thumbnailUrl` | 200×200 | song rows (search results, recently played, album track list) |
+| `mediumUrl` | 600×600 | album header, playback notification and lock-screen controls |
+| `largeUrl` | 1000×1000 | the player screen artwork |
+
+`artworkUrl100` stays the source url — it is what the mappers store in Room and what `sourceUrl`
+returns — and a url whose file name carries no size is passed through untouched.
+
 ### Local (Room 3)
 
 `core/database` owns the `RoomDatabase`, its DAOs and entities. DAOs expose `Flow<T>` for reactive

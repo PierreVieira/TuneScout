@@ -1,6 +1,7 @@
 package com.pierre.tunescout.core.network.mapper
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.network.dto.ResultDto
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.milliseconds
@@ -21,6 +22,7 @@ class SongMapperTest {
         assertThat(song?.artistName).isEqualTo("Daft Punk")
         assertThat(song?.albumId).isEqualTo(10L)
         assertThat(song?.albumTitle).isEqualTo("Random Access Memories")
+        assertThat(song?.artwork).isEqualTo(Artwork("https://example.com/art/100x100bb.jpg"))
         assertThat(song?.duration).isEqualTo(369_000.milliseconds)
         assertThat(song?.trackNumber).isEqualTo(8)
     }
@@ -58,7 +60,7 @@ class SongMapperTest {
         val song = dto.toSongOrNull()
 
         // Then
-        assertThat(song?.artworkUrl).isEmpty()
+        assertThat(song?.artwork?.sourceUrl).isEmpty()
         assertThat(song?.duration).isEqualTo(0.milliseconds)
         assertThat(song?.trackNumber).isEqualTo(0)
     }
@@ -72,7 +74,7 @@ internal fun songResult(): ResultDto = ResultDto(
     artistName = "Daft Punk",
     collectionId = 10L,
     collectionName = "Random Access Memories",
-    artworkUrl100 = "https://example.com/art.jpg",
+    artworkUrl100 = "https://example.com/art/100x100bb.jpg",
     previewUrl = "https://example.com/preview.m4a",
     trackTimeMillis = 369_000L,
     trackNumber = 8,

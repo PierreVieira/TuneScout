@@ -28,7 +28,7 @@ class SongEntityMapperTest {
             artistName = "Daft Punk",
             albumId = 10,
             albumTitle = "Random Access Memories",
-            artworkUrl = "art",
+            artworkUrl = "https://example.com/art/100x100bb.jpg",
             previewUrl = "preview",
             durationMillis = 369_000,
             trackNumber = 8,

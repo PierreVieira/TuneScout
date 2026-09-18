@@ -1,6 +1,7 @@
 package com.pierre.tunescout.core.network.mapper
 
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.network.dto.ResultDto
 
 private const val COLLECTION_WRAPPER = "collection"
@@ -12,7 +13,7 @@ internal fun List<ResultDto>.toAlbumOrNull(): Album? {
         id = collection.collectionId ?: return null,
         title = collection.collectionName ?: return null,
         artistName = collection.artistName ?: return null,
-        artworkUrl = collection.artworkUrl100.orEmpty(),
+        artwork = Artwork(collection.artworkUrl100.orEmpty()),
         songs = songs,
     )
 }

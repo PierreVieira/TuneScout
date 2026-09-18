@@ -92,7 +92,7 @@ private fun LoadedContent(
             SongRow(
                 title = song.title,
                 subtitle = song.artistName,
-                artworkUrl = song.artworkUrl,
+                artworkUrl = song.artwork.thumbnailUrl,
                 artworkSize = rowArtworkSize,
                 isHighlighted = song.id == nowPlayingId,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
@@ -111,7 +111,7 @@ private fun AlbumHeader(album: Album) {
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
     ) {
         Artwork(
-            url = album.artworkUrl,
+            url = album.artwork.mediumUrl,
             contentDescription = stringResource(ComponentR.string.ui_artwork_of, album.title),
             cornerRadius = artworkCornerRadius,
             modifier = Modifier

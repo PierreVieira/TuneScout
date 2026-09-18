@@ -8,7 +8,7 @@ data class Song(
     val artistName: String,
     val albumId: Long,
     val albumTitle: String,
-    val artworkUrl: String,
+    val artwork: Artwork,
     val previewUrl: String,
     val duration: Duration,
     val trackNumber: Int,

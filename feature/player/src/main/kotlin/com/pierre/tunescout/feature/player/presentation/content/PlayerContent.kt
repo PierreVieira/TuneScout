@@ -87,7 +87,7 @@ private fun ColumnScope.LoadedContent(
         contentAlignment = Alignment.Center,
     ) {
         Artwork(
-            url = uiState.song.artworkUrl,
+            url = uiState.song.artwork.largeUrl,
             contentDescription = stringResource(ComponentR.string.ui_artwork_of, uiState.song.albumTitle),
             cornerRadius = artworkCornerRadius,
             modifier = Modifier.size(artworkSize),
