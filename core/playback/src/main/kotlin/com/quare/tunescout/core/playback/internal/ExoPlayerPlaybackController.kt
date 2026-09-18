@@ -25,6 +25,7 @@ private val positionTick = 250.milliseconds
 
 internal class ExoPlayerPlaybackController(
     private val player: ExoPlayer,
+    private val serviceLauncher: PlaybackServiceLauncher,
     private val scope: CoroutineScope,
 ) : PlaybackController {
     override val state: StateFlow<PlaybackState>
@@ -46,6 +47,7 @@ internal class ExoPlayerPlaybackController(
         player.setMediaItems(this.queue.map { queued -> queued.toMediaItem() }, startIndex, 0L)
         player.prepare()
         player.play()
+        serviceLauncher.launch()
         publish()
     }
 

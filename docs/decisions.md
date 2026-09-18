@@ -2,6 +2,27 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Playback
+
+**One ExoPlayer, shared by the app and the media service.** `PlaybackController` wraps the
+process-wide ExoPlayer directly; `PlaybackService` (a `MediaSessionService`) builds its
+`MediaSession` over that same instance and is started when playback begins. The textbook setup
+routes every screen through a `MediaController` bound to the service, but that adds an async
+connection and IPC for a player that already lives in the same process. Cost: the controller
+must be used from the main thread, which ViewModels already guarantee. Benefit: the notification,
+lock-screen controls and the in-app player all read one state with no synchronisation code.
+
+**Seeking never pauses.** The seek bar previews the drag locally and calls `seekTo` on release;
+ExoPlayer keeps playing from the new position, the way Spotify does.
+
+**Permissions only when needed.** `POST_NOTIFICATIONS` is requested the first time a song
+actually starts playing on Android 13+, not at launch. Media controls still work if the user
+declines because Android 13+ derives them from the media session, not from the notification.
+
+**Recently played is written in one place.** A recorder observes playback state and stores a
+song the first time it plays, whatever screen started it. The history table is capped at 20 rows
+inside the same transaction that inserts the new one.
+
 ## 2026-09-18 — Foundation
 
 **Multi-module with layers inside each feature.** Every `feature/*` module owns its

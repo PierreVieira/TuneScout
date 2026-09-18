@@ -5,6 +5,8 @@ import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
 import com.quare.tunescout.core.playback.PlaybackController
 import com.quare.tunescout.core.playback.internal.ExoPlayerPlaybackController
+import com.quare.tunescout.core.playback.internal.ForegroundPlaybackServiceLauncher
+import com.quare.tunescout.core.playback.internal.PlaybackServiceLauncher
 import com.quare.tunescout.core.playback.internal.RecentlyPlayedRecorder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,8 +33,13 @@ val playbackModule: Module = module {
             ).setHandleAudioBecomingNoisy(true)
             .build()
     }
+    single<PlaybackServiceLauncher> { ForegroundPlaybackServiceLauncher(context = androidContext()) }
     single<PlaybackController> {
-        ExoPlayerPlaybackController(player = get(), scope = get(named(PLAYBACK_SCOPE)))
+        ExoPlayerPlaybackController(
+            player = get(),
+            serviceLauncher = get(),
+            scope = get(named(PLAYBACK_SCOPE)),
+        )
     }
     single(createdAtStart = true) {
         RecentlyPlayedRecorder(
