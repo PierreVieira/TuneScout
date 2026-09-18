@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+**/build/
+!src/**/build/
+/build-logic/convention/bin/
+.kotlin/
+
+# Android / IDE
+*.iml
+.idea/
+.vscode/
+local.properties
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.log
+*.hprof
+
+# macOS
+.DS_Store
+
+# Claude Code: skills and architecture docs are versioned, personal state is not
+.claude/memory/
+.claude/worktrees/
+.claude/settings.json
+.claude/settings.local.json

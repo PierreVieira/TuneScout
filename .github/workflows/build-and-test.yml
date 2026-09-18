@@ -1,0 +1,59 @@
+name: build-and-test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+# Cancels in-progress runs if a new commit is pushed to the same PR or branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Setup Gradle
+        uses: ./.github/actions/gradle
+
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest test --continue
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: '**/build/reports/tests/**'
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Setup Gradle
+        uses: ./.github/actions/gradle
+
+      # Release matters: it is the only variant where R8 runs, so a missing keep rule for
+      # kotlinx.serialization or Room surfaces here instead of on a device.
+      - name: Assemble debug and release
+        run: ./gradlew assembleDebug assembleRelease
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tunescout-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
