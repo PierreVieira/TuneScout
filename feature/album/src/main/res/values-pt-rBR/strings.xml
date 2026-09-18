@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_error_title">Não foi possível carregar este álbum</string>
+    <string name="album_error_description">Verifique sua conexão e tente de novo.</string>
+</resources>

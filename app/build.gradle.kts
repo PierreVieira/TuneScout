@@ -29,7 +29,13 @@ dependencies {
     implementation(projects.core.navigation)
     implementation(projects.core.network)
     implementation(projects.core.database)
+    implementation(projects.core.playback)
     implementation(projects.ui.theme)
     implementation(projects.ui.component)
     implementation(projects.ui.utils)
+
+    implementation(projects.feature.splash)
+    implementation(projects.feature.songs)
+    implementation(projects.feature.player)
+    implementation(projects.feature.album)
 }

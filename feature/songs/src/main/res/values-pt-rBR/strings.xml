@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="songs_title">Músicas</string>
+    <string name="songs_search_placeholder">Buscar</string>
+    <string name="songs_recently_played">Tocadas recentemente</string>
+    <string name="songs_empty_title">Nada tocado ainda</string>
+    <string name="songs_empty_description">Busque uma música e toque nela para começar a ouvir. Ela vai aparecer aqui.</string>
+    <string name="songs_no_results_title">Nenhuma música encontrada</string>
+    <string name="songs_no_results_description">Tente outro nome de artista, música ou álbum.</string>
+    <string name="songs_error_title">Não foi possível carregar as músicas</string>
+    <string name="songs_error_offline">Verifique sua conexão e tente de novo.</string>
+    <string name="songs_error_rate_limited">O catálogo do iTunes está ocupado agora. Espere um pouco e tente de novo.</string>
+    <string name="songs_options_view_album">Ver álbum</string>
+</resources>

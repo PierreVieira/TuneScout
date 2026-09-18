@@ -6,23 +6,24 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
 private val darkScheme: ColorScheme = darkColorScheme(
-    primary = white,
-    onPrimary = black,
-    background = black,
-    onBackground = white,
-    surface = black,
-    onSurface = white,
-    surfaceVariant = surfaceGray,
-    onSurfaceVariant = secondaryText,
-    surfaceContainer = surfaceGray,
-    surfaceContainerHigh = elevatedGray,
-    error = errorRed,
+    primary = TuneScoutColors.textPrimary,
+    onPrimary = TuneScoutColors.background,
+    background = TuneScoutColors.background,
+    onBackground = TuneScoutColors.textPrimary,
+    surface = TuneScoutColors.background,
+    onSurface = TuneScoutColors.textPrimary,
+    surfaceVariant = TuneScoutColors.white10,
+    onSurfaceVariant = TuneScoutColors.textSecondary,
+    surfaceContainer = TuneScoutColors.white10,
+    surfaceContainerHigh = TuneScoutColors.white20,
+    error = TuneScoutColors.error,
 )
 
 @Composable
 fun TuneScoutTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = darkScheme,
+        typography = tuneScoutTypography,
         content = content,
     )
 }

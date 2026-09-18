@@ -8,5 +8,8 @@ android {
 
 dependencies {
     implementation(projects.ui.theme)
+
+    implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.coil.compose)
+    runtimeOnly(libs.coil.network.ktor)
 }

@@ -1,0 +1,100 @@
+package com.quare.tunescout.ui.component
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import com.quare.tunescout.ui.theme.TuneScoutColors
+import com.quare.tunescout.ui.theme.TuneScoutSpacing
+
+private val fieldHeight = 44.dp
+private val fieldCornerRadius = 12.dp
+private val leadingIconSize = 24.dp
+private val clearButtonSize = 28.dp
+
+@Composable
+fun SearchField(
+    query: String,
+    placeholder: String,
+    onQueryChange: (String) -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val textStyle = MaterialTheme.typography.bodyLarge.copy(color = TuneScoutColors.textPrimary)
+    BasicTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(fieldHeight)
+            .background(TuneScoutColors.white10, RoundedCornerShape(fieldCornerRadius))
+            .padding(horizontal = TuneScoutSpacing.medium),
+        textStyle = textStyle,
+        singleLine = true,
+        cursorBrush = SolidColor(TuneScoutColors.textPrimary),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
+        decorationBox = { innerTextField ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
+            ) {
+                Icon(
+                    painter = painterResource(TuneScoutIcons.search),
+                    contentDescription = stringResource(R.string.ui_search),
+                    tint = TuneScoutColors.white25,
+                    modifier = Modifier.size(leadingIconSize),
+                )
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    if (query.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TuneScoutColors.textPlaceholder,
+                        )
+                    }
+                    innerTextField()
+                }
+                if (query.isNotEmpty()) {
+                    IconButton(
+                        onClick = onClear,
+                        modifier = Modifier.size(clearButtonSize),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = stringResource(R.string.ui_clear_search),
+                            tint = TuneScoutColors.textPlaceholder,
+                        )
+                    }
+                }
+            }
+        },
+    )
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_back">Voltar</string>
+    <string name="ui_more_options">Mais opções</string>
+    <string name="ui_play">Tocar</string>
+    <string name="ui_pause">Pausar</string>
+    <string name="ui_skip_next">Próxima música</string>
+    <string name="ui_skip_previous">Música anterior</string>
+    <string name="ui_repeat_on">Repetição ligada</string>
+    <string name="ui_repeat_off">Repetição desligada</string>
+    <string name="ui_clear_search">Limpar busca</string>
+    <string name="ui_search">Buscar</string>
+    <string name="ui_artwork_of">Capa de %1$s</string>
+    <string name="ui_seek_bar">Posição da reprodução</string>
+    <string name="ui_retry">Tentar de novo</string>
+    <string name="ui_loading">Carregando</string>
+</resources>

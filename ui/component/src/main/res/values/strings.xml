@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_back">Back</string>
+    <string name="ui_more_options">More options</string>
+    <string name="ui_play">Play</string>
+    <string name="ui_pause">Pause</string>
+    <string name="ui_skip_next">Next song</string>
+    <string name="ui_skip_previous">Previous song</string>
+    <string name="ui_repeat_on">Repeat is on</string>
+    <string name="ui_repeat_off">Repeat is off</string>
+    <string name="ui_clear_search">Clear search</string>
+    <string name="ui_search">Search</string>
+    <string name="ui_artwork_of">Artwork of %1$s</string>
+    <string name="ui_seek_bar">Playback position</string>
+    <string name="ui_retry">Try again</string>
+    <string name="ui_loading">Loading</string>
+</resources>

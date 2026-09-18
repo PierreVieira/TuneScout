@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="songs_title">Songs</string>
+    <string name="songs_search_placeholder">Search</string>
+    <string name="songs_recently_played">Recently played</string>
+    <string name="songs_empty_title">Nothing played yet</string>
+    <string name="songs_empty_description">Search for a song and tap it to start listening. It will show up here.</string>
+    <string name="songs_no_results_title">No songs found</string>
+    <string name="songs_no_results_description">Try another artist, song or album name.</string>
+    <string name="songs_error_title">Couldn\'t load songs</string>
+    <string name="songs_error_offline">Check your connection and try again.</string>
+    <string name="songs_error_rate_limited">The iTunes catalog is busy right now. Wait a moment and try again.</string>
+    <string name="songs_options_view_album">View album</string>
+</resources>

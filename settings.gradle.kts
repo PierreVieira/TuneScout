@@ -49,6 +49,7 @@ include(":ui:theme")
 include(":ui:component")
 include(":ui:utils")
 
+include(":feature:splash")
 include(":feature:songs")
 include(":feature:album")
 include(":feature:player")
