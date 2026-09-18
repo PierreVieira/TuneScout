@@ -41,6 +41,8 @@ jobs:
 
       - name: Setup Gradle
         uses: ./.github/actions/gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Assert module graph
         run: ./gradlew assertModuleGraph

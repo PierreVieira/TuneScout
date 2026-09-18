@@ -31,14 +31,45 @@ jobs:
 
       - name: Setup Gradle
         uses: ./.github/actions/gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      # Booting a fresh emulator costs minutes on every run. Caching the AVD directory lets the
+      # next run resume from a warm snapshot instead. The key pins every property that would make
+      # the snapshot unusable, so a device change produces a new entry rather than a broken boot.
+      - name: Cache AVD snapshot
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api35-x86_64-pixel_6
+
+      # Only runs on a cache miss: boots the emulator once so the snapshot it leaves behind is
+      # what gets stored. The emulator options must match the test step or the snapshot is rejected.
+      - name: Create AVD and generate snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
 
       # JUnit 6 on device needs API 35+ (Java 17 baseline)
+      # -no-snapshot-save keeps the test run from writing back over the cached snapshot
       - name: Run Compose screen tests and end-to-end flows
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           arch: x86_64
           profile: pixel_6
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: ./gradlew connectedDebugAndroidTest --continue
 

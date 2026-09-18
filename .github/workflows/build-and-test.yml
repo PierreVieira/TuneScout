@@ -25,6 +25,8 @@ jobs:
 
       - name: Setup Gradle
         uses: ./.github/actions/gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest test --continue
@@ -46,6 +48,8 @@ jobs:
 
       - name: Setup Gradle
         uses: ./.github/actions/gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       # Release matters: it is the only variant where R8 runs, so a missing keep rule for
       # kotlinx.serialization or Room surfaces here instead of on a device.

@@ -49,3 +49,5 @@ jobs:
 
       - name: Run Static Analysis
         uses: ./.github/actions/ktlint
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}

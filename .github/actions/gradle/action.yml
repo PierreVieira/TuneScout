@@ -1,5 +1,14 @@
 name: 'Setup Gradle and Java'
 description: 'Sets up JDK 21 and Gradle with caching'
+
+inputs:
+  cache-encryption-key:
+    description: >-
+      Secret used to encrypt the Gradle configuration cache before storing it. Without it the
+      configuration cache is discarded between runs, so every job pays full configuration time.
+    required: false
+    default: ''
+
 runs:
   using: "composite"
   steps:
@@ -11,6 +20,8 @@ runs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-encryption-key: ${{ inputs.cache-encryption-key }}
 
     - name: Make gradlew executable
       shell: bash
