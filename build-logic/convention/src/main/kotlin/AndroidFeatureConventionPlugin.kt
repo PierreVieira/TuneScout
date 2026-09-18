@@ -19,7 +19,9 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             add("implementation", project(":core:model"))
             add("implementation", project(":core:utils"))
             add("implementation", project(":core:navigation"))
-            add("implementation", project(":core:designsystem"))
+            add("implementation", project(":ui:theme"))
+            add("implementation", project(":ui:component"))
+            add("implementation", project(":ui:utils"))
             add("testImplementation", project(":core:testing"))
 
             add("implementation", libs.findLibrary("androidx-lifecycle-viewmodel-compose").get())

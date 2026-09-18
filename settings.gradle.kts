@@ -40,6 +40,10 @@ include(":app")
 include(":core:model")
 include(":core:utils")
 include(":core:navigation")
-include(":core:designsystem")
+include(":core:network")
+
+include(":ui:theme")
+include(":ui:component")
+include(":ui:utils")
 
 include(":tools:ktlint-custom-rules")

@@ -27,5 +27,8 @@ dependencies {
     implementation(projects.core.model)
     implementation(projects.core.utils)
     implementation(projects.core.navigation)
-    implementation(projects.core.designsystem)
+    implementation(projects.core.network)
+    implementation(projects.ui.theme)
+    implementation(projects.ui.component)
+    implementation(projects.ui.utils)
 }

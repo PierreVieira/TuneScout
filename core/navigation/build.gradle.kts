@@ -8,7 +8,7 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.designsystem)
+    implementation(projects.ui.utils)
 
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.koin.androidx.compose)

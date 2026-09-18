@@ -27,12 +27,16 @@ moduleGraphAssert {
     configurations = setOf("api", "implementation")
     // :app is the composition root and the only module allowed to see features.
     // Features never see each other: they talk through :core:navigation routes and shared
-    // :core:* state. Nothing depends on :app.
+    // :core:* state. :ui:* is presentation-only and knows nothing about features or data.
+    // :core:navigation is the one core module that may reach :ui (its command collector is a
+    // composable). Nothing depends on :app.
     restricted = arrayOf(
         ":feature:.* -X> :feature:.*",
         ":core:.* -X> :feature:.*",
-        ":core:.* -X> :app",
-        ":feature:.* -X> :app",
+        ":ui:.* -X> :feature:.*",
+        ":ui:.* -X> :core:.*",
+        ":core:(?!navigation).* -X> :ui:.*",
+        ".* -X> :app",
     )
 }
 

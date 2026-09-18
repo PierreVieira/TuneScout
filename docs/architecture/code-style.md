@@ -255,7 +255,7 @@ private val artworkSize = 44.dp
 private val rowSpacing = 18.dp
 ```
 
-Enforced by the custom ktlint rule `tunescout-style:top-level-val-blank-line`. It is scoped to *private* top-level properties — public top-level `val`s (e.g. the color palettes in `core/designsystem`) may keep blank lines between groups.
+Enforced by the custom ktlint rule `tunescout-style:top-level-val-blank-line`. It is scoped to *private* top-level properties — public top-level `val`s (e.g. the color palettes in `ui/theme`) may keep blank lines between groups.
 
 ## When-Entry Bodies
 

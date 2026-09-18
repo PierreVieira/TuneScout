@@ -1,7 +1,7 @@
 package com.quare.tunescout.core.navigation
 
 import androidx.compose.runtime.Composable
-import com.quare.tunescout.core.designsystem.utils.ActionCollector
+import com.quare.tunescout.ui.utils.ActionCollector
 import org.koin.compose.koinInject
 
 @Composable

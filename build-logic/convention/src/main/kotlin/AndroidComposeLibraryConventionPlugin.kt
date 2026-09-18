@@ -6,7 +6,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
 /**
- * Compose on top of [AndroidLibraryConventionPlugin]: used by core:designsystem directly and by
+ * Compose on top of [AndroidLibraryConventionPlugin]: used by the ui:* modules directly and by
  * every feature through [AndroidFeatureConventionPlugin].
  */
 class AndroidComposeLibraryConventionPlugin : Plugin<Project> {

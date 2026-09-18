@@ -37,14 +37,19 @@ app/                 composition root: Koin modules, MainActivity, NavDisplay
 core/
   model/             domain models, plain Kotlin
   utils/             coroutine helpers, dispatchers
-  navigation/        routes (NavKey) and the Navigator event bus
-  designsystem/      theme and shared composables
+  navigation/        routes (NavKey), the Navigator event bus and the back stack controller
+  network/           iTunes Search API behind ITunesRemoteDataSource (Ktor)
+ui/
+  theme/             colors, typography, TuneScoutTheme
+  component/         shared composables (artwork, rows, buttons)
+  utils/             Compose helpers (ActionCollector)
 feature/
   ...                one module per screen, each with data / domain / presentation
 tools/
   ktlint-custom-rules/
 ```
 
-Features never depend on each other and core never depends on a feature; only `app` sees
-features. These rules are enforced at build time by `assertModuleGraph`. Conventions for
+Features never depend on each other, core never depends on a feature, `ui` knows nothing about
+features or data, and only `app` sees features. These rules are enforced at build time by
+`assertModuleGraph`. Conventions for
 contributors (and for AI assistants) live under [docs/](docs/ai_agents.md).

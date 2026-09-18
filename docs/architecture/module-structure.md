@@ -7,12 +7,15 @@ app/                     # Android application: composition root (Koin appModule
 core/
 ├── model/               # Domain models shared across features (Song, Album) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider — pure JVM
-├── network/             # Ktor client, ITunesApi interface + implementation, DTOs (internal)
+├── network/             # ITunesRemoteDataSource interface + Ktor implementation, DTOs (internal)
 ├── database/            # Room database, DAOs, entities
-├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, routes
-├── designsystem/        # TuneScoutTheme, colors, shared composables
+├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, BackStackController, routes
 ├── playback/            # Playback interface over Media3 ExoPlayer
 └── testing/             # Test helpers shared by feature tests (test-only dependency)
+ui/
+├── theme/               # TuneScoutTheme, colors, typography
+├── component/           # Shared composables (Artwork, song rows, buttons)
+└── utils/               # Compose helpers (ActionCollector)
 feature/
 ├── splash/
 ├── songs/
@@ -73,6 +76,8 @@ interfaces has no `presentation/`).
 
 - Features never depend on features.
 - Core never depends on features.
+- `:ui:*` is presentation only: it never depends on features or on core.
+- Core never depends on `:ui:*`, except `:core:navigation`, whose command collector is a composable.
 - Only `:app` depends on features; nothing depends on `:app`.
 
 Shared things live in core: domain models (`core/model`), `NavKey` routes and the `Navigator`
@@ -86,12 +91,14 @@ root `build.gradle.kts`:
 restricted = arrayOf(
     ":feature:.* -X> :feature:.*",
     ":core:.* -X> :feature:.*",
-    ":core:.* -X> :app",
-    ":feature:.* -X> :app",
+    ":ui:.* -X> :feature:.*",
+    ":ui:.* -X> :core:.*",
+    ":core:(?!navigation).* -X> :ui:.*",
+    ".* -X> :app",
 )
 ```
 
 Only the `api` and `implementation` configurations count, so a feature's tests may depend on
 `:core:testing`. A new dependency that breaks a rule means the code is in the wrong module, not that the
-rule needs an exception: move the shared piece down to a `:core:*` module. See
+rule needs an exception: move the shared piece down to a `:core:*` or `:ui:*` module. See
 [code-quality.md](../code-quality.md) for how to run the check.
