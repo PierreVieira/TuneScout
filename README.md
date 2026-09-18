@@ -3,23 +3,17 @@
 Search the iTunes catalog, play 30-second previews, and pick up where you left off. TuneScout is a
 native Android app written for the Music AI Android code challenge.
 
-<p align="center">
-  <img src="docs/screenshots/splash.png" width="270" alt="Splash" />
-  <img src="docs/screenshots/songs.png" width="270" alt="Recently played" />
-  <img src="docs/screenshots/search.png" width="270" alt="Search results" />
-</p>
+| Splash | Recently played | Search |
+| :--: | :--: | :--: |
+| <img src="docs/screenshots/splash.png" width="260" alt="The splash screen, a note over the app's gradient"> | <img src="docs/screenshots/songs.png" width="260" alt="Recently played songs on the home screen"> | <img src="docs/screenshots/search.png" width="260" alt="Search results for daft punk, paged as you scroll"> |
 
-<p align="center">
-  <img src="docs/screenshots/player.png" width="270" alt="Player" />
-  <img src="docs/screenshots/options.png" width="270" alt="Song options" />
-  <img src="docs/screenshots/album.png" width="270" alt="Album" />
-</p>
+| Player | Song options | Album |
+| :--: | :--: | :--: |
+| <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet over the player"> | <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks"> |
 
-<p align="center">
-  <img src="docs/screenshots/notification.png" width="290" alt="Media controls in the notification shade" />
-  <br />
-  <em>Media controls in the notification shade and on the lock screen</em>
-</p>
+| Media controls |
+| :--: |
+| <img src="docs/screenshots/notification.png" width="360" alt="Media controls in the notification shade and on the lock screen"> |
 
 The six screens above are generated from the app's own composables, under Robolectric, by
 `./scripts/screenshots.sh`; the notification shade is a device capture, since it is not a
