@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -14,33 +14,21 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.quare.tunescout.core.navigation.NavigationCommand
-import com.quare.tunescout.core.navigation.Navigator
+import com.quare.tunescout.core.navigation.BackStackController
+import com.quare.tunescout.core.navigation.NavigationCommandCollector
 import com.quare.tunescout.core.navigation.route.SongsRoute
-import org.koin.compose.koinInject
 
 @Composable
-fun TuneScoutNavDisplay(navigator: Navigator = koinInject()) {
+fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
     val backStack = rememberNavBackStack(SongsRoute)
+    val backStackController = remember { BackStackController(backStack = backStack) }
 
-    LaunchedEffect(navigator) {
-        navigator.commands.collect { command ->
-            when (command) {
-                is NavigationCommand.Navigate -> backStack.add(command.route)
-
-                is NavigationCommand.ReplaceTop -> {
-                    backStack.removeLastOrNull()
-                    backStack.add(command.route)
-                }
-
-                NavigationCommand.Back -> backStack.removeLastOrNull()
-            }
-        }
-    }
+    NavigationCommandCollector(backStackController = backStackController)
 
     NavDisplay(
         backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
+        modifier = modifier,
+        onBack = backStackController::navigateBack,
         entryDecorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),

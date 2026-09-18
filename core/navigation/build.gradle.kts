@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.tunescout.android.library)
+    alias(libs.plugins.tunescout.android.library.compose)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -8,6 +8,9 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.designsystem)
+
     implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.koin.androidx.compose)
     implementation(libs.kotlinx.serialization.json)
 }
