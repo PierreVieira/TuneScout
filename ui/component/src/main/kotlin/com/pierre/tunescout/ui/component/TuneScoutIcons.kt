@@ -1,23 +1,39 @@
 package com.pierre.tunescout.ui.component
 
-import androidx.annotation.DrawableRes
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.LibraryMusic
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.ui.graphics.vector.ImageVector
 
 object TuneScoutIcons {
-    @DrawableRes val search: Int = R.drawable.ic_search
+    val search: ImageVector get() = Icons.Rounded.Search
 
-    @DrawableRes val moreMenu: Int = R.drawable.ic_more_menu
+    val clear: ImageVector get() = Icons.Rounded.Close
 
-    @DrawableRes val chevronLeft: Int = R.drawable.ic_chevron_left
+    val moreMenu: ImageVector get() = Icons.Rounded.MoreVert
 
-    @DrawableRes val repeat: Int = R.drawable.ic_repeat
+    val arrowBack: ImageVector get() = Icons.AutoMirrored.Rounded.ArrowBack
 
-    @DrawableRes val skip: Int = R.drawable.ic_skip
+    val play: ImageVector get() = Icons.Rounded.PlayArrow
 
-    @DrawableRes val play: Int = R.drawable.ic_play
+    val pause: ImageVector get() = Icons.Rounded.Pause
 
-    @DrawableRes val pause: Int = R.drawable.ic_pause
+    val skipPrevious: ImageVector get() = Icons.Rounded.SkipPrevious
 
-    @DrawableRes val musicList: Int = R.drawable.ic_music_list
+    val skipNext: ImageVector get() = Icons.Rounded.SkipNext
 
-    @DrawableRes val viewAlbum: Int = R.drawable.ic_view_album
+    val repeat: ImageVector get() = Icons.Rounded.Repeat
+
+    val musicList: ImageVector get() = Icons.AutoMirrored.Rounded.QueueMusic
+
+    val viewAlbum: ImageVector get() = Icons.Rounded.LibraryMusic
 }

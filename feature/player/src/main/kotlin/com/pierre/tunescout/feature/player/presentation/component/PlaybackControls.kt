@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.player.presentation.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -9,73 +10,97 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.component.PlayPauseButton
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
-private val controlsGap = 28.dp
-private val skipButtonSize = 48.dp
-private val skipIconSize = 36.dp
-private const val NEXT_ROTATION = 180f
+private val buttonSize = 48.dp
+private val skipIconSize = 44.dp
+private val repeatIconSize = 24.dp
 
 @Composable
 internal fun PlaybackControls(
     isPlaying: Boolean,
     hasPrevious: Boolean,
     hasNext: Boolean,
+    isRepeatEnabled: Boolean,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
+    onRepeatClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(controlsGap, Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SkipButton(
-            contentDescription = stringResource(R.string.ui_skip_previous),
-            enabled = hasPrevious,
-            rotation = 0f,
-            onClick = onPreviousClick,
-        )
         PlayPauseButton(
             isPlaying = isPlaying,
             onClick = onPlayPauseClick,
         )
         SkipButton(
+            icon = TuneScoutIcons.skipPrevious,
+            contentDescription = stringResource(R.string.ui_skip_previous),
+            enabled = hasPrevious,
+            onClick = onPreviousClick,
+        )
+        SkipButton(
+            icon = TuneScoutIcons.skipNext,
             contentDescription = stringResource(R.string.ui_skip_next),
             enabled = hasNext,
-            rotation = NEXT_ROTATION,
             onClick = onNextClick,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        RepeatButton(
+            isEnabled = isRepeatEnabled,
+            onClick = onRepeatClick,
         )
     }
 }
 
 @Composable
 private fun SkipButton(
+    icon: ImageVector,
     contentDescription: String,
     enabled: Boolean,
-    rotation: Float,
     onClick: () -> Unit,
 ) {
     IconButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = Modifier.size(skipButtonSize),
+        modifier = Modifier.size(buttonSize),
     ) {
         Icon(
-            painter = painterResource(TuneScoutIcons.skip),
+            imageVector = icon,
             contentDescription = contentDescription,
             tint = if (enabled) TuneScoutColors.textPrimary else TuneScoutColors.white25,
-            modifier = Modifier
-                .size(skipIconSize)
-                .rotate(rotation),
+            modifier = Modifier.size(skipIconSize),
+        )
+    }
+}
+
+@Composable
+private fun RepeatButton(
+    isEnabled: Boolean,
+    onClick: () -> Unit,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.size(buttonSize),
+    ) {
+        Icon(
+            imageVector = TuneScoutIcons.repeat,
+            contentDescription = stringResource(
+                if (isEnabled) R.string.ui_repeat_on else R.string.ui_repeat_off,
+            ),
+            tint = if (isEnabled) TuneScoutColors.textPrimary else TuneScoutColors.white25,
+            modifier = Modifier.size(repeatIconSize),
         )
     }
 }

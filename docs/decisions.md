@@ -2,6 +2,61 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — README screenshots
+
+**The README's screenshots are generated, not captured.** `./scripts/screenshots.sh` renders the
+six screens from their own `*Content` composables under Robolectric, inside a phone mockup drawn by
+`store-screenshots`, under an English title and description, and rewrites `docs/screenshots/`. Hand-captured shots drifted the moment a
+screen changed and carried whatever the device had on it — a clock, a carrier, someone's
+notifications. Generated ones are reproducible, consistent with each other, and regenerating them
+is part of the change that moved the screen. Cost: the images now depend on a build task, and the
+fixtures behind them are one more thing to keep plausible.
+
+**The generators live in `:tools:screenshots`, not in each feature.** The library's base class is
+Robolectric, which is JUnit 4, and this project is JUnit 6 everywhere. A module of its own keeps
+the Vintage engine and Robolectric off the feature modules' test runtimes at the cost of the
+fixtures sitting one module away from the screens they render.
+
+**Album artwork is committed, not fetched.** Robolectric has no network, so three covers live in
+the generators' test resources and a `FakeImageLoaderEngine` serves them by album. The fixtures
+still carry real `Artwork` URLs, so the per-surface resizing runs for real. Cost: ~190 KB of
+third-party cover art in the repository.
+
+**The notification shot stays a manual capture.** The media controls are a system view in the
+notification shade, which no Compose test can render. It is committed once, cropped to the media
+card so it carries nothing personal, and `updateReadmeScreenshots` never touches it.
+
+## 2026-09-18 — Design and system bars
+
+**The screens follow the Android Phone frames of the design file, not the iOS ones.** The file
+carries both; the app had been built from the iOS frames. The top bar now puts the title next to
+a back arrow instead of centring it between two circular actions, the overflow menu is the
+vertical `⋮`, the player is titled "Now playing" (the iOS frames title it with the album) and
+lays its transport controls out from the start edge with repeat pushed to the end, and the album
+top bar carries the album title.
+
+**Every icon comes from `material-icons-extended`.** The app used to carry nine vectors traced
+from the design file; they are all Material glyphs, so they are now `Icons.Rounded.*` and the
+drawable folder is gone. Back is `Icons.AutoMirrored.Rounded.ArrowBack`, so it mirrors itself in
+RTL, and previous/next are two glyphs instead of one rotated 180 degrees. The artifact is frozen
+at 1.7.8 and ships around two thousand icons, which is the cost: R8 strips the unused ones from
+the release build, and if the library is ever dropped, `TuneScoutIcons` is the single file to
+change — the same containment `ui:component` already gives `compose-shimmer`.
+
+**The player lays itself out from the space it has.** `BoxWithConstraints` picks between the
+designed stacked layout and a side-by-side one when the window is wider than it is tall, and the
+artwork is clamped to what is left after the title, the timeline and the controls. The design file
+has no landscape frame, and the fixed 264 dp artwork plus its 100 dp of head room did not fit in a
+landscape phone, so the controls fell off the screen. Cost: two layouts to keep in step, which is
+why both share `PlayerDetails`.
+
+**Screens pad themselves with `safeDrawingPadding`.** Every screen root applies it, instead of
+each component reaching for `statusBarsPadding` or `navigationBarsPadding`. With edge to edge
+enforced from API 35 the previous mix left content under the gesture pill and, in landscape,
+under the navigation bar on the side. Cost: lists stop at the bars instead of scrolling behind
+them; the gain is that a screen can never forget an inset. The Songs screen gets keyboard
+insets from the same modifier, and the activity declares `adjustResize`.
+
 ## 2026-09-18 — Splash
 
 **The system splash screen is themed to continue into the app splash.** Since API 31 every cold

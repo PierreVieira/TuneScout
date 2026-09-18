@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -42,7 +41,7 @@ fun Artwork(
         contentAlignment = Alignment.Center,
     ) {
         Icon(
-            painter = painterResource(TuneScoutIcons.musicList),
+            imageVector = TuneScoutIcons.musicList,
             contentDescription = null,
             tint = TuneScoutColors.elementPlaceholder,
             modifier = Modifier.size(placeholderIconSize),

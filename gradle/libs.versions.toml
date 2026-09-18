@@ -39,6 +39,7 @@ compose-shimmer = "1.5.0"
 koin = "4.2.2"
 ktor = "3.6.0"
 mockk = "1.14.11"
+store-screenshots = "1.6.0"
 turbine = "1.2.1"
 truth = "1.4.5"
 
@@ -56,7 +57,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "androidx-compose-bom" }
 androidx-compose-foundation = { module = "androidx.compose.foundation:foundation" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
-androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
 androidx-compose-runtime = { module = "androidx.compose.runtime:runtime" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
@@ -110,6 +111,7 @@ compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.
 # Coil
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coil-network-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+coil-test = { module = "io.coil-kt.coil3:coil-test", version.ref = "coil" }
 
 # Testing
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit-bom" }
@@ -117,6 +119,7 @@ junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api" }
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine" }
 android-junit5-test-core = { module = "de.mannodermaus.junit5:android-test-core", version.ref = "android-junit5" }
 android-junit5-test-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "android-junit5" }
 android-junit5-test-compose = { module = "de.mannodermaus.junit5:android-test-compose", version.ref = "android-junit5" }
@@ -125,6 +128,7 @@ truth = { module = "com.google.truth:truth", version.ref = "truth" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+store-screenshots = { module = "io.github.lucianosantosdev:storescreenshots-library", version.ref = "store-screenshots" }
 
 # Ktlint custom rule set
 ktlint-cli-ruleset-core = { module = "com.pinterest.ktlint:ktlint-cli-ruleset-core", version.ref = "ktlint" }

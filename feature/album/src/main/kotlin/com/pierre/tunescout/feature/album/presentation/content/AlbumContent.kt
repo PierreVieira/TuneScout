@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,9 +45,13 @@ fun AlbumContent(
     onEvent: (AlbumUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .safeDrawingPadding(),
+    ) {
         TopBar(
-            title = "",
+            title = (uiState as? AlbumUiState.Loaded)?.album?.title.orEmpty(),
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
         )
         when (uiState) {

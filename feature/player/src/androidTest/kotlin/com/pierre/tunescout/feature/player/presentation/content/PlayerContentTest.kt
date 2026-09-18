@@ -26,16 +26,16 @@ class PlayerContentTest {
     private val events = mutableListOf<PlayerUiEvent>()
 
     @Test
-    fun givenLoadedSongShowsTitleArtistAlbumAndTimeline() = compose.use {
+    fun givenLoadedSongShowsTitleArtistAndTimeline() = compose.use {
         setContent {
             TuneScoutTheme {
                 PlayerContent(uiState = loaded(), onEvent = events::add)
             }
         }
 
+        onNodeWithText("Now playing").assertIsDisplayed()
         onNodeWithText("Get Lucky").assertIsDisplayed()
         onNodeWithText("Daft Punk").assertIsDisplayed()
-        onNodeWithText("Random Access Memories").assertIsDisplayed()
         onNodeWithText("0:05").assertIsDisplayed()
         onNodeWithText("-0:25").assertIsDisplayed()
         onNodeWithContentDescription("Playback position").assertIsDisplayed()
