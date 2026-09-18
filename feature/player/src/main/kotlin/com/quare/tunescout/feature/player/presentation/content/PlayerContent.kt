@@ -19,11 +19,11 @@ import androidx.compose.ui.unit.dp
 import com.quare.tunescout.feature.player.R
 import com.quare.tunescout.feature.player.presentation.component.PlaybackControls
 import com.quare.tunescout.feature.player.presentation.component.PlaybackTimeline
+import com.quare.tunescout.feature.player.presentation.component.PlayerSkeleton
 import com.quare.tunescout.feature.player.presentation.component.SongHeading
 import com.quare.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.quare.tunescout.feature.player.presentation.model.PlayerUiState
 import com.quare.tunescout.ui.component.Artwork
-import com.quare.tunescout.ui.component.LoadingIndicator
 import com.quare.tunescout.ui.component.StateMessage
 import com.quare.tunescout.ui.component.TopBar
 import com.quare.tunescout.ui.component.TopBarAction
@@ -60,7 +60,11 @@ fun PlayerContent(
             },
         )
         when (uiState) {
-            PlayerUiState.Loading -> LoadingIndicator(modifier = Modifier.padding(top = artworkTopSpacing))
+            PlayerUiState.Loading -> PlayerSkeleton(
+                artworkTopSpacing = artworkTopSpacing,
+                artworkSize = artworkSize,
+                artworkCornerRadius = artworkCornerRadius,
+            )
 
             PlayerUiState.NotFound -> StateMessage(
                 title = stringResource(R.string.player_not_found_title),

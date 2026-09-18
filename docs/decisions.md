@@ -2,6 +2,14 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Loading states
+
+**Skeletons with shimmer instead of spinners.** Every loading state (search results, next page,
+player, album) renders the shape of the content it is waiting for, and artwork shimmers until
+Coil delivers the bitmap. The effect comes from `compose-shimmer`, but the dependency lives only
+in `ui:component` behind `Modifier.shimmer()` and `ShimmerBox`, so a future swap touches one
+file. Skeleton containers carry a "Loading" content description for screen readers.
+
 ## 2026-09-18 — Data
 
 **Paging by growing limit.** The iTunes Search API has no offset or cursor and caps `limit` at

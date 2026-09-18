@@ -22,10 +22,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.quare.tunescout.core.model.Album
 import com.quare.tunescout.feature.album.R
+import com.quare.tunescout.feature.album.presentation.component.AlbumSkeleton
 import com.quare.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.quare.tunescout.feature.album.presentation.model.AlbumUiState
 import com.quare.tunescout.ui.component.Artwork
-import com.quare.tunescout.ui.component.LoadingIndicator
 import com.quare.tunescout.ui.component.SongRow
 import com.quare.tunescout.ui.component.StateMessage
 import com.quare.tunescout.ui.component.TopBar
@@ -50,7 +50,11 @@ fun AlbumContent(
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
         )
         when (uiState) {
-            AlbumUiState.Loading -> LoadingIndicator(modifier = Modifier.padding(top = TuneScoutSpacing.extraLarge))
+            AlbumUiState.Loading -> AlbumSkeleton(
+                artworkSize = artworkSize,
+                artworkCornerRadius = artworkCornerRadius,
+                rowArtworkSize = rowArtworkSize,
+            )
 
             AlbumUiState.Error -> StateMessage(
                 title = stringResource(R.string.album_error_title),

@@ -11,5 +11,6 @@ dependencies {
 
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.coil.compose)
+    implementation(libs.compose.shimmer)
     runtimeOnly(libs.coil.network.ktor)
 }

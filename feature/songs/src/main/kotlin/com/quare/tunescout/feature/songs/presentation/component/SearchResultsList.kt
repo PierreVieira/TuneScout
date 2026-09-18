@@ -15,10 +15,12 @@ import com.quare.tunescout.core.model.Song
 import com.quare.tunescout.core.network.RemoteException
 import com.quare.tunescout.feature.songs.R
 import com.quare.tunescout.feature.songs.presentation.model.SongsUiEvent
-import com.quare.tunescout.ui.component.LoadingIndicator
+import com.quare.tunescout.ui.component.SongListSkeleton
 import com.quare.tunescout.ui.component.SongRow
 import com.quare.tunescout.ui.component.StateMessage
 import com.quare.tunescout.ui.theme.TuneScoutSpacing
+
+private const val APPEND_SKELETON_ROWS = 2
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +48,7 @@ internal fun SearchResultsList(
         ) {
             when {
                 refreshState is LoadState.Loading && searchResults.itemCount == 0 -> item(key = "loading") {
-                    LoadingIndicator()
+                    SongListSkeleton()
                 }
 
                 refreshState is LoadState.Error -> item(key = "error") {
@@ -76,7 +78,7 @@ internal fun SearchResultsList(
                 )
             }
             when (appendState) {
-                is LoadState.Loading -> item(key = "appending") { LoadingIndicator() }
+                is LoadState.Loading -> item(key = "appending") { SongListSkeleton(rows = APPEND_SKELETON_ROWS) }
 
                 is LoadState.Error -> item(key = "append-error") {
                     ErrorMessage(error = appendState.error, onRetry = searchResults::retry)
