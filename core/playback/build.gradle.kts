@@ -8,4 +8,11 @@ android {
 
 dependencies {
     api(projects.core.model)
+    implementation(projects.core.database)
+    implementation(projects.core.utils)
+
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.koin.android)
+
+    testImplementation(projects.core.testing)
 }
