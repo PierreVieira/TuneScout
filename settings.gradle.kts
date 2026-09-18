@@ -43,11 +43,13 @@ include(":core:navigation")
 include(":core:network")
 include(":core:database")
 include(":core:testing")
+include(":core:playback")
 
 include(":ui:theme")
 include(":ui:component")
 include(":ui:utils")
 
 include(":feature:songs")
+include(":feature:album")
 
 include(":tools:ktlint-custom-rules")
