@@ -51,5 +51,6 @@ include(":ui:utils")
 
 include(":feature:songs")
 include(":feature:album")
+include(":feature:player")
 
 include(":tools:ktlint-custom-rules")
