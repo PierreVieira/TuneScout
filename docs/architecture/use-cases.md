@@ -18,7 +18,7 @@ class ObserveRecentlyPlayedUseCase(
 
 Koin binding:
 ```kotlin
-factoryOf(::ObserveRecentlyPlayedUseCase) { bind<ObserveRecentlyPlayed>() }
+factoryOf(::ObserveRecentlyPlayedUseCase).bind<ObserveRecentlyPlayed>()
 ```
 
 ### Pattern B — concrete class (for complex use cases that don't need an abstraction)

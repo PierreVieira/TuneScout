@@ -1,0 +1,34 @@
+package com.pierre.tunescout.di
+
+import com.pierre.tunescout.core.navigation.route.AlbumRoute
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.feature.album.presentation.viewmodel.AlbumViewModel
+import com.pierre.tunescout.feature.player.presentation.viewmodel.PlayerViewModel
+import com.pierre.tunescout.feature.songs.presentation.viewmodel.SongOptionsViewModel
+import kotlinx.coroutines.flow.Flow
+import org.junit.jupiter.api.Test
+import org.koin.dsl.module
+import org.koin.test.verify.definition
+import org.koin.test.verify.injectedParameters
+import org.koin.test.verify.verify
+
+class AppModulesTest {
+    /**
+     * Walks every constructor reachable from [appModules] and fails when a parameter has no
+     * matching definition. The modules are merged into one, because verifying them one by one
+     * would hide the cross-module edges (a feature reaching into `core:network`, for instance).
+     */
+    @Test
+    fun `WHEN verifying the graph THEN every constructor dependency has a definition`() {
+        module { includes(appModules) }.verify(
+            // Built inside their definitions from another dependency, not resolved by type.
+            extraTypes = listOf(Flow::class),
+            injections = injectedParameters(
+                definition<AlbumViewModel>(AlbumRoute::class),
+                definition<PlayerViewModel>(PlayerRoute::class),
+                definition<SongOptionsViewModel>(SongOptionsRoute::class),
+            ),
+        )
+    }
+}

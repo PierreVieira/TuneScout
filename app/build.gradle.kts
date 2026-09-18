@@ -41,5 +41,6 @@ dependencies {
     implementation(projects.feature.player)
     implementation(projects.feature.album)
 
+    testImplementation(libs.koin.test)
     androidTestImplementation(projects.core.testing)
 }

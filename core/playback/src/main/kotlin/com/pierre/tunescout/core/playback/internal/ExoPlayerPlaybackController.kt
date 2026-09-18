@@ -1,6 +1,6 @@
 package com.pierre.tunescout.core.playback.internal
 
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
@@ -143,7 +143,7 @@ private fun Song.toMediaItem(): MediaItem = MediaItem
             .setTitle(title)
             .setArtist(artistName)
             .setAlbumTitle(albumTitle)
-            .setArtworkUri(Uri.parse(artwork.mediumUrl))
+            .setArtworkUri(artwork.mediumUrl.toUri())
             .build(),
     ).build()
 

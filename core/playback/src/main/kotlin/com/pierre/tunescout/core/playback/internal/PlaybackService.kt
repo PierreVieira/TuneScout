@@ -2,6 +2,8 @@ package com.pierre.tunescout.core.playback.internal
 
 import android.app.PendingIntent
 import android.content.Intent
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
@@ -13,6 +15,7 @@ internal class PlaybackService : MediaSessionService() {
     private val player: ExoPlayer by inject()
     private var mediaSession: MediaSession? = null
 
+    @OptIn(UnstableApi::class)
     override fun onCreate() {
         super.onCreate()
         setMediaNotificationProvider(
@@ -27,6 +30,7 @@ internal class PlaybackService : MediaSessionService() {
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
 
+    @OptIn(UnstableApi::class)
     override fun onTaskRemoved(rootIntent: Intent?) {
         pauseAllPlayersAndStopSelf()
     }

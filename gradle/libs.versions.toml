@@ -1,6 +1,6 @@
 [versions]
 # Build tooling
-agp = "9.4.0"
+agp = "9.4.1"
 kotlin = "2.4.20"
 ksp = "2.3.11"
 ktlint = "1.8.0"
@@ -34,7 +34,7 @@ kotlinx-coroutines = "1.11.0"
 kotlinx-serialization = "1.11.0"
 
 # Third party
-coil = "3.6.2"
+coil = "3.6.3"
 compose-shimmer = "1.5.0"
 koin = "4.2.2"
 ktor = "3.6.0"
