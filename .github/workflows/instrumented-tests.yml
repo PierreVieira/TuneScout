@@ -14,9 +14,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # The device runs one module's tests at a time, so that phase grows with every module and is the
+  # longest part of this job. Each shard boots its own emulator and takes every other module with
+  # a src/androidTest directory; scripts/instrumented_shard.sh deals them out, so nothing here
+  # needs editing when a module is added. Keep SHARD_COUNT equal to the length of matrix.shard.
   instrumented-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    env:
+      SHARD_COUNT: 2
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -36,8 +46,8 @@ jobs:
 
       # Compiling before the emulator exists gives Gradle all four cores, and a compilation error
       # fails the job without paying for the SDK download and the boot.
-      - name: Assemble the app and the test APKs
-        run: ./gradlew :app:assembleDebug assembleDebugAndroidTest
+      - name: Assemble the shard's APKs
+        run: ./gradlew $(./scripts/instrumented_shard.sh assemble ${{ matrix.shard }} "$SHARD_COUNT")
 
       # Caching the AVD was measured on this workflow and dropped: it saved about 20s, inside the
       # run-to-run noise, while its 1.3 GB entry crowded the repository's 10 GB cache budget and
@@ -49,16 +59,12 @@ jobs:
           api-level: 35
           arch: x86_64
           profile: pixel_6
-          # The APKs are already built, so Gradle only drives the device from here on and the
-          # emulator can have the cores the default of 2 leaves idle. Compose renders on the CPU
-          # under swiftshader, which makes the test phase scale with them.
-          cores: 3
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest --continue
+          script: ./gradlew $(./scripts/instrumented_shard.sh connected ${{ matrix.shard }} "$SHARD_COUNT") --continue
 
       - name: Upload instrumented test reports
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: instrumented-test-reports
+          name: instrumented-test-reports-shard-${{ matrix.shard }}
           path: '**/build/reports/androidTests/**'
