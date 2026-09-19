@@ -13,7 +13,7 @@ native Android app written for the Music AI Android code challenge.
 
 | Queue |
 | :--: |
-| <img src="docs/screenshots/queue.png" width="260" alt="The queue, with songs added by hand playing before the rest of the album"> |
+| <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> |
 
 | Media controls |
 | :--: |
@@ -31,7 +31,8 @@ composable. See [docs/screenshots.md](docs/screenshots.md).
 - **Queue** songs and whole albums by hand, either right after the current song ("Play next") or
   at the end of what you queued ("Add to queue"). What you add plays before the rest of the album
   and survives starting something else, the way Spotify's queue does. The queue screen reorders by
-  drag, removes by tap, and jumps to any song.
+  drag, removes by tap, and jumps to any song. It opens as a sheet from the player or the mini
+  player.
 - **Pick up where you left off**: closing the app keeps the queue, the song and its position, and
   reopening restores all three, paused, from the local database.
 - **Recently played** is the home screen. It is stored locally, so it works offline and survives

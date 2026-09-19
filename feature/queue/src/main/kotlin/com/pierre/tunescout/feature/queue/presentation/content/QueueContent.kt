@@ -2,10 +2,9 @@ package com.pierre.tunescout.feature.queue.presentation.content
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -13,9 +12,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.feature.queue.R
 import com.pierre.tunescout.feature.queue.presentation.component.QueueRow
@@ -23,8 +22,6 @@ import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.StateMessage
-import com.pierre.tunescout.ui.component.TopBar
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import sh.calvin.reorderable.ReorderableItem
@@ -39,14 +36,10 @@ fun QueueContent(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .safeDrawingPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .fillMaxWidth()
+            .navigationBarsPadding(),
     ) {
-        TopBar(
-            title = stringResource(R.string.queue_title),
-            onBackClick = { onEvent(QueueUiEvent.OnBackClicked) },
-        )
+        SheetHeading(contextTitle = uiState.contextTitle)
         if (uiState.isEmpty) {
             StateMessage(
                 title = stringResource(R.string.queue_empty_title),
@@ -54,6 +47,30 @@ fun QueueContent(
             )
         } else {
             QueueList(uiState = uiState, onEvent = onEvent)
+        }
+    }
+}
+
+@Composable
+private fun SheetHeading(contextTitle: String?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = TuneScoutSpacing.screen, vertical = TuneScoutSpacing.small),
+    ) {
+        Text(
+            text = stringResource(R.string.queue_title),
+            style = MaterialTheme.typography.titleLarge,
+            color = TuneScoutColors.textPrimary,
+        )
+        if (contextTitle != null) {
+            Text(
+                text = stringResource(R.string.queue_playing_from, contextTitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = TuneScoutColors.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -72,22 +89,18 @@ private fun QueueList(
         }
     }
     val reorderable = uiState.queuedByUser + uiState.upNext
-    val nowPlayingLabel = uiState.contextTitle
-        ?.let { title -> stringResource(R.string.queue_playing_from, title) }
-        ?: stringResource(R.string.queue_now_playing)
     val upNextLabel = uiState.contextTitle
         ?.let { title -> stringResource(R.string.queue_next_from, title) }
         ?: stringResource(R.string.queue_next_up)
     val queuedLabel = stringResource(R.string.queue_next_in_queue)
+    val nowPlayingLabel = stringResource(R.string.queue_now_playing)
     LazyColumn(
         state = lazyListState,
-        modifier = Modifier
-            .readableWidth()
-            .fillMaxHeight(),
+        modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(
             start = TuneScoutSpacing.screen,
             end = TuneScoutSpacing.medium,
-            bottom = TuneScoutSpacing.extraLarge,
+            bottom = TuneScoutSpacing.large,
         ),
     ) {
         uiState.nowPlaying?.let { entry ->

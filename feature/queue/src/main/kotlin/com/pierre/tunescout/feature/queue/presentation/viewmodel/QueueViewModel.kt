@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.QueueSource
-import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.stateIn
 
 class QueueViewModel(
     private val playbackController: PlaybackController,
-    private val navigator: Navigator,
 ) : ViewModel() {
     private val emptyUiState = QueueUiState(
         contextTitle = null,
@@ -33,7 +31,6 @@ class QueueViewModel(
         is QueueUiEvent.OnEntryClicked -> playbackController.skipTo(event.entryId)
         is QueueUiEvent.OnRemoveClicked -> playbackController.removeFromQueue(event.entryId)
         is QueueUiEvent.OnEntryMoved -> move(from = event.fromEntryId, to = event.toEntryId)
-        QueueUiEvent.OnBackClicked -> navigator.navigateBack()
     }
 
     private fun move(

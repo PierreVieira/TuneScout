@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.QueueSource
-import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
@@ -26,7 +25,6 @@ class QueueViewModelTest {
     private lateinit var viewModel: QueueViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var playbackController: PlaybackController
-    private lateinit var navigator: Navigator
 
     @Test
     fun `GIVEN songs queued by hand WHEN observing THEN they come before the rest of the album`() =
@@ -116,18 +114,6 @@ class QueueViewModelTest {
             verify(exactly = 0) { playbackController.moveInQueue(any(), any()) }
         }
 
-    @Test
-    fun `WHEN clicking back THEN navigates back`() = runTest(mainDispatcher.dispatcher) {
-        // Given
-        prepareScenario(playback = queuedOverAlbum())
-
-        // When
-        viewModel.onEvent(QueueUiEvent.OnBackClicked)
-
-        // Then
-        verify { navigator.navigateBack() }
-    }
-
     private fun queuedOverAlbum(): PlaybackState = playbackState(
         entries = queueEntries(listOf(song(id = 1))) +
             queueEntries(listOf(song(id = 9)), source = QueueSource.UserQueue) +
@@ -141,8 +127,7 @@ class QueueViewModelTest {
         playbackController = mockk(relaxUnitFun = true) {
             every { state } returns playbackStateFlow
         }
-        navigator = mockk(relaxUnitFun = true)
-        viewModel = QueueViewModel(playbackController = playbackController, navigator = navigator)
+        viewModel = QueueViewModel(playbackController = playbackController)
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
     }

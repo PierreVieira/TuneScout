@@ -13,6 +13,4 @@ sealed interface QueueUiEvent {
         val fromEntryId: String,
         val toEntryId: String,
     ) : QueueUiEvent
-
-    data object OnBackClicked : QueueUiEvent
 }

@@ -21,7 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -30,6 +30,7 @@ import com.pierre.tunescout.feature.miniplayer.R
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.PlayButtonState
+import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.component.contentDescription
 import com.pierre.tunescout.ui.component.icon
 import com.pierre.tunescout.ui.theme.TuneScoutColors
@@ -89,6 +90,17 @@ fun MiniPlayerContent(
                 )
             }
             IconButton(
+                onClick = { onEvent(MiniPlayerUiEvent.OnQueueClicked) },
+                modifier = Modifier.size(buttonSize),
+            ) {
+                Icon(
+                    imageVector = TuneScoutIcons.musicList,
+                    contentDescription = stringResource(R.string.mini_player_open_queue),
+                    tint = TuneScoutColors.textPrimary,
+                    modifier = Modifier.size(iconSize),
+                )
+            }
+            IconButton(
                 onClick = { onEvent(MiniPlayerUiEvent.OnPlayPauseClicked) },
                 modifier = Modifier.size(buttonSize),
             ) {
@@ -111,17 +123,12 @@ private fun ProgressLine(progress: Float) {
         modifier = Modifier
             .fillMaxWidth()
             .height(progressHeight)
-            .background(TuneScoutColors.white10),
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(progressHeight)
-                .layout { measurable, constraints ->
-                    val width = (constraints.maxWidth * animated).toInt().coerceIn(0, constraints.maxWidth)
-                    val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
-                    layout(placeable.width, placeable.height) { placeable.place(0, 0) }
-                }.background(TuneScoutColors.white60),
-        )
-    }
+            .drawBehind {
+                drawRect(color = TuneScoutColors.white10)
+                drawRect(
+                    color = TuneScoutColors.white60,
+                    size = size.copy(width = size.width * animated.coerceIn(0f, 1f)),
+                )
+            },
+    )
 }

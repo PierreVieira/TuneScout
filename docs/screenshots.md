@@ -36,7 +36,7 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `songs.png` | `SongsScreenshots.songs` | Pick up where you left off | Recently played, five songs, under a mini player holding a restored, paused song. |
 | `search.png` | `SongsScreenshots.search` | Find any song as you type | The query `daft punk` over ten paged results. |
 | `player.png` | `PlayerScreenshots` | A player, and the queue behind it | Get Lucky, playing, 18 seconds into a 29-second preview. |
-| `queue.png` | `QueueScreenshots` | Queue what you want next | Random Access Memories playing, two songs queued by hand ahead of it. |
+| `queue.png` | `QueueScreenshots` | Queue what you want next | The queue sheet over the player: Random Access Memories playing, two songs queued by hand ahead of it. |
 | `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player. |
 | `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded, with both queue actions in the top bar. |
 | `notification.png` | — | — | **Manual capture**, captioned in the README itself. |
@@ -45,6 +45,9 @@ The copy is English only — the file is committed once and read in one language
 do not loop over locales. A title is a benefit, not a screen name ("Pick up where you left off",
 not "Songs"), and the description underneath says how the app delivers it in one line. Both live
 next to the screen's `capture` call; changing one means changing the table above with it.
+
+`queue.png` and `options.png` both draw their sheet by hand — a `Surface` with the drag handle over a
+scrim — because `ModalBottomSheet` animates in and Robolectric captures the frame before it lands.
 
 The `songs.png` shot is the one that composes two screens: `SongsContent` under
 `MiniPlayerContent`, which is how `app` lays them out. The mini player lives outside the

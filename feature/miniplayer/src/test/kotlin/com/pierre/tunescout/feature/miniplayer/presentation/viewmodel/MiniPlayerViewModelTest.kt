@@ -5,6 +5,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
@@ -133,6 +134,18 @@ class MiniPlayerViewModelTest {
 
         // Then
         verify(exactly = 0) { navigator.navigate(any()) }
+    }
+
+    @Test
+    fun `WHEN clicking the queue THEN opens it`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = playbackState(songs = listOf(song(id = 1))))
+
+        // When
+        viewModel.onEvent(MiniPlayerUiEvent.OnQueueClicked)
+
+        // Then
+        verify { navigator.navigate(QueueRoute) }
     }
 
     @Test

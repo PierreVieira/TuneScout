@@ -75,6 +75,24 @@ class MiniPlayerContentTest {
     }
 
     @Test
+    fun clickingTheQueueIconOpensTheQueue() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                MiniPlayerContent(
+                    song = song(),
+                    playButtonState = PlayButtonState.Pause,
+                    progress = 0.5f,
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Open the queue").performClick()
+
+        assertThat(events).containsExactly(MiniPlayerUiEvent.OnQueueClicked)
+    }
+
+    @Test
     fun clickingTheBarOpensThePlayer() = compose.use {
         setContent {
             TuneScoutTheme {

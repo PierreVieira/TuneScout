@@ -6,6 +6,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
@@ -33,6 +34,7 @@ class MiniPlayerViewModel(
     fun onEvent(event: MiniPlayerUiEvent) = when (event) {
         MiniPlayerUiEvent.OnClicked -> openPlayer()
         MiniPlayerUiEvent.OnPlayPauseClicked -> playbackController.togglePlayPause()
+        MiniPlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
     }
 
     private fun openPlayer() {

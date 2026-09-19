@@ -60,7 +60,7 @@ private fun ReorderableCollectionItemScope.DragHandle(contentDescription: String
     Box(
         modifier = Modifier
             .size(handleSize)
-            .draggableHandle(),
+            .longPressDraggableHandle(),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

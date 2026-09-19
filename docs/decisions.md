@@ -49,10 +49,13 @@ instead of with the window.
 already queued by hand. Calling play-next twice therefore puts the most recent one first, which is
 what the label promises and what the queue screen then shows.
 
-**The queue screen is a screen, not a sheet.** Spotify shows its queue in a near-full-height sheet;
-this one is a route with a top bar, like Album. It needs the height, it scrolls, it holds a drag
-gesture that fights a sheet's own drag-to-dismiss, and it works in landscape without a second
-layout. Cost: one more entry on the back stack where Spotify has an overlay.
+**The queue is a bottom sheet, and reordering needs a long press because of it.** It is a route
+rendered by the same `BottomSheetSceneStrategy` the song options use, so it opens over the player the
+way Spotify's does. The cost is the one that made a full screen tempting first: a plain drag on a row
+is swallowed by the sheet's own drag-to-dismiss, and the row goes nowhere while the sheet closes. The
+handle therefore uses `longPressDraggableHandle()` — the long press claims the pointer before the
+sheet can read it as a dismiss — which is also how Spotify's own queue behaves. Dragging the sheet
+itself still closes it.
 
 **Reordering uses `sh.calvin.reorderable`, and the dependency lives in `feature:queue`.** Compose
 has no reorderable `LazyColumn`, and hand-rolling one is a pile of gesture and auto-scroll code. The
@@ -60,6 +63,9 @@ library is declared by the one module that reorders, rather than contained in `u
 `compose-shimmer` is — shimmer is used by four screens, this is used by one. If a second list ever
 reorders, it moves down to `ui:component`. Rows are matched by entry id, not by index: the callback
 hands back `LazyListItemInfo`, and ids survive the section headers between the two tiers.
+
+**The mini player opens the queue too.** It is the only thing on screen while browsing, so it
+carries the same queue icon the player does next to its play button.
 
 **The drag handle is not the only way to reorder.** A handle is invisible to a screen reader, so
 each queued row also carries "Move up" and "Move down" as Compose custom accessibility actions,

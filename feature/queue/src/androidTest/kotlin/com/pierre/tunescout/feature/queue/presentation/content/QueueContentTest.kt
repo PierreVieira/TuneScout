@@ -3,7 +3,6 @@ package com.pierre.tunescout.feature.queue.presentation.content
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithContentDescription
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
@@ -116,19 +115,6 @@ class QueueContentTest {
         assertThat(events).containsExactly(
             QueueUiEvent.OnEntryMoved(fromEntryId = "entry-2", toEntryId = "entry-9"),
         )
-    }
-
-    @Test
-    fun clickingBackEmitsBack() = compose.use {
-        setContent {
-            TuneScoutTheme {
-                QueueContent(uiState = loaded(), onEvent = events::add)
-            }
-        }
-
-        onNodeWithContentDescription("Back").performClick()
-
-        assertThat(events).containsExactly(QueueUiEvent.OnBackClicked)
     }
 
     private fun loaded(): QueueUiState = QueueUiState(
