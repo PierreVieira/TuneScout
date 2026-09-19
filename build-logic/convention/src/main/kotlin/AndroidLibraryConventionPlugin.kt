@@ -3,6 +3,7 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.pierre.tunescout.buildlogic.addInstrumentedTestDependencies
 import com.pierre.tunescout.buildlogic.addUnitTestDependencies
 import com.pierre.tunescout.buildlogic.configureAndroid
+import com.pierre.tunescout.buildlogic.configureCoverage
 import com.pierre.tunescout.buildlogic.configureJUnitPlatform
 import com.pierre.tunescout.buildlogic.hasInstrumentedTests
 import com.pierre.tunescout.buildlogic.libs
@@ -53,5 +54,6 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             addInstrumentedTestDependencies()
         }
         configureJUnitPlatform()
+        configureCoverage(testedVariant = "debug")
     }
 }

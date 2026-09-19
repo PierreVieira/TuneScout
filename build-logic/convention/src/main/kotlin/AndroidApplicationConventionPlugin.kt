@@ -2,6 +2,7 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.pierre.tunescout.buildlogic.addInstrumentedTestDependencies
 import com.pierre.tunescout.buildlogic.addUnitTestDependencies
 import com.pierre.tunescout.buildlogic.configureAndroid
+import com.pierre.tunescout.buildlogic.configureCoverage
 import com.pierre.tunescout.buildlogic.configureJUnitPlatform
 import com.pierre.tunescout.buildlogic.libs
 import com.pierre.tunescout.buildlogic.minSdkVersion
@@ -69,5 +70,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         addUnitTestDependencies()
         addInstrumentedTestDependencies()
         configureJUnitPlatform()
+        configureCoverage(testedVariant = "debug")
     }
 }

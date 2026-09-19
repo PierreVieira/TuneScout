@@ -16,6 +16,7 @@ dependencies {
     compileOnly(libs.kotlin.serialization.gradle.plugin)
     compileOnly(libs.ksp.gradle.plugin)
     compileOnly(libs.android.junit5.gradle.plugin)
+    compileOnly(libs.kover.gradle.plugin)
 }
 
 gradlePlugin {

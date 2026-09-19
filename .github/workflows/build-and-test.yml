@@ -28,8 +28,22 @@ jobs:
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
-      - name: Run unit tests
-        run: ./gradlew testDebugUnitTest test --continue
+      # verifyNewFilesCoverage diffs against the tip of the base branch, which a depth-1 checkout of
+      # the pull request's merge commit does not bring. On main the diff is empty and the task passes.
+      - name: Fetch the base branch
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: git fetch --depth=1 origin "+refs/heads/$BASE_REF:refs/remotes/origin/$BASE_REF"
+
+      # The plain test tasks stay: :ui:* and :tools:* have tests but are left out of the coverage
+      # report, so the Kover tasks alone would not run them. See docs/code-quality.md.
+      - name: Run unit tests and verify coverage
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: >
+          ./gradlew testDebugUnitTest test :koverVerifyCi :verifyNewFilesCoverage :koverHtmlReportCi
+          -Pcoverage.baseRef="origin/$BASE_REF" --continue
 
       - name: Upload test reports
         if: failure()
@@ -37,6 +51,13 @@ jobs:
         with:
           name: unit-test-reports
           path: '**/build/reports/tests/**'
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: build/reports/kover/
 
   build:
     runs-on: ubuntu-latest
