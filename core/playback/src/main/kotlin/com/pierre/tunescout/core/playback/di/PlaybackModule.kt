@@ -4,8 +4,10 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
 import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.internal.AndroidMediaItemFactory
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.ForegroundPlaybackServiceLauncher
+import com.pierre.tunescout.core.playback.internal.MediaItemFactory
 import com.pierre.tunescout.core.playback.internal.PlaybackServiceLauncher
 import com.pierre.tunescout.core.playback.internal.PlaybackSessionKeeper
 import com.pierre.tunescout.core.playback.internal.RecentlyPlayedRecorder
@@ -38,10 +40,12 @@ val playbackModule: Module = module {
             .build()
     }
     single<PlaybackServiceLauncher> { ForegroundPlaybackServiceLauncher(context = androidContext()) }
+    single<MediaItemFactory> { AndroidMediaItemFactory() }
     single {
         ExoPlayerPlaybackController(
             player = get(),
             serviceLauncher = get(),
+            mediaItemFactory = get(),
             scope = get(named(PLAYBACK_SCOPE)),
         )
     }

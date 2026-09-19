@@ -1,8 +1,10 @@
 package com.pierre.tunescout
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -26,13 +28,13 @@ import org.koin.dsl.module
 private const val SCREEN_TIMEOUT_MILLIS = 10_000L
 
 @OptIn(ExperimentalTestApi::class)
-class SearchToAlbumFlowTest {
+class QueueFlowTest {
     @JvmField
     @RegisterExtension
     val compose = createAndroidComposeExtension<MainActivity>()
 
     private val fakeRemoteModule: Module = module {
-        single<ITunesRemoteDataSource> { FakeITunesRemoteDataSource() }
+        single<ITunesRemoteDataSource> { FakeCatalogRemoteDataSource() }
     }
 
     @BeforeEach
@@ -46,24 +48,39 @@ class SearchToAlbumFlowTest {
     }
 
     @Test
-    fun searchingASongOpensThePlayerAndItsAlbum() = compose.use {
+    fun playingASongThenQueueingAnotherShowsBothInTheQueue() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
-
         onNode(hasSetTextAction()).performTextInput("daft")
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
-        // Anything already loaded is also in the mini player, so this takes the list row.
-        onAllNodesWithText("Get Lucky")[0].performClick()
 
+        // Playing a search result opens the player on it.
+        onNodeWithText("Get Lucky").performClick()
         waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
-        onNodeWithContentDescription("More options").performClick()
-        waitUntilAtLeastOneExists(hasText("View album"), SCREEN_TIMEOUT_MILLIS)
-        onNodeWithText("View album").performClick()
 
-        waitUntilAtLeastOneExists(hasText("Give Life Back to Music"), SCREEN_TIMEOUT_MILLIS)
+        // Back on the results, the mini player carries the same song under the list.
+        onNodeWithContentDescription("Back").performClick()
+        waitUntilAtLeastOneExists(hasText("Instant Crush"), SCREEN_TIMEOUT_MILLIS)
+        onAllNodesWithText("Get Lucky").assertCountEquals(2)
+
+        // Queueing a second song from its options sheet.
+        onAllNodesWithContentDescription("More options")[1].performClick()
+        waitUntilAtLeastOneExists(hasText("Add to queue"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Add to queue").performClick()
+        waitUntilDoesNotExist(hasText("Add to queue"), SCREEN_TIMEOUT_MILLIS)
+
+        // Starting the first song again keeps what was queued by hand.
+        onAllNodesWithText("Get Lucky")[0].performClick()
+        waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithContentDescription("Open the queue").performClick()
+
+        // Both tiers are on screen: what plays, and what was queued by hand.
+        waitUntilAtLeastOneExists(hasText("Next in queue"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Queue").assertExists()
+        onNodeWithText("Instant Crush").assertExists()
     }
 }
 
-private class FakeITunesRemoteDataSource : ITunesRemoteDataSource {
+private class FakeCatalogRemoteDataSource : ITunesRemoteDataSource {
     private val catalog = listOf(
         song(id = 1, title = "Get Lucky"),
         song(id = 2, title = "Instant Crush"),
@@ -74,11 +91,5 @@ private class FakeITunesRemoteDataSource : ITunesRemoteDataSource {
         limit: Int,
     ): List<Song> = catalog.take(limit)
 
-    override suspend fun fetchAlbum(albumId: Long): Album? = album(
-        id = albumId,
-        songs = listOf(
-            song(id = 10, albumId = albumId, title = "Give Life Back to Music", trackNumber = 1),
-            song(id = 1, albumId = albumId, title = "Get Lucky", trackNumber = 8),
-        ),
-    )
+    override suspend fun fetchAlbum(albumId: Long): Album? = album(id = albumId)
 }

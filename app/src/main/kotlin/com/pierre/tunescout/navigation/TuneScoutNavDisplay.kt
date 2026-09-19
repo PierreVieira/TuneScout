@@ -11,8 +11,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.pierre.tunescout.core.navigation.BackStackController
 import com.pierre.tunescout.core.navigation.NavigationCommandCollector
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
-import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SplashRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
 import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
@@ -52,10 +50,4 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
             },
         )
     }
-}
-
-private fun isMiniPlayerAllowed(route: NavKey?): Boolean = when (route) {
-    null, SplashRoute, QueueRoute -> false
-    is PlayerRoute -> false
-    else -> true
 }

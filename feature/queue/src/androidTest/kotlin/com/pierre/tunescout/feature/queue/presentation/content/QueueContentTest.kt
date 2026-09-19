@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
@@ -85,6 +86,36 @@ class QueueContentTest {
         onAllNodesWithContentDescription("Remove from the queue")[0].performClick()
 
         assertThat(events).containsExactly(QueueUiEvent.OnRemoveClicked("entry-9"))
+    }
+
+    @Test
+    fun movingAQueuedSongDownEmitsAMoveOntoTheNextEntry() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("One More Time").performCustomAccessibilityActionWithLabel("Move down")
+
+        assertThat(events).containsExactly(
+            QueueUiEvent.OnEntryMoved(fromEntryId = "entry-9", toEntryId = "entry-2"),
+        )
+    }
+
+    @Test
+    fun movingTheFirstUpNextSongUpPutsItAheadOfTheQueuedOne() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Around the World").performCustomAccessibilityActionWithLabel("Move up")
+
+        assertThat(events).containsExactly(
+            QueueUiEvent.OnEntryMoved(fromEntryId = "entry-2", toEntryId = "entry-9"),
+        )
     }
 
     @Test

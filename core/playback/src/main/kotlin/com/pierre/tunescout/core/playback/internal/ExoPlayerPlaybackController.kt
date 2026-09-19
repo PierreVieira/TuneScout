@@ -1,8 +1,6 @@
 package com.pierre.tunescout.core.playback.internal
 
-import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -32,6 +30,7 @@ private val positionTick = 250.milliseconds
 internal class ExoPlayerPlaybackController(
     private val player: ExoPlayer,
     private val serviceLauncher: PlaybackServiceLauncher,
+    private val mediaItemFactory: MediaItemFactory,
     private val scope: CoroutineScope,
 ) : PlaybackController,
     RestorablePlayback {
@@ -62,7 +61,7 @@ internal class ExoPlayerPlaybackController(
         )
         entries = timeline.entries
         this.context = context
-        player.setMediaItems(entries.map(QueueEntry::toMediaItem), timeline.startIndex, 0L)
+        player.setMediaItems(entries.map(mediaItemFactory::createMediaItem), timeline.startIndex, 0L)
         startPlaying()
     }
 
@@ -74,7 +73,7 @@ internal class ExoPlayerPlaybackController(
             .indexOfFirst { entry -> entry.id == session.currentEntryId }
             .coerceAtLeast(0)
         player.setMediaItems(
-            entries.map(QueueEntry::toMediaItem),
+            entries.map(mediaItemFactory::createMediaItem),
             startIndex,
             session.position.inWholeMilliseconds,
         )
@@ -150,7 +149,7 @@ internal class ExoPlayerPlaybackController(
         val wasEmpty = entries.isEmpty()
         val added = buildEntries(songs, QueueSource.UserQueue, ::createEntryId)
         entries = entries.take(index) + added + entries.drop(index)
-        player.addMediaItems(index, added.map(QueueEntry::toMediaItem))
+        player.addMediaItems(index, added.map(mediaItemFactory::createMediaItem))
         if (wasEmpty) startPlaying() else publish()
     }
 
@@ -218,20 +217,6 @@ internal class ExoPlayerPlaybackController(
         }
     }
 }
-
-private fun QueueEntry.toMediaItem(): MediaItem = MediaItem
-    .Builder()
-    .setMediaId(id)
-    .setUri(song.previewUrl)
-    .setMediaMetadata(
-        MediaMetadata
-            .Builder()
-            .setTitle(song.title)
-            .setArtist(song.artistName)
-            .setAlbumTitle(song.albumTitle)
-            .setArtworkUri(song.artwork.mediumUrl.toUri())
-            .build(),
-    ).build()
 
 private fun Player.toStatus(): PlaybackStatus = when {
     playerError != null -> PlaybackStatus.Failed

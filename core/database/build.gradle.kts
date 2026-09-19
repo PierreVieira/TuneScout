@@ -5,6 +5,13 @@ plugins {
 
 android {
     namespace = "com.pierre.tunescout.core.database"
+
+    // MigrationTestHelper reads the exported schemas from the test APK's assets.
+    sourceSets {
+        getByName("androidTest") {
+            assets.srcDirs("$projectDir/schemas")
+        }
+    }
 }
 
 ksp {
@@ -22,4 +29,8 @@ dependencies {
 
 dependencies {
     testImplementation(projects.core.testing)
+
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.androidx.sqlite.bundled)
+    androidTestImplementation(libs.androidx.test.core.ktx)
 }
