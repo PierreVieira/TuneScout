@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.pierre.tunescout.buildlogic.hasInstrumentedTests
 import com.pierre.tunescout.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -25,7 +26,6 @@ class AndroidComposeLibraryConventionPlugin : Plugin<Project> {
         dependencies {
             val bom = libs.findLibrary("androidx-compose-bom").get()
             add("implementation", platform(bom))
-            add("androidTestImplementation", platform(bom))
 
             add("implementation", libs.findLibrary("androidx-compose-runtime").get())
             add("implementation", libs.findLibrary("androidx-compose-foundation").get())
@@ -36,7 +36,11 @@ class AndroidComposeLibraryConventionPlugin : Plugin<Project> {
 
             add("debugImplementation", libs.findLibrary("androidx-compose-ui-tooling").get())
             add("debugImplementation", libs.findLibrary("androidx-compose-ui-test-manifest").get())
-            add("androidTestImplementation", libs.findLibrary("androidx-compose-ui-test-android").get())
+
+            if (hasInstrumentedTests) {
+                add("androidTestImplementation", platform(bom))
+                add("androidTestImplementation", libs.findLibrary("androidx-compose-ui-test-android").get())
+            }
         }
     }
 }
