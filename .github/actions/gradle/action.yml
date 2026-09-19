@@ -8,6 +8,14 @@ inputs:
       configuration cache is discarded between runs, so every job pays full configuration time.
     required: false
     default: ''
+  cache-read-only:
+    description: >-
+      The default is setup-gradle's own: only the default branch writes the cache, so every push
+      to a pull request starts from main's entries and recompiles the whole diff again. Jobs on
+      the pull request's critical path pass 'false': the entry is scoped to the pull request's
+      ref, so the next push restores it and only compiles what changed since the previous one.
+    required: false
+    default: ${{ github.event.repository != null && github.ref_name != github.event.repository.default_branch }}
 
 runs:
   using: "composite"
@@ -22,6 +30,7 @@ runs:
       uses: gradle/actions/setup-gradle@v6
       with:
         cache-encryption-key: ${{ inputs.cache-encryption-key }}
+        cache-read-only: ${{ inputs.cache-read-only }}
 
     - name: Make gradlew executable
       shell: bash

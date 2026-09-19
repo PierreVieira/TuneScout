@@ -1,0 +1,26 @@
+name: cleanup-pr-caches
+
+# build-and-test and instrumented-tests let a pull request write its own Gradle cache, scoped to
+# refs/pull/<number>/merge. Nothing can read those entries once the pull request is closed, and
+# left alone they sit in the 10 GB budget until they push out the entries main and the next pull
+# request restore from.
+on:
+  pull_request:
+    types:
+      - closed
+
+permissions:
+  actions: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete the caches of this pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CACHE_REF: refs/pull/${{ github.event.pull_request.number }}/merge
+        run: |
+          gh cache list --ref "$CACHE_REF" --limit 100 --json id --jq '.[].id' \
+            | xargs -r -n 1 gh cache delete
