@@ -1,14 +1,15 @@
 package com.pierre.tunescout.feature.player.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
-import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
@@ -27,7 +28,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class PlayerViewModelTest {
     private lateinit var viewModel: PlayerViewModel
-    private lateinit var playbackState: MutableStateFlow<PlaybackState>
+    private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var playbackController: PlaybackController
     private lateinit var navigator: Navigator
 
@@ -53,7 +54,10 @@ class PlayerViewModelTest {
             // Given
             prepareScenario(
                 routeSong = song(id = 1),
-                playback = playing(song(id = 2), queue = listOf(song(id = 1), song(id = 2), song(id = 3))),
+                playback = playing(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 1), song(id = 2), song(id = 3)),
+                ),
             )
 
             // When
@@ -88,7 +92,13 @@ class PlayerViewModelTest {
             viewModel.onEvent(PlayerUiEvent.OnPlayPauseClicked)
 
             // Then
-            verify { playbackController.play(song = song(id = 1), queue = listOf(song(id = 1))) }
+            verify {
+                playbackController.play(
+                    song = song(id = 1),
+                    songs = listOf(song(id = 1)),
+                    context = PlaybackContext.SingleSong,
+                )
+            }
         }
 
     @Test
@@ -147,9 +157,9 @@ class PlayerViewModelTest {
         routeSong: Song?,
         playback: PlaybackState = PlaybackState.Idle,
     ) {
-        playbackState = MutableStateFlow(playback)
+        playbackStateFlow = MutableStateFlow(playback)
         playbackController = mockk(relaxUnitFun = true) {
-            every { state } returns playbackState
+            every { state } returns playbackStateFlow
         }
         navigator = mockk(relaxUnitFun = true)
         viewModel = PlayerViewModel(
@@ -164,11 +174,10 @@ class PlayerViewModelTest {
 
     private fun playing(
         song: Song,
-        queue: List<Song> = listOf(song),
-    ): PlaybackState = PlaybackState.Idle.copy(
-        currentSong = song,
-        queue = queue,
-        status = PlaybackStatus.Playing,
+        songs: List<Song> = listOf(song),
+    ): PlaybackState = playbackState(
+        songs = songs,
+        currentIndex = songs.indexOfFirst { queued -> queued.id == song.id },
         position = 5.seconds,
         duration = 30.seconds,
     )

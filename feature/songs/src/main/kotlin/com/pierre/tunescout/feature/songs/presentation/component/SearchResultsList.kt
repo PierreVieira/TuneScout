@@ -72,7 +72,7 @@ internal fun SearchResultsList(
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
                     onClick = {
-                        onEvent(SongsUiEvent.OnSongClicked(song = song, queue = searchResults.itemSnapshotList.items))
+                        onEvent(SongsUiEvent.OnSongClicked(song))
                     },
                     onMoreClick = { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) },
                 )

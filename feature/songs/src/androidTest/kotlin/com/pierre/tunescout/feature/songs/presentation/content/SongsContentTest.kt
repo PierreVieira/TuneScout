@@ -40,14 +40,14 @@ class SongsContentTest {
     }
 
     @Test
-    fun givenRecentSongsClickingOneEmitsPlayWithTheListAsQueue() = compose.use {
+    fun givenRecentSongsClickingOneEmitsPlayForThatSongAlone() = compose.use {
         val recents = listOf(song(id = 1, title = "One More Time"), song(id = 2, title = "Get Lucky"))
         setContent { Content(uiState = state(recentlyPlayed = recents)) }
 
         onNodeWithText("Recently played").assertIsDisplayed()
         onNodeWithText("Get Lucky").performClick()
 
-        assertThat(events).containsExactly(SongsUiEvent.OnSongClicked(song = recents[1], queue = recents))
+        assertThat(events).containsExactly(SongsUiEvent.OnSongClicked(recents[1]))
     }
 
     @Test

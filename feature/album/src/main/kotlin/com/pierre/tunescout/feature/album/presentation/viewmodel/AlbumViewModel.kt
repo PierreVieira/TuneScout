@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.album.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
@@ -55,7 +56,11 @@ class AlbumViewModel(
 
     private fun playAndOpen(song: Song) {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        playbackController.play(song = song, queue = album.songs)
+        playbackController.play(
+            song = song,
+            songs = album.songs,
+            context = PlaybackContext.Album(id = album.id, title = album.title),
+        )
         navigator.navigate(PlayerRoute(songId = song.id))
     }
 

@@ -6,6 +6,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.playback.internal.RecentlyPlayedRecorder
+import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +16,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
 class RecentlyPlayedRecorderTest {
-    private lateinit var playbackState: MutableStateFlow<PlaybackState>
+    private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var recentlyPlayed: FakeRecentlyPlayedLocalDataSource
 
     @Test
@@ -24,10 +25,10 @@ class RecentlyPlayedRecorderTest {
         prepareScenario()
 
         // When
-        playbackState.value = playing(song(id = 1))
+        playbackStateFlow.value = playing(song(id = 1))
         runCurrent()
-        playbackState.value = playing(song(id = 1)).copy(status = PlaybackStatus.Paused)
-        playbackState.value = playing(song(id = 1))
+        playbackStateFlow.value = playing(song(id = 1)).copy(status = PlaybackStatus.Paused)
+        playbackStateFlow.value = playing(song(id = 1))
         runCurrent()
 
         // Then
@@ -40,7 +41,7 @@ class RecentlyPlayedRecorderTest {
         prepareScenario()
 
         // When
-        playbackState.value = playing(song(id = 1)).copy(status = PlaybackStatus.Buffering)
+        playbackStateFlow.value = playing(song(id = 1)).copy(status = PlaybackStatus.Buffering)
         runCurrent()
 
         // Then
@@ -53,9 +54,9 @@ class RecentlyPlayedRecorderTest {
         prepareScenario()
 
         // When
-        playbackState.value = playing(song(id = 1))
+        playbackStateFlow.value = playing(song(id = 1))
         runCurrent()
-        playbackState.value = playing(song(id = 2))
+        playbackStateFlow.value = playing(song(id = 2))
         runCurrent()
 
         // Then
@@ -63,19 +64,15 @@ class RecentlyPlayedRecorderTest {
     }
 
     private fun TestScope.prepareScenario() {
-        playbackState = MutableStateFlow(PlaybackState.Idle)
+        playbackStateFlow = MutableStateFlow(PlaybackState.Idle)
         recentlyPlayed = FakeRecentlyPlayedLocalDataSource()
         RecentlyPlayedRecorder(
-            playbackState = playbackState,
+            playbackState = playbackStateFlow,
             recentlyPlayedLocalDataSource = recentlyPlayed,
         ).start(backgroundScope)
     }
 
-    private fun playing(song: Song): PlaybackState = PlaybackState.Idle.copy(
-        currentSong = song,
-        queue = listOf(song),
-        status = PlaybackStatus.Playing,
-    )
+    private fun playing(song: Song): PlaybackState = playbackState(songs = listOf(song))
 }
 
 private class FakeRecentlyPlayedLocalDataSource : RecentlyPlayedLocalDataSource {

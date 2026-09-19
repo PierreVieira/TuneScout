@@ -2,6 +2,31 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Playback queue
+
+**The queue is explicit, and has two tiers.** `PlaybackState` no longer carries a `List<Song>` that
+whatever screen started playback happened to hand over; it carries a list of `QueueEntry`, each one
+tagged `Context` (the album being played) or `UserQueue` (added by hand). The play order is the
+context up to the current song, then everything queued by hand, then the rest of the context — the
+Spotify model, where starting a different album keeps what you queued yourself. Cost: two sources to
+keep straight instead of a flat list, and every mutation has to say which tier it touches.
+
+**Tapping a search result plays that song alone.** Search and the recently-played list used to pass
+the whole list as the queue, so playback rolled into songs the user never asked for. They now play a
+single song under `PlaybackContext.SingleSong`. Tapping a track inside an album still plays the
+album from there, which is the one place a list is the context.
+
+**A queue entry is identified by its own id, not by the song's.** The same song can sit in the queue
+twice, so `QueueEntry.id` is a uuid and it is what the `MediaItem` carries as its media id. The
+previous controller looked the current song up by matching the media id against the queue, which
+returned the first copy rather than the one playing.
+
+**The ExoPlayer timeline is mutated, never rebuilt.** Adding, removing and reordering go through
+`addMediaItems`/`removeMediaItem`/`moveMediaItem` on the existing timeline, so touching the queue
+never interrupts the song that is playing. The controller keeps a `List<QueueEntry>` mirror of that
+timeline; the ordering logic it needs lives in `QueueTimeline.kt` as pure functions, which is what
+the unit tests exercise — ExoPlayer is final and faking it would test the mock.
+
 ## 2026-09-18 — README screenshots
 
 **The README's screenshots are generated, not captured.** `./scripts/screenshots.sh` renders the

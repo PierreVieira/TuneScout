@@ -2,14 +2,15 @@ package com.pierre.tunescout.feature.album.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
-import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.album
+import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
@@ -52,7 +53,7 @@ class AlbumViewModelTest {
             // Given
             prepareScenario(
                 cached = album(id = 10),
-                playback = PlaybackState.Idle.copy(currentSong = song(id = 2), status = PlaybackStatus.Playing),
+                playback = playbackState(songs = listOf(song(id = 2))),
             )
 
             // When
@@ -114,7 +115,11 @@ class AlbumViewModelTest {
 
             // Then
             verifyOrder {
-                playbackController.play(song = album.songs[1], queue = album.songs)
+                playbackController.play(
+                    song = album.songs[1],
+                    songs = album.songs,
+                    context = PlaybackContext.Album(id = album.id, title = album.title),
+                )
                 navigator.navigate(PlayerRoute(songId = album.songs[1].id))
             }
         }

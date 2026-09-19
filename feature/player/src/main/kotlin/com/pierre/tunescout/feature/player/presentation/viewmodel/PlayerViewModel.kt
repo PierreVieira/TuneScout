@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.player.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
@@ -42,7 +43,11 @@ class PlayerViewModel(
         ) {
             playbackController.togglePlayPause()
         } else {
-            playbackController.play(song = shownSong, queue = listOf(shownSong))
+            playbackController.play(
+                song = shownSong,
+                songs = listOf(shownSong),
+                context = PlaybackContext.SingleSong,
+            )
         }
     }
 
@@ -57,7 +62,6 @@ class PlayerViewModel(
     ): PlayerUiState {
         val song = playback.currentSong ?: routeSong ?: return PlayerUiState.NotFound
         val isCurrent = playback.currentSong?.id == song.id
-        val index = playback.queue.indexOfFirst { queued -> queued.id == song.id }
         return PlayerUiState.Loaded(
             song = song,
             status = playback.status,
@@ -70,8 +74,8 @@ class PlayerViewModel(
                 song.duration
             },
             isRepeatEnabled = playback.isRepeatEnabled,
-            hasPrevious = index > 0,
-            hasNext = index >= 0 && index < playback.queue.lastIndex,
+            hasPrevious = playback.hasPrevious,
+            hasNext = playback.hasNext,
         )
     }
 }

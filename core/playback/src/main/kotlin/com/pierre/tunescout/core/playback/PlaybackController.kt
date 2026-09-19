@@ -1,5 +1,6 @@
 package com.pierre.tunescout.core.playback
 
+import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import kotlinx.coroutines.flow.StateFlow
@@ -10,8 +11,20 @@ interface PlaybackController {
 
     fun play(
         song: Song,
-        queue: List<Song>,
+        songs: List<Song>,
+        context: PlaybackContext,
     )
+
+    fun addToQueue(songs: List<Song>)
+
+    fun removeFromQueue(entryId: String)
+
+    fun moveInQueue(
+        fromIndex: Int,
+        toIndex: Int,
+    )
+
+    fun skipTo(entryId: String)
 
     fun togglePlayPause()
 
