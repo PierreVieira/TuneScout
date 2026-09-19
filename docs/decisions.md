@@ -40,11 +40,14 @@ modifier with it: the width a landscape window buys is about to be spent on a se
 capping it now would only have to be undone then. Cost: until that lands, a song row stretches all
 the way across a landscape phone, which is exactly the layout the cap was added to avoid.
 
-**The selected tab wears an accent taken from the splash gradient.** `TuneScoutColorPalette` gains an
-`accent`, deep green in the light palette and a lighter one in the dark, both keeping the hue the
-splash gradient ends on — that colour itself is far too dark to read as a highlight. With dynamic
-colours on, `accent` maps to the platform scheme's `primary` like every other token, so the
-wallpaper still wins and nothing is forced.
+**The accent comes from the splash gradient, and the tab bar wears its container, not the accent.**
+`TuneScoutColorPalette` gains an `accent` — deep green in the light palette, a lighter one in the
+dark, both keeping the hue the splash gradient ends on, since that colour itself is far too dark to
+read as a highlight — and an `accentContainer`, the same hue with most of the chroma taken out. The
+selected tab sits on the container with a plain `textPrimary` icon and label, which is how Material
+derives a navigation bar from `secondaryContainer`: the bar reads as navigation, and the accent
+stays for the things meant to pull the eye. With dynamic colours on both tokens map to the platform
+scheme (`primary` and `secondaryContainer`), so the wallpaper still wins and nothing is forced.
 
 **A sheet becomes a dialog in a window too short for one.** A landscape phone leaves a bottom sheet
 about one row of content between the drag handle and the navigation bar, so `BottomSheetScene`
