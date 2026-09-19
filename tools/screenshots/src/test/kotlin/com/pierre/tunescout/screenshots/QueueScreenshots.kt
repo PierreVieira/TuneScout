@@ -26,9 +26,9 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 import org.junit.Test
 import kotlin.time.Duration.Companion.seconds
 
-private val sheetCornerRadius = 28.dp
-
 internal class QueueScreenshots : ReadmeScreenshotsTest() {
+    private val sheetCornerRadius = 28.dp
+
     private val playerBehindSheet = PlayerUiState.Loaded(
         song = getLucky,
         status = PlaybackStatus.Playing,

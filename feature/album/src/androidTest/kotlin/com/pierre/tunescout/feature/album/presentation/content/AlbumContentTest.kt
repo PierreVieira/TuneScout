@@ -17,8 +17,6 @@ import de.mannodermaus.junit5.compose.createComposeExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
-private const val TITLE_IN_TOP_BAR_AND_HEADER = 2
-
 @OptIn(ExperimentalTestApi::class)
 class AlbumContentTest {
     @JvmField
@@ -96,5 +94,9 @@ class AlbumContentTest {
         onNodeWithContentDescription("Back").performClick()
 
         assertThat(events).containsExactly(AlbumUiEvent.OnBackClicked)
+    }
+
+    private companion object {
+        const val TITLE_IN_TOP_BAR_AND_HEADER = 2
     }
 }

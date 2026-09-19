@@ -15,9 +15,6 @@ import org.jetbrains.kotlin.psi.KtNameReferenceExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
 
-private const val IMPLICIT_PARAMETER_NAME = "it"
-private const val COMPOSABLE_ANNOTATION_NAME = "Composable"
-
 /**
  * Flags a lambda that exists only to hand its parameter to a function — `{ day -> mapDay(day) }` where
  * `::mapDay` says the same thing.
@@ -126,5 +123,10 @@ class PreferMethodReferenceRule : TuneScoutRule("prefer-method-reference") {
         if (argument.getArgumentName() != null || argument.isSpread) return null
         val argumentName = (argument.getArgumentExpression() as? KtNameReferenceExpression)?.getReferencedName()
         return call.takeIf { argumentName == parameterName }
+    }
+
+    private companion object {
+        const val IMPLICIT_PARAMETER_NAME = "it"
+        const val COMPOSABLE_ANNOTATION_NAME = "Composable"
     }
 }

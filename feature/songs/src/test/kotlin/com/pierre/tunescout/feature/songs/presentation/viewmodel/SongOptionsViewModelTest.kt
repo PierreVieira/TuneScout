@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.songs.domain.usecase.SongOptionsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiEvent
 import io.mockk.mockk
 import io.mockk.verify
@@ -24,6 +25,7 @@ class SongOptionsViewModelTest {
     private lateinit var viewModel: SongOptionsViewModel
     private lateinit var playbackController: PlaybackController
     private lateinit var navigator: Navigator
+    private lateinit var removedSongIds: MutableList<Long>
 
     @Test
     fun `GIVEN a cached song WHEN observing THEN exposes it`() = runTest(mainDispatcher.dispatcher) {
@@ -107,6 +109,49 @@ class SongOptionsViewModelTest {
     }
 
     @Test
+    fun `GIVEN a song outside the history WHEN observing THEN does not offer to remove it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), recentlyPlayed = listOf(song(id = 2)))
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.isRecentlyPlayed).isFalse()
+        }
+
+    @Test
+    fun `GIVEN a song in the history WHEN clicking remove THEN drops it and closes the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), recentlyPlayed = listOf(song(id = 1)))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.isRecentlyPlayed).isTrue()
+            assertThat(removedSongIds).containsExactly(1L)
+            verify { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN no song yet WHEN clicking remove THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(song = null)
+
+        // When
+        viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
+        runCurrent()
+
+        // Then
+        assertThat(removedSongIds).isEmpty()
+        verify(exactly = 0) { navigator.navigateBack() }
+    }
+
+    @Test
     fun `WHEN dismissing THEN navigates back`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(song = song(id = 1))
@@ -118,12 +163,20 @@ class SongOptionsViewModelTest {
         verify { navigator.navigateBack() }
     }
 
-    private fun TestScope.prepareScenario(song: Song?) {
+    private fun TestScope.prepareScenario(
+        song: Song?,
+        recentlyPlayed: List<Song> = emptyList(),
+    ) {
+        removedSongIds = mutableListOf()
         playbackController = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongOptionsViewModel(
             route = SongOptionsRoute(songId = 1),
-            observeSong = { flowOf(song) },
+            useCases = SongOptionsUseCases(
+                observeSong = { flowOf(song) },
+                observeRecentlyPlayed = { flowOf(recentlyPlayed) },
+                removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
+            ),
             playbackController = playbackController,
             navigator = navigator,
         )

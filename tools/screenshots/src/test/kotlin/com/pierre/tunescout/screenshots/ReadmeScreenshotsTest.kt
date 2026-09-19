@@ -16,7 +16,6 @@ import dev.lucianosantos.storescreenshots.ScreenshotStyle
 import dev.lucianosantos.storescreenshots.StoreScreenshotsTest
 import org.junit.Before
 
-private const val README_SUBDIR = "readme"
 private const val STATUS_BAR_CLOCK = "9:41"
 private val mockupElevation = 32.dp
 private val canvasGradientStart = Color(0xFF2C5766)
@@ -51,6 +50,10 @@ internal abstract class ReadmeScreenshotsTest :
         ) {
             TuneScoutTheme(content = content)
         }
+    }
+
+    private companion object {
+        const val README_SUBDIR = "readme"
     }
 }
 

@@ -13,4 +13,5 @@
     <string name="songs_options_view_album">View album</string>
     <string name="songs_options_play_next">Play next</string>
     <string name="songs_options_add_to_queue">Add to queue</string>
+    <string name="songs_remove_recent">Remove from recently played</string>
 </resources>

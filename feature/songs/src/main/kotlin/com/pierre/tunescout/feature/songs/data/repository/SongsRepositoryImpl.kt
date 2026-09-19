@@ -11,10 +11,6 @@ import com.pierre.tunescout.feature.songs.data.paging.SearchSongsPagingSource
 import com.pierre.tunescout.feature.songs.domain.repository.SongsRepository
 import kotlinx.coroutines.flow.Flow
 
-private const val PAGE_SIZE = 25
-private const val PREFETCH_DISTANCE = 5
-private const val RECENTLY_PLAYED_LIMIT = 20
-
 internal class SongsRepositoryImpl(
     private val remoteDataSource: ITunesRemoteDataSource,
     private val songLocalDataSource: SongLocalDataSource,
@@ -37,4 +33,14 @@ internal class SongsRepositoryImpl(
 
     override fun observeRecentlyPlayed(): Flow<List<Song>> =
         recentlyPlayedLocalDataSource.observe(limit = RECENTLY_PLAYED_LIMIT)
+
+    override suspend fun removeFromRecentlyPlayed(songId: Long) {
+        recentlyPlayedLocalDataSource.remove(songId)
+    }
+
+    private companion object {
+        const val PAGE_SIZE = 25
+        const val PREFETCH_DISTANCE = 5
+        const val RECENTLY_PLAYED_LIMIT = 20
+    }
 }

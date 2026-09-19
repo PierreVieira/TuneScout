@@ -30,6 +30,7 @@ dependencies {
 dependencies {
     testImplementation(projects.core.testing)
 
+    androidTestImplementation(projects.core.testing)
     androidTestImplementation(libs.androidx.room.testing)
     androidTestImplementation(libs.androidx.sqlite.bundled)
     androidTestImplementation(libs.androidx.test.core.ktx)

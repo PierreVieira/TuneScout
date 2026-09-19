@@ -83,4 +83,6 @@ private class FakeRecentlyPlayedLocalDataSource : RecentlyPlayedLocalDataSource 
     override suspend fun record(song: Song) {
         recorded += song
     }
+
+    override suspend fun remove(songId: Long) = error("unused")
 }

@@ -8,6 +8,7 @@ class TuneScoutRuleSetProvider : RuleSetProviderV3(RuleSetId(RULE_SET_ID)) {
     override fun getRuleProviders(): Set<RuleProvider> = setOf(
         RuleProvider { PrivateTopLevelValNamingRule() },
         RuleProvider { TopLevelValPositionRule() },
+        RuleProvider { TopLevelValOwnershipRule() },
         RuleProvider { TopLevelValBlankLineRule() },
         RuleProvider { WhenEntrySingleStatementBracesRule() },
         RuleProvider { FunInterfaceRule() },

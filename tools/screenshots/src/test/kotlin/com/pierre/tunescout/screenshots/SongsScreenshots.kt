@@ -16,9 +16,6 @@ import com.pierre.tunescout.ui.component.PlayButtonState
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Test
 
-private const val SEARCH_QUERY = "daft punk"
-private const val RESTORED_PROGRESS = 0.62f
-
 internal class SongsScreenshots : ReadmeScreenshotsTest() {
     @Test
     fun songs() {
@@ -62,6 +59,11 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                 onEvent = {},
             )
         }
+    }
+
+    private companion object {
+        const val SEARCH_QUERY = "daft punk"
+        const val RESTORED_PROGRESS = 0.62f
     }
 }
 

@@ -15,6 +15,7 @@ import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import io.mockk.every
 import io.mockk.mockk
@@ -34,6 +35,7 @@ class SongsViewModelTest {
     private lateinit var playbackController: PlaybackController
     private lateinit var navigator: Navigator
     private lateinit var searchedTerms: MutableList<String>
+    private lateinit var removedSongIds: MutableList<Long>
 
     @Test
     fun `GIVEN recently played songs WHEN observing THEN exposes them with the now playing id`() =
@@ -127,22 +129,40 @@ class SongsViewModelTest {
         verify { navigator.navigate(SongOptionsRoute(songId = 3)) }
     }
 
+    @Test
+    fun `GIVEN a recently played song WHEN swiping it away THEN removes it from the history`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(recentlyPlayed = listOf(song(id = 7)))
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnRecentSongSwipedAway(song(id = 7)))
+            runCurrent()
+
+            // Then
+            assertThat(removedSongIds).containsExactly(7L)
+        }
+
     private fun TestScope.prepareScenario(
         recentlyPlayed: List<Song> = emptyList(),
         catalog: List<Song> = emptyList(),
         playback: PlaybackState = PlaybackState.Idle,
     ) {
         searchedTerms = mutableListOf()
+        removedSongIds = mutableListOf()
         playbackController = mockk(relaxUnitFun = true) {
             every { state } returns MutableStateFlow(playback)
         }
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongsViewModel(
-            searchSongs = { term ->
-                searchedTerms += term
-                flowOf(PagingData.from(catalog, sourceLoadStates = loadedStates))
-            },
-            observeRecentlyPlayed = { flowOf(recentlyPlayed) },
+            useCases = SongsUseCases(
+                searchSongs = { term ->
+                    searchedTerms += term
+                    flowOf(PagingData.from(catalog, sourceLoadStates = loadedStates))
+                },
+                observeRecentlyPlayed = { flowOf(recentlyPlayed) },
+                removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
+            ),
             playbackController = playbackController,
             navigator = navigator,
         )

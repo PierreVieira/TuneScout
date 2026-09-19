@@ -32,6 +32,9 @@ internal interface RecentlyPlayedDao {
     )
     suspend fun trimTo(keep: Int)
 
+    @Query("DELETE FROM recently_played WHERE songId = :songId")
+    suspend fun deleteBySongId(songId: Long)
+
     @Transaction
     suspend fun record(
         entry: RecentlyPlayedEntity,

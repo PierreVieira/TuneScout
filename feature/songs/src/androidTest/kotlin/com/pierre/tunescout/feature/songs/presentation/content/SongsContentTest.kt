@@ -9,6 +9,9 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
@@ -58,6 +61,40 @@ class SongsContentTest {
         onAllNodesWithContentDescription("More options")[0].performClick()
 
         assertThat(events).containsExactly(SongsUiEvent.OnSongOptionsClicked(recents[0]))
+    }
+
+    @Test
+    fun givenRecentSongsSwipingOneToTheRightEmitsRemoveForThatSong() = compose.use {
+        val recents = listOf(song(id = 1, title = "One More Time"), song(id = 2, title = "Get Lucky"))
+        setContent { Content(uiState = state(recentlyPlayed = recents)) }
+
+        onNodeWithText("Get Lucky").performTouchInput { swipeRight() }
+        // The row settles on the dismissed anchor first; the callback lands on the next frame.
+        waitForIdle()
+
+        assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[1]))
+    }
+
+    @Test
+    fun givenRecentSongsSwipingOneToTheLeftEmitsRemoveForThatSong() = compose.use {
+        val recents = listOf(song(id = 1, title = "One More Time"))
+        setContent { Content(uiState = state(recentlyPlayed = recents)) }
+
+        onNodeWithText("One More Time").performTouchInput { swipeLeft() }
+        waitForIdle()
+
+        assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[0]))
+    }
+
+    @Test
+    fun givenSearchResultsSwipingOneRemovesNothing() = compose.use {
+        val results = listOf(song(id = 3, title = "Around the World"))
+        setContent { Content(uiState = state(query = "daft"), results = results) }
+
+        onNodeWithText("Around the World").performTouchInput { swipeRight() }
+        waitForIdle()
+
+        assertThat(events.filterIsInstance<SongsUiEvent.OnRecentSongSwipedAway>()).isEmpty()
     }
 
     @Test

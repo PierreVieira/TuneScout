@@ -8,4 +8,6 @@ interface SongsRepository {
     fun searchSongs(term: String): Flow<PagingData<Song>>
 
     fun observeRecentlyPlayed(): Flow<List<Song>>
+
+    suspend fun removeFromRecentlyPlayed(songId: Long)
 }
