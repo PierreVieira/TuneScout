@@ -2,6 +2,23 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-19 — Playback split into api and impl
+
+**`core/playback` is two modules: `api` holds the role interfaces, `impl` holds ExoPlayer.** Every
+screen depends on `:core:playback:api`, a plain-Kotlin module with five small interfaces
+(`ObservablePlayback`, `PlaybackStarter`, `Enqueuer`, `QueueControls`, `TransportControls`) and
+nothing else; only `:app` depends on `:core:playback:impl`, where the ExoPlayer controller, the
+media session service and the Koin module live. Before the split the same `internal` classes hid
+the implementation from features, but they still shared a module with the interfaces, so a change
+to the ExoPlayer wiring invalidated every feature's compile and made every feature wait for Media3
+to be on the classpath. Now a feature compiles against `api` and never sees Media3 at all. The
+module-graph check enforces it: `:feature:.*`, `:core:.*` and `:tools:.*` are all forbidden from
+depending on `:core:playback:impl` (`:ui:.*` already cannot reach any `:core:*`). Cost: two Gradle modules
+where there was one, and a second `include` line. The other core modules are not split. `model`
+and `utils` have no implementation to hide; `network` and `database` would gain the same kind of
+isolation from Ktor and Room, but at this size the build already finishes in seconds, so that is a
+decision to take when a measurement asks for it, not before.
+
 ## 2026-09-18 — Landscape, and a foreground service that started too early
 
 **The media service is started when the player starts playing, not when it is asked to.** Calling
@@ -235,7 +252,7 @@ would add a table and an eviction policy without changing the experience.
 
 ## 2026-09-18 — Playback
 
-**One ExoPlayer, shared by the app and the media service.** `PlaybackController` wraps the
+**One ExoPlayer, shared by the app and the media service.** `ExoPlayerPlaybackController` wraps the
 process-wide ExoPlayer directly; `PlaybackService` (a `MediaSessionService`) builds its
 `MediaSession` over that same instance and is started when playback begins. The textbook setup
 routes every screen through a `MediaController` bound to the service, but that adds an async

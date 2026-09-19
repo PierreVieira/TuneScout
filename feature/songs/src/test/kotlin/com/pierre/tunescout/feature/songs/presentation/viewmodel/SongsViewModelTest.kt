@@ -11,13 +11,12 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -32,7 +31,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 
 class SongsViewModelTest {
     private lateinit var viewModel: SongsViewModel
-    private lateinit var playbackController: PlaybackController
+    private lateinit var playbackStarter: PlaybackStarter
     private lateinit var navigator: Navigator
     private lateinit var searchedTerms: MutableList<String>
     private lateinit var removedSongIds: MutableList<Long>
@@ -108,7 +107,7 @@ class SongsViewModelTest {
 
         // Then
         verifyOrder {
-            playbackController.play(
+            playbackStarter.play(
                 song = song(id = 2),
                 songs = listOf(song(id = 2)),
                 context = PlaybackContext.SingleSong,
@@ -150,9 +149,8 @@ class SongsViewModelTest {
     ) {
         searchedTerms = mutableListOf()
         removedSongIds = mutableListOf()
-        playbackController = mockk(relaxUnitFun = true) {
-            every { state } returns MutableStateFlow(playback)
-        }
+        val playbackStateFlow = MutableStateFlow(playback)
+        playbackStarter = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongsViewModel(
             useCases = SongsUseCases(
@@ -163,7 +161,8 @@ class SongsViewModelTest {
                 observeRecentlyPlayed = { flowOf(recentlyPlayed) },
                 removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
             ),
-            playbackController = playbackController,
+            observablePlayback = { playbackStateFlow },
+            playbackStarter = playbackStarter,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }

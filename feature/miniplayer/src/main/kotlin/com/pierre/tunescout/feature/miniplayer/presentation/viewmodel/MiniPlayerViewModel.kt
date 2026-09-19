@@ -7,7 +7,8 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,7 +18,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration
 
 class MiniPlayerViewModel(
-    private val playbackController: PlaybackController,
+    private val observablePlayback: ObservablePlayback,
+    private val transportControls: TransportControls,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val emptyUiState = MiniPlayerUiState(
@@ -27,13 +29,14 @@ class MiniPlayerViewModel(
         progress = 0f,
     )
 
-    val uiState: StateFlow<MiniPlayerUiState> = playbackController.state
+    val uiState: StateFlow<MiniPlayerUiState> = observablePlayback
+        .observePlaybackState()
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: MiniPlayerUiEvent) = when (event) {
         MiniPlayerUiEvent.OnClicked -> openPlayer()
-        MiniPlayerUiEvent.OnPlayPauseClicked -> playbackController.togglePlayPause()
+        MiniPlayerUiEvent.OnPlayPauseClicked -> transportControls.togglePlayPause()
         MiniPlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
     }
 

@@ -5,7 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.QueueSource
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,7 +15,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class QueueViewModel(
-    private val playbackController: PlaybackController,
+    private val observablePlayback: ObservablePlayback,
+    private val queueControls: QueueControls,
 ) : ViewModel() {
     private val emptyUiState = QueueUiState(
         contextTitle = null,
@@ -23,13 +25,14 @@ class QueueViewModel(
         upNext = emptyList(),
     )
 
-    val uiState: StateFlow<QueueUiState> = playbackController.state
+    val uiState: StateFlow<QueueUiState> = observablePlayback
+        .observePlaybackState()
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: QueueUiEvent) = when (event) {
-        is QueueUiEvent.OnEntryClicked -> playbackController.skipTo(event.entryId)
-        is QueueUiEvent.OnRemoveClicked -> playbackController.removeFromQueue(event.entryId)
+        is QueueUiEvent.OnEntryClicked -> queueControls.skipTo(event.entryId)
+        is QueueUiEvent.OnRemoveClicked -> queueControls.removeFromQueue(event.entryId)
         is QueueUiEvent.OnEntryMoved -> move(from = event.fromEntryId, to = event.toEntryId)
     }
 
@@ -37,11 +40,11 @@ class QueueViewModel(
         from: String,
         to: String,
     ) {
-        val entries = playbackController.state.value.entries
+        val entries = observablePlayback.observePlaybackState().value.entries
         val fromIndex = entries.indexOfFirst { entry -> entry.id == from }
         val toIndex = entries.indexOfFirst { entry -> entry.id == to }
         if (fromIndex < 0 || toIndex < 0) return
-        playbackController.moveInQueue(fromIndex = fromIndex, toIndex = toIndex)
+        queueControls.moveInQueue(fromIndex = fromIndex, toIndex = toIndex)
     }
 
     private fun toUiState(playback: PlaybackState): QueueUiState {

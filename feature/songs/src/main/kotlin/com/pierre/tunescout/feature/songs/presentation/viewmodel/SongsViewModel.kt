@@ -11,7 +11,8 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
@@ -34,7 +35,8 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
     private val useCases: SongsUseCases,
-    private val playbackController: PlaybackController,
+    private val observablePlayback: ObservablePlayback,
+    private val playbackStarter: PlaybackStarter,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val searchDebounce = 300.milliseconds
@@ -48,7 +50,7 @@ class SongsViewModel(
     val uiState: StateFlow<SongsUiState> = combine(
         query,
         useCases.observeRecentlyPlayed(),
-        playbackController.state,
+        observablePlayback.observePlaybackState(),
     ) { query, recentlyPlayed, playback ->
         SongsUiState(
             query = query,
@@ -78,7 +80,7 @@ class SongsViewModel(
     }
 
     private fun playAndOpen(song: Song) {
-        playbackController.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
+        playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
         navigator.navigate(PlayerRoute(songId = song.id))
     }
 

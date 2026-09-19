@@ -5,7 +5,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songs.domain.usecase.SongOptionsUseCases
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 
 class SongOptionsViewModelTest {
     private lateinit var viewModel: SongOptionsViewModel
-    private lateinit var playbackController: PlaybackController
+    private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var removedSongIds: MutableList<Long>
 
@@ -75,7 +75,7 @@ class SongOptionsViewModelTest {
 
             // Then
             verifyOrder {
-                playbackController.addToQueue(listOf(song(id = 1)))
+                enqueuer.addToQueue(listOf(song(id = 1)))
                 navigator.navigateBack()
             }
         }
@@ -91,7 +91,7 @@ class SongOptionsViewModelTest {
 
             // Then
             verifyOrder {
-                playbackController.queueNext(listOf(song(id = 1)))
+                enqueuer.queueNext(listOf(song(id = 1)))
                 navigator.navigateBack()
             }
         }
@@ -105,7 +105,7 @@ class SongOptionsViewModelTest {
         viewModel.onEvent(SongOptionsUiEvent.OnAddToQueueClicked)
 
         // Then
-        verify(exactly = 0) { playbackController.addToQueue(any()) }
+        verify(exactly = 0) { enqueuer.addToQueue(any()) }
     }
 
     @Test
@@ -168,7 +168,7 @@ class SongOptionsViewModelTest {
         recentlyPlayed: List<Song> = emptyList(),
     ) {
         removedSongIds = mutableListOf()
-        playbackController = mockk(relaxUnitFun = true)
+        enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongOptionsViewModel(
             route = SongOptionsRoute(songId = 1),
@@ -177,7 +177,7 @@ class SongOptionsViewModelTest {
                 observeRecentlyPlayed = { flowOf(recentlyPlayed) },
                 removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
             ),
-            playbackController = playbackController,
+            enqueuer = enqueuer,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }

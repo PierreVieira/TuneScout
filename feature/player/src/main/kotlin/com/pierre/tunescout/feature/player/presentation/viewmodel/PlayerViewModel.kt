@@ -9,7 +9,9 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.player.domain.usecase.ObserveSong
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
@@ -21,18 +23,26 @@ import kotlinx.coroutines.flow.stateIn
 class PlayerViewModel(
     private val route: PlayerRoute,
     observeSong: ObserveSong,
-    private val playbackController: PlaybackController,
+    private val observablePlayback: ObservablePlayback,
+    private val playbackStarter: PlaybackStarter,
+    private val transportControls: TransportControls,
     private val navigator: Navigator,
 ) : ViewModel() {
-    val uiState: StateFlow<PlayerUiState> = combine(observeSong(route.songId), playbackController.state, ::toUiState)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlayerUiState.Loading)
+    private val currentSong: Song?
+        get() = observablePlayback.observePlaybackState().value.currentSong
+
+    val uiState: StateFlow<PlayerUiState> = combine(
+        observeSong(route.songId),
+        observablePlayback.observePlaybackState(),
+        ::toUiState,
+    ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlayerUiState.Loading)
 
     fun onEvent(event: PlayerUiEvent) = when (event) {
         PlayerUiEvent.OnPlayPauseClicked -> togglePlayPause()
-        is PlayerUiEvent.OnSeekFinished -> playbackController.seekTo(event.position)
-        PlayerUiEvent.OnSkipNextClicked -> playbackController.skipToNext()
-        PlayerUiEvent.OnSkipPreviousClicked -> playbackController.skipToPrevious()
-        PlayerUiEvent.OnRepeatClicked -> playbackController.toggleRepeat()
+        is PlayerUiEvent.OnSeekFinished -> transportControls.seekTo(event.position)
+        PlayerUiEvent.OnSkipNextClicked -> transportControls.skipToNext()
+        PlayerUiEvent.OnSkipPreviousClicked -> transportControls.skipToPrevious()
+        PlayerUiEvent.OnRepeatClicked -> transportControls.toggleRepeat()
         PlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
         PlayerUiEvent.OnBackClicked -> navigator.navigateBack()
         PlayerUiEvent.OnMoreClicked -> navigateToOptions()
@@ -40,12 +50,10 @@ class PlayerViewModel(
 
     private fun togglePlayPause() {
         val shownSong = (uiState.value as? PlayerUiState.Loaded)?.song ?: return
-        if (playbackController.state.value.currentSong
-                ?.id == shownSong.id
-        ) {
-            playbackController.togglePlayPause()
+        if (currentSong?.id == shownSong.id) {
+            transportControls.togglePlayPause()
         } else {
-            playbackController.play(
+            playbackStarter.play(
                 song = shownSong,
                 songs = listOf(shownSong),
                 context = PlaybackContext.SingleSong,

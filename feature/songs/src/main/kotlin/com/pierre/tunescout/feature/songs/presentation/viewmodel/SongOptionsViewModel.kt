@@ -6,7 +6,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.feature.songs.domain.usecase.SongOptionsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiState
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class SongOptionsViewModel(
     route: SongOptionsRoute,
     private val useCases: SongOptionsUseCases,
-    private val playbackController: PlaybackController,
+    private val enqueuer: Enqueuer,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val emptyUiState = SongOptionsUiState(song = null, isRecentlyPlayed = false)
@@ -31,8 +31,8 @@ class SongOptionsViewModel(
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
-        SongOptionsUiEvent.OnPlayNextClicked -> queue(playbackController::queueNext)
-        SongOptionsUiEvent.OnAddToQueueClicked -> queue(playbackController::addToQueue)
+        SongOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
+        SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()
         SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked -> removeFromRecentlyPlayed()
         SongOptionsUiEvent.OnDismissed -> navigator.navigateBack()
