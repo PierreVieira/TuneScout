@@ -17,6 +17,7 @@ data class TuneScoutColorPalette(
     val elementMuted: Color,
     val elementPlaceholder: Color,
     val elementSubtle: Color,
+    val accent: Color,
     val trackActive: Color,
     val error: Color,
 )

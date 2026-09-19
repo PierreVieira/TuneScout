@@ -28,7 +28,6 @@ import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.SearchField
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -50,7 +49,7 @@ fun SongsContent(
     ) {
         Column(
             modifier = Modifier
-                .readableWidth()
+                .fillMaxWidth()
                 .fillMaxHeight(),
         ) {
             if (isHeaderInline) {

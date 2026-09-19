@@ -1,6 +1,7 @@
 package com.pierre.tunescout.ui.component
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationItemColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
@@ -11,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.utils.window.TuneScoutWindowSize
+
+private const val INDICATOR_ALPHA = 0.25f
 
 data class TuneScoutNavigationItem(
     val icon: ImageVector,
@@ -53,6 +56,7 @@ fun TuneScoutNavigationSuite(
                     },
                     label = { Text(text = navigationItem.label) },
                     navigationSuiteType = navigationSuiteType,
+                    colors = navigationItemColors(),
                 )
             }
         },
@@ -71,6 +75,22 @@ fun TuneScoutNavigationSuite(
         content = content,
     )
 }
+
+/**
+ * The selected tab wears the accent, which is the splash gradient's colour when the palette is the
+ * app's own and the wallpaper's when dynamic colours are on — the accent token carries that
+ * difference, so nothing here has to know which of the two is in force.
+ */
+@Composable
+private fun navigationItemColors(): NavigationItemColors = NavigationItemColors(
+    selectedIconColor = TuneScoutColors.accent,
+    selectedTextColor = TuneScoutColors.accent,
+    selectedIndicatorColor = TuneScoutColors.accent.copy(alpha = INDICATOR_ALPHA),
+    unselectedIconColor = TuneScoutColors.elementMuted,
+    unselectedTextColor = TuneScoutColors.elementMuted,
+    disabledIconColor = TuneScoutColors.elementSubtle,
+    disabledTextColor = TuneScoutColors.elementSubtle,
+)
 
 private fun getNavigationSuiteType(
     isVisible: Boolean,

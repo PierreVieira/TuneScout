@@ -26,13 +26,13 @@ import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemCell
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemRow
+import com.pierre.tunescout.feature.library.presentation.component.LibraryViewModeToggle
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiState
 import com.pierre.tunescout.feature.library.presentation.model.getName
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -45,22 +45,24 @@ fun LibraryContent(
     onEvent: (LibraryUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .safeDrawingPadding(),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        Header(onEvent = onEvent)
-        SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = TuneScoutSpacing.screen),
-            contentAlignment = Alignment.TopCenter,
+                .fillMaxWidth()
+                .fillMaxHeight(),
         ) {
-            when (uiState.viewMode) {
-                LibraryViewMode.LIST -> LibraryList(items = uiState.items, onEvent = onEvent)
-                LibraryViewMode.GRID -> LibraryGrid(items = uiState.items, onEvent = onEvent)
+            Header(onEvent = onEvent)
+            SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
+            Box(modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen)) {
+                when (uiState.viewMode) {
+                    LibraryViewMode.LIST -> LibraryList(items = uiState.items, onEvent = onEvent)
+                    LibraryViewMode.GRID -> LibraryGrid(items = uiState.items, onEvent = onEvent)
+                }
             }
         }
     }
@@ -98,11 +100,10 @@ private fun SectionBar(
     viewMode: LibraryViewMode,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
-    val isList = viewMode == LibraryViewMode.LIST
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = TuneScoutSpacing.large, end = TuneScoutSpacing.small),
+            .padding(horizontal = TuneScoutSpacing.large),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -111,12 +112,9 @@ private fun SectionBar(
             color = TuneScoutColors.textSecondary,
             modifier = Modifier.weight(1f),
         )
-        TopBarAction(
-            icon = if (isList) TuneScoutIcons.viewGrid else TuneScoutIcons.viewList,
-            contentDescription = stringResource(
-                if (isList) R.string.library_view_as_grid else R.string.library_view_as_list,
-            ),
-            onClick = { onEvent(LibraryUiEvent.OnViewModeToggled) },
+        LibraryViewModeToggle(
+            viewMode = viewMode,
+            onViewModeClick = { mode -> onEvent(LibraryUiEvent.OnViewModeSelected(mode)) },
         )
     }
 }
@@ -128,7 +126,7 @@ private fun LibraryList(
 ) {
     LazyColumn(
         modifier = Modifier
-            .readableWidth()
+            .fillMaxWidth()
             .fillMaxHeight(),
         contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = TuneScoutSpacing.extraLarge),
     ) {

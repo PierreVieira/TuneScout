@@ -9,6 +9,7 @@ private const val RAISED_ALPHA = 0.20f
 private const val EMPHASIS_ALPHA = 0.70f
 private const val TERTIARY_ALPHA = 0.60f
 private const val SUBTLE_ELEMENT_ALPHA = 0.25f
+private const val INDICATOR_ALPHA = 0.25f
 
 internal fun TuneScoutColorPalette.toColorScheme(isDark: Boolean): ColorScheme =
     (if (isDark) darkColorScheme() else lightColorScheme()).copy(
@@ -22,6 +23,8 @@ internal fun TuneScoutColorPalette.toColorScheme(isDark: Boolean): ColorScheme =
         onSurfaceVariant = textSecondary,
         surfaceContainer = surfaceSubtle,
         surfaceContainerHigh = surfaceRaised,
+        secondaryContainer = accent.copy(alpha = INDICATOR_ALPHA),
+        onSecondaryContainer = accent,
         outlineVariant = elementSubtle,
         error = error,
     )
@@ -40,6 +43,7 @@ internal fun ColorScheme.toColorPalette(): TuneScoutColorPalette = TuneScoutColo
     elementMuted = outline,
     elementPlaceholder = onSurfaceVariant,
     elementSubtle = onSurface.copy(alpha = SUBTLE_ELEMENT_ALPHA),
+    accent = primary,
     trackActive = primary,
     error = error,
 )

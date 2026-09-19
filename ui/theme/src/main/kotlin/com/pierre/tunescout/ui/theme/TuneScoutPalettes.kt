@@ -2,6 +2,14 @@ package com.pierre.tunescout.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * The splash gradient ends on a deep teal that is unreadable as a highlight, so the accent keeps
+ * its hue and takes the lightness each palette needs. With dynamic colors on, the accent comes
+ * from the wallpaper instead — see [toColorPalette].
+ */
+private val darkAccent = Color(0xFF22C39B)
+private val lightAccent = Color(0xFF008060)
+
 val darkColorPalette = TuneScoutColorPalette(
     background = Color(0xFF000000),
     sheet = Color(0xFF262626),
@@ -16,6 +24,7 @@ val darkColorPalette = TuneScoutColorPalette(
     elementMuted = Color(0xFF545454),
     elementPlaceholder = Color(0xFFBFBFBF),
     elementSubtle = Color(0x40FFFFFF),
+    accent = darkAccent,
     trackActive = Color(0x99FFFFFF),
     error = Color(0xFFFF453A),
 )
@@ -34,6 +43,7 @@ val lightColorPalette = TuneScoutColorPalette(
     elementMuted = Color(0xFFABABAB),
     elementPlaceholder = Color(0xFF595959),
     elementSubtle = Color(0x40000000),
+    accent = lightAccent,
     trackActive = Color(0x99000000),
     error = Color(0xFFD70015),
 )

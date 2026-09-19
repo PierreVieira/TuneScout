@@ -42,10 +42,10 @@ class LibraryViewModel(
         is LibraryUiEvent.OnItemClicked -> navigator.navigate(event.item.key.toRoute())
         LibraryUiEvent.OnSearchClicked -> navigator.navigate(LibrarySearchRoute)
         LibraryUiEvent.OnCreatePlaylistClicked -> navigator.navigate(CreatePlaylistRoute)
-        LibraryUiEvent.OnViewModeToggled -> toggleViewMode()
+        is LibraryUiEvent.OnViewModeSelected -> selectViewMode(event.viewMode)
     }
 
-    private fun toggleViewMode() {
-        viewModelScope.launch { useCases.setViewMode(uiState.value.viewMode.toggled) }
+    private fun selectViewMode(viewMode: LibraryViewMode) {
+        viewModelScope.launch { useCases.setViewMode(viewMode) }
     }
 }

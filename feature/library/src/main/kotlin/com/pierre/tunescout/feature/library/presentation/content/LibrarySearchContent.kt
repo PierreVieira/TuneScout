@@ -30,7 +30,6 @@ import com.pierre.tunescout.ui.component.SongRowAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
@@ -45,26 +44,28 @@ fun LibrarySearchContent(
     val results = remember(uiState.query, uiState.items, favoritesName) {
         uiState.items.filter { item -> item.isMatching(query = uiState.query, favoritesName = favoritesName) }
     }
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .safeDrawingPadding(),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        SearchBar(uiState = uiState, onEvent = onEvent)
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = TuneScoutSpacing.screen),
-            contentAlignment = Alignment.TopCenter,
+                .fillMaxWidth()
+                .fillMaxHeight(),
         ) {
-            if (uiState.isSearching) {
-                Results(items = results, favoritesName = favoritesName, onEvent = onEvent)
-            } else {
-                RecentSearches(
-                    items = uiState.recentSearches,
-                    favoritesName = favoritesName,
-                    onEvent = onEvent,
-                )
+            SearchBar(uiState = uiState, onEvent = onEvent)
+            Box(modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen)) {
+                if (uiState.isSearching) {
+                    Results(items = results, favoritesName = favoritesName, onEvent = onEvent)
+                } else {
+                    RecentSearches(
+                        items = uiState.recentSearches,
+                        favoritesName = favoritesName,
+                        onEvent = onEvent,
+                    )
+                }
             }
         }
     }
@@ -119,7 +120,7 @@ private fun RecentSearches(
     onEvent: (LibrarySearchUiEvent) -> Unit,
 ) {
     if (items.isEmpty()) return
-    Column(modifier = Modifier.readableWidth()) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = stringResource(R.string.library_recent_searches),
             style = MaterialTheme.typography.titleMedium,
@@ -139,7 +140,7 @@ private fun ItemList(
 ) {
     LazyColumn(
         modifier = Modifier
-            .readableWidth()
+            .fillMaxWidth()
             .fillMaxHeight(),
         contentPadding = PaddingValues(bottom = TuneScoutSpacing.extraLarge),
     ) {

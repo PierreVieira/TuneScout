@@ -32,9 +32,26 @@ have no real window. `PlayerContent` keeps its `BoxWithConstraints`: it still ne
 to clamp the artwork; only the breakpoint moved. Cost: one new dependency (`material3-adaptive`),
 and a `Boolean` parameter on three `*Content` signatures.
 
+**Nothing caps the content's width any more.** `Modifier.readableWidth()` held every list near the
+width a phone gives it in portrait and centred the rest, which kept rows readable but left a
+landscape window mostly empty. The cap is gone from every screen and from the mini player, and the
+modifier with it: the width a landscape window buys is about to be spent on a second pane, and
+capping it now would only have to be undone then. Cost: until that lands, a song row stretches all
+the way across a landscape phone, which is exactly the layout the cap was added to avoid.
+
+**The selected tab wears an accent taken from the splash gradient.** `TuneScoutColorPalette` gains an
+`accent`, deep green in the light palette and a lighter one in the dark, both keeping the hue the
+splash gradient ends on — that colour itself is far too dark to read as a highlight. With dynamic
+colours on, `accent` maps to the platform scheme's `primary` like every other token, so the
+wallpaper still wins and nothing is forced.
+
 **The rail's breakpoint is written by hand.** `NavigationSuiteScaffoldDefaults.navigationSuiteType`
 returns a *bar* for a compact height, which is exactly the phone turned sideways this was meant to
 give a rail. The type is therefore computed from the width and height classes directly.
+
+**The view mode is a two-segment toggle, not one button.** A single icon showing the mode you would
+switch to never says which one you are looking at, so both are on screen with the current one
+filled.
 
 **Playlists and likes are rows, the view mode is a preference.** `core/database` goes to version 3
 with `playlists`, `playlist_songs` (position is an explicit column), `favorite_songs` and
@@ -88,7 +105,8 @@ timeline, so the play button used to be inert once the preview ran out. `PlayBut
 third state to the two the button had: `Replay` seeks to zero and plays, and the player and the mini
 player both show it.
 
-**Landscape caps the content instead of stretching it.** `Modifier.readableWidth()` holds a list near
+**Landscape caps the content instead of stretching it.** *(Reversed on 2026-09-19 — see "Two tabs,
+a library, and one ruler for responsiveness".)* `Modifier.readableWidth()` holds a list near
 the width a phone gives it in portrait, which is what its rows were laid out for, and the parent
 centres what is left. The cap comes before the fill — the other order hands `widthIn` a minimum that
 is already the parent's width, which it cannot go below, and nothing is capped at all. The Songs

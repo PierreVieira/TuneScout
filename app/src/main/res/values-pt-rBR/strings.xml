@@ -2,5 +2,5 @@
 <resources>
     <string name="app_name">TuneScout</string>
     <string name="home_tab_songs">Início</string>
-    <string name="home_tab_library">Sua Biblioteca</string>
+    <string name="home_tab_library">Biblioteca</string>
 </resources>

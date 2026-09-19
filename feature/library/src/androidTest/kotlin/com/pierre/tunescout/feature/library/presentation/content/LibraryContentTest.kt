@@ -71,16 +71,17 @@ class LibraryContentTest {
     }
 
     @Test
-    fun theListOffersTheGridAndTheGridOffersTheList() = compose.use {
+    fun theToggleShowsBothModesAndPicksTheOneTapped() = compose.use {
         setContent {
             TuneScoutTheme {
                 LibraryContent(uiState = state(), onEvent = events::add)
             }
         }
 
+        onNodeWithContentDescription("Show as list").assertIsDisplayed()
         onNodeWithContentDescription("Show as grid").performClick()
 
-        assertThat(events).containsExactly(LibraryUiEvent.OnViewModeToggled)
+        assertThat(events).containsExactly(LibraryUiEvent.OnViewModeSelected(LibraryViewMode.GRID))
     }
 
     @Test

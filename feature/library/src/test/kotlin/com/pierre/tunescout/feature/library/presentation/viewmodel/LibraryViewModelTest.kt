@@ -116,12 +116,12 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `GIVEN the list view WHEN toggling THEN stores the grid view`() = runTest(mainDispatcher.dispatcher) {
+    fun `GIVEN the list view WHEN picking the grid THEN stores it`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(viewMode = LibraryViewMode.LIST)
 
         // When
-        viewModel.onEvent(LibraryUiEvent.OnViewModeToggled)
+        viewModel.onEvent(LibraryUiEvent.OnViewModeSelected(LibraryViewMode.GRID))
         runCurrent()
 
         // Then

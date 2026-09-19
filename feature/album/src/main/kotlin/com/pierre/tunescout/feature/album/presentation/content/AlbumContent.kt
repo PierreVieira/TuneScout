@@ -36,7 +36,6 @@ import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
@@ -83,7 +82,7 @@ fun AlbumContent(
                 artworkSize = artworkSize,
                 artworkCornerPercent = ARTWORK_CORNER_PERCENT,
                 rowArtworkSize = rowArtworkSize,
-                modifier = Modifier.readableWidth(),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             AlbumUiState.Error -> StateMessage(
@@ -113,7 +112,7 @@ private fun LoadedContent(
 ) {
     LazyColumn(
         modifier = Modifier
-            .readableWidth()
+            .fillMaxWidth()
             .fillMaxHeight(),
         contentPadding = PaddingValues(
             start = TuneScoutSpacing.screen,

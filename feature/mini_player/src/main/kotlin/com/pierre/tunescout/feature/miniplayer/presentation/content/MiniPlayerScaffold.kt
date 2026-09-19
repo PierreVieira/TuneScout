@@ -27,7 +27,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.miniplayer.presentation.viewmodel.MiniPlayerViewModel
 import com.pierre.tunescout.ui.component.getPlayButtonState
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.utils.animation.LocalSharedElementScopes
 import com.pierre.tunescout.ui.utils.animation.rememberSharedElementScopes
 import org.koin.compose.viewmodel.koinViewModel
@@ -110,7 +109,7 @@ fun MiniPlayerScaffold(
                             ),
                             progress = uiState.progress,
                             onEvent = viewModel::onEvent,
-                            modifier = Modifier.readableWidth(),
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }

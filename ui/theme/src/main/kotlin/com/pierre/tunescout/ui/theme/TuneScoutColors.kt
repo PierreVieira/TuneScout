@@ -43,6 +43,9 @@ object TuneScoutColors {
     val elementSubtle: Color
         @Composable get() = LocalTuneScoutColorPalette.current.elementSubtle
 
+    val accent: Color
+        @Composable get() = LocalTuneScoutColorPalette.current.accent
+
     val trackActive: Color
         @Composable get() = LocalTuneScoutColorPalette.current.trackActive
 
