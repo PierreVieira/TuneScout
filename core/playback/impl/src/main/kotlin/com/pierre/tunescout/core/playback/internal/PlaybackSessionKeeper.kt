@@ -4,7 +4,7 @@ import android.util.Log
 import com.pierre.tunescout.core.database.PlaybackSessionLocalDataSource
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
-import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChangedBy
@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
 internal class PlaybackSessionKeeper(
-    private val observePlayback: ObservePlayback,
+    private val observablePlayback: ObservablePlayback,
     private val restorablePlayback: RestorablePlayback,
     private val playbackSessionLocalDataSource: PlaybackSessionLocalDataSource,
     private val saveInterval: Duration,
@@ -20,7 +20,7 @@ internal class PlaybackSessionKeeper(
     fun start(scope: CoroutineScope) {
         scope.launch {
             restore()
-            observePlayback
+            observablePlayback
                 .observePlaybackState()
                 .distinctUntilChangedBy(::toCheckpoint)
                 .collect(::save)

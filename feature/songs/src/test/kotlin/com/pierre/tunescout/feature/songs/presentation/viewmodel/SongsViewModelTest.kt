@@ -161,7 +161,7 @@ class SongsViewModelTest {
                 observeRecentlyPlayed = { flowOf(recentlyPlayed) },
                 removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
             ),
-            observePlayback = { playbackStateFlow },
+            observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
             navigator = navigator,
         )

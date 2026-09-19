@@ -121,7 +121,7 @@ re-requests with a growing limit and keeps only the unseen tail, deduplicating b
 cursor, but it is an honest fit for the API, and the Paging load states drive the list UI.
 
 **Playback.** One ExoPlayer instance is shared by the app and by a `MediaSessionService` that
-posts the media notification. `ObservePlayback` publishes a `PlaybackState` every screen reads,
+posts the media notification. `ObservablePlayback` publishes a `PlaybackState` every screen reads,
 and a small recorder turns "first time a song plays" into a row in the history table.
 
 **The queue has two tiers.** `PlaybackState` carries `QueueEntry` items tagged `Context` (the album

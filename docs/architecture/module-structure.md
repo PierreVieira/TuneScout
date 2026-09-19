@@ -11,7 +11,7 @@ core/
 ├── database/            # Room database, DAOs, entities, migrations
 ├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, BackStackController, routes
 ├── playback/
-│   ├── api/             # Playback role interfaces (ObservePlayback, PlaybackStarter, ...) — pure JVM
+│   ├── api/             # Playback role interfaces (ObservablePlayback, PlaybackStarter, ...) — pure JVM
 │   └── impl/            # ExoPlayer implementation, media session service, Koin module — only :app sees it
 └── testing/             # Test helpers shared by feature tests (test-only dependency)
 ui/

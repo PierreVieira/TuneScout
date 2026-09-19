@@ -4,7 +4,7 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.exoplayer.ExoPlayer
 import com.pierre.tunescout.core.playback.Enqueuer
-import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.playback.TransportControls
@@ -55,7 +55,7 @@ val playbackModule: Module = module {
             scope = get(named(PLAYBACK_SCOPE)),
         )
     }
-    single<ObservePlayback> { get<ExoPlayerPlaybackController>() }
+    single<ObservablePlayback> { get<ExoPlayerPlaybackController>() }
     single<PlaybackStarter> { get<ExoPlayerPlaybackController>() }
     single<Enqueuer> { get<ExoPlayerPlaybackController>() }
     single<QueueControls> { get<ExoPlayerPlaybackController>() }
@@ -63,7 +63,7 @@ val playbackModule: Module = module {
     single<RestorablePlayback> { get<ExoPlayerPlaybackController>() }
     single(createdAtStart = true) {
         PlaybackSessionKeeper(
-            observePlayback = get(),
+            observablePlayback = get(),
             restorablePlayback = get(),
             playbackSessionLocalDataSource = get(),
             saveInterval = sessionSaveInterval,
@@ -71,7 +71,7 @@ val playbackModule: Module = module {
     }
     single(createdAtStart = true) {
         RecentlyPlayedRecorder(
-            playbackState = get<ObservePlayback>().observePlaybackState(),
+            playbackState = get<ObservablePlayback>().observePlaybackState(),
             recentlyPlayedLocalDataSource = get(),
         ).also { recorder -> recorder.start(get(named(PLAYBACK_SCOPE))) }
     }

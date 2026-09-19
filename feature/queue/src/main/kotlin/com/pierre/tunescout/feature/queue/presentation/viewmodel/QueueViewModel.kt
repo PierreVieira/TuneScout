@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.QueueSource
-import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class QueueViewModel(
-    private val observePlayback: ObservePlayback,
+    private val observablePlayback: ObservablePlayback,
     private val queueControls: QueueControls,
 ) : ViewModel() {
     private val emptyUiState = QueueUiState(
@@ -25,7 +25,7 @@ class QueueViewModel(
         upNext = emptyList(),
     )
 
-    val uiState: StateFlow<QueueUiState> = observePlayback
+    val uiState: StateFlow<QueueUiState> = observablePlayback
         .observePlaybackState()
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
@@ -40,7 +40,7 @@ class QueueViewModel(
         from: String,
         to: String,
     ) {
-        val entries = observePlayback.observePlaybackState().value.entries
+        val entries = observablePlayback.observePlaybackState().value.entries
         val fromIndex = entries.indexOfFirst { entry -> entry.id == from }
         val toIndex = entries.indexOfFirst { entry -> entry.id == to }
         if (fromIndex < 0 || toIndex < 0) return

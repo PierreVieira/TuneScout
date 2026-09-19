@@ -124,7 +124,7 @@ class QueueViewModelTest {
     private fun TestScope.prepareScenario(playback: PlaybackState) {
         playbackStateFlow = MutableStateFlow(playback)
         queueControls = mockk(relaxUnitFun = true)
-        viewModel = QueueViewModel(observePlayback = { playbackStateFlow }, queueControls = queueControls)
+        viewModel = QueueViewModel(observablePlayback = { playbackStateFlow }, queueControls = queueControls)
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
     }

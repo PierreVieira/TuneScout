@@ -7,7 +7,7 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
-import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration
 
 class MiniPlayerViewModel(
-    private val observePlayback: ObservePlayback,
+    private val observablePlayback: ObservablePlayback,
     private val transportControls: TransportControls,
     private val navigator: Navigator,
 ) : ViewModel() {
@@ -29,7 +29,7 @@ class MiniPlayerViewModel(
         progress = 0f,
     )
 
-    val uiState: StateFlow<MiniPlayerUiState> = observePlayback
+    val uiState: StateFlow<MiniPlayerUiState> = observablePlayback
         .observePlaybackState()
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)

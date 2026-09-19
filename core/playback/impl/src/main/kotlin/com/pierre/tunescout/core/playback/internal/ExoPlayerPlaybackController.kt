@@ -7,7 +7,7 @@ import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.playback.Enqueuer
-import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.playback.TransportControls
@@ -26,7 +26,7 @@ internal class ExoPlayerPlaybackController(
     private val serviceLauncher: PlaybackServiceLauncher,
     private val queue: PlaybackQueue,
     private val scope: CoroutineScope,
-) : ObservePlayback,
+) : ObservablePlayback,
     PlaybackStarter,
     Enqueuer,
     QueueControls,

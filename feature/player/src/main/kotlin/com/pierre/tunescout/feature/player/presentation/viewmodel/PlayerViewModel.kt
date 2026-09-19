@@ -9,7 +9,7 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.player.domain.usecase.ObserveSong
@@ -23,17 +23,17 @@ import kotlinx.coroutines.flow.stateIn
 class PlayerViewModel(
     private val route: PlayerRoute,
     observeSong: ObserveSong,
-    private val observePlayback: ObservePlayback,
+    private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val transportControls: TransportControls,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val currentSong: Song?
-        get() = observePlayback.observePlaybackState().value.currentSong
+        get() = observablePlayback.observePlaybackState().value.currentSong
 
     val uiState: StateFlow<PlayerUiState> = combine(
         observeSong(route.songId),
-        observePlayback.observePlaybackState(),
+        observablePlayback.observePlaybackState(),
         ::toUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlayerUiState.Loading)
 

@@ -6,7 +6,7 @@ A running log, newest first. Each entry states the decision, why, and what it co
 
 **`core/playback` is two modules: `api` holds the role interfaces, `impl` holds ExoPlayer.** Every
 screen depends on `:core:playback:api`, a plain-Kotlin module with five small interfaces
-(`ObservePlayback`, `PlaybackStarter`, `Enqueuer`, `QueueControls`, `TransportControls`) and
+(`ObservablePlayback`, `PlaybackStarter`, `Enqueuer`, `QueueControls`, `TransportControls`) and
 nothing else; only `:app` depends on `:core:playback:impl`, where the ExoPlayer controller, the
 media session service and the Koin module live. Before the split the same `internal` classes hid
 the implementation from features, but they still shared a module with the interfaces, so a change

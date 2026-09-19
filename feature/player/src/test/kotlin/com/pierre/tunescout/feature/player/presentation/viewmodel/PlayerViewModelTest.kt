@@ -165,7 +165,7 @@ class PlayerViewModelTest {
         viewModel = PlayerViewModel(
             route = PlayerRoute(songId = 1),
             observeSong = { flowOf(routeSong) },
-            observePlayback = { playbackStateFlow },
+            observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
             transportControls = transportControls,
             navigator = navigator,

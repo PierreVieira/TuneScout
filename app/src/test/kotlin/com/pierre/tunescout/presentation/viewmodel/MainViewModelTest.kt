@@ -20,7 +20,7 @@ class MainViewModelTest {
     @BeforeEach
     fun setUp() {
         playbackStateFlow = MutableStateFlow(PlaybackState.Idle)
-        viewModel = MainViewModel(observePlayback = { playbackStateFlow })
+        viewModel = MainViewModel(observablePlayback = { playbackStateFlow })
     }
 
     @Test

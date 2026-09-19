@@ -193,7 +193,7 @@ class AlbumViewModelTest {
                 refreshCalls += albumId
                 refreshResult
             },
-            observePlayback = { playbackStateFlow },
+            observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
             enqueuer = enqueuer,
             navigator = navigator,

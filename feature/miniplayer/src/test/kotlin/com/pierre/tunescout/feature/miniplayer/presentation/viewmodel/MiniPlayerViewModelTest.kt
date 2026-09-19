@@ -164,7 +164,7 @@ class MiniPlayerViewModelTest {
         transportControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = MiniPlayerViewModel(
-            observePlayback = { playbackStateFlow },
+            observablePlayback = { playbackStateFlow },
             transportControls = transportControls,
             navigator = navigator,
         )

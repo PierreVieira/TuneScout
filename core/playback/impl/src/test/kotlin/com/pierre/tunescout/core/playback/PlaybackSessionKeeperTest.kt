@@ -136,7 +136,7 @@ class PlaybackSessionKeeperTest {
         restored = null
         localDataSource = FakePlaybackSessionLocalDataSource(stored = stored)
         PlaybackSessionKeeper(
-            observePlayback = { playbackState },
+            observablePlayback = { playbackState },
             restorablePlayback = { session -> restored = session },
             playbackSessionLocalDataSource = localDataSource,
             saveInterval = saveInterval,

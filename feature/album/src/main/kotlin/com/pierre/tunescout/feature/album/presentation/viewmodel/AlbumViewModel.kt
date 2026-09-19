@@ -10,7 +10,7 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.playback.Enqueuer
-import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.album.domain.usecase.ObserveAlbum
 import com.pierre.tunescout.feature.album.domain.usecase.RefreshAlbum
@@ -27,7 +27,7 @@ class AlbumViewModel(
     private val route: AlbumRoute,
     observeAlbum: ObserveAlbum,
     private val refreshAlbum: RefreshAlbum,
-    private val observePlayback: ObservePlayback,
+    private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
@@ -36,7 +36,7 @@ class AlbumViewModel(
 
     val uiState: StateFlow<AlbumUiState> = combine(
         observeAlbum(route.albumId),
-        observePlayback.observePlaybackState(),
+        observablePlayback.observePlaybackState(),
         refreshFailed,
         ::toUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), AlbumUiState.Loading)
