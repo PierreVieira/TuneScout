@@ -34,6 +34,11 @@ jobs:
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
+      # Compiling before the emulator exists gives Gradle all four cores, and a compilation error
+      # fails the job without paying for the SDK download and the boot.
+      - name: Assemble the app and the test APKs
+        run: ./gradlew :app:assembleDebug assembleDebugAndroidTest
+
       # Caching the AVD was measured on this workflow and dropped: it saved about 20s, inside the
       # run-to-run noise, while its 1.3 GB entry crowded the repository's 10 GB cache budget and
       # evicted the Gradle dependency caches that every job depends on.
@@ -44,6 +49,10 @@ jobs:
           api-level: 35
           arch: x86_64
           profile: pixel_6
+          # The APKs are already built, so Gradle only drives the device from here on and the
+          # emulator can have the cores the default of 2 leaves idle. Compose renders on the CPU
+          # under swiftshader, which makes the test phase scale with them.
+          cores: 3
           disable-animations: true
           script: ./gradlew connectedDebugAndroidTest --continue
 
