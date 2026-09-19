@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_title">Sua Biblioteca</string>
+    <string name="library_favorites">Músicas curtidas</string>
+    <string name="library_playlist">Playlist</string>
+    <string name="library_recents">Recentes</string>
+    <string name="library_open_search">Buscar na sua biblioteca</string>
+    <string name="library_create_playlist">Criar playlist</string>
+    <string name="library_view_as_grid">Ver em grade</string>
+    <string name="library_view_as_list">Ver em lista</string>
+    <string name="library_search_placeholder">Busque na Sua Biblioteca</string>
+    <string name="library_recent_searches">Buscas recentes</string>
+    <string name="library_remove_recent_search">Remover das buscas recentes</string>
+    <string name="library_search_empty_title">Nada encontrado</string>
+    <string name="library_search_empty_description">Tente outro nome de playlist.</string>
+    <string name="library_collection_empty_title">Nenhuma música ainda</string>
+    <string name="library_collection_empty_description">As músicas que você adicionar aparecem aqui.</string>
+    <string name="library_delete_playlist">Excluir playlist</string>
+    <string name="library_create_playlist_title">Dê um nome à sua playlist</string>
+    <string name="library_create_playlist_placeholder">Minha playlist</string>
+    <string name="library_create_playlist_confirm">Criar</string>
+    <string name="library_create_playlist_cancel">Cancelar</string>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d música</item>
+        <item quantity="other">%1$d músicas</item>
+    </plurals>
+</resources>

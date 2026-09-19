@@ -1,7 +1,7 @@
 package com.pierre.tunescout.feature.album.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -50,6 +50,7 @@ private val rowArtworkSize = 44.dp
 @Composable
 fun AlbumContent(
     uiState: AlbumUiState,
+    isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -91,11 +92,11 @@ fun AlbumContent(
                 onRetry = { onEvent(AlbumUiEvent.OnRetryClicked) },
             )
 
-            is AlbumUiState.Loaded -> BoxWithConstraints(contentAlignment = Alignment.TopCenter) {
+            is AlbumUiState.Loaded -> Box(contentAlignment = Alignment.TopCenter) {
                 LoadedContent(
                     album = uiState.album,
                     nowPlayingId = uiState.nowPlayingId,
-                    isHeaderInline = maxWidth > maxHeight,
+                    isHeaderInline = isHeaderInline,
                     onEvent = onEvent,
                 )
             }

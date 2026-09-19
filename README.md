@@ -11,15 +11,19 @@ native Android app written for the Music AI Android code challenge.
 | :--: | :--: | :--: |
 | <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet, with play next, add to queue and view album"> | <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks, with the queue actions in the top bar"> |
 
-| Queue | Theme |
-| :--: | :--: |
-| <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> | <img src="docs/screenshots/theme.png" width="260" alt="The theme sheet over the songs screen, with light, dark and system previews and a dynamic colors toggle"> |
+| Queue | Theme | Library |
+| :--: | :--: | :--: |
+| <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> | <img src="docs/screenshots/theme.png" width="260" alt="The theme sheet over the songs screen, with light, dark and system previews and a dynamic colors toggle"> | <img src="docs/screenshots/library.png" width="260" alt="The library tab listing liked songs and playlists as a list"> |
+
+| Library as a grid |
+| :--: |
+| <img src="docs/screenshots/library_grid.png" width="260" alt="The same library drawn as a grid of covers"> |
 
 | Media controls |
 | :--: |
 | <img src="docs/screenshots/notification.png" width="360" alt="Media controls in the notification shade and on the lock screen"> |
 
-The eight screens above are generated from the app's own composables, under Robolectric, by
+The ten screens above are generated from the app's own composables, under Robolectric, by
 `./scripts/screenshots.sh`; the notification shade is a device capture, since it is not a
 composable. See [docs/screenshots.md](docs/screenshots.md).
 
@@ -35,7 +39,15 @@ composable. See [docs/screenshots.md](docs/screenshots.md).
   player.
 - **Pick up where you left off**: closing the app keeps the queue, the song and its position, and
   reopening restores all three, paused, from the local database.
-- **Recently played** is the home screen. It is stored locally, so it works offline and survives
+- **Two tabs**: Home, which is search and recently played, and Your Library. The bar at the bottom
+  becomes a navigation rail as soon as the window has width to spare, so a phone turned sideways
+  gives the list its height back.
+- **Library** of your own: liked songs and the playlists you create, as a list or a grid, with the
+  choice remembered on the device. Search inside it from its own screen, which keeps the items you
+  opened under "Recent searches" and lets you drop them one by one.
+- **Like a song** or **add it to a playlist** from the same options sheet every list opens. Adding
+  to a playlist can create one on the spot.
+- **Recently played** is the first tab. It is stored locally, so it works offline and survives
   restarts. Playing a song records it once, wherever playback was started from.
 - **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
   repeat and the queue. Dragging the timeline seeks on release without pausing.
@@ -84,7 +96,7 @@ core/
   model/             domain models, plain Kotlin
   utils/             coroutine helpers, dispatchers, duration formatting
   network/           ITunesRemoteDataSource: the iTunes API behind an interface (Ktor)
-  database/          Room: songs, albums, the recently played history and the saved session
+  database/          Room: songs, albums, the history, the saved session, playlists and likes
   playback/api/      the playback role interfaces every screen depends on, plain Kotlin
   playback/impl/     ExoPlayer behind those interfaces, the media session service; only app sees it
   navigation/        routes (NavKey), the Navigator event bus, back stack controller
@@ -95,7 +107,8 @@ ui/
   component/         top bar, song row, search field, seek bar, artwork, state messages
   utils/             Compose helpers
 feature/
-  splash/  songs/  song_options/  player/  queue/  mini_player/  album/  theme_selection/
+  splash/  songs/  library/  song_options/  add_to_playlist/  player/  queue/
+  mini_player/  album/  theme_selection/
                      data / domain / presentation in each
 tools/
   ktlint_custom_rules/
@@ -173,4 +186,8 @@ MockK · Turbine
 - The theme preference stays on the device. There is no account, so there is nothing to sync it
   to.
 - The 200-item cap of the API is the end of every search; there is no "load more" beyond it.
-- No favorites, playlists or queue editing. The queue is always the list you tapped in.
+- A playlist holds a song once: adding it again leaves it where it already is.
+- Playing a song from a playlist plays that song alone. The queue only takes an album as its
+  context, so a playlist is not one yet.
+- Playlists and liked songs stay on the device. There is no account, so there is nothing to sync
+  them to.

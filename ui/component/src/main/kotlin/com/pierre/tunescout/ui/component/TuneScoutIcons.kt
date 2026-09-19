@@ -2,15 +2,22 @@ package com.pierre.tunescout.ui.component
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.LibraryBooks
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DragHandle
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.LibraryAdd
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.MoreVert
@@ -23,6 +30,7 @@ import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.ui.graphics.vector.ImageVector
 
 object TuneScoutIcons {
@@ -71,4 +79,20 @@ object TuneScoutIcons {
     val darkTheme: ImageVector get() = Icons.Rounded.DarkMode
 
     val systemTheme: ImageVector get() = Icons.Rounded.PhoneAndroid
+
+    val home: ImageVector get() = Icons.Rounded.Home
+
+    val library: ImageVector get() = Icons.AutoMirrored.Rounded.LibraryBooks
+
+    val favorite: ImageVector get() = Icons.Rounded.FavoriteBorder
+
+    val favoriteFilled: ImageVector get() = Icons.Rounded.Favorite
+
+    val addToPlaylist: ImageVector get() = Icons.Rounded.LibraryAdd
+
+    val add: ImageVector get() = Icons.Rounded.Add
+
+    val viewGrid: ImageVector get() = Icons.Rounded.GridView
+
+    val viewList: ImageVector get() = Icons.Rounded.ViewList
 }

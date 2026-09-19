@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.songoptions.presentation.viewmodel
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
@@ -26,6 +27,7 @@ class SongOptionsViewModelTest {
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var removedSongIds: MutableList<Long>
+    private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
 
     @Test
     fun `GIVEN a cached song WHEN observing THEN exposes it`() = runTest(mainDispatcher.dispatcher) {
@@ -163,11 +165,55 @@ class SongOptionsViewModelTest {
         verify { navigator.navigateBack() }
     }
 
+    @Test
+    fun `GIVEN a song that is not liked WHEN clicking like THEN stores it and dismisses`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isFavorite = false)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnFavoriteClicked)
+            runCurrent()
+
+            // Then
+            assertThat(favoriteToggles).containsExactly(1L to false)
+            verify { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN a liked song WHEN clicking unlike THEN passes the current state through`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isFavorite = true)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnFavoriteClicked)
+            runCurrent()
+
+            // Then
+            assertThat(favoriteToggles).containsExactly(1L to true)
+        }
+
+    @Test
+    fun `GIVEN a cached song WHEN clicking add to playlist THEN replaces the sheet with the picker`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 7))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnAddToPlaylistClicked)
+
+            // Then
+            verify { navigator.navigateReplacingTop(AddToPlaylistRoute(songId = 7)) }
+        }
+
     private fun TestScope.prepareScenario(
         song: Song?,
         isRecentlyPlayed: Boolean = false,
+        isFavorite: Boolean = false,
     ) {
         removedSongIds = mutableListOf()
+        favoriteToggles = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongOptionsViewModel(
@@ -175,6 +221,8 @@ class SongOptionsViewModelTest {
             useCases = SongOptionsUseCases(
                 observeSong = { flowOf(song) },
                 isRecentlyPlayed = { flowOf(isRecentlyPlayed) },
+                isFavorite = { flowOf(isFavorite) },
+                toggleFavorite = { toggled, wasFavorite -> favoriteToggles += toggled.id to wasFavorite },
                 removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
             ),
             enqueuer = enqueuer,

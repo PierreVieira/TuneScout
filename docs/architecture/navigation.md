@@ -95,13 +95,34 @@ A screen does not read `LocalNavAnimatedContentScope` itself — see [Shared ele
 // app/src/main/kotlin/com/pierre/tunescout/navigation/TuneScoutNavDisplay.kt
 entryProvider = entryProvider<NavKey> {
     splash()
-    songs()
+    home(tabsState)
     player()
     album()
 }
 ```
 
 `app` is the only module that depends on every feature, which is why the registration lives there.
+
+## The tab host
+
+`HomeRoute` is one entry of the root back stack, and it renders a **second `NavDisplay`** with one
+`NavBackStack` per tab (`app/navigation/home/`). The tab entries are built with
+`rememberDecoratedNavEntries` and handed to the `entries =` overload — not `backStack =` — which is
+what gives each tab its own saved state and its own `ViewModelStore` across a switch.
+
+While a tab other than the first is selected, the first tab's entries stay at the head of that
+list, so system back animates from the second tab to the first the way Android expects, and
+`onBack` only has to move the selection.
+
+Only the two tabs live in the nested display. **Everything a tab opens — the player, an album, a
+playlist, the queue, any sheet — is pushed onto the root back stack**, over the bar, through the
+same `Navigator`. That is what keeps the `Navigator` and the `BackStackController` free of any
+notion of tabs.
+
+The bar itself is drawn by `TuneScoutNavigationSuite` (`:ui:component`) *outside* the root
+`NavDisplay`, so the mini player sits between the content and the bar. It is hidden with
+`NavigationSuiteType.None` rather than by removing the scaffold: removing it would rebuild the
+`NavDisplay` underneath and take the back stack with it.
 
 ## Shared elements
 

@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.pierre.tunescout.feature.songs.presentation.viewmodel.SongsViewModel
+import com.pierre.tunescout.ui.utils.window.rememberWindowSize
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -14,6 +15,7 @@ fun SongsScreen(viewModel: SongsViewModel = koinViewModel()) {
     SongsContent(
         uiState = uiState,
         searchResults = searchResults,
+        isHeaderInline = rememberWindowSize().isSideBySide,
         onEvent = viewModel::onEvent,
     )
 }

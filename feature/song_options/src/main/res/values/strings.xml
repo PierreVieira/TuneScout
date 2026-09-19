@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="song_options_favorite">Like</string>
+    <string name="song_options_unfavorite">Remove from liked songs</string>
+    <string name="song_options_add_to_playlist">Add to playlist</string>
     <string name="song_options_view_album">View album</string>
     <string name="song_options_play_next">Play next</string>
     <string name="song_options_add_to_queue">Add to queue</string>

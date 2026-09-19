@@ -30,6 +30,7 @@ class AlbumContentTest {
         setContent {
             TuneScoutTheme {
                 AlbumContent(
+                    isHeaderInline = false,
                     uiState = AlbumUiState.Loaded(album = album(), nowPlayingId = null, isPlaying = false),
                     onEvent = events::add,
                 )
@@ -55,6 +56,7 @@ class AlbumContentTest {
         setContent {
             TuneScoutTheme {
                 AlbumContent(
+                    isHeaderInline = false,
                     uiState = AlbumUiState.Loaded(album = album, nowPlayingId = null, isPlaying = false),
                     onEvent = events::add,
                 )
@@ -72,7 +74,7 @@ class AlbumContentTest {
     fun givenErrorShowsRetryThatEmitsEvent() = compose.use {
         setContent {
             TuneScoutTheme {
-                AlbumContent(uiState = AlbumUiState.Error, onEvent = events::add)
+                AlbumContent(isHeaderInline = false, uiState = AlbumUiState.Error, onEvent = events::add)
             }
         }
 
@@ -86,7 +88,7 @@ class AlbumContentTest {
     fun givenLoadingShowsIndicatorAndBackStillWorks() = compose.use {
         setContent {
             TuneScoutTheme {
-                AlbumContent(uiState = AlbumUiState.Loading, onEvent = events::add)
+                AlbumContent(isHeaderInline = false, uiState = AlbumUiState.Loading, onEvent = events::add)
             }
         }
 

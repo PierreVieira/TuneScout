@@ -106,5 +106,7 @@ class SongOptionsContentTest {
     private fun state(
         song: Song?,
         isRecentlyPlayed: Boolean = false,
-    ): SongOptionsUiState = SongOptionsUiState(song = song, isRecentlyPlayed = isRecentlyPlayed)
+        isFavorite: Boolean = false,
+    ): SongOptionsUiState =
+        SongOptionsUiState(song = song, isRecentlyPlayed = isRecentlyPlayed, isFavorite = isFavorite)
 }

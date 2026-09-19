@@ -1,4 +1,4 @@
-package com.pierre.tunescout.feature.songs.presentation.component
+package com.pierre.tunescout.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -23,7 +22,7 @@ private val rowCornerRadius = 8.dp
 private val removeIconSize = 20.dp
 
 @Composable
-internal fun SwipeToRemoveBox(
+fun SwipeToRemoveBox(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,

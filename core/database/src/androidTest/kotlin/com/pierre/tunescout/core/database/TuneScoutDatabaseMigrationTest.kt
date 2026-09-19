@@ -7,6 +7,7 @@ import androidx.sqlite.execSQL
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.internal.MIGRATION_1_2
+import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -77,6 +78,55 @@ class TuneScoutDatabaseMigrationTest {
             connection.execSQL("INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 0, 10, 'Album')")
             assertThat(connection.selectCount("SELECT COUNT(*) FROM playback_queue")).isEqualTo(1)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM playback_session")).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun givenAVersionTwoDatabaseTheMigrationKeepsTheHistoryAndAddsTheLibraryTables() = runBlocking {
+        // Given
+        helper.createDatabase(version = 2).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8)",
+            )
+            connection.execSQL("INSERT INTO recently_played VALUES (1, 1700000000000)")
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 3, migrations = listOf(MIGRATION_2_3))
+
+        // Then
+        migrated.use { connection ->
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM recently_played")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM playlists")).isEqualTo(0)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM playlist_songs")).isEqualTo(0)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_songs")).isEqualTo(0)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM library_recent_searches")).isEqualTo(0)
+        }
+    }
+
+    @Test
+    fun givenAVersionTwoDatabaseTheLibraryTablesAcceptRowsAfterTheMigration() = runBlocking {
+        // Given
+        helper.createDatabase(version = 2).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8)",
+            )
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 3, migrations = listOf(MIGRATION_2_3))
+
+        // Then
+        migrated.use { connection ->
+            connection.execSQL("INSERT INTO playlists VALUES (1, 'Road trip', 1700000000000)")
+            connection.execSQL("INSERT INTO playlist_songs VALUES (1, 1, 0)")
+            connection.execSQL("INSERT INTO favorite_songs VALUES (1, 1700000000000)")
+            connection.execSQL("INSERT INTO library_recent_searches VALUES ('playlist:1', 1700000000000)")
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM playlist_songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM library_recent_searches")).isEqualTo(1)
         }
     }
 

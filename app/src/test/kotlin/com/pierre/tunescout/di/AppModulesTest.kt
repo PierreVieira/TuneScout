@@ -1,9 +1,13 @@
 package com.pierre.tunescout.di
 
+import com.pierre.tunescout.core.model.LibraryItemKey
+import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.feature.addtoplaylist.presentation.viewmodel.AddToPlaylistViewModel
 import com.pierre.tunescout.feature.album.presentation.viewmodel.AlbumViewModel
+import com.pierre.tunescout.feature.library.presentation.viewmodel.CollectionViewModel
 import com.pierre.tunescout.feature.player.presentation.viewmodel.PlayerViewModel
 import com.pierre.tunescout.feature.songoptions.presentation.viewmodel.SongOptionsViewModel
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +33,8 @@ class AppModulesTest {
                 definition<AlbumViewModel>(AlbumRoute::class),
                 definition<PlayerViewModel>(PlayerRoute::class),
                 definition<SongOptionsViewModel>(SongOptionsRoute::class),
+                definition<AddToPlaylistViewModel>(AddToPlaylistRoute::class),
+                definition<CollectionViewModel>(LibraryItemKey::class),
             ),
         )
     }

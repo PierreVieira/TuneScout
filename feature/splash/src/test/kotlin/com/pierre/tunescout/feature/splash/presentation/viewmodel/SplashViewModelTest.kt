@@ -1,7 +1,7 @@
 package com.pierre.tunescout.feature.splash.presentation.viewmodel
 
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.SongsRoute
+import com.pierre.tunescout.core.navigation.route.HomeRoute
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import io.mockk.mockk
 import io.mockk.verify
@@ -28,7 +28,7 @@ class SplashViewModelTest {
         advanceTimeBy(501.milliseconds)
         runCurrent()
 
-        verify { navigator.navigateReplacingTop(SongsRoute) }
+        verify { navigator.navigateReplacingTop(HomeRoute) }
     }
 
     @Test

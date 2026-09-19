@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TuneScout</string>
+    <string name="home_tab_songs">Home</string>
+    <string name="home_tab_library">Your Library</string>
 </resources>

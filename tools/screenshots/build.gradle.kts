@@ -11,6 +11,7 @@ dependencies {
     testImplementation(projects.core.model)
     testImplementation(projects.core.testing)
     testImplementation(projects.feature.album)
+    testImplementation(projects.feature.library)
     testImplementation(projects.feature.miniPlayer)
     testImplementation(projects.feature.player)
     testImplementation(projects.feature.queue)

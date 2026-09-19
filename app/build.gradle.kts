@@ -40,12 +40,14 @@ dependencies {
 
     implementation(projects.feature.splash)
     implementation(projects.feature.songs)
+    implementation(projects.feature.library)
     implementation(projects.feature.songOptions)
     implementation(projects.feature.miniPlayer)
     implementation(projects.feature.player)
     implementation(projects.feature.queue)
     implementation(projects.feature.album)
     implementation(projects.feature.themeSelection)
+    implementation(projects.feature.addToPlaylist)
 
     testImplementation(libs.koin.test)
     testImplementation(projects.core.testing)

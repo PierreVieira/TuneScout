@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.feature.album.presentation.viewmodel.AlbumViewModel
+import com.pierre.tunescout.ui.utils.window.rememberWindowSize
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -16,6 +17,7 @@ fun AlbumScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     AlbumContent(
         uiState = uiState,
+        isHeaderInline = rememberWindowSize().isSideBySide,
         onEvent = viewModel::onEvent,
     )
 }

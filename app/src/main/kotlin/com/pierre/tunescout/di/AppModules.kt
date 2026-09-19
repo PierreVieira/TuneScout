@@ -6,7 +6,9 @@ import com.pierre.tunescout.core.navigation.di.navigationModule
 import com.pierre.tunescout.core.network.di.networkModule
 import com.pierre.tunescout.core.playback.di.playbackModule
 import com.pierre.tunescout.core.utils.di.utilsModule
+import com.pierre.tunescout.feature.addtoplaylist.di.addToPlaylistModule
 import com.pierre.tunescout.feature.album.di.albumModule
+import com.pierre.tunescout.feature.library.di.libraryModule
 import com.pierre.tunescout.feature.miniplayer.di.miniPlayerModule
 import com.pierre.tunescout.feature.player.di.playerModule
 import com.pierre.tunescout.feature.queue.di.queueModule
@@ -26,7 +28,9 @@ val appModules: List<Module> = listOf(
     playbackModule,
     splashModule,
     songsModule,
+    libraryModule,
     songOptionsModule,
+    addToPlaylistModule,
     miniPlayerModule,
     playerModule,
     queueModule,

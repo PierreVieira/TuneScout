@@ -23,3 +23,41 @@ internal val MIGRATION_1_2 = object : Migration(1, 2) {
         )
     }
 }
+
+internal val MIGRATION_2_3 = object : Migration(2, 3) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `playlists` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`name` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `playlist_songs` (`playlistId` INTEGER NOT NULL, " +
+                "`songId` INTEGER NOT NULL, `position` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`playlistId`, `songId`), FOREIGN KEY(`playlistId`) REFERENCES `playlists`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`songId`) REFERENCES `songs`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_playlist_songs_songId` ON `playlist_songs` (`songId`)",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_playlist_songs_position` ON `playlist_songs` (`position`)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `favorite_songs` (`songId` INTEGER NOT NULL, " +
+                "`favoritedAt` INTEGER NOT NULL, PRIMARY KEY(`songId`), " +
+                "FOREIGN KEY(`songId`) REFERENCES `songs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_favorite_songs_favoritedAt` ON `favorite_songs` (`favoritedAt`)",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `library_recent_searches` (`itemId` TEXT NOT NULL, " +
+                "`searchedAt` INTEGER NOT NULL, PRIMARY KEY(`itemId`))",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_library_recent_searches_searchedAt` " +
+                "ON `library_recent_searches` (`searchedAt`)",
+        )
+    }
+}

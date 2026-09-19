@@ -44,7 +44,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
             description = "The same sheet from every list and from the player",
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                PlayerContent(uiState = playerBehindSheet, onEvent = {})
+                PlayerContent(uiState = playerBehindSheet, isSideBySide = false, onEvent = {})
                 Scrim()
                 OptionsSheet()
             }
@@ -75,7 +75,7 @@ private fun BoxScope.OptionsSheet() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             BottomSheetDefaults.DragHandle()
             SongOptionsContent(
-                uiState = SongOptionsUiState(song = getLucky, isRecentlyPlayed = true),
+                uiState = SongOptionsUiState(song = getLucky, isRecentlyPlayed = true, isFavorite = false),
                 onEvent = {},
             )
         }

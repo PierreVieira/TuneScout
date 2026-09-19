@@ -2,6 +2,61 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-19 — Two tabs, a library, and one ruler for responsiveness
+
+**The tab host lives in `app`, not in a `feature/home`.** It composes `songs` and `library`, and a
+feature may never depend on a feature — the same rule that put `MiniPlayerScaffold` in `app`.
+`HomeRoute` is one entry of the root back stack and renders a nested `NavDisplay` with one
+`NavBackStack` per tab, built through `rememberDecoratedNavEntries` and the `entries =` overload,
+which is what preserves each tab's scroll, query and ViewModel across a switch. Cost: a second
+display to keep in step with the first.
+
+**Only the tabs live in that nested display.** The player, an album, a playlist, the library search
+and every sheet are pushed onto the root back stack and cover the bar, exactly as the album screen
+already did. The alternative — depth inside a tab, so the bar stays visible on a playlist the way
+Spotify does — would mean teaching `Navigator` and `BackStackController` which stack a route
+belongs to. That is the trade this PR declines: the bar disappears on a playlist, and the two
+navigation classes stay tab-agnostic.
+
+**The bar is hidden with `NavigationSuiteType.None`, not by removing the scaffold.** Swapping the
+composable that wraps the content would rebuild the `NavDisplay` inside it and take the back stack
+with it.
+
+**Responsiveness is one ruler now: the window size class.** `SongsContent`, `AlbumContent` and
+`PlayerContent` decided landscape with `maxWidth > maxHeight` inside their own `BoxWithConstraints`,
+which measures whatever box they happen to sit in — a rail on the side would have changed their
+answer. They now read `TuneScoutWindowSize` (`:ui:utils`, over `currentWindowAdaptiveInfo()`), and
+the `*Screen` composable resolves it and passes a plain `Boolean` down, so the `*Content`
+composables stay renderable on their own by the screenshot generators and the Compose tests, which
+have no real window. `PlayerContent` keeps its `BoxWithConstraints`: it still needs the real `Dp`
+to clamp the artwork; only the breakpoint moved. Cost: one new dependency (`material3-adaptive`),
+and a `Boolean` parameter on three `*Content` signatures.
+
+**The rail's breakpoint is written by hand.** `NavigationSuiteScaffoldDefaults.navigationSuiteType`
+returns a *bar* for a compact height, which is exactly the phone turned sideways this was meant to
+give a rail. The type is therefore computed from the width and height classes directly.
+
+**Playlists and likes are rows, the view mode is a preference.** `core/database` goes to version 3
+with `playlists`, `playlist_songs` (position is an explicit column), `favorite_songs` and
+`library_recent_searches`; list-or-grid is a single value, so it lives in the Preferences DataStore
+next to the theme.
+
+**A recent search stores a library item, not a typed term.** That is what the Spotify screen shows,
+and it is what the user removes with the `X`. The row is keyed by a string the data layer encodes
+from a `LibraryItemKey`, so the liked songs — which are not a playlist row — can be one too. Cost:
+no foreign key, so deleting a playlist deletes its recent search explicitly in the repository, and
+a key that no longer resolves is dropped on read.
+
+**A playlist holds a song once.** The primary key is `(playlistId, songId)`, and `appendSong`
+returns early when the song is already there rather than upserting it to a new position — adding a
+song twice used to move it to the end of the playlist, which the instrumented test caught.
+
+**Liking a song and adding it to a playlist are rows in the options sheet.** The sheet is already
+what every list opens for a song, so neither action needed a new entry point. Picking the playlist
+is `feature/add_to_playlist`, a module of its own, because `song_options` — outside it — navigates
+there; that is the same line that created `song_options` itself. The library's own four routes stay
+in `feature/library`, because nothing outside opens them.
+
 ## 2026-09-19 — Playback split into api and impl
 
 **`core/playback` is two modules: `api` holds the role interfaces, `impl` holds ExoPlayer.** Every
