@@ -4,26 +4,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
-import com.pierre.tunescout.navigation.TuneScoutNavDisplay
-import com.pierre.tunescout.permission.PlaybackNotificationPermission
+import com.pierre.tunescout.presentation.content.MainContent
+import com.pierre.tunescout.presentation.viewmodel.MainViewModel
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setOnExitAnimationListener(SplashScreenViewProvider::remove)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             TuneScoutTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    TuneScoutNavDisplay()
-                }
-                PlaybackNotificationPermission()
+                MainContent(
+                    requestNotificationPermissionsUiAction = viewModel.requestNotificationPermissionsUiAction,
+                )
             }
         }
     }
