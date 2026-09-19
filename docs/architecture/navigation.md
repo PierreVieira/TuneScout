@@ -77,10 +77,15 @@ fun EntryProviderScope<NavKey>.player() {
 Route arguments reach the ViewModel as a constructor parameter (`route: PlayerRoute`) injected via
 `parametersOf(route)` — never via `SavedStateHandle.toRoute()`.
 
-Bottom sheets are routes too: the more-options sheet is `SongOptionsRoute`, pushed with
-`navigator.navigate(SongOptionsRoute(songId))` and dismissed with `navigateBack()`. Its entry carries
-the metadata of a bottom-sheet scene strategy so `NavDisplay` renders it over the previous entry instead
-of replacing it, the same mechanism as `DialogSceneStrategy.dialog()` for dialogs.
+Bottom sheets are routes too: the more-options sheet is `SongOptionsRoute` and the queue is
+`QueueRoute`, pushed with `navigator.navigate(...)` and dismissed with `navigateBack()`. Their entries
+carry the metadata of a bottom-sheet scene strategy so `NavDisplay` renders them over the previous
+entry instead of replacing it, the same mechanism as `DialogSceneStrategy.dialog()` for dialogs.
+
+A sheet route implements `OverlayRoute` as well as being registered with that metadata. The marker is
+what anything reading the back stack uses to tell "which screen is the user on" from "what is drawn on
+top of it" — the mini player is hidden on the player, and must stay hidden when a sheet opens over it.
+Give every new sheet route the marker.
 
 For shared-element transitions, the entry's animation scope is `LocalNavAnimatedContentScope.current`.
 

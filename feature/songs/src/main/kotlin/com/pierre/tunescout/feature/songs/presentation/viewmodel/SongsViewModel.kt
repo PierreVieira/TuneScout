@@ -6,6 +6,7 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
@@ -30,13 +31,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration.Companion.milliseconds
 
-private val searchDebounce = 300.milliseconds
-private val idleLoadStates = LoadStates(
-    refresh = LoadState.NotLoading(endOfPaginationReached = true),
-    prepend = LoadState.NotLoading(endOfPaginationReached = true),
-    append = LoadState.NotLoading(endOfPaginationReached = true),
-)
-
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
     searchSongs: SearchSongs,
@@ -44,6 +38,12 @@ class SongsViewModel(
     private val playbackController: PlaybackController,
     private val navigator: Navigator,
 ) : ViewModel() {
+    private val searchDebounce = 300.milliseconds
+    private val idleLoadStates = LoadStates(
+        refresh = LoadState.NotLoading(endOfPaginationReached = true),
+        prepend = LoadState.NotLoading(endOfPaginationReached = true),
+        append = LoadState.NotLoading(endOfPaginationReached = true),
+    )
     private val query = MutableStateFlow("")
 
     val uiState: StateFlow<SongsUiState> = combine(
@@ -72,15 +72,12 @@ class SongsViewModel(
     fun onEvent(event: SongsUiEvent) = when (event) {
         is SongsUiEvent.OnQueryChanged -> query.value = event.query
         SongsUiEvent.OnClearQueryClicked -> query.value = ""
-        is SongsUiEvent.OnSongClicked -> playAndOpen(event.song, event.queue)
+        is SongsUiEvent.OnSongClicked -> playAndOpen(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
     }
 
-    private fun playAndOpen(
-        song: Song,
-        queue: List<Song>,
-    ) {
-        playbackController.play(song = song, queue = queue)
+    private fun playAndOpen(song: Song) {
+        playbackController.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
         navigator.navigate(PlayerRoute(songId = song.id))
     }
 }

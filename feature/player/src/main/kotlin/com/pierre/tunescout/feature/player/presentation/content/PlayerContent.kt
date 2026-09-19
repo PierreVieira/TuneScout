@@ -30,6 +30,7 @@ import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.getPlayButtonState
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
 
@@ -201,7 +202,7 @@ private fun PlayerDetails(
             },
         )
         PlaybackControls(
-            isPlaying = uiState.isPlaying,
+            playButtonState = getPlayButtonState(isPlaying = uiState.isPlaying, hasEnded = uiState.hasEnded),
             hasPrevious = uiState.hasPrevious,
             hasNext = uiState.hasNext,
             isRepeatEnabled = uiState.isRepeatEnabled,
@@ -209,6 +210,7 @@ private fun PlayerDetails(
             onPreviousClick = { onEvent(PlayerUiEvent.OnSkipPreviousClicked) },
             onNextClick = { onEvent(PlayerUiEvent.OnSkipNextClicked) },
             onRepeatClick = { onEvent(PlayerUiEvent.OnRepeatClicked) },
+            onQueueClick = { onEvent(PlayerUiEvent.OnQueueClicked) },
         )
     }
 }

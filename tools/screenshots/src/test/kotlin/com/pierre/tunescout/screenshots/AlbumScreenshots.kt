@@ -4,13 +4,13 @@ import com.pierre.tunescout.feature.album.presentation.content.AlbumContent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import org.junit.Test
 
-private val loadedAlbum = AlbumUiState.Loaded(
-    album = randomAccessMemories,
-    nowPlayingId = null,
-    isPlaying = false,
-)
-
 internal class AlbumScreenshots : ReadmeScreenshotsTest() {
+    private val loadedAlbum = AlbumUiState.Loaded(
+        album = randomAccessMemories,
+        nowPlayingId = null,
+        isPlaying = false,
+    )
+
     @Test
     fun album() {
         capture(

@@ -8,7 +8,7 @@ core/
 ├── model/               # Domain models shared across features (Song, Album) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider — pure JVM
 ├── network/             # ITunesRemoteDataSource interface + Ktor implementation, DTOs (internal)
-├── database/            # Room database, DAOs, entities
+├── database/            # Room database, DAOs, entities, migrations
 ├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, BackStackController, routes
 ├── playback/            # Playback interface over Media3 ExoPlayer
 └── testing/             # Test helpers shared by feature tests (test-only dependency)
@@ -20,6 +20,8 @@ feature/
 ├── splash/
 ├── songs/
 ├── player/
+├── queue/
+├── miniplayer/
 └── album/
 tools/
 ├── ktlint-custom-rules/ # The tunescout-style ktlint ruleset
@@ -84,6 +86,11 @@ interfaces has no `presentation/`).
 Shared things live in core: domain models (`core/model`), `NavKey` routes and the `Navigator`
 (`core/navigation`), the playback interface (`core/playback`) and the recently-played repository
 (`core/database`). Features talk to each other only through those.
+
+`feature/miniplayer` is the one feature that is not a route. It exposes `MiniPlayerScaffold`, which
+`app` wraps around the `NavDisplay`: the bar is laid out below every screen and owns the bottom
+window insets while it is on screen. Songs and Album do not know it exists, which keeps the
+feature-to-feature rule intact.
 
 The rules are enforced by [modules-graph-assert](https://github.com/jraska/modules-graph-assert) in the
 root `build.gradle.kts`:

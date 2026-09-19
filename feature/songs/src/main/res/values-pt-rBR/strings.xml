@@ -11,4 +11,6 @@
     <string name="songs_error_offline">Verifique sua conexão e tente de novo.</string>
     <string name="songs_error_rate_limited">O catálogo do iTunes está ocupado agora. Espere um pouco e tente de novo.</string>
     <string name="songs_options_view_album">Ver álbum</string>
+    <string name="songs_options_play_next">Tocar a seguir</string>
+    <string name="songs_options_add_to_queue">Adicionar à fila</string>
 </resources>

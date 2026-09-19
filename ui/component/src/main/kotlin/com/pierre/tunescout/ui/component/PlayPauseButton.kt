@@ -18,10 +18,11 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 private val buttonSize = 72.dp
 private val playIconSize = 54.dp
 private val pauseIconSize = 28.dp
+private val replayIconSize = 34.dp
 
 @Composable
 fun PlayPauseButton(
-    isPlaying: Boolean,
+    state: PlayButtonState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -33,20 +34,17 @@ fun PlayPauseButton(
             .clickable(onClick = onClick, role = Role.Button),
         contentAlignment = Alignment.Center,
     ) {
-        if (isPlaying) {
-            Icon(
-                imageVector = TuneScoutIcons.pause,
-                contentDescription = stringResource(R.string.ui_pause),
-                tint = TuneScoutColors.textPrimary,
-                modifier = Modifier.size(pauseIconSize),
-            )
-        } else {
-            Icon(
-                imageVector = TuneScoutIcons.play,
-                contentDescription = stringResource(R.string.ui_play),
-                tint = TuneScoutColors.textPrimary,
-                modifier = Modifier.size(playIconSize),
-            )
-        }
+        Icon(
+            imageVector = state.icon,
+            contentDescription = stringResource(state.contentDescription),
+            tint = TuneScoutColors.textPrimary,
+            modifier = Modifier.size(
+                when (state) {
+                    PlayButtonState.Play -> playIconSize
+                    PlayButtonState.Pause -> pauseIconSize
+                    PlayButtonState.Replay -> replayIconSize
+                },
+            ),
+        )
     }
 }

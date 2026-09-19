@@ -24,23 +24,24 @@ import org.junit.Test
 import kotlin.time.Duration.Companion.seconds
 
 private val sheetCornerRadius = 28.dp
-private val playerBehindSheet = PlayerUiState.Loaded(
-    song = getLucky,
-    status = PlaybackStatus.Paused,
-    position = 18.seconds,
-    duration = 29.seconds,
-    isRepeatEnabled = false,
-    hasPrevious = true,
-    hasNext = true,
-)
 
 internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
+    private val playerBehindSheet = PlayerUiState.Loaded(
+        song = getLucky,
+        status = PlaybackStatus.Paused,
+        position = 18.seconds,
+        duration = 29.seconds,
+        isRepeatEnabled = false,
+        hasPrevious = true,
+        hasNext = true,
+    )
+
     @Test
     fun options() {
         capture(
             fileName = "options",
-            title = "One tap to the album",
-            description = "Song options open as a sheet, from any list or from the player",
+            title = "Queue it, or open its album",
+            description = "The same sheet from every list and from the player",
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 PlayerContent(uiState = playerBehindSheet, onEvent = {})

@@ -9,6 +9,8 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+private val defaultHoldDuration = 700.milliseconds
+
 class SplashViewModel(
     private val navigator: Navigator,
     private val holdDuration: Duration = defaultHoldDuration,
@@ -18,9 +20,5 @@ class SplashViewModel(
             delay(holdDuration)
             navigator.navigateReplacingTop(SongsRoute)
         }
-    }
-
-    private companion object {
-        val defaultHoldDuration = 700.milliseconds
     }
 }

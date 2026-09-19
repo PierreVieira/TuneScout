@@ -11,9 +11,12 @@ dependencies {
     testImplementation(projects.core.model)
     testImplementation(projects.core.testing)
     testImplementation(projects.feature.album)
+    testImplementation(projects.feature.miniplayer)
     testImplementation(projects.feature.player)
+    testImplementation(projects.feature.queue)
     testImplementation(projects.feature.songs)
     testImplementation(projects.feature.splash)
+    testImplementation(projects.ui.component)
     testImplementation(projects.ui.theme)
 
     testImplementation(libs.androidx.paging.common)

@@ -37,6 +37,32 @@ class SongOptionsContentTest {
     }
 
     @Test
+    fun givenASongAddToQueueEmitsEvent() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                SongOptionsContent(uiState = SongOptionsUiState(song = song()), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Add to queue").performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnAddToQueueClicked)
+    }
+
+    @Test
+    fun givenASongPlayNextEmitsEvent() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                SongOptionsContent(uiState = SongOptionsUiState(song = song()), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Play next").performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnPlayNextClicked)
+    }
+
+    @Test
     fun givenNoSongYetViewAlbumIsInert() = compose.use {
         setContent {
             TuneScoutTheme {

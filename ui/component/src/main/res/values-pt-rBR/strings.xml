@@ -4,6 +4,7 @@
     <string name="ui_more_options">Mais opções</string>
     <string name="ui_play">Tocar</string>
     <string name="ui_pause">Pausar</string>
+    <string name="ui_replay">Tocar de novo</string>
     <string name="ui_skip_next">Próxima música</string>
     <string name="ui_skip_previous">Música anterior</string>
     <string name="ui_repeat_on">Repetição ligada</string>

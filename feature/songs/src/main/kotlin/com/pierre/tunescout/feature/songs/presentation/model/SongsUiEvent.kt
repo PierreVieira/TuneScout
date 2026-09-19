@@ -11,7 +11,6 @@ sealed interface SongsUiEvent {
 
     data class OnSongClicked(
         val song: Song,
-        val queue: List<Song>,
     ) : SongsUiEvent
 
     data class OnSongOptionsClicked(

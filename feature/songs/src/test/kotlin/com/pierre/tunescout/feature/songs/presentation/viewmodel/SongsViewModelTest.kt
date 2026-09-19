@@ -5,14 +5,15 @@ import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.testing.asSnapshot
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
-import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import io.mockk.every
@@ -40,7 +41,7 @@ class SongsViewModelTest {
             // Given
             prepareScenario(
                 recentlyPlayed = listOf(song(id = 1), song(id = 2)),
-                playback = PlaybackState.Idle.copy(currentSong = song(id = 2), status = PlaybackStatus.Playing),
+                playback = playbackState(songs = listOf(song(id = 2))),
             )
 
             // When
@@ -96,21 +97,23 @@ class SongsViewModelTest {
     }
 
     @Test
-    fun `WHEN clicking a song THEN plays it within its queue and opens the player`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario()
-            val queue = listOf(song(id = 1), song(id = 2))
+    fun `WHEN clicking a song THEN plays it alone and opens the player`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario()
 
-            // When
-            viewModel.onEvent(SongsUiEvent.OnSongClicked(song = song(id = 2), queue = queue))
+        // When
+        viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
 
-            // Then
-            verifyOrder {
-                playbackController.play(song = song(id = 2), queue = queue)
-                navigator.navigate(PlayerRoute(songId = 2))
-            }
+        // Then
+        verifyOrder {
+            playbackController.play(
+                song = song(id = 2),
+                songs = listOf(song(id = 2)),
+                context = PlaybackContext.SingleSong,
+            )
+            navigator.navigate(PlayerRoute(songId = 2))
         }
+    }
 
     @Test
     fun `WHEN clicking the song options THEN opens the options sheet`() = runTest(mainDispatcher.dispatcher) {

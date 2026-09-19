@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="queue_title">Fila</string>
+    <string name="queue_playing_from">Tocando de %1$s</string>
+    <string name="queue_now_playing">Tocando agora</string>
+    <string name="queue_next_in_queue">Próximas na fila</string>
+    <string name="queue_next_from">A seguir de %1$s</string>
+    <string name="queue_next_up">A seguir</string>
+    <string name="queue_empty_title">A fila está vazia</string>
+    <string name="queue_empty_description">Adicione uma música ou um álbum inteiro à fila e eles aparecem aqui.</string>
+    <string name="queue_remove">Remover da fila</string>
+    <string name="queue_reorder">Reordenar %1$s</string>
+    <string name="queue_move_up">Mover para cima</string>
+    <string name="queue_move_down">Mover para baixo</string>
+</resources>

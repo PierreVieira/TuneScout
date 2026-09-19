@@ -2,6 +2,142 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Landscape, and a foreground service that started too early
+
+**The media service is started when the player starts playing, not when it is asked to.** Calling
+`startForegroundService` gives the service five seconds to promote itself, and Media3 can only do
+that once the player it wraps is actually playing. Pressing play on a song that had already finished
+started the service over a player that stayed in `STATE_ENDED`, and Android killed the app with
+`ForegroundServiceDidNotStartInTimeException`. The launcher now runs from
+`onIsPlayingChanged(true)`, so the service only ever starts with something to show.
+
+**A finished song replays instead of doing nothing.** ExoPlayer ignores `play()` at the end of the
+timeline, so the play button used to be inert once the preview ran out. `PlayButtonState` adds a
+third state to the two the button had: `Replay` seeks to zero and plays, and the player and the mini
+player both show it.
+
+**Landscape caps the content instead of stretching it.** `Modifier.readableWidth()` holds a list near
+the width a phone gives it in portrait, which is what its rows were laid out for, and the parent
+centres what is left. The cap comes before the fill — the other order hands `widthIn` a minimum that
+is already the parent's width, which it cannot go below, and nothing is capped at all. The Songs
+header puts its title beside the search field when the window is wider than it is tall, and the album
+header lays its artwork beside its titles, both of which buy back a row of the list. The bottom sheet
+skips its half-open state, which in a landscape window hid the last option.
+
+**The mini player stands down while the keyboard is up.** It sits exactly where the keyboard opens,
+so it was drawing a bar across the search results, and in landscape there is barely room for a row of
+them as it is. Hiding it gives that room back. The check reads `WindowInsets.isImeVisible` rather
+than measuring `WindowInsets.ime`, which still reports the navigation bar's height while the keyboard
+is closed — measuring it hid the bar permanently.
+
+**The end-to-end flows close the keyboard before touching a result.** They used to type and click
+straight away, which works in portrait and cannot in landscape: the keyboard leaves no height for the
+list, so the row is in the semantics tree but not on screen. They now send the field's IME action,
+which is the same thing the search key on the keyboard does, and both flows pass in either
+orientation.
+
+**The mini player only consumed the bottom navigation bar inset, not all four.** It sits below the
+content and covers the bottom bar, so that is the only side it can consume; consuming the whole
+`navigationBars` inset let a landscape side bar sit on top of the list. It is also capped and centred
+inside its own navigation bar padding rather than around it, so it lines up with the list above it
+instead of with the window.
+
+## 2026-09-18 — Queue, mini player and a saved session
+
+**"Play next" and "Add to queue" differ only by where they insert.** Both tag the entry
+`UserQueue`; play-next lands immediately after the current song, add-to-queue after the last thing
+already queued by hand. Calling play-next twice therefore puts the most recent one first, which is
+what the label promises and what the queue screen then shows.
+
+**The queue is a bottom sheet, and reordering needs a long press because of it.** It is a route
+rendered by the same `BottomSheetSceneStrategy` the song options use, so it opens over the player the
+way Spotify's does. The cost is the one that made a full screen tempting first: a plain drag on a row
+is swallowed by the sheet's own drag-to-dismiss, and the row goes nowhere while the sheet closes. The
+handle therefore uses `longPressDraggableHandle()` — the long press claims the pointer before the
+sheet can read it as a dismiss — which is also how Spotify's own queue behaves. Dragging the sheet
+itself still closes it.
+
+**Reordering uses `sh.calvin.reorderable`, and the dependency lives in `feature:queue`.** Compose
+has no reorderable `LazyColumn`, and hand-rolling one is a pile of gesture and auto-scroll code. The
+library is declared by the one module that reorders, rather than contained in `ui:component` the way
+`compose-shimmer` is — shimmer is used by four screens, this is used by one. If a second list ever
+reorders, it moves down to `ui:component`. Rows are matched by entry id, not by index: the callback
+hands back `LazyListItemInfo`, and ids survive the section headers between the two tiers.
+
+**The mini player opens the queue too.** It is the only thing on screen while browsing, so it
+carries the same queue icon the player does next to its play button.
+
+**The drag handle is not the only way to reorder.** A handle is invisible to a screen reader, so
+each queued row also carries "Move up" and "Move down" as Compose custom accessibility actions,
+which move the entry onto its neighbour's position — the same call the drag makes.
+
+**`SongRow` takes a trailing slot instead of an `onMoreClick`.** The queue row needs two controls
+where the others need one, and the row layout (artwork, title, subtitle) is now shared by four
+screens. The `⋮` moved into `SongRowMoreAction` so the call sites still read in one line.
+
+**The mini player is a feature, composed by `app`, not by the screens.** `MiniPlayerScaffold` wraps
+the `NavDisplay`; Songs and Album never reference it, so the feature-never-depends-on-feature rule
+holds and there is one place that decides where the bar appears. It is laid out below the content
+rather than over it, and it consumes the navigation bar insets while it is visible, so the screen
+above it never pads for a bar it no longer touches. Cost: `app` decides on which routes the bar is
+allowed, which is one `when` over routes in `MiniPlayerRoutes.kt`.
+
+**A sheet does not change which screen the user is on.** That `when` first looks past any route
+marked `OverlayRoute` — the song options and the queue — because the options sheet opened from the
+player is still the player, and the bar was appearing behind it. The marker lives on the routes in
+`core:navigation` rather than as a list in `app`, so a new sheet cannot forget to join it.
+
+**A closed app reopens paused, where it was.** `playback_queue` and a single-row `playback_session`
+table hold the entries, the current one, the position and repeat. `PlaybackSessionKeeper` restores
+before it starts recording — reversing that order would save the empty startup state over the
+session it was about to read. It saves on every change that matters (queue, current song, repeat,
+play/pause) and otherwise at most every five seconds while playing, which is the most a kill can
+cost. Restoring calls `prepare()` but never `play()`, so the song is buffered and ready at its old
+position and no notification appears until the user presses play. Cost: a 30-second preview is
+fetched at launch that the user may never resume.
+
+**The schema is exported and the migration is written by hand.** The database went to version 2
+with `exportSchema = true` (`room.schemaLocation` through KSP, no extra Gradle plugin), and the
+1 → 2 migration creates the two tables with the DDL Room generated for them. Destroying the
+database would have been one line, but it would also throw away the recently played history on
+upgrade. Version 1 had never been exported, so its schema was regenerated by compiling the old
+`@Database` declaration once: with `1.json` committed next to `2.json`, `MigrationTestHelper` can
+build a real version 1 database and validate the migrated one against the current entities. Cost:
+`1.json` is a reconstruction rather than a historical artifact — it matches because the three
+tables it describes did not change.
+
+**The player's `MediaItem` is built behind a `MediaItemFactory`.** Building one reaches
+`Uri.parse`, which is stubbed to throw in JVM unit tests, and that alone kept the whole queue
+controller untestable off-device. The factory is a `fun interface` whose test double returns a
+`MediaItem` carrying only the entry id, so the controller's timeline bookkeeping — the mirror list
+that has to stay in step with ExoPlayer through every insert, move and removal — is now covered by
+ordinary unit tests. Cost: one indirection on the hottest path in the controller.
+
+## 2026-09-18 — Playback queue
+
+**The queue is explicit, and has two tiers.** `PlaybackState` no longer carries a `List<Song>` that
+whatever screen started playback happened to hand over; it carries a list of `QueueEntry`, each one
+tagged `Context` (the album being played) or `UserQueue` (added by hand). The play order is the
+context up to the current song, then everything queued by hand, then the rest of the context — the
+Spotify model, where starting a different album keeps what you queued yourself. Cost: two sources to
+keep straight instead of a flat list, and every mutation has to say which tier it touches.
+
+**Tapping a search result plays that song alone.** Search and the recently-played list used to pass
+the whole list as the queue, so playback rolled into songs the user never asked for. They now play a
+single song under `PlaybackContext.SingleSong`. Tapping a track inside an album still plays the
+album from there, which is the one place a list is the context.
+
+**A queue entry is identified by its own id, not by the song's.** The same song can sit in the queue
+twice, so `QueueEntry.id` is a uuid and it is what the `MediaItem` carries as its media id. The
+previous controller looked the current song up by matching the media id against the queue, which
+returned the first copy rather than the one playing.
+
+**The ExoPlayer timeline is mutated, never rebuilt.** Adding, removing and reordering go through
+`addMediaItems`/`removeMediaItem`/`moveMediaItem` on the existing timeline, so touching the queue
+never interrupts the song that is playing. The controller keeps a `List<QueueEntry>` mirror of that
+timeline; the ordering logic it needs lives in `QueueTimeline.kt` as pure functions, which is what
+the unit tests exercise — ExoPlayer is final and faking it would test the mock.
+
 ## 2026-09-18 — README screenshots
 
 **The README's screenshots are generated, not captured.** `./scripts/screenshots.sh` renders the

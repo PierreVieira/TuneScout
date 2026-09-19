@@ -1,13 +1,16 @@
 package com.pierre.tunescout.core.playback.internal
 
-import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.pierre.tunescout.core.model.NO_QUEUE_INDEX
+import com.pierre.tunescout.core.model.PlaybackContext
+import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.QueueEntry
+import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.playback.PlaybackController
 import kotlinx.coroutines.CoroutineScope
@@ -18,21 +21,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-
-private val positionTick = 250.milliseconds
 
 internal class ExoPlayerPlaybackController(
     private val player: ExoPlayer,
     private val serviceLauncher: PlaybackServiceLauncher,
+    private val mediaItemFactory: MediaItemFactory,
     private val scope: CoroutineScope,
-) : PlaybackController {
+) : PlaybackController,
+    RestorablePlayback {
     override val state: StateFlow<PlaybackState>
         field = MutableStateFlow(PlaybackState.Idle)
 
-    private var queue: List<Song> = emptyList()
+    private val positionTick = 250.milliseconds
+    private var entries: List<QueueEntry> = emptyList()
+    private var context: PlaybackContext? = null
     private var positionTicker: Job? = null
+
+    private val currentIndex: Int
+        get() = if (player.mediaItemCount == 0) NO_QUEUE_INDEX else player.currentMediaItemIndex
 
     init {
         player.addListener(PlayerListener())
@@ -40,19 +49,82 @@ internal class ExoPlayerPlaybackController(
 
     override fun play(
         song: Song,
-        queue: List<Song>,
+        songs: List<Song>,
+        context: PlaybackContext,
     ) {
-        this.queue = queue.ifEmpty { listOf(song) }
-        val startIndex = this.queue.indexOfFirst { queued -> queued.id == song.id }.coerceAtLeast(0)
-        player.setMediaItems(this.queue.map { queued -> queued.toMediaItem() }, startIndex, 0L)
+        val timeline = buildTimeline(
+            songs = songs.ifEmpty { listOf(song) },
+            startSongId = song.id,
+            carriedEntries = getCarriedEntries(entries, currentIndex),
+            createEntryId = ::createEntryId,
+        )
+        entries = timeline.entries
+        this.context = context
+        player.setMediaItems(entries.map(mediaItemFactory::createMediaItem), timeline.startIndex, 0L)
+        startPlaying()
+    }
+
+    override fun restore(session: PlaybackSession) {
+        if (session.entries.isEmpty()) return
+        entries = session.entries
+        context = session.context
+        val startIndex = entries
+            .indexOfFirst { entry -> entry.id == session.currentEntryId }
+            .coerceAtLeast(0)
+        player.setMediaItems(
+            entries.map(mediaItemFactory::createMediaItem),
+            startIndex,
+            session.position.inWholeMilliseconds,
+        )
+        player.repeatMode = if (session.isRepeatEnabled) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
         player.prepare()
-        player.play()
-        serviceLauncher.launch()
         publish()
     }
 
+    override fun queueNext(songs: List<Song>) {
+        insert(songs, currentIndex + 1)
+    }
+
+    override fun addToQueue(songs: List<Song>) {
+        insert(songs, getUserQueueInsertIndex(entries, currentIndex))
+    }
+
+    override fun removeFromQueue(entryId: String) {
+        val index = entries.indexOfFirst { entry -> entry.id == entryId }
+        if (index < 0) return
+        entries = entries.filterIndexed { position, _ -> position != index }
+        player.removeMediaItem(index)
+        publish()
+    }
+
+    override fun moveInQueue(
+        fromIndex: Int,
+        toIndex: Int,
+    ) {
+        if (fromIndex !in entries.indices || toIndex !in entries.indices || fromIndex == toIndex) return
+        entries = entries.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+        player.moveMediaItem(fromIndex, toIndex)
+        publish()
+    }
+
+    override fun skipTo(entryId: String) {
+        val index = entries.indexOfFirst { entry -> entry.id == entryId }
+        if (index < 0) return
+        player.seekTo(index, 0L)
+        resume()
+    }
+
     override fun togglePlayPause() {
-        if (player.isPlaying) player.pause() else player.play()
+        when {
+            player.isPlaying -> player.pause()
+            player.playbackState == Player.STATE_ENDED -> replay()
+            else -> resume()
+        }
+    }
+
+    private fun replay() {
+        player.seekTo(0L)
+        resume()
     }
 
     override fun seekTo(position: Duration) {
@@ -77,14 +149,36 @@ internal class ExoPlayerPlaybackController(
         publish()
     }
 
+    private fun insert(
+        songs: List<Song>,
+        index: Int,
+    ) {
+        if (songs.isEmpty()) return
+        val wasEmpty = entries.isEmpty()
+        val added = buildEntries(songs, QueueSource.UserQueue, ::createEntryId)
+        entries = entries.take(index) + added + entries.drop(index)
+        player.addMediaItems(index, added.map(mediaItemFactory::createMediaItem))
+        if (wasEmpty) startPlaying() else publish()
+    }
+
+    private fun startPlaying() {
+        player.prepare()
+        resume()
+    }
+
+    private fun resume() {
+        player.play()
+        publish()
+    }
+
+    private fun createEntryId(): String = UUID.randomUUID().toString()
+
     private fun publish() {
         state.update {
             PlaybackState(
-                currentSong = player.currentMediaItem
-                    ?.mediaId
-                    ?.toLongOrNull()
-                    ?.let(::findSong),
-                queue = queue,
+                entries = entries,
+                currentIndex = currentIndex,
+                context = context,
                 status = player.toStatus(),
                 position = player.currentPosition.coerceAtLeast(0L).milliseconds,
                 duration = player.duration.takeIf { duration -> duration > 0L }?.milliseconds ?: Duration.ZERO,
@@ -92,8 +186,6 @@ internal class ExoPlayerPlaybackController(
             )
         }
     }
-
-    private fun findSong(id: Long): Song? = queue.firstOrNull { song -> song.id == id }
 
     private fun startTicking() {
         positionTicker?.cancel()
@@ -113,7 +205,14 @@ internal class ExoPlayerPlaybackController(
 
     private inner class PlayerListener : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) startTicking() else stopTicking()
+            if (isPlaying) {
+                // Only now: the media service has five seconds to promote itself to the foreground,
+                // and Media3 can only do that once the player it wraps is actually playing.
+                serviceLauncher.launch()
+                startTicking()
+            } else {
+                stopTicking()
+            }
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -132,20 +231,6 @@ internal class ExoPlayerPlaybackController(
         }
     }
 }
-
-private fun Song.toMediaItem(): MediaItem = MediaItem
-    .Builder()
-    .setMediaId(id.toString())
-    .setUri(previewUrl)
-    .setMediaMetadata(
-        MediaMetadata
-            .Builder()
-            .setTitle(title)
-            .setArtist(artistName)
-            .setAlbumTitle(albumTitle)
-            .setArtworkUri(artwork.mediumUrl.toUri())
-            .build(),
-    ).build()
 
 private fun Player.toStatus(): PlaybackStatus = when {
     playerError != null -> PlaybackStatus.Failed

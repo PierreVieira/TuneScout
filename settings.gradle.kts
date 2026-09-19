@@ -53,6 +53,8 @@ include(":feature:splash")
 include(":feature:songs")
 include(":feature:album")
 include(":feature:player")
+include(":feature:miniplayer")
+include(":feature:queue")
 
 include(":tools:ktlint-custom-rules")
 include(":tools:screenshots")

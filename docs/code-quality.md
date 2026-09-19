@@ -3,6 +3,8 @@
 The project uses ktlint for formatting and style, extended with the custom rules in
 [`tools/ktlint-custom-rules`](../tools/ktlint-custom-rules) (ruleset id `tunescout-style`). What those
 rules enforce, and the conventions behind them, is documented in [Code style](architecture/code-style.md).
+Not every convention there is a rule: some need type resolution, which ktlint does not have, and stay
+review conventions.
 
 ## Running it
 
