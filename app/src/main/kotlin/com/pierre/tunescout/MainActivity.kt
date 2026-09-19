@@ -20,7 +20,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TuneScoutTheme {
-                MainContent(uiAction = viewModel.uiAction)
+                MainContent(
+                    requestNotificationPermissionsUiAction = viewModel.requestNotificationPermissionsUiAction,
+                )
             }
         }
     }

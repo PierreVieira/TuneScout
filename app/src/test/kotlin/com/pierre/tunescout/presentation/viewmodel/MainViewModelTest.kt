@@ -34,7 +34,7 @@ class MainViewModelTest {
     fun `WHEN nothing has played yet THEN does not request the notification permission`() =
         runTest(mainDispatcher.dispatcher) {
             // When
-            viewModel.uiAction.test {
+            viewModel.requestNotificationPermissionsUiAction.test {
                 // Then
                 expectNoEvents()
             }
@@ -43,7 +43,7 @@ class MainViewModelTest {
     @Test
     fun `WHEN playback starts THEN requests the notification permission`() = runTest(mainDispatcher.dispatcher) {
         // When
-        viewModel.uiAction.test {
+        viewModel.requestNotificationPermissionsUiAction.test {
             playbackStateFlow.value = playbackState(songs = listOf(song()))
 
             // Then
@@ -55,7 +55,7 @@ class MainViewModelTest {
     fun `WHEN playback starts again THEN does not request the notification permission a second time`() =
         runTest(mainDispatcher.dispatcher) {
             // When
-            viewModel.uiAction.test {
+            viewModel.requestNotificationPermissionsUiAction.test {
                 playbackStateFlow.value = playbackState(songs = listOf(song()))
                 awaitItem()
                 playbackStateFlow.value = playbackState(songs = listOf(song()), status = PlaybackStatus.Paused)

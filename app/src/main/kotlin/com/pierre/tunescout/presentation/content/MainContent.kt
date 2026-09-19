@@ -6,17 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pierre.tunescout.navigation.TuneScoutNavDisplay
 import com.pierre.tunescout.permission.rememberNotificationPermissionRequest
-import com.pierre.tunescout.presentation.model.MainUiAction
 import com.pierre.tunescout.ui.utils.ActionCollector
 import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun MainContent(
-    uiAction: Flow<MainUiAction>,
+    requestNotificationPermissionsUiAction: Flow<Unit>,
     modifier: Modifier = Modifier,
 ) {
     val requestNotificationPermission = rememberNotificationPermissionRequest()
-    ActionCollector(flow = uiAction) {
+    ActionCollector(flow = requestNotificationPermissionsUiAction) {
         requestNotificationPermission()
     }
     Surface(modifier = modifier.fillMaxSize()) {
