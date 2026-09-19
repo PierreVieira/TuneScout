@@ -151,7 +151,7 @@ private fun AlbumHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AlbumArtwork(album = album, size = inlineArtworkSize)
-            AlbumTitles(album = album, textAlign = TextAlign.Start)
+            AlbumTitles(album = album, horizontalAlignment = Alignment.Start)
         }
     } else {
         Column(
@@ -162,11 +162,7 @@ private fun AlbumHeader(
             verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         ) {
             AlbumArtwork(album = album, size = artworkSize)
-            AlbumTitles(
-                album = album,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
+            AlbumTitles(album = album, horizontalAlignment = Alignment.CenterHorizontally)
         }
     }
 }
@@ -192,11 +188,17 @@ private fun AlbumArtwork(
 @Composable
 private fun AlbumTitles(
     album: Album,
-    textAlign: TextAlign,
+    horizontalAlignment: Alignment.Horizontal,
     modifier: Modifier = Modifier,
 ) {
+    val textAlign = if (horizontalAlignment == Alignment.CenterHorizontally) {
+        TextAlign.Center
+    } else {
+        TextAlign.Start
+    }
     Column(
         modifier = modifier,
+        horizontalAlignment = horizontalAlignment,
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
     ) {
         Text(
