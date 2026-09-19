@@ -1,6 +1,7 @@
 package com.pierre.tunescout.core.navigation.scene
 
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavMetadataKey
@@ -10,9 +11,13 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
 
+/**
+ * [containerColor] is read inside the sheet's own composition rather than captured here, so the
+ * sheet follows a theme the user changes while it is open.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 class BottomSheetSceneStrategy<T : Any>(
-    private val containerColor: Color,
+    private val containerColor: @Composable () -> Color,
 ) : SceneStrategy<T> {
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         val lastEntry = entries.lastOrNull() ?: return null

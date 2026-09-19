@@ -39,12 +39,12 @@ internal fun PlaybackTimeline(
             Text(
                 text = position.toClockString(),
                 style = MaterialTheme.typography.bodyMedium,
-                color = TuneScoutColors.white60,
+                color = TuneScoutColors.textTertiary,
             )
             Text(
                 text = stringResource(R.string.player_remaining_time, (duration - position).toClockString()),
                 style = MaterialTheme.typography.bodyMedium,
-                color = TuneScoutColors.white60,
+                color = TuneScoutColors.textTertiary,
             )
         }
     }

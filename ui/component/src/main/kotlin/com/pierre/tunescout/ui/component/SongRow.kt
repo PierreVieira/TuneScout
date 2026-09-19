@@ -75,7 +75,7 @@ fun SongRow(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (isHighlighted) TuneScoutColors.white70 else TuneScoutColors.textSecondary,
+                    color = if (isHighlighted) TuneScoutColors.textEmphasis else TuneScoutColors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

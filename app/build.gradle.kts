@@ -31,6 +31,7 @@ dependencies {
     implementation(projects.core.navigation)
     implementation(projects.core.network)
     implementation(projects.core.database)
+    implementation(projects.core.datastore)
     implementation(projects.core.playback.api)
     implementation(projects.core.playback.impl)
     implementation(projects.ui.theme)
@@ -44,6 +45,7 @@ dependencies {
     implementation(projects.feature.player)
     implementation(projects.feature.queue)
     implementation(projects.feature.album)
+    implementation(projects.feature.themeSelection)
 
     testImplementation(libs.koin.test)
     testImplementation(projects.core.testing)

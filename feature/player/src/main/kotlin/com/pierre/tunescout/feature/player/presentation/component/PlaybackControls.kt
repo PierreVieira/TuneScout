@@ -98,7 +98,7 @@ private fun SkipButton(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = if (enabled) TuneScoutColors.textPrimary else TuneScoutColors.white25,
+            tint = if (enabled) TuneScoutColors.textPrimary else TuneScoutColors.elementSubtle,
             modifier = Modifier.size(skipIconSize),
         )
     }
@@ -118,7 +118,7 @@ private fun RepeatButton(
             contentDescription = stringResource(
                 if (isEnabled) R.string.ui_repeat_on else R.string.ui_repeat_off,
             ),
-            tint = if (isEnabled) TuneScoutColors.textPrimary else TuneScoutColors.white25,
+            tint = if (isEnabled) TuneScoutColors.textPrimary else TuneScoutColors.elementSubtle,
             modifier = Modifier.size(repeatIconSize),
         )
     }

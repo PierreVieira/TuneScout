@@ -9,13 +9,14 @@ core/
 ├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM
 ├── network/             # ITunesRemoteDataSource interface + Ktor implementation, DTOs (internal)
 ├── database/            # Room database, DAOs, entities, migrations
+├── datastore/           # The Preferences DataStore and its Koin module
 ├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, BackStackController, routes
 ├── playback/
 │   ├── api/             # Playback role interfaces (ObservablePlayback, PlaybackStarter, ...) — pure JVM
 │   └── impl/            # ExoPlayer implementation, media session service, Koin module — only :app sees it
 └── testing/             # Test helpers shared by feature tests (test-only dependency)
 ui/
-├── theme/               # TuneScoutTheme, colors, typography
+├── theme/               # TuneScoutTheme, the light and dark palettes, dynamic color, typography
 ├── component/           # Shared composables (Artwork, song rows, buttons)
 └── utils/               # Compose helpers (ActionCollector)
 feature/
@@ -25,7 +26,8 @@ feature/
 ├── player/
 ├── queue/
 ├── mini_player/
-└── album/
+├── album/
+└── theme_selection/
 tools/
 ├── ktlint_custom_rules/ # The tunescout-style ktlint ruleset
 └── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
@@ -120,6 +122,12 @@ Shared things live in core: domain models (`core/model`), `NavKey` routes and th
 `feature/song_options` owns the song bottom sheet, which `songs` and `player` both open — an entry
 gets its own module once something outside the module that hosts it navigates to it. They reach it
 through `SongOptionsRoute` in `core/navigation`, so neither knows who draws it.
+
+`feature/theme_selection` owns the theme sheet and the preference behind it. `app` reads that
+preference through the feature's `ObserveTheme` use case, the same way it reaches any other
+feature: `app` is the composition root and already depends on every one of them. The `Theme` enum
+itself lives in `:ui:theme`, next to the palettes it selects, so the feature and `app` agree on it
+without either owning it.
 
 `feature/mini_player` is the one feature that is not a route. It exposes `MiniPlayerScaffold`, which
 `app` wraps around the `NavDisplay`: the bar is laid out below every screen and owns the bottom

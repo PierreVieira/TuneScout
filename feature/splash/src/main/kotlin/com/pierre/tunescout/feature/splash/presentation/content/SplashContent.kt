@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.splash.R
-import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.theme.TuneScoutBrandColors
 
 private val noteSize = 100.dp
 private const val GRADIENT_START_STOP = 0.34f
@@ -26,8 +26,8 @@ fun SplashContent(modifier: Modifier = Modifier) {
             .drawWithCache {
                 val brush = Brush.linearGradient(
                     colorStops = arrayOf(
-                        GRADIENT_START_STOP to TuneScoutColors.background,
-                        1f to TuneScoutColors.splashGradientEnd,
+                        GRADIENT_START_STOP to TuneScoutBrandColors.splashBackground,
+                        1f to TuneScoutBrandColors.splashGradientEnd,
                     ),
                     start = Offset(0f, size.height),
                     end = Offset(size.width, 0f),

@@ -39,14 +39,19 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `queue.png` | `QueueScreenshots` | Queue what you want next | The queue sheet over the player: Random Access Memories playing, two songs queued by hand ahead of it. |
 | `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player. |
 | `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded, with both queue actions in the top bar. |
+| `theme.png` | `ThemeSelectionScreenshots` | Light, dark, or whatever the phone says | The theme sheet over the songs screen, dark selected, dynamic colors off. |
 | `notification.png` | — | — | **Manual capture**, captioned in the README itself. |
+
+Every generator renders under `Theme.DARK` rather than the default `Theme.SYSTEM`: Robolectric
+reports a light system theme, so leaving it to the default would silently flip every image the
+first time the images are regenerated.
 
 The copy is English only — the file is committed once and read in one language, so the generators
 do not loop over locales. A title is a benefit, not a screen name ("Pick up where you left off",
 not "Songs"), and the description underneath says how the app delivers it in one line. Both live
 next to the screen's `capture` call; changing one means changing the table above with it.
 
-`queue.png` and `options.png` both draw their sheet by hand — a `Surface` with the drag handle over a
+`queue.png`, `options.png` and `theme.png` all draw their sheet by hand — a `Surface` with the drag handle over a
 scrim — because `ModalBottomSheet` animates in and Robolectric captures the frame before it lands.
 
 The `songs.png` shot is the one that composes two screens: `SongsContent` under
