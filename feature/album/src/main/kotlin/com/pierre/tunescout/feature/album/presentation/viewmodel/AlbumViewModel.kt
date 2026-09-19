@@ -9,7 +9,9 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservePlayback
+import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.album.domain.usecase.ObserveAlbum
 import com.pierre.tunescout.feature.album.domain.usecase.RefreshAlbum
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
@@ -25,14 +27,16 @@ class AlbumViewModel(
     private val route: AlbumRoute,
     observeAlbum: ObserveAlbum,
     private val refreshAlbum: RefreshAlbum,
-    private val playbackController: PlaybackController,
+    private val observePlayback: ObservePlayback,
+    private val playbackStarter: PlaybackStarter,
+    private val enqueuer: Enqueuer,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val refreshFailed = MutableStateFlow(false)
 
     val uiState: StateFlow<AlbumUiState> = combine(
         observeAlbum(route.albumId),
-        playbackController.state,
+        observePlayback.observePlaybackState(),
         refreshFailed,
         ::toUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), AlbumUiState.Loading)
@@ -43,8 +47,8 @@ class AlbumViewModel(
 
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> playAndOpen(event.song)
-        AlbumUiEvent.OnPlayNextClicked -> queue(playbackController::queueNext)
-        AlbumUiEvent.OnAddToQueueClicked -> queue(playbackController::addToQueue)
+        AlbumUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
+        AlbumUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
         AlbumUiEvent.OnRetryClicked -> refresh()
         AlbumUiEvent.OnBackClicked -> navigator.navigateBack()
     }
@@ -63,7 +67,7 @@ class AlbumViewModel(
 
     private fun playAndOpen(song: Song) {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        playbackController.play(
+        playbackStarter.play(
             song = song,
             songs = album.songs,
             context = PlaybackContext.Album(id = album.id, title = album.title),

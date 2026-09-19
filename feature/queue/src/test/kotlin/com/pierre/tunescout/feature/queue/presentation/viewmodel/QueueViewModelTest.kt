@@ -4,13 +4,12 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.QueueSource
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.queueEntries
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +23,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class QueueViewModelTest {
     private lateinit var viewModel: QueueViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
-    private lateinit var playbackController: PlaybackController
+    private lateinit var queueControls: QueueControls
 
     @Test
     fun `GIVEN songs queued by hand WHEN observing THEN they come before the rest of the album`() =
@@ -74,7 +73,7 @@ class QueueViewModelTest {
         viewModel.onEvent(QueueUiEvent.OnEntryClicked("entry-9"))
 
         // Then
-        verify { playbackController.skipTo("entry-9") }
+        verify { queueControls.skipTo("entry-9") }
     }
 
     @Test
@@ -86,7 +85,7 @@ class QueueViewModelTest {
         viewModel.onEvent(QueueUiEvent.OnRemoveClicked("entry-9"))
 
         // Then
-        verify { playbackController.removeFromQueue("entry-9") }
+        verify { queueControls.removeFromQueue("entry-9") }
     }
 
     @Test
@@ -98,7 +97,7 @@ class QueueViewModelTest {
         viewModel.onEvent(QueueUiEvent.OnEntryMoved(fromEntryId = "entry-3", toEntryId = "entry-9"))
 
         // Then
-        verify { playbackController.moveInQueue(fromIndex = 3, toIndex = 1) }
+        verify { queueControls.moveInQueue(fromIndex = 3, toIndex = 1) }
     }
 
     @Test
@@ -111,7 +110,7 @@ class QueueViewModelTest {
             viewModel.onEvent(QueueUiEvent.OnEntryMoved(fromEntryId = "entry-404", toEntryId = "entry-9"))
 
             // Then
-            verify(exactly = 0) { playbackController.moveInQueue(any(), any()) }
+            verify(exactly = 0) { queueControls.moveInQueue(any(), any()) }
         }
 
     private fun queuedOverAlbum(): PlaybackState = playbackState(
@@ -124,10 +123,8 @@ class QueueViewModelTest {
 
     private fun TestScope.prepareScenario(playback: PlaybackState) {
         playbackStateFlow = MutableStateFlow(playback)
-        playbackController = mockk(relaxUnitFun = true) {
-            every { state } returns playbackStateFlow
-        }
-        viewModel = QueueViewModel(playbackController = playbackController)
+        queueControls = mockk(relaxUnitFun = true)
+        viewModel = QueueViewModel(observePlayback = { playbackStateFlow }, queueControls = queueControls)
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
     }

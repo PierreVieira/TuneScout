@@ -81,7 +81,8 @@ core/
   utils/             coroutine helpers, dispatchers, duration formatting
   network/           ITunesRemoteDataSource: the iTunes API behind an interface (Ktor)
   database/          Room: songs, albums, the recently played history and the saved session
-  playback/          PlaybackController over ExoPlayer, the media session service
+  playback/api/      the playback role interfaces every screen depends on, plain Kotlin
+  playback/impl/     ExoPlayer behind those interfaces, the media session service; only app sees it
   navigation/        routes (NavKey), the Navigator event bus, back stack controller
   testing/           fixtures and a JUnit extension for Dispatchers.Main
 ui/
@@ -120,7 +121,7 @@ re-requests with a growing limit and keeps only the unseen tail, deduplicating b
 cursor, but it is an honest fit for the API, and the Paging load states drive the list UI.
 
 **Playback.** One ExoPlayer instance is shared by the app and by a `MediaSessionService` that
-posts the media notification. `PlaybackController` publishes a `PlaybackState` every screen reads,
+posts the media notification. `ObservePlayback` publishes a `PlaybackState` every screen reads,
 and a small recorder turns "first time a song plays" into a row in the history table.
 
 **The queue has two tiers.** `PlaybackState` carries `QueueEntry` items tagged `Context` (the album
@@ -140,7 +141,7 @@ The reasoning behind these and other choices, with what each one costs, is in
 | Layer | How | Where |
 |---|---|---|
 | ViewModels, repositories, paging source, mappers, navigation | JUnit 6 + Truth + MockK, fakes as lambdas for `fun interface`s | `src/test` |
-| Playback | The queue controller against a fake ExoPlayer timeline, the ordering rules, the session keeper and the history recorder | `core/playback/src/test` |
+| Playback | The queue controller against a fake ExoPlayer timeline, the ordering rules, the session keeper and the history recorder | `core/playback/impl/src/test` |
 | Database | The session round trip against a fake DAO, and the 1 → 2 migration against a real version 1 database | `core/database/src/{test,androidTest}` |
 | Screens | Compose UI tests on device through the android-junit5 extension | `feature/*/src/androidTest` |
 | End to end | Launches the real app, replaces the remote data source through Koin: search → player → options → album, and search → play → queue a song → the queue screen. Both pass in portrait and landscape. | `app/src/androidTest` |

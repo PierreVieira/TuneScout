@@ -12,6 +12,7 @@ class TuneScoutRuleSetProvider : RuleSetProviderV3(RuleSetId(RULE_SET_ID)) {
         RuleProvider { TopLevelValBlankLineRule() },
         RuleProvider { WhenEntrySingleStatementBracesRule() },
         RuleProvider { FunInterfaceRule() },
+        RuleProvider { InterfaceImplementationSeparateFilesRule() },
         RuleProvider { RedundantSamConstructorArgumentRule() },
         RuleProvider { ValueReturningFunctionNamingRule() },
         RuleProvider { UnitFunctionBlockBodyRule() },

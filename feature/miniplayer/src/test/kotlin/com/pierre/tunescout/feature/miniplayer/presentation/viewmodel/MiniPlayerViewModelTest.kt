@@ -6,12 +6,11 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 class MiniPlayerViewModelTest {
     private lateinit var viewModel: MiniPlayerViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
-    private lateinit var playbackController: PlaybackController
+    private lateinit var transportControls: TransportControls
     private lateinit var navigator: Navigator
 
     @Test
@@ -157,16 +156,18 @@ class MiniPlayerViewModelTest {
         viewModel.onEvent(MiniPlayerUiEvent.OnPlayPauseClicked)
 
         // Then
-        verify { playbackController.togglePlayPause() }
+        verify { transportControls.togglePlayPause() }
     }
 
     private fun TestScope.prepareScenario(playback: PlaybackState) {
         playbackStateFlow = MutableStateFlow(playback)
-        playbackController = mockk(relaxUnitFun = true) {
-            every { state } returns playbackStateFlow
-        }
+        transportControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
-        viewModel = MiniPlayerViewModel(playbackController = playbackController, navigator = navigator)
+        viewModel = MiniPlayerViewModel(
+            observePlayback = { playbackStateFlow },
+            transportControls = transportControls,
+            navigator = navigator,
+        )
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
     }

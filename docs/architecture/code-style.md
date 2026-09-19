@@ -404,6 +404,40 @@ someUseCaseConsumer(onResult = GetSongUseCase { song -> ... })
 
 Best-effort enforcement by the custom ktlint rule `tunescout-style:redundant-sam-constructor-argument`. Note this rule can only see fun interfaces declared in the *same file* as the call site (ktlint rules don't do cross-file type resolution), so it won't catch every case — treat it as a net, not a guarantee, when reviewing code that constructs a fun interface from a different module than where it's declared.
 
+## Interface and Implementation in Separate Files
+
+An interface and a class that implements it never share a file. The interface is the contract a
+consumer imports; the implementation is a detail that consumer should not have to scroll past — and
+in an `api`/`impl` module split they cannot even live in the same module. One file per type also keeps
+the file name honest: `MediaItemFactory.kt` holds `MediaItemFactory`, nothing else.
+
+```kotlin
+// Correct — MediaItemFactory.kt
+internal fun interface MediaItemFactory {
+    fun createMediaItem(entry: QueueEntry): MediaItem
+}
+
+// Correct — AndroidMediaItemFactory.kt
+internal class AndroidMediaItemFactory : MediaItemFactory { ... }
+
+// Wrong — both in MediaItemFactory.kt
+internal fun interface MediaItemFactory { ... }
+
+internal class AndroidMediaItemFactory : MediaItemFactory { ... }
+```
+
+Three shapes are exempt, because the implementation genuinely belongs beside the contract:
+
+- a `sealed interface` and its cases — the hierarchy *is* the file (`AlbumUiState` and its `Loading`,
+  `Loaded`, `Error`);
+- a `private` interface — it cannot be seen from any other file, so its implementation has nowhere
+  else to go;
+- an implementation nested inside the interface itself, such as a `companion object` default.
+
+Enforced by the custom ktlint rule `tunescout-style:interface-implementation-separate-files`. Ktlint has
+no type resolution, so the rule matches the implementation's supertype list against the *names* of the
+interfaces declared in the same file — which is exactly the case it exists to catch.
+
 ## Method References
 
 When a lambda exists only to hand its parameter to a function, pass the function reference instead.

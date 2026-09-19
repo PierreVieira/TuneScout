@@ -4,12 +4,9 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
-import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -19,15 +16,11 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class MainViewModelTest {
     private lateinit var viewModel: MainViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
-    private lateinit var playbackController: PlaybackController
 
     @BeforeEach
     fun setUp() {
         playbackStateFlow = MutableStateFlow(PlaybackState.Idle)
-        playbackController = mockk(relaxUnitFun = true) {
-            every { state } returns playbackStateFlow
-        }
-        viewModel = MainViewModel(playbackController = playbackController)
+        viewModel = MainViewModel(observePlayback = { playbackStateFlow })
     }
 
     @Test

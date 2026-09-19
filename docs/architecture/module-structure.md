@@ -6,11 +6,13 @@ The project uses a multi-module Gradle setup. Every new feature gets its own mod
 app/                     # Android application: composition root (Koin appModules, TuneScoutNavDisplay, MainActivity)
 core/
 ├── model/               # Domain models shared across features (Song, Album) — pure JVM
-├── utils/               # suspendRunCatching, DispatcherProvider — pure JVM
+├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM
 ├── network/             # ITunesRemoteDataSource interface + Ktor implementation, DTOs (internal)
 ├── database/            # Room database, DAOs, entities, migrations
 ├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, BackStackController, routes
-├── playback/            # Playback interface over Media3 ExoPlayer
+├── playback/
+│   ├── api/             # Playback role interfaces (ObservePlayback, PlaybackStarter, ...) — pure JVM
+│   └── impl/            # ExoPlayer implementation, media session service, Koin module — only :app sees it
 └── testing/             # Test helpers shared by feature tests (test-only dependency)
 ui/
 ├── theme/               # TuneScoutTheme, colors, typography
@@ -82,9 +84,11 @@ interfaces has no `presentation/`).
 - `:ui:*` is presentation only: it never depends on features or on core.
 - Core never depends on `:ui:*`, except `:core:navigation`, whose command collector is a composable.
 - Only `:app` depends on features; nothing depends on `:app`.
+- Only `:app` depends on `:core:playback:impl`; features and the other core modules see
+  `:core:playback:api`, so the ExoPlayer wiring can change without recompiling a single feature.
 
 Shared things live in core: domain models (`core/model`), `NavKey` routes and the `Navigator`
-(`core/navigation`), the playback interface (`core/playback`) and the recently-played repository
+(`core/navigation`), the playback interfaces (`core/playback/api`) and the recently-played repository
 (`core/database`). Features talk to each other only through those.
 
 `feature/miniplayer` is the one feature that is not a route. It exposes `MiniPlayerScaffold`, which
@@ -102,6 +106,9 @@ restricted = arrayOf(
     ":ui:.* -X> :feature:.*",
     ":ui:.* -X> :core:.*",
     ":core:(?!navigation).* -X> :ui:.*",
+    ":feature:.* -X> :core:playback:impl",
+    ":core:.* -X> :core:playback:impl",
+    ":tools:.* -X> :core:playback:impl",
     ".* -X> :app",
 )
 ```

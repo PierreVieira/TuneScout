@@ -7,6 +7,6 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.playback)
+    implementation(projects.core.playback.api)
     implementation(libs.reorderable)
 }

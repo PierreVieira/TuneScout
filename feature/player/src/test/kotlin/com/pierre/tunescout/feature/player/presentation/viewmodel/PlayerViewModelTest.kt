@@ -7,13 +7,13 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +29,8 @@ import kotlin.time.Duration.Companion.seconds
 class PlayerViewModelTest {
     private lateinit var viewModel: PlayerViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
-    private lateinit var playbackController: PlaybackController
+    private lateinit var playbackStarter: PlaybackStarter
+    private lateinit var transportControls: TransportControls
     private lateinit var navigator: Navigator
 
     @Test
@@ -79,7 +80,7 @@ class PlayerViewModelTest {
             viewModel.onEvent(PlayerUiEvent.OnPlayPauseClicked)
 
             // Then
-            verify { playbackController.togglePlayPause() }
+            verify { transportControls.togglePlayPause() }
         }
 
     @Test
@@ -93,7 +94,7 @@ class PlayerViewModelTest {
 
             // Then
             verify {
-                playbackController.play(
+                playbackStarter.play(
                     song = song(id = 1),
                     songs = listOf(song(id = 1)),
                     context = PlaybackContext.SingleSong,
@@ -111,8 +112,8 @@ class PlayerViewModelTest {
             viewModel.onEvent(PlayerUiEvent.OnSeekFinished(position = 12.seconds))
 
             // Then
-            verify { playbackController.seekTo(position = 12.seconds) }
-            verify(exactly = 0) { playbackController.togglePlayPause() }
+            verify { transportControls.seekTo(position = 12.seconds) }
+            verify(exactly = 0) { transportControls.togglePlayPause() }
         }
 
     @Test
@@ -158,14 +159,15 @@ class PlayerViewModelTest {
         playback: PlaybackState = PlaybackState.Idle,
     ) {
         playbackStateFlow = MutableStateFlow(playback)
-        playbackController = mockk(relaxUnitFun = true) {
-            every { state } returns playbackStateFlow
-        }
+        playbackStarter = mockk(relaxUnitFun = true)
+        transportControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = PlayerViewModel(
             route = PlayerRoute(songId = 1),
             observeSong = { flowOf(routeSong) },
-            playbackController = playbackController,
+            observePlayback = { playbackStateFlow },
+            playbackStarter = playbackStarter,
+            transportControls = transportControls,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }

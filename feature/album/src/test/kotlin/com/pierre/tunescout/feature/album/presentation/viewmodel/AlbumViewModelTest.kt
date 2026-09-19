@@ -7,14 +7,14 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
-import com.pierre.tunescout.core.playback.PlaybackController
+import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -29,7 +29,8 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class AlbumViewModelTest {
     private lateinit var viewModel: AlbumViewModel
     private lateinit var localAlbum: MutableStateFlow<Album?>
-    private lateinit var playbackController: PlaybackController
+    private lateinit var playbackStarter: PlaybackStarter
+    private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var refreshCalls: MutableList<Long>
 
@@ -115,7 +116,7 @@ class AlbumViewModelTest {
 
             // Then
             verifyOrder {
-                playbackController.play(
+                playbackStarter.play(
                     song = album.songs[1],
                     songs = album.songs,
                     context = PlaybackContext.Album(id = album.id, title = album.title),
@@ -134,7 +135,7 @@ class AlbumViewModelTest {
         viewModel.onEvent(AlbumUiEvent.OnAddToQueueClicked)
 
         // Then
-        verify { playbackController.addToQueue(album.songs) }
+        verify { enqueuer.addToQueue(album.songs) }
     }
 
     @Test
@@ -147,7 +148,7 @@ class AlbumViewModelTest {
         viewModel.onEvent(AlbumUiEvent.OnPlayNextClicked)
 
         // Then
-        verify { playbackController.queueNext(album.songs) }
+        verify { enqueuer.queueNext(album.songs) }
     }
 
     @Test
@@ -159,7 +160,7 @@ class AlbumViewModelTest {
         viewModel.onEvent(AlbumUiEvent.OnAddToQueueClicked)
 
         // Then
-        verify(exactly = 0) { playbackController.addToQueue(any()) }
+        verify(exactly = 0) { enqueuer.addToQueue(any()) }
     }
 
     @Test
@@ -181,9 +182,9 @@ class AlbumViewModelTest {
     ) {
         localAlbum = MutableStateFlow(cached)
         refreshCalls = mutableListOf()
-        playbackController = mockk(relaxUnitFun = true) {
-            every { state } returns MutableStateFlow(playback)
-        }
+        val playbackStateFlow = MutableStateFlow(playback)
+        playbackStarter = mockk(relaxUnitFun = true)
+        enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = AlbumViewModel(
             route = AlbumRoute(albumId = 10),
@@ -192,7 +193,9 @@ class AlbumViewModelTest {
                 refreshCalls += albumId
                 refreshResult
             },
-            playbackController = playbackController,
+            observePlayback = { playbackStateFlow },
+            playbackStarter = playbackStarter,
+            enqueuer = enqueuer,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
