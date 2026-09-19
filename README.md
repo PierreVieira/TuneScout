@@ -142,7 +142,7 @@ The reasoning behind these and other choices, with what each one costs, is in
 | Playback | The queue controller against a fake ExoPlayer timeline, the ordering rules, the session keeper and the history recorder | `core/playback/src/test` |
 | Database | The session round trip against a fake DAO, and the 1 → 2 migration against a real version 1 database | `core/database/src/{test,androidTest}` |
 | Screens | Compose UI tests on device through the android-junit5 extension | `feature/*/src/androidTest` |
-| End to end | Launches the real app, replaces the remote data source through Koin: search → player → options → album, and search → play → queue a song → the queue screen | `app/src/androidTest` |
+| End to end | Launches the real app, replaces the remote data source through Koin: search → player → options → album, and search → play → queue a song → the queue screen. Both pass in portrait and landscape. | `app/src/androidTest` |
 
 Tests follow Given / When / Then with a `prepareScenario` factory; see
 [docs/testing](docs/testing/README.md).

@@ -2,11 +2,13 @@ package com.pierre.tunescout.feature.miniplayer.presentation.content
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
@@ -27,6 +29,15 @@ import org.koin.compose.viewmodel.koinViewModel
 private val consumedInsets: WindowInsets
     @Composable get() = WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
 
+/**
+ * The bar gives its room back to whatever is being typed into: it sits where the keyboard opens, and
+ * a landscape window has little enough height without it. This reads the visibility flag rather than
+ * the inset, which still measures the navigation bar while the keyboard is closed.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun isKeyboardOpen(): Boolean = WindowInsets.isImeVisible
+
 @Composable
 fun MiniPlayerScaffold(
     isAllowed: Boolean,
@@ -35,7 +46,7 @@ fun MiniPlayerScaffold(
     content: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val song = uiState.song.takeIf { isAllowed }
+    val song = uiState.song.takeIf { isAllowed && !isKeyboardOpen() }
     Column(modifier = modifier.fillMaxSize()) {
         Box(
             modifier = Modifier

@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -51,6 +52,9 @@ class QueueFlowTest {
     fun playingASongThenQueueingAnotherShowsBothInTheQueue() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
         onNode(hasSetTextAction()).performTextInput("daft")
+        // A landscape window leaves no room for results under the keyboard, so close it the way the
+        // search key does.
+        onNode(hasSetTextAction()).performImeAction()
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
 
         // Playing a search result opens the player on it.

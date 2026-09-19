@@ -24,6 +24,18 @@ header puts its title beside the search field when the window is wider than it i
 header lays its artwork beside its titles, both of which buy back a row of the list. The bottom sheet
 skips its half-open state, which in a landscape window hid the last option.
 
+**The mini player stands down while the keyboard is up.** It sits exactly where the keyboard opens,
+so it was drawing a bar across the search results, and in landscape there is barely room for a row of
+them as it is. Hiding it gives that room back. The check reads `WindowInsets.isImeVisible` rather
+than measuring `WindowInsets.ime`, which still reports the navigation bar's height while the keyboard
+is closed — measuring it hid the bar permanently.
+
+**The end-to-end flows close the keyboard before touching a result.** They used to type and click
+straight away, which works in portrait and cannot in landscape: the keyboard leaves no height for the
+list, so the row is in the semantics tree but not on screen. They now send the field's IME action,
+which is the same thing the search key on the keyboard does, and both flows pass in either
+orientation.
+
 **The mini player only consumed the bottom navigation bar inset, not all four.** It sits below the
 content and covers the bottom bar, so that is the only side it can consume; consuming the whole
 `navigationBars` inset let a landscape side bar sit on top of the list. It is also capped and centred

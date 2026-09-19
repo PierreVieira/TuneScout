@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -50,6 +51,9 @@ class SearchToAlbumFlowTest {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
 
         onNode(hasSetTextAction()).performTextInput("daft")
+        // A landscape window leaves no room for results under the keyboard, so close it the way the
+        // search key does.
+        onNode(hasSetTextAction()).performImeAction()
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
         // Anything already loaded is also in the mini player, so this takes the list row.
         onAllNodesWithText("Get Lucky")[0].performClick()
