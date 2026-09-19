@@ -7,16 +7,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
 import com.pierre.tunescout.presentation.content.MainContent
+import com.pierre.tunescout.presentation.viewmodel.MainViewModel
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModel()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setOnExitAnimationListener(SplashScreenViewProvider::remove)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {
             TuneScoutTheme {
-                MainContent()
+                MainContent(uiAction = viewModel.uiAction)
             }
         }
     }

@@ -7,17 +7,16 @@ import androidx.compose.ui.Modifier
 import com.pierre.tunescout.navigation.TuneScoutNavDisplay
 import com.pierre.tunescout.permission.rememberNotificationPermissionRequest
 import com.pierre.tunescout.presentation.model.MainUiAction
-import com.pierre.tunescout.presentation.viewmodel.MainViewModel
 import com.pierre.tunescout.ui.utils.ActionCollector
-import org.koin.compose.viewmodel.koinViewModel
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun MainContent(
+    uiAction: Flow<MainUiAction>,
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = koinViewModel(),
 ) {
     val requestNotificationPermission = rememberNotificationPermissionRequest()
-    ActionCollector(flow = viewModel.uiAction) { action ->
+    ActionCollector(flow = uiAction) { action ->
         when (action) {
             MainUiAction.RequestNotificationPermission -> requestNotificationPermission()
         }
