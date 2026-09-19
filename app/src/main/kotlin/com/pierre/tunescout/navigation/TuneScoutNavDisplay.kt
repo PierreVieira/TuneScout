@@ -28,6 +28,8 @@ import com.pierre.tunescout.feature.themeselection.presentation.navigation.dynam
 import com.pierre.tunescout.feature.themeselection.presentation.navigation.themeSelectionEntry
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.utils.animation.LocalSharedTransitionScope
+import com.pierre.tunescout.ui.utils.animation.LocalTappedSharedArtworkSurface
+import com.pierre.tunescout.ui.utils.animation.rememberTappedSharedArtworkSurface
 
 @Composable
 fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
@@ -41,7 +43,10 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
     // The layout covers the mini player bar as well as the NavDisplay: the artwork flies between
     // the two, so both halves have to sit in the same shared transition scope.
     SharedTransitionLayout(modifier = modifier) {
-        CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+        CompositionLocalProvider(
+            LocalSharedTransitionScope provides this,
+            LocalTappedSharedArtworkSurface provides rememberTappedSharedArtworkSurface(),
+        ) {
             MiniPlayerScaffold(isAllowed = isMiniPlayerAllowed(backStack)) {
                 NavDisplay(
                     backStack = backStack,

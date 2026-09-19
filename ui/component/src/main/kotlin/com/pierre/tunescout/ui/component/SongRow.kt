@@ -14,6 +14,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,6 +25,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.animation.LocalSharedArtworkSurface
+import com.pierre.tunescout.ui.utils.animation.LocalTappedSharedArtworkSurface
+import com.pierre.tunescout.ui.utils.animation.SharedArtworkSurface
 import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
 
 private val rowCornerRadius = 8.dp
@@ -43,50 +47,61 @@ fun SongRow(
     sharedSongId: Long? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(rowCornerRadius))
-            .clickable(onClick = onClick)
-            .padding(vertical = TuneScoutSpacing.small),
-        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    val tappedSurface = LocalTappedSharedArtworkSurface.current
+    CompositionLocalProvider(LocalSharedArtworkSurface provides SharedArtworkSurface.LIST_ROW) {
         Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(rowCornerRadius))
+                .clickable {
+                    if (sharedSongId != null) {
+                        tappedSurface.surface = SharedArtworkSurface.LIST_ROW
+                    }
+                    onClick()
+                }.padding(vertical = TuneScoutSpacing.small),
+            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Artwork(
-                url = artworkUrl,
-                contentDescription = null,
-                cornerPercent = ARTWORK_CORNER_PERCENT,
-                sharedKey = getSongSharedKey(sharedSongId, SongSharedElement.ARTWORK),
-                modifier = Modifier.size(artworkSize),
-            )
-            Column(
+            Row(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
+                horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = TuneScoutColors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.sharedTextBounds(getSongSharedKey(sharedSongId, SongSharedElement.TITLE)),
+                Artwork(
+                    url = artworkUrl,
+                    contentDescription = null,
+                    cornerPercent = ARTWORK_CORNER_PERCENT,
+                    sharedKey = getSongSharedKey(sharedSongId, SongSharedElement.ARTWORK),
+                    modifier = Modifier.size(artworkSize),
                 )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isHighlighted) TuneScoutColors.textEmphasis else TuneScoutColors.textSecondary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.sharedTextBounds(getSongSharedKey(sharedSongId, SongSharedElement.ARTIST)),
-                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TuneScoutColors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.sharedTextBounds(
+                            getSongSharedKey(sharedSongId, SongSharedElement.TITLE),
+                        ),
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isHighlighted) TuneScoutColors.textEmphasis else TuneScoutColors.textSecondary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.sharedTextBounds(
+                            getSongSharedKey(sharedSongId, SongSharedElement.ARTIST),
+                        ),
+                    )
+                }
             }
+            trailing()
         }
-        trailing()
     }
 }
 

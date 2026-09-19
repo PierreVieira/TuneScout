@@ -36,7 +36,6 @@ import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.getRowSharedSongId
 import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -131,7 +130,7 @@ private fun LoadedContent(
                 artworkUrl = song.artwork.thumbnailUrl,
                 artworkSize = rowArtworkSize,
                 isHighlighted = song.id == nowPlayingId,
-                sharedSongId = getRowSharedSongId(songId = song.id, nowPlayingId = nowPlayingId),
+                sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
             )
         }

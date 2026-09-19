@@ -4,8 +4,12 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -30,6 +34,34 @@ val LocalSharedTransitionScope: ProvidableCompositionLocal<SharedTransitionScope
  */
 val LocalSharedElementScopes: ProvidableCompositionLocal<SharedElementScopes?> = compositionLocalOf { null }
 
+/**
+ * The two places one song can be drawn at the same time: the song that is playing has a row in the
+ * list and the mini player bar. A key may only be flown by one of them, and the one that flies is
+ * the one the finger landed on.
+ */
+enum class SharedArtworkSurface {
+    LIST_ROW,
+    MINI_PLAYER,
+}
+
+@Stable
+class TappedSharedArtworkSurface {
+    var surface: SharedArtworkSurface? by mutableStateOf(null)
+}
+
+/**
+ * Which surface the subtree being drawn belongs to. `null` for the player, which is the other end of
+ * every flight and so never has to yield.
+ */
+val LocalSharedArtworkSurface: ProvidableCompositionLocal<SharedArtworkSurface?> = compositionLocalOf { null }
+
+/** The surface the finger last landed on, written by whoever handles that tap. */
+val LocalTappedSharedArtworkSurface: ProvidableCompositionLocal<TappedSharedArtworkSurface> =
+    compositionLocalOf { TappedSharedArtworkSurface() }
+
+@Composable
+fun rememberTappedSharedArtworkSurface(): TappedSharedArtworkSurface = remember { TappedSharedArtworkSurface() }
+
 @Composable
 fun rememberSharedElementScopes(animatedVisibilityScope: AnimatedVisibilityScope): SharedElementScopes? {
     val sharedTransitionScope = LocalSharedTransitionScope.current ?: return null
@@ -42,9 +74,15 @@ fun rememberSharedElementScopes(animatedVisibilityScope: AnimatedVisibilityScope
 }
 
 @Composable
+private fun isSharedArtworkSurfaceFlying(): Boolean {
+    val surface = LocalSharedArtworkSurface.current ?: return true
+    return surface == LocalTappedSharedArtworkSurface.current.surface
+}
+
+@Composable
 fun Modifier.sharedArtwork(key: Any?): Modifier {
     val scopes = LocalSharedElementScopes.current
-    if (key == null || scopes == null) return this
+    if (key == null || scopes == null || !isSharedArtworkSurfaceFlying()) return this
     return with(scopes.sharedTransitionScope) {
         this@sharedArtwork.sharedElement(
             sharedContentState = rememberSharedContentState(key),
@@ -56,7 +94,7 @@ fun Modifier.sharedArtwork(key: Any?): Modifier {
 @Composable
 fun Modifier.sharedTextBounds(key: Any?): Modifier {
     val scopes = LocalSharedElementScopes.current
-    if (key == null || scopes == null) return this
+    if (key == null || scopes == null || !isSharedArtworkSurfaceFlying()) return this
     return with(scopes.sharedTransitionScope) {
         this@sharedTextBounds.sharedBounds(
             sharedContentState = rememberSharedContentState(key),

@@ -142,17 +142,20 @@ of snapping to the target's on the first frame.
 
 ### One key, one source
 
-A key may only be claimed by one element at a time. The song that is playing is on screen twice —
-its row in the list and the mini player bar — so the row gives the key up:
-`getRowSharedSongId(songId, nowPlayingId)` returns `null` for the song playing, and the bar flies it.
-Every list that shows songs already has `nowPlayingId` for its highlight, so the rule costs nothing.
+A key may only be flown by one element at a time, and the song that is playing is on screen twice:
+its row in the list and the mini player bar. The one that flies is **the one the finger landed on**.
 
-The bar holds the song it was drawing once it starts leaving (`rememberBarSong`). Opening the player
-changes what is playing a frame or two later, and a bar that followed that change mid-exit would
-claim the key of the song a row is already flying.
+Each surface declares itself with `LocalSharedArtworkSurface` (`SongRow` is `LIST_ROW`,
+`MiniPlayerContent` is `MINI_PLAYER`; the player declares nothing, since it is the other end of
+every flight) and writes itself into `LocalTappedSharedArtworkSurface` when it is tapped. A surface
+that is not the tapped one gets no modifier at all, so at any moment exactly one source claims a key
+— and before the first tap, none does.
 
-One consequence: with the keyboard open the bar is hidden, so tapping the row of the song playing
-falls back to a plain fade.
+The pop reads the same state, so the artwork returns to whichever surface it came from.
+
+The bar also holds the song it was drawing once it starts leaving (`rememberBarSong`): opening the
+player changes what is playing a frame or two later, and a bar that swapped its song mid-fade would
+read as a glitch.
 
 ### Sheets do not take part
 
