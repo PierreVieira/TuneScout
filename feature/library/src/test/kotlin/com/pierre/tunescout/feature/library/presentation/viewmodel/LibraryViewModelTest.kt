@@ -1,16 +1,22 @@
 package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.AlbumSummary
+import com.pierre.tunescout.core.model.Artwork
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.CreatePlaylistRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesRoute
 import com.pierre.tunescout.core.navigation.route.LibrarySearchRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistRoute
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fixture.albumSummary
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.LibraryUseCases
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
@@ -129,9 +135,100 @@ class LibraryViewModelTest {
         assertThat(viewModel.uiState.value.viewMode).isEqualTo(LibraryViewMode.GRID)
     }
 
+    @Test
+    fun `GIVEN liked albums WHEN observing THEN lists them after the playlists`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(
+            playlists = listOf(playlist(id = 7)),
+            albums = listOf(albumSummary(id = 10, title = "Toxicity", artistName = "System Of A Down")),
+        )
+
+        // When
+        val items = viewModel.uiState.value.items
+
+        // Then
+        assertThat(items.last()).isEqualTo(
+            LibraryItemUiModel.Album(
+                id = 10,
+                title = "Toxicity",
+                artistName = "System Of A Down",
+                artwork = Artwork("https://example.com/art/10/100x100bb.jpg"),
+            ),
+        )
+    }
+
+    @Test
+    fun `GIVEN a liked album WHEN clicking it THEN opens the album screen`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(albums = listOf(albumSummary(id = 10)))
+
+        // When
+        viewModel.onEvent(
+            LibraryUiEvent.OnItemClicked(
+                viewModel.uiState.value.items
+                    .last(),
+            ),
+        )
+
+        // Then
+        verify { navigator.navigate(AlbumRoute(albumId = 10)) }
+    }
+
+    @Test
+    fun `GIVEN the albums chip WHEN picking it THEN only albums are left`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playlists = listOf(playlist(id = 7)), albums = listOf(albumSummary(id = 10)))
+
+        // When
+        viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+        runCurrent()
+
+        // Then
+        assertThat(
+            viewModel.uiState.value.filteredItems
+                .map { item -> item.key },
+        ).containsExactly(LibraryItemKey.Album(albumId = 10))
+    }
+
+    @Test
+    fun `GIVEN the playlists chip WHEN picking it THEN the liked songs stay with the playlists`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playlists = listOf(playlist(id = 7)), albums = listOf(albumSummary(id = 10)))
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.PLAYLISTS))
+            runCurrent()
+
+            // Then
+            assertThat(
+                viewModel.uiState.value.filteredItems
+                    .map { item -> item.key },
+            ).containsExactly(LibraryItemKey.Favorites, LibraryItemKey.Playlist(playlistId = 7))
+                .inOrder()
+        }
+
+    @Test
+    fun `GIVEN a chip already picked WHEN tapping it again THEN everything is listed again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(albums = listOf(albumSummary(id = 10)))
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.filter).isNull()
+            assertThat(viewModel.uiState.value.filteredItems).hasSize(2)
+        }
+
     private fun TestScope.prepareScenario(
         favorites: List<Song> = emptyList(),
         playlists: List<Playlist> = emptyList(),
+        albums: List<AlbumSummary> = emptyList(),
         viewMode: LibraryViewMode = LibraryViewMode.LIST,
     ) {
         storedViewMode = MutableStateFlow(viewMode)
@@ -140,6 +237,7 @@ class LibraryViewModelTest {
             useCases = LibraryUseCases(
                 observePlaylists = { flowOf(playlists) },
                 observeFavorites = { flowOf(favorites) },
+                observeFavoriteAlbums = { flowOf(albums) },
                 observeViewMode = { storedViewMode },
                 setViewMode = { mode -> storedViewMode.value = mode },
             ),

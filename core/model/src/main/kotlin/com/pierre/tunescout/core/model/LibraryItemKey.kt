@@ -10,4 +10,8 @@ sealed interface LibraryItemKey {
     data class Playlist(
         val playlistId: Long,
     ) : LibraryItemKey
+
+    data class Album(
+        val albumId: Long,
+    ) : LibraryItemKey
 }

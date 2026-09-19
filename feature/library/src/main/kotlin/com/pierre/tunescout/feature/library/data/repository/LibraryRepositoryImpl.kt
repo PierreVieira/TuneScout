@@ -3,10 +3,12 @@ package com.pierre.tunescout.feature.library.data.repository
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.pierre.tunescout.core.database.FavoriteAlbumLocalDataSource
 import com.pierre.tunescout.core.database.FavoriteSongLocalDataSource
 import com.pierre.tunescout.core.database.LibrarySearchLocalDataSource
 import com.pierre.tunescout.core.database.PlaylistLocalDataSource
 import com.pierre.tunescout.core.datastore.write
+import com.pierre.tunescout.core.model.AlbumSummary
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.map
 class LibraryRepositoryImpl(
     private val playlistLocalDataSource: PlaylistLocalDataSource,
     private val favoriteSongLocalDataSource: FavoriteSongLocalDataSource,
+    private val favoriteAlbumLocalDataSource: FavoriteAlbumLocalDataSource,
     private val librarySearchLocalDataSource: LibrarySearchLocalDataSource,
     private val dataStore: DataStore<Preferences>,
 ) : LibraryRepository {
@@ -31,6 +34,8 @@ class LibraryRepositoryImpl(
         playlistLocalDataSource.observeSongs(playlistId)
 
     override fun observeFavorites(): Flow<List<Song>> = favoriteSongLocalDataSource.observeAll()
+
+    override fun observeFavoriteAlbums(): Flow<List<AlbumSummary>> = favoriteAlbumLocalDataSource.observeAll()
 
     override fun observeViewMode(): Flow<LibraryViewMode> = dataStore.data.map { preferences ->
         preferences[viewModeKey]

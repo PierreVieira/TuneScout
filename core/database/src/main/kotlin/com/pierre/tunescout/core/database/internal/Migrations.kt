@@ -52,6 +52,14 @@ internal val MIGRATION_2_3 = object : Migration(2, 3) {
             "CREATE INDEX IF NOT EXISTS `index_favorite_songs_favoritedAt` ON `favorite_songs` (`favoritedAt`)",
         )
         connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `favorite_albums` (`albumId` INTEGER NOT NULL, " +
+                "`favoritedAt` INTEGER NOT NULL, PRIMARY KEY(`albumId`), " +
+                "FOREIGN KEY(`albumId`) REFERENCES `albums`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_favorite_albums_favoritedAt` ON `favorite_albums` (`favoritedAt`)",
+        )
+        connection.execSQL(
             "CREATE TABLE IF NOT EXISTS `library_recent_searches` (`itemId` TEXT NOT NULL, " +
                 "`searchedAt` INTEGER NOT NULL, PRIMARY KEY(`itemId`))",
         )

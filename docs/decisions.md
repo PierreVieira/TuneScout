@@ -2,6 +2,32 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-19 — Liking an album, and chips to find one
+
+**Liking is a state, so it stays on the bar; queueing is a command, so it moves behind the
+overflow.** The album top bar carried both queue actions and had no room for a third; a filled heart
+has to be visible without opening anything, while "Play next" and "Add to queue" have no state to
+show. The bar is now a heart and a `⋮`, and the two queue actions moved into an album options sheet
+that lives in `feature/album` — nothing outside it opens that sheet, which is the line the module
+split is drawn on.
+
+**Every track of an album opens the same sheet every other list opens.** The rows had no overflow at
+all, so a song was likeable from Songs and from a playlist but not from the album it belongs to.
+
+**A liked album is a library row that opens the album screen.** It is not a collection of its own:
+the album screen already lists its tracks, caches them and plays them with the album as context.
+That is why `CollectionViewModel` stopped taking a `LibraryItemKey` and took a `CollectionKey` of
+its own — favourites or a playlist, the two things that *are* a list of songs the library owns.
+`LibraryItemKey` stays the library-wide identifier, and it is what a recent search stores.
+
+**The chips filter, they do not navigate.** Nothing selected means everything, and tapping the chip
+already on clears it — the same bar Spotify puts at the top of its library. The filter is one field
+of the UiState and the filtering is a property on it, so the list and the grid cannot disagree about
+what is on screen. The liked songs row files under Playlists, because that is what it is.
+
+**`favorite_albums` went into version 3 rather than a version 4.** The schema had not left this
+branch, so a migration between two unreleased versions would have been noise to keep forever.
+
 ## 2026-09-19 — Two tabs, a library, and one ruler for responsiveness
 
 **The tab host lives in `app`, not in a `feature/home`.** It composes `songs` and `library`, and a

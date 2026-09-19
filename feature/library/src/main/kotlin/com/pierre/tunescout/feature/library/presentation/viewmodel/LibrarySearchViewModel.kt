@@ -27,6 +27,7 @@ class LibrarySearchViewModel(
     private val items: Flow<List<LibraryItemUiModel>> = combine(
         useCases.observeFavorites(),
         useCases.observePlaylists(),
+        useCases.observeFavoriteAlbums(),
         ::buildLibraryItems,
     )
 

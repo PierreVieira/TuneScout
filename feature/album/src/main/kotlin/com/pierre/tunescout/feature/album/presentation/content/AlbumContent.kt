@@ -32,6 +32,7 @@ import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.SongRow
+import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
@@ -64,15 +65,11 @@ fun AlbumContent(
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
             actions = {
                 if (uiState is AlbumUiState.Loaded) {
+                    FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
                     TopBarAction(
-                        icon = TuneScoutIcons.queueNext,
-                        contentDescription = stringResource(R.string.album_play_next),
-                        onClick = { onEvent(AlbumUiEvent.OnPlayNextClicked) },
-                    )
-                    TopBarAction(
-                        icon = TuneScoutIcons.addToQueue,
-                        contentDescription = stringResource(R.string.album_add_to_queue),
-                        onClick = { onEvent(AlbumUiEvent.OnAddToQueueClicked) },
+                        icon = TuneScoutIcons.moreMenu,
+                        contentDescription = stringResource(ComponentR.string.ui_more_options),
+                        onClick = { onEvent(AlbumUiEvent.OnMoreClicked) },
                     )
                 }
             },
@@ -101,6 +98,25 @@ fun AlbumContent(
             }
         }
     }
+}
+
+/**
+ * Liking is a state, so it stays on the bar where a filled heart can show it; the queue commands
+ * have no state to show and move into the sheet behind the overflow.
+ */
+@Composable
+private fun FavoriteAction(
+    isFavorite: Boolean,
+    onEvent: (AlbumUiEvent) -> Unit,
+) {
+    TopBarAction(
+        icon = if (isFavorite) TuneScoutIcons.favoriteFilled else TuneScoutIcons.favorite,
+        contentDescription = stringResource(
+            if (isFavorite) R.string.album_unfavorite else R.string.album_favorite,
+        ),
+        tint = if (isFavorite) TuneScoutColors.accent else TuneScoutColors.textPrimary,
+        onClick = { onEvent(AlbumUiEvent.OnFavoriteClicked) },
+    )
 }
 
 @Composable
@@ -132,6 +148,7 @@ private fun LoadedContent(
                 isHighlighted = song.id == nowPlayingId,
                 sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
+                trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },
             )
         }
     }

@@ -101,6 +101,7 @@ class TuneScoutDatabaseMigrationTest {
             assertThat(connection.selectCount("SELECT COUNT(*) FROM playlists")).isEqualTo(0)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM playlist_songs")).isEqualTo(0)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_songs")).isEqualTo(0)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_albums")).isEqualTo(0)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM library_recent_searches")).isEqualTo(0)
         }
     }
@@ -113,6 +114,10 @@ class TuneScoutDatabaseMigrationTest {
                 "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
                     "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8)",
             )
+            connection.execSQL(
+                "INSERT INTO albums VALUES (10, 'Random Access Memories', 'Daft Punk', " +
+                    "'https://art/100x100bb.jpg', 1700000000000)",
+            )
         }
 
         // When
@@ -123,9 +128,11 @@ class TuneScoutDatabaseMigrationTest {
             connection.execSQL("INSERT INTO playlists VALUES (1, 'Road trip', 1700000000000)")
             connection.execSQL("INSERT INTO playlist_songs VALUES (1, 1, 0)")
             connection.execSQL("INSERT INTO favorite_songs VALUES (1, 1700000000000)")
+            connection.execSQL("INSERT INTO favorite_albums VALUES (10, 1700000000000)")
             connection.execSQL("INSERT INTO library_recent_searches VALUES ('playlist:1', 1700000000000)")
             assertThat(connection.selectCount("SELECT COUNT(*) FROM playlist_songs")).isEqualTo(1)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_albums")).isEqualTo(1)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM library_recent_searches")).isEqualTo(1)
         }
     }

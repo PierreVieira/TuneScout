@@ -61,7 +61,14 @@ internal fun LibraryItemArtwork(
     ) {
         when (item) {
             is LibraryItemUiModel.Favorites -> FavoritesIcon()
+
             is LibraryItemUiModel.Playlist -> PlaylistCover(artworks = item.artworks, size = size)
+
+            is LibraryItemUiModel.Album -> CoverImage(
+                artwork = item.artwork,
+                size = size,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }
@@ -69,7 +76,7 @@ internal fun LibraryItemArtwork(
 @Composable
 private fun backgroundOf(item: LibraryItemUiModel): Color = when (item) {
     is LibraryItemUiModel.Favorites -> TuneScoutColors.accentContainer
-    is LibraryItemUiModel.Playlist -> TuneScoutColors.surfaceSubtle
+    is LibraryItemUiModel.Playlist, is LibraryItemUiModel.Album -> TuneScoutColors.surfaceSubtle
 }
 
 @Composable

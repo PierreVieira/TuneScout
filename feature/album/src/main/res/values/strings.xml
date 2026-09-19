@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="album_favorite">Like this album</string>
+    <string name="album_unfavorite">Remove this album from your library</string>
     <string name="album_error_title">Couldn\'t load this album</string>
     <string name="album_error_description">Check your connection and try again.</string>
     <string name="album_play_next">Play the album next</string>

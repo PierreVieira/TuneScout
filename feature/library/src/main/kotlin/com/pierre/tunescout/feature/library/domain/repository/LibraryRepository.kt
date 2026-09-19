@@ -1,5 +1,6 @@
 package com.pierre.tunescout.feature.library.domain.repository
 
+import com.pierre.tunescout.core.model.AlbumSummary
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
@@ -14,6 +15,8 @@ interface LibraryRepository {
     fun observePlaylistSongs(playlistId: Long): Flow<List<Song>>
 
     fun observeFavorites(): Flow<List<Song>>
+
+    fun observeFavoriteAlbums(): Flow<List<AlbumSummary>>
 
     fun observeViewMode(): Flow<LibraryViewMode>
 

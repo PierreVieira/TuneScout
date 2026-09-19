@@ -8,13 +8,18 @@ import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiMode
 
 /**
  * Only a playlist says it is one: calling the liked songs a playlist would name a row the user
- * never created.
+ * never created, and an album is better described by who made it than by how long it is.
  */
 @Composable
-internal fun libraryItemSubtitle(item: LibraryItemUiModel): String {
-    val count = pluralStringResource(R.plurals.library_song_count, item.songCount, item.songCount)
-    return when (item) {
-        is LibraryItemUiModel.Favorites -> count
-        is LibraryItemUiModel.Playlist -> "${stringResource(R.string.library_playlist)} • $count"
-    }
+internal fun libraryItemSubtitle(item: LibraryItemUiModel): String = when (item) {
+    is LibraryItemUiModel.Favorites -> songCountText(item.songCount)
+
+    is LibraryItemUiModel.Playlist ->
+        "${stringResource(R.string.library_playlist)} • ${songCountText(item.songCount)}"
+
+    is LibraryItemUiModel.Album -> "${stringResource(R.string.library_album)} • ${item.artistName}"
 }
+
+@Composable
+private fun songCountText(songCount: Int): String =
+    pluralStringResource(R.plurals.library_song_count, songCount, songCount)

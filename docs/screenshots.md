@@ -38,9 +38,9 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `player.png` | `PlayerScreenshots` | A player, and the queue behind it | Get Lucky, playing, 18 seconds into a 29-second preview. |
 | `queue.png` | `QueueScreenshots` | Queue what you want next | The queue sheet over the player: Random Access Memories playing, two songs queued by hand ahead of it. |
 | `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player. |
-| `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded, with both queue actions in the top bar. |
+| `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded and liked, with the overflow beside the heart and on every track. |
 | `theme.png` | `ThemeSelectionScreenshots` | Light, dark, or whatever the phone says | The theme sheet over the songs screen, dark selected, dynamic colors off. |
-| `library.png` | `LibraryScreenshots.library` | Keep what you like | The library tab as a list: liked songs, three playlists, one of them still empty. |
+| `library.png` | `LibraryScreenshots.library` | Keep what you like | The library tab as a list: liked songs, three playlists (one still empty) and a liked album, with no filter chip picked. |
 | `library_grid.png` | `LibraryScreenshots.libraryGrid` | Or see them as covers | The same library in the grid view. |
 | `notification.png` | — | — | **Manual capture**, captioned in the README itself. |
 

@@ -26,8 +26,15 @@ internal class LibraryScreenshots : ReadmeScreenshotsTest() {
                 artworks = listOf(oneMoreTime, harderBetterFasterStronger).map { song -> song.artwork },
             ),
             LibraryItemUiModel.Playlist(id = 3, name = "To listen later", songCount = 0, artworks = emptyList()),
+            LibraryItemUiModel.Album(
+                id = randomAccessMemories.id,
+                title = randomAccessMemories.title,
+                artistName = randomAccessMemories.artistName,
+                artwork = randomAccessMemories.artwork,
+            ),
         ),
         viewMode = LibraryViewMode.LIST,
+        filter = null,
     )
 
     @Test
@@ -35,7 +42,7 @@ internal class LibraryScreenshots : ReadmeScreenshotsTest() {
         capture(
             fileName = "library",
             title = "Keep what you like",
-            description = "Liked songs and your own playlists, as a list or a grid",
+            description = "Liked songs, the playlists you make and the albums you keep",
         ) {
             LibraryContent(uiState = library, onEvent = {})
         }

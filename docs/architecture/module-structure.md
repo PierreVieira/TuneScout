@@ -131,6 +131,7 @@ feature: `app` is the composition root and already depends on every one of them.
 itself lives in `:ui:theme`, next to the palettes it selects, so the feature and `app` agree on it
 without either owning it.
 
+`feature/album` owns its own options sheet for the same reason: only the album screen opens it.
 `feature/library` owns four routes — the tab, its search, a playlist or the liked songs, and the
 create-playlist dialog — because nothing outside it opens any of them. `feature/add_to_playlist` is
 a module of its own for the opposite reason: `feature/song_options` navigates to it.

@@ -2,27 +2,50 @@ package com.pierre.tunescout.feature.library.presentation.model
 
 import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.LibraryItemKey
+import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 
 sealed interface LibraryItemUiModel {
     val key: LibraryItemKey
-    val songCount: Int
     val artworks: List<Artwork>
+    val filter: LibraryFilter
 
     data class Favorites(
-        override val songCount: Int,
+        val songCount: Int,
         override val artworks: List<Artwork>,
     ) : LibraryItemUiModel {
         override val key: LibraryItemKey
             get() = LibraryItemKey.Favorites
+
+        override val filter: LibraryFilter
+            get() = LibraryFilter.PLAYLISTS
     }
 
     data class Playlist(
         val id: Long,
         val name: String,
-        override val songCount: Int,
+        val songCount: Int,
         override val artworks: List<Artwork>,
     ) : LibraryItemUiModel {
         override val key: LibraryItemKey
             get() = LibraryItemKey.Playlist(id)
+
+        override val filter: LibraryFilter
+            get() = LibraryFilter.PLAYLISTS
+    }
+
+    data class Album(
+        val id: Long,
+        val title: String,
+        val artistName: String,
+        val artwork: Artwork,
+    ) : LibraryItemUiModel {
+        override val key: LibraryItemKey
+            get() = LibraryItemKey.Album(id)
+
+        override val artworks: List<Artwork>
+            get() = listOf(artwork)
+
+        override val filter: LibraryFilter
+            get() = LibraryFilter.ALBUMS
     }
 }

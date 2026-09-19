@@ -6,6 +6,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.Artwork
+import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiEvent
@@ -23,6 +25,12 @@ class LibraryContentTest {
 
     private val events = mutableListOf<LibraryUiEvent>()
     private val favorites = LibraryItemUiModel.Favorites(songCount = 2, artworks = emptyList())
+    private val toxicity = LibraryItemUiModel.Album(
+        id = 10,
+        title = "Toxicity",
+        artistName = "System Of A Down",
+        artwork = Artwork("https://example.com/art/10/100x100bb.jpg"),
+    )
     private val roadTrip = LibraryItemUiModel.Playlist(
         id = 7,
         name = "Road trip",
@@ -43,6 +51,8 @@ class LibraryContentTest {
         onNodeWithText("Road trip").assertIsDisplayed()
         onNodeWithText("Playlist • 3 songs").assertIsDisplayed()
         onNodeWithText("2 songs").assertIsDisplayed()
+        onNodeWithText("Toxicity").assertIsDisplayed()
+        onNodeWithText("Album • System Of A Down").assertIsDisplayed()
     }
 
     @Test
@@ -102,8 +112,38 @@ class LibraryContentTest {
             ).inOrder()
     }
 
-    private fun state(viewMode: LibraryViewMode = LibraryViewMode.LIST): LibraryUiState = LibraryUiState(
-        items = listOf(favorites, roadTrip),
+    private fun state(
+        viewMode: LibraryViewMode = LibraryViewMode.LIST,
+        filter: LibraryFilter? = null,
+    ): LibraryUiState = LibraryUiState(
+        items = listOf(favorites, roadTrip, toxicity),
         viewMode = viewMode,
+        filter = filter,
     )
+
+    @Test
+    fun theAlbumsChipLeavesOnlyTheAlbums() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(uiState = state(filter = LibraryFilter.ALBUMS), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Toxicity").assertIsDisplayed()
+        onNodeWithText("Road trip").assertDoesNotExist()
+        onNodeWithText("Liked songs").assertDoesNotExist()
+    }
+
+    @Test
+    fun tappingAChipEmitsItsFilter() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(uiState = state(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Albums").performClick()
+
+        assertThat(events).containsExactly(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+    }
 }

@@ -1,7 +1,6 @@
 package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
-import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
@@ -14,6 +13,7 @@ import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
@@ -41,7 +41,7 @@ class CollectionViewModelTest {
     fun `GIVEN the favourites WHEN observing THEN titles itself with the liked songs and cannot be deleted`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(key = LibraryItemKey.Favorites, favorites = listOf(song(id = 1)))
+            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
 
             // When
             val state = viewModel.uiState.value as CollectionUiState.Loaded
@@ -57,7 +57,7 @@ class CollectionViewModelTest {
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(
-                key = LibraryItemKey.Playlist(playlistId = 7),
+                key = CollectionKey.Playlist(playlistId = 7),
                 playlist = playlist(id = 7, name = "Road trip"),
                 playlistSongs = listOf(song(id = 2)),
             )
@@ -75,7 +75,7 @@ class CollectionViewModelTest {
     fun `GIVEN a playlist that no longer exists WHEN observing THEN stays loading`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(key = LibraryItemKey.Playlist(playlistId = 7), playlist = null)
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = null)
 
             // When
             val state = viewModel.uiState.value
@@ -88,7 +88,7 @@ class CollectionViewModelTest {
     fun `GIVEN a song WHEN clicking it THEN plays it alone and opens the player`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(key = LibraryItemKey.Favorites, favorites = listOf(song(id = 1)))
+            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
 
             // When
             viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
@@ -107,7 +107,7 @@ class CollectionViewModelTest {
     @Test
     fun `GIVEN a song WHEN clicking its options THEN opens the sheet`() = runTest(mainDispatcher.dispatcher) {
         // Given
-        prepareScenario(key = LibraryItemKey.Favorites, favorites = listOf(song(id = 1)))
+        prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
 
         // When
         viewModel.onEvent(CollectionUiEvent.OnSongOptionsClicked(song(id = 1)))
@@ -119,7 +119,7 @@ class CollectionViewModelTest {
     @Test
     fun `GIVEN the favourites WHEN removing a song THEN unlikes it`() = runTest(mainDispatcher.dispatcher) {
         // Given
-        prepareScenario(key = LibraryItemKey.Favorites, favorites = listOf(song(id = 1)))
+        prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
 
         // When
         viewModel.onEvent(CollectionUiEvent.OnSongRemoved(song(id = 1)))
@@ -135,7 +135,7 @@ class CollectionViewModelTest {
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(
-                key = LibraryItemKey.Playlist(playlistId = 7),
+                key = CollectionKey.Playlist(playlistId = 7),
                 playlist = playlist(id = 7),
                 playlistSongs = listOf(song(id = 2)),
             )
@@ -152,7 +152,7 @@ class CollectionViewModelTest {
     @Test
     fun `GIVEN a playlist WHEN deleting it THEN removes it and goes back`() = runTest(mainDispatcher.dispatcher) {
         // Given
-        prepareScenario(key = LibraryItemKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+        prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
 
         // When
         viewModel.onEvent(CollectionUiEvent.OnDeleteClicked)
@@ -166,7 +166,7 @@ class CollectionViewModelTest {
     @Test
     fun `GIVEN the favourites WHEN deleting THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
         // Given
-        prepareScenario(key = LibraryItemKey.Favorites)
+        prepareScenario(key = CollectionKey.Favorites)
 
         // When
         viewModel.onEvent(CollectionUiEvent.OnDeleteClicked)
@@ -178,7 +178,7 @@ class CollectionViewModelTest {
     }
 
     private fun TestScope.prepareScenario(
-        key: LibraryItemKey,
+        key: CollectionKey,
         favorites: List<Song> = emptyList(),
         playlist: Playlist? = null,
         playlistSongs: List<Song> = emptyList(),

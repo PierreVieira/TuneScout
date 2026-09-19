@@ -5,20 +5,23 @@ import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
-import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -30,9 +33,9 @@ class AlbumViewModelTest {
     private lateinit var viewModel: AlbumViewModel
     private lateinit var localAlbum: MutableStateFlow<Album?>
     private lateinit var playbackStarter: PlaybackStarter
-    private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var refreshCalls: MutableList<Long>
+    private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
 
     @Test
     fun `GIVEN no cached album WHEN starting THEN refreshes it and shows loading meanwhile`() =
@@ -126,42 +129,75 @@ class AlbumViewModelTest {
         }
 
     @Test
-    fun `GIVEN a loaded album WHEN adding it to the queue THEN queues every track in order`() = runTest {
-        // Given
-        val album = album(id = 10)
-        prepareScenario(cached = album)
+    fun `GIVEN an album that is not liked WHEN clicking the heart THEN stores it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, isFavorite = false)
 
-        // When
-        viewModel.onEvent(AlbumUiEvent.OnAddToQueueClicked)
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnFavoriteClicked)
+            runCurrent()
 
-        // Then
-        verify { enqueuer.addToQueue(album.songs) }
-    }
-
-    @Test
-    fun `GIVEN a loaded album WHEN playing it next THEN queues every track right after the current song`() = runTest {
-        // Given
-        val album = album(id = 10)
-        prepareScenario(cached = album)
-
-        // When
-        viewModel.onEvent(AlbumUiEvent.OnPlayNextClicked)
-
-        // Then
-        verify { enqueuer.queueNext(album.songs) }
-    }
+            // Then
+            assertThat(favoriteToggles).containsExactly(10L to false)
+        }
 
     @Test
-    fun `GIVEN the album has not loaded WHEN adding it to the queue THEN does nothing`() = runTest {
-        // Given
-        prepareScenario(cached = null)
+    fun `GIVEN a liked album WHEN clicking the heart THEN passes the current state through`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10), isFavorite = true)
 
-        // When
-        viewModel.onEvent(AlbumUiEvent.OnAddToQueueClicked)
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnFavoriteClicked)
+            runCurrent()
 
-        // Then
-        verify(exactly = 0) { enqueuer.addToQueue(any()) }
-    }
+            // Then
+            assertThat(favoriteToggles).containsExactly(10L to true)
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).isFavorite).isTrue()
+        }
+
+    @Test
+    fun `GIVEN the album has not loaded WHEN clicking the heart THEN does nothing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = null)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnFavoriteClicked)
+            runCurrent()
+
+            // Then
+            assertThat(favoriteToggles).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN a loaded album WHEN clicking the overflow THEN opens the album options`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnMoreClicked)
+
+            // Then
+            verify { navigator.navigate(AlbumOptionsRoute(albumId = 10)) }
+        }
+
+    @Test
+    fun `GIVEN a track WHEN clicking its options THEN opens the same sheet the other lists open`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongOptionsClicked(album.songs.first()))
+
+            // Then
+            verify { navigator.navigate(SongOptionsRoute(songId = album.songs.first().id)) }
+        }
 
     @Test
     fun `WHEN clicking back THEN navigates back`() = runTest(mainDispatcher.dispatcher) {
@@ -179,23 +215,27 @@ class AlbumViewModelTest {
         cached: Album?,
         refreshResult: Result<Unit> = Result.success(Unit),
         playback: PlaybackState = PlaybackState.Idle,
+        isFavorite: Boolean = false,
     ) {
         localAlbum = MutableStateFlow(cached)
         refreshCalls = mutableListOf()
+        favoriteToggles = mutableListOf()
         val playbackStateFlow = MutableStateFlow(playback)
         playbackStarter = mockk(relaxUnitFun = true)
-        enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = AlbumViewModel(
             route = AlbumRoute(albumId = 10),
-            observeAlbum = { localAlbum },
-            refreshAlbum = { albumId ->
-                refreshCalls += albumId
-                refreshResult
-            },
+            useCases = AlbumUseCases(
+                observeAlbum = { localAlbum },
+                refreshAlbum = { albumId ->
+                    refreshCalls += albumId
+                    refreshResult
+                },
+                isAlbumFavorite = { flowOf(isFavorite) },
+                toggleAlbumFavorite = { album, wasFavorite -> favoriteToggles += album.id to wasFavorite },
+            ),
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
-            enqueuer = enqueuer,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }

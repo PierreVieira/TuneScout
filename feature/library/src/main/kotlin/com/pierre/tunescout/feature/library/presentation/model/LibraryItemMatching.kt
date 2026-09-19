@@ -12,4 +12,5 @@ fun LibraryItemUiModel.isMatching(
 fun LibraryItemUiModel.getName(favoritesName: String): String = when (this) {
     is LibraryItemUiModel.Favorites -> favoritesName
     is LibraryItemUiModel.Playlist -> name
+    is LibraryItemUiModel.Album -> title
 }

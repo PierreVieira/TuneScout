@@ -131,6 +131,7 @@ class LibrarySearchViewModelTest {
             useCases = LibrarySearchUseCases(
                 observePlaylists = { flowOf(playlists) },
                 observeFavorites = { flowOf(emptyList()) },
+                observeFavoriteAlbums = { flowOf(emptyList()) },
                 observeRecentSearches = { recentSearches },
                 recordSearch = { key ->
                     recentSearches.value =

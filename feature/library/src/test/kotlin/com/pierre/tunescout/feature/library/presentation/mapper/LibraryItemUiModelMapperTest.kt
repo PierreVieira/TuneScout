@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.library.presentation.mapper
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Artwork
+import com.pierre.tunescout.core.testing.fixture.albumSummary
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
@@ -41,12 +42,20 @@ class LibraryItemUiModelMapperTest {
     }
 
     @Test
-    fun `GIVEN liked songs and playlists WHEN building the library THEN the liked songs come first`() {
+    fun `GIVEN every kind of item WHEN building the library THEN the liked songs come first and albums last`() {
         // When
-        val items = buildLibraryItems(favorites = listOf(song()), playlists = listOf(playlist(id = 7)))
+        val items = buildLibraryItems(
+            favorites = listOf(song()),
+            playlists = listOf(playlist(id = 7)),
+            albums = listOf(albumSummary(id = 10)),
+        )
 
         // Then
-        assertThat(items.first()).isInstanceOf(LibraryItemUiModel.Favorites::class.java)
-        assertThat(items.last()).isInstanceOf(LibraryItemUiModel.Playlist::class.java)
+        assertThat(items.map { item -> item::class.java })
+            .containsExactly(
+                LibraryItemUiModel.Favorites::class.java,
+                LibraryItemUiModel.Playlist::class.java,
+                LibraryItemUiModel.Album::class.java,
+            ).inOrder()
     }
 }

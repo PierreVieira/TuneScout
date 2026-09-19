@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "228a2ee9864c31c73fe43f1c64c20995",
+    "identityHash": "41a1c4bcb0053c804dc3d7cc471ff94e",
     "entities": [
       {
         "tableName": "songs",
@@ -439,6 +439,54 @@
         ]
       },
       {
+        "tableName": "favorite_albums",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`albumId` INTEGER NOT NULL, `favoritedAt` INTEGER NOT NULL, PRIMARY KEY(`albumId`), FOREIGN KEY(`albumId`) REFERENCES `albums`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "albumId",
+            "columnName": "albumId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "favoritedAt",
+            "columnName": "favoritedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "albumId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_favorite_albums_favoritedAt",
+            "unique": false,
+            "columnNames": [
+              "favoritedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_favorite_albums_favoritedAt` ON `${TABLE_NAME}` (`favoritedAt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "albums",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "albumId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
         "tableName": "library_recent_searches",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`itemId` TEXT NOT NULL, `searchedAt` INTEGER NOT NULL, PRIMARY KEY(`itemId`))",
         "fields": [
@@ -476,7 +524,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '228a2ee9864c31c73fe43f1c64c20995')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '41a1c4bcb0053c804dc3d7cc471ff94e')"
     ]
   }
 }

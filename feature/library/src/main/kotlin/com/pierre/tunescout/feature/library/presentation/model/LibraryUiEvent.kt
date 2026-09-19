@@ -1,5 +1,6 @@
 package com.pierre.tunescout.feature.library.presentation.model
 
+import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 
 sealed interface LibraryUiEvent {
@@ -13,5 +14,9 @@ sealed interface LibraryUiEvent {
 
     data class OnViewModeSelected(
         val viewMode: LibraryViewMode,
+    ) : LibraryUiEvent
+
+    data class OnFilterClicked(
+        val filter: LibraryFilter,
     ) : LibraryUiEvent
 }

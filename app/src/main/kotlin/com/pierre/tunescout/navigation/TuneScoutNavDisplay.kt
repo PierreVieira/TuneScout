@@ -19,6 +19,7 @@ import com.pierre.tunescout.core.navigation.route.SplashRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
 import com.pierre.tunescout.feature.addtoplaylist.presentation.navigation.addToPlaylistEntry
 import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
+import com.pierre.tunescout.feature.album.presentation.navigation.albumOptionsEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.createPlaylistEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.favoritesEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.librarySearchEntry
@@ -87,6 +88,7 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
                             playerEntry()
                             queueEntry()
                             albumEntry()
+                            albumOptionsEntry()
                             themeSelectionEntry()
                             dynamicColorInfoEntry()
                         },

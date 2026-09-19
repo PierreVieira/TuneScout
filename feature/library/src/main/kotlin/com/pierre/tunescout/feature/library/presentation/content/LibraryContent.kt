@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
+import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChips
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemCell
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemRow
 import com.pierre.tunescout.feature.library.presentation.component.LibraryViewModeToggle
@@ -57,11 +58,19 @@ fun LibraryContent(
                 .fillMaxHeight(),
         ) {
             Header(onEvent = onEvent)
+            LibraryFilterChips(
+                selected = uiState.filter,
+                onFilterClick = { filter -> onEvent(LibraryUiEvent.OnFilterClicked(filter)) },
+                modifier = Modifier.padding(
+                    horizontal = TuneScoutSpacing.large,
+                    vertical = TuneScoutSpacing.small,
+                ),
+            )
             SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
             Box(modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen)) {
                 when (uiState.viewMode) {
-                    LibraryViewMode.LIST -> LibraryList(items = uiState.items, onEvent = onEvent)
-                    LibraryViewMode.GRID -> LibraryGrid(items = uiState.items, onEvent = onEvent)
+                    LibraryViewMode.LIST -> LibraryList(items = uiState.filteredItems, onEvent = onEvent)
+                    LibraryViewMode.GRID -> LibraryGrid(items = uiState.filteredItems, onEvent = onEvent)
                 }
             }
         }

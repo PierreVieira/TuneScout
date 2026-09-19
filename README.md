@@ -42,11 +42,14 @@ composable. See [docs/screenshots.md](docs/screenshots.md).
 - **Two tabs**: Home, which is search and recently played, and Your Library. The bar at the bottom
   becomes a navigation rail as soon as the window has width to spare, so a phone turned sideways
   gives the list its height back.
-- **Library** of your own: liked songs and the playlists you create, as a list or a grid, with the
-  choice remembered on the device. Search inside it from its own screen, which keeps the items you
-  opened under "Recent searches" and lets you drop them one by one.
-- **Like a song** or **add it to a playlist** from the same options sheet every list opens. Adding
-  to a playlist can create one on the spot.
+- **Library** of your own: liked songs, the playlists you create and the albums you like, as a list
+  or a grid, with the choice remembered on the device. Chips narrow it to playlists or albums, and
+  its own search screen keeps the items you opened under "Recent searches" and lets you drop them
+  one by one.
+- **Like a song** or **add it to a playlist** from the same options sheet every list opens —
+  including every track of an album. Adding to a playlist can create one on the spot.
+- **Like an album** from the heart in its top bar; queueing it moved into the overflow beside it,
+  because liking is a state the bar should show and queueing is not.
 - **Recently played** is the first tab. It is stored locally, so it works offline and survives
   restarts. Playing a song records it once, wherever playback was started from.
 - **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
@@ -189,5 +192,7 @@ MockK · Turbine
 - A playlist holds a song once: adding it again leaves it where it already is.
 - Playing a song from a playlist plays that song alone. The queue only takes an album as its
   context, so a playlist is not one yet.
-- Playlists and liked songs stay on the device. There is no account, so there is nothing to sync
-  them to.
+- A liked album is the album screen, not a screen of its own: the library row opens the same album
+  it would from search.
+- Playlists, liked songs and liked albums stay on the device. There is no account, so there is
+  nothing to sync them to.

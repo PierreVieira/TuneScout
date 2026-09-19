@@ -3,6 +3,7 @@ package com.pierre.tunescout.core.database.mapper
 import com.pierre.tunescout.core.database.entity.AlbumEntity
 import com.pierre.tunescout.core.database.relation.AlbumWithSongs
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.AlbumSummary
 import com.pierre.tunescout.core.model.Artwork
 
 internal fun AlbumWithSongs.toAlbum(): Album = Album(
@@ -11,6 +12,13 @@ internal fun AlbumWithSongs.toAlbum(): Album = Album(
     artistName = album.artistName,
     artwork = Artwork(album.artworkUrl),
     songs = songs.sortedBy { song -> song.trackNumber }.map { song -> song.toSong() },
+)
+
+internal fun AlbumEntity.toSummary(): AlbumSummary = AlbumSummary(
+    id = id,
+    title = title,
+    artistName = artistName,
+    artwork = Artwork(artworkUrl),
 )
 
 internal fun Album.toEntity(cachedAt: Long): AlbumEntity = AlbumEntity(

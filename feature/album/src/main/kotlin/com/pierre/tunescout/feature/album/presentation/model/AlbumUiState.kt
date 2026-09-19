@@ -11,5 +11,6 @@ sealed interface AlbumUiState {
         val album: Album,
         val nowPlayingId: Long?,
         val isPlaying: Boolean,
+        val isFavorite: Boolean,
     ) : AlbumUiState
 }
