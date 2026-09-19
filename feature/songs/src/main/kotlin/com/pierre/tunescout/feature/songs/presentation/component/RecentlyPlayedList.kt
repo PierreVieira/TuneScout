@@ -16,6 +16,7 @@ import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
+import com.pierre.tunescout.ui.component.SwipeToRemoveBox
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 

@@ -27,6 +27,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(modifier = Modifier.weight(1f)) {
                     SongsContent(
+                        isHeaderInline = false,
                         uiState = SongsUiState(
                             query = "",
                             recentlyPlayed = recentlyPlayed,
@@ -54,6 +55,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
             description = "The iTunes catalog, debounced and paged as you scroll",
         ) {
             SongsContent(
+                isHeaderInline = false,
                 uiState = SongsUiState(query = SEARCH_QUERY, recentlyPlayed = recentlyPlayed, nowPlayingId = null),
                 searchResults = pagingItems(searchSongs),
                 onEvent = {},

@@ -22,6 +22,8 @@ internal fun TuneScoutColorPalette.toColorScheme(isDark: Boolean): ColorScheme =
         onSurfaceVariant = textSecondary,
         surfaceContainer = surfaceSubtle,
         surfaceContainerHigh = surfaceRaised,
+        secondaryContainer = accentContainer,
+        onSecondaryContainer = textPrimary,
         outlineVariant = elementSubtle,
         error = error,
     )
@@ -40,6 +42,8 @@ internal fun ColorScheme.toColorPalette(): TuneScoutColorPalette = TuneScoutColo
     elementMuted = outline,
     elementPlaceholder = onSurfaceVariant,
     elementSubtle = onSurface.copy(alpha = SUBTLE_ELEMENT_ALPHA),
+    accent = primary,
+    accentContainer = secondaryContainer,
     trackActive = primary,
     error = error,
 )

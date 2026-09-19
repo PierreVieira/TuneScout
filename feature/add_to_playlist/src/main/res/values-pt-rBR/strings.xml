@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_to_playlist_title">Adicionar a uma playlist</string>
+    <string name="add_to_playlist_new">Nova playlist</string>
+    <string name="add_to_playlist_empty">Você ainda não tem playlists. Crie uma para adicionar esta música.</string>
+    <string name="add_to_playlist_prompt_title">Dê um nome à sua playlist</string>
+    <string name="add_to_playlist_prompt_placeholder">Minha playlist</string>
+    <string name="add_to_playlist_prompt_confirm">Criar</string>
+    <string name="add_to_playlist_prompt_cancel">Cancelar</string>
+    <plurals name="add_to_playlist_song_count">
+        <item quantity="one">%1$d música</item>
+        <item quantity="other">%1$d músicas</item>
+    </plurals>
+</resources>

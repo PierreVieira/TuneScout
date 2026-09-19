@@ -1,7 +1,7 @@
 package com.pierre.tunescout.feature.songs.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -28,7 +28,6 @@ import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.SearchField
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -38,19 +37,19 @@ private val titleHeight = 48.dp
 fun SongsContent(
     uiState: SongsUiState,
     searchResults: LazyPagingItems<Song>,
+    isHeaderInline: Boolean,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .safeDrawingPadding(),
         contentAlignment = Alignment.TopCenter,
     ) {
-        val isHeaderInline = maxWidth > maxHeight
         Column(
             modifier = Modifier
-                .readableWidth()
+                .fillMaxWidth()
                 .fillMaxHeight(),
         ) {
             if (isHeaderInline) {

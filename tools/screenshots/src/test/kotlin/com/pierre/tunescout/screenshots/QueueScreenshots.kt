@@ -53,7 +53,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
             description = "Songs you add play first, then the album carries on. Hold to reorder, tap to jump",
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                PlayerContent(uiState = playerBehindSheet, onEvent = {})
+                PlayerContent(isSideBySide = false, uiState = playerBehindSheet, onEvent = {})
                 Scrim()
                 QueueSheet()
             }

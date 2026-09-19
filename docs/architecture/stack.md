@@ -1,7 +1,8 @@
 ## Stack
 
 - **Language:** Kotlin 2.4, native Android only (`minSdk 26`), kotlinx.coroutines for async
-- **UI:** Jetpack Compose with Material 3
+- **UI:** Jetpack Compose with Material 3, plus `material3-adaptive` for the window size class and
+  `material3-adaptive-navigation-suite` for the bar-or-rail the two tabs are drawn in
 - **Dependency injection:** Koin (`koin-android`, `koin-androidx-compose`)
 - **Network:** Ktor client (OkHttp engine) behind the `ITunesApi` interface in `core/network`
 - **Serialization:** kotlinx.serialization (JSON)

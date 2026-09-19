@@ -1,7 +1,7 @@
 package com.pierre.tunescout.feature.album.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -32,11 +32,11 @@ import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.SongRow
+import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
@@ -50,6 +50,7 @@ private val rowArtworkSize = 44.dp
 @Composable
 fun AlbumContent(
     uiState: AlbumUiState,
+    isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -64,15 +65,11 @@ fun AlbumContent(
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
             actions = {
                 if (uiState is AlbumUiState.Loaded) {
+                    FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
                     TopBarAction(
-                        icon = TuneScoutIcons.queueNext,
-                        contentDescription = stringResource(R.string.album_play_next),
-                        onClick = { onEvent(AlbumUiEvent.OnPlayNextClicked) },
-                    )
-                    TopBarAction(
-                        icon = TuneScoutIcons.addToQueue,
-                        contentDescription = stringResource(R.string.album_add_to_queue),
-                        onClick = { onEvent(AlbumUiEvent.OnAddToQueueClicked) },
+                        icon = TuneScoutIcons.moreMenu,
+                        contentDescription = stringResource(R.string.album_more_options),
+                        onClick = { onEvent(AlbumUiEvent.OnMoreClicked) },
                     )
                 }
             },
@@ -82,7 +79,7 @@ fun AlbumContent(
                 artworkSize = artworkSize,
                 artworkCornerPercent = ARTWORK_CORNER_PERCENT,
                 rowArtworkSize = rowArtworkSize,
-                modifier = Modifier.readableWidth(),
+                modifier = Modifier.fillMaxWidth(),
             )
 
             AlbumUiState.Error -> StateMessage(
@@ -91,16 +88,35 @@ fun AlbumContent(
                 onRetry = { onEvent(AlbumUiEvent.OnRetryClicked) },
             )
 
-            is AlbumUiState.Loaded -> BoxWithConstraints(contentAlignment = Alignment.TopCenter) {
+            is AlbumUiState.Loaded -> Box(contentAlignment = Alignment.TopCenter) {
                 LoadedContent(
                     album = uiState.album,
                     nowPlayingId = uiState.nowPlayingId,
-                    isHeaderInline = maxWidth > maxHeight,
+                    isHeaderInline = isHeaderInline,
                     onEvent = onEvent,
                 )
             }
         }
     }
+}
+
+/**
+ * Liking is a state, so it stays on the bar where a filled heart can show it; the queue commands
+ * have no state to show and move into the sheet behind the overflow.
+ */
+@Composable
+private fun FavoriteAction(
+    isFavorite: Boolean,
+    onEvent: (AlbumUiEvent) -> Unit,
+) {
+    TopBarAction(
+        icon = if (isFavorite) TuneScoutIcons.favoriteFilled else TuneScoutIcons.favorite,
+        contentDescription = stringResource(
+            if (isFavorite) R.string.album_unfavorite else R.string.album_favorite,
+        ),
+        tint = if (isFavorite) TuneScoutColors.accent else TuneScoutColors.textPrimary,
+        onClick = { onEvent(AlbumUiEvent.OnFavoriteClicked) },
+    )
 }
 
 @Composable
@@ -112,7 +128,7 @@ private fun LoadedContent(
 ) {
     LazyColumn(
         modifier = Modifier
-            .readableWidth()
+            .fillMaxWidth()
             .fillMaxHeight(),
         contentPadding = PaddingValues(
             start = TuneScoutSpacing.screen,
@@ -132,6 +148,7 @@ private fun LoadedContent(
                 isHighlighted = song.id == nowPlayingId,
                 sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
+                trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },
             )
         }
     }

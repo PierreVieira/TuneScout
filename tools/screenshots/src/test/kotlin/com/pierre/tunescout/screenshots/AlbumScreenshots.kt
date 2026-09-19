@@ -9,6 +9,7 @@ internal class AlbumScreenshots : ReadmeScreenshotsTest() {
         album = randomAccessMemories,
         nowPlayingId = null,
         isPlaying = false,
+        isFavorite = true,
     )
 
     @Test
@@ -18,7 +19,7 @@ internal class AlbumScreenshots : ReadmeScreenshotsTest() {
             title = "The album behind the song",
             description = "Fetched once and cached, so it opens again without a connection",
         ) {
-            AlbumContent(uiState = loadedAlbum, onEvent = {})
+            AlbumContent(isHeaderInline = false, uiState = loadedAlbum, onEvent = {})
         }
     }
 }

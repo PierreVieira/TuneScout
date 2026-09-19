@@ -26,22 +26,61 @@ class AlbumContentTest {
     private val events = mutableListOf<AlbumUiEvent>()
 
     @Test
-    fun givenLoadedAlbumTheTopBarQueuesItNextOrAtTheEnd() = compose.use {
+    fun givenAnAlbumThatIsNotLikedTheTopBarOffersToLikeItAndOpensTheRest() = compose.use {
         setContent {
             TuneScoutTheme {
                 AlbumContent(
-                    uiState = AlbumUiState.Loaded(album = album(), nowPlayingId = null, isPlaying = false),
+                    isHeaderInline = false,
+                    uiState = loaded(isFavorite = false),
                     onEvent = events::add,
                 )
             }
         }
 
-        onNodeWithContentDescription("Play the album next").performClick()
-        onNodeWithContentDescription("Add the album to the queue").performClick()
+        onNodeWithContentDescription("Like this album").performClick()
+        onNodeWithContentDescription("More options for this album").performClick()
 
         assertThat(events)
-            .containsExactly(AlbumUiEvent.OnPlayNextClicked, AlbumUiEvent.OnAddToQueueClicked)
+            .containsExactly(AlbumUiEvent.OnFavoriteClicked, AlbumUiEvent.OnMoreClicked)
             .inOrder()
+    }
+
+    @Test
+    fun givenALikedAlbumTheTopBarOffersToRemoveIt() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(
+                    isHeaderInline = false,
+                    uiState = loaded(isFavorite = true),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Remove this album from your library").assertIsDisplayed()
+    }
+
+    @Test
+    fun givenLoadedAlbumEachTrackOpensTheSongOptions() = compose.use {
+        val album = album(songs = listOf(song(id = 1, title = "Give Life Back to Music")))
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(
+                    isHeaderInline = false,
+                    uiState = AlbumUiState.Loaded(
+                        album = album,
+                        nowPlayingId = null,
+                        isPlaying = false,
+                        isFavorite = false,
+                    ),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("More options").performClick()
+
+        assertThat(events).containsExactly(AlbumUiEvent.OnSongOptionsClicked(album.songs.first()))
     }
 
     @Test
@@ -55,7 +94,13 @@ class AlbumContentTest {
         setContent {
             TuneScoutTheme {
                 AlbumContent(
-                    uiState = AlbumUiState.Loaded(album = album, nowPlayingId = null, isPlaying = false),
+                    isHeaderInline = false,
+                    uiState = AlbumUiState.Loaded(
+                        album = album,
+                        nowPlayingId = null,
+                        isPlaying = false,
+                        isFavorite = false,
+                    ),
                     onEvent = events::add,
                 )
             }
@@ -72,7 +117,7 @@ class AlbumContentTest {
     fun givenErrorShowsRetryThatEmitsEvent() = compose.use {
         setContent {
             TuneScoutTheme {
-                AlbumContent(uiState = AlbumUiState.Error, onEvent = events::add)
+                AlbumContent(isHeaderInline = false, uiState = AlbumUiState.Error, onEvent = events::add)
             }
         }
 
@@ -86,7 +131,7 @@ class AlbumContentTest {
     fun givenLoadingShowsIndicatorAndBackStillWorks() = compose.use {
         setContent {
             TuneScoutTheme {
-                AlbumContent(uiState = AlbumUiState.Loading, onEvent = events::add)
+                AlbumContent(isHeaderInline = false, uiState = AlbumUiState.Loading, onEvent = events::add)
             }
         }
 
@@ -99,4 +144,11 @@ class AlbumContentTest {
     private companion object {
         const val TITLE_IN_TOP_BAR_AND_HEADER = 2
     }
+
+    private fun loaded(isFavorite: Boolean): AlbumUiState.Loaded = AlbumUiState.Loaded(
+        album = album(),
+        nowPlayingId = null,
+        isPlaying = false,
+        isFavorite = isFavorite,
+    )
 }

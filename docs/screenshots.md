@@ -38,8 +38,10 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `player.png` | `PlayerScreenshots` | A player, and the queue behind it | Get Lucky, playing, 18 seconds into a 29-second preview. |
 | `queue.png` | `QueueScreenshots` | Queue what you want next | The queue sheet over the player: Random Access Memories playing, two songs queued by hand ahead of it. |
 | `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player. |
-| `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded, with both queue actions in the top bar. |
+| `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded and liked, with the overflow beside the heart and on every track. |
 | `theme.png` | `ThemeSelectionScreenshots` | Light, dark, or whatever the phone says | The theme sheet over the songs screen, dark selected, dynamic colors off. |
+| `library.png` | `LibraryScreenshots.library` | Keep what you like | The library tab as a list: liked songs, three playlists (one still empty) and a liked album, with no filter chip picked. |
+| `library_grid.png` | `LibraryScreenshots.libraryGrid` | Or see them as covers | The same library in the grid view. |
 | `notification.png` | — | — | **Manual capture**, captioned in the README itself. |
 
 Every generator renders under `Theme.DARK` rather than the default `Theme.SYSTEM`: Robolectric
@@ -50,6 +52,9 @@ The copy is English only — the file is committed once and read in one language
 do not loop over locales. A title is a benefit, not a screen name ("Pick up where you left off",
 not "Songs"), and the description underneath says how the app delivers it in one line. Both live
 next to the screen's `capture` call; changing one means changing the table above with it.
+
+The two library shots pass `LibraryContent` its view mode directly, which is also how the screen
+gets it from the DataStore.
 
 `queue.png`, `options.png` and `theme.png` all draw their sheet by hand — a `Surface` with the drag handle over a
 scrim — because `ModalBottomSheet` animates in and Robolectric captures the frame before it lands.

@@ -45,6 +45,7 @@ private val detailsHeight = 260.dp
 @Composable
 fun PlayerContent(
     uiState: PlayerUiState,
+    isSideBySide: Boolean,
     onEvent: (PlayerUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,7 +68,6 @@ fun PlayerContent(
             },
         )
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val isSideBySide = maxWidth > maxHeight
             val artworkSize = getArtworkSize(
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,

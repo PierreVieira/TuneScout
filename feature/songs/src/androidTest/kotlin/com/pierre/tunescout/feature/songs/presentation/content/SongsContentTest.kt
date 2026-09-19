@@ -135,6 +135,7 @@ class SongsContentTest {
         val pagingFlow = remember { flowOf(PagingData.from(results, sourceLoadStates = loadedStates)) }
         TuneScoutTheme {
             SongsContent(
+                isHeaderInline = false,
                 uiState = uiState,
                 searchResults = pagingFlow.collectAsLazyPagingItems(),
                 onEvent = events::add,

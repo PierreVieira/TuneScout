@@ -15,4 +15,5 @@
     <string name="ui_seek_bar">Posição da reprodução</string>
     <string name="ui_retry">Tentar de novo</string>
     <string name="ui_loading">Carregando</string>
+    <string name="ui_close">Fechar</string>
 </resources>

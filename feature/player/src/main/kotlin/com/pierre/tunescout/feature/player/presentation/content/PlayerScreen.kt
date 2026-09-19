@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.feature.player.presentation.viewmodel.PlayerViewModel
+import com.pierre.tunescout.ui.utils.window.rememberWindowSize
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -16,6 +17,7 @@ fun PlayerScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     PlayerContent(
         uiState = uiState,
+        isSideBySide = rememberWindowSize().isSideBySide,
         onEvent = viewModel::onEvent,
     )
 }

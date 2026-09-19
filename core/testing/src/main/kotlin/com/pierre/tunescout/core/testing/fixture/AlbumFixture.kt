@@ -1,6 +1,7 @@
 package com.pierre.tunescout.core.testing.fixture
 
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.AlbumSummary
 import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.Song
 
@@ -19,4 +20,16 @@ fun album(
     artistName = artistName,
     artwork = artwork,
     songs = songs,
+)
+
+fun albumSummary(
+    id: Long = 10,
+    title: String = "Random Access Memories",
+    artistName: String = "Daft Punk",
+    artwork: Artwork = Artwork("https://example.com/art/$id/100x100bb.jpg"),
+): AlbumSummary = AlbumSummary(
+    id = id,
+    title = title,
+    artistName = artistName,
+    artwork = artwork,
 )

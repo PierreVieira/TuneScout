@@ -24,7 +24,7 @@ internal class PlayerScreenshots : ReadmeScreenshotsTest() {
             title = "A player, and the queue behind it",
             description = "Scrub, repeat, skip, and open the queue from the button on the right",
         ) {
-            PlayerContent(uiState = nowPlaying, onEvent = {})
+            PlayerContent(isSideBySide = false, uiState = nowPlaying, onEvent = {})
         }
     }
 }

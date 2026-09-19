@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
@@ -22,15 +23,18 @@ class SongOptionsViewModel(
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
 ) : ViewModel() {
-    private val emptyUiState = SongOptionsUiState(song = null, isRecentlyPlayed = false)
+    private val emptyUiState = SongOptionsUiState(song = null, isRecentlyPlayed = false, isFavorite = false)
 
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
         useCases.isRecentlyPlayed(route.songId),
+        useCases.isFavorite(route.songId),
         ::SongOptionsUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
+        SongOptionsUiEvent.OnFavoriteClicked -> toggleFavorite()
+        SongOptionsUiEvent.OnAddToPlaylistClicked -> openAddToPlaylist()
         SongOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()
@@ -42,6 +46,20 @@ class SongOptionsViewModel(
         val song = uiState.value.song ?: return
         enqueue(listOf(song))
         navigator.navigateBack()
+    }
+
+    private fun toggleFavorite() {
+        val state = uiState.value
+        val song = state.song ?: return
+        viewModelScope.launch {
+            useCases.toggleFavorite(song = song, isFavorite = state.isFavorite)
+            navigator.navigateBack()
+        }
+    }
+
+    private fun openAddToPlaylist() {
+        val songId = uiState.value.song?.id ?: return
+        navigator.navigateReplacingTop(AddToPlaylistRoute(songId = songId))
     }
 
     private fun openAlbum() {

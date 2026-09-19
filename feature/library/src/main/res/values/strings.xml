@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_album">Album</string>
+    <string name="library_filter_playlists">Playlists</string>
+    <string name="library_filter_albums">Albums</string>
+    <string name="library_title">Your Library</string>
+    <string name="library_favorites">Liked songs</string>
+    <string name="library_playlist">Playlist</string>
+    <string name="library_recents">Recents</string>
+    <string name="library_open_search">Search your library</string>
+    <string name="library_create_playlist">Create playlist</string>
+    <string name="library_view_as_grid">Show as grid</string>
+    <string name="library_view_as_list">Show as list</string>
+    <string name="library_search_placeholder">Search your library</string>
+    <string name="library_recent_searches">Recent searches</string>
+    <string name="library_remove_recent_search">Remove from recent searches</string>
+    <string name="library_search_empty_title">Nothing found</string>
+    <string name="library_search_empty_description">Try another playlist name.</string>
+    <string name="library_collection_empty_title">No songs yet</string>
+    <string name="library_collection_empty_description">Songs you add show up here.</string>
+    <string name="library_delete_playlist">Delete playlist</string>
+    <string name="library_create_playlist_title">Name your playlist</string>
+    <string name="library_create_playlist_placeholder">My playlist</string>
+    <string name="library_create_playlist_confirm">Create</string>
+    <string name="library_create_playlist_cancel">Cancel</string>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d song</item>
+        <item quantity="other">%1$d songs</item>
+    </plurals>
+</resources>

@@ -77,6 +77,10 @@ fun EntryProviderScope<NavKey>.player() {
 Route arguments reach the ViewModel as a constructor parameter (`route: PlayerRoute`) injected via
 `parametersOf(route)` — never via `SavedStateHandle.toRoute()`.
 
+A sheet route is drawn as a bottom sheet, or as a centred dialog when the window's height class is
+compact — a landscape phone has no room to open one. `BottomSheetScene` decides that, so a new sheet
+route inherits the behaviour without asking for it.
+
 Bottom sheets are routes too: the more-options sheet is `SongOptionsRoute` and the queue is
 `QueueRoute`, pushed with `navigator.navigate(...)` and dismissed with `navigateBack()`. Their entries
 carry the metadata of a bottom-sheet scene strategy so `NavDisplay` renders them over the previous
@@ -95,13 +99,34 @@ A screen does not read `LocalNavAnimatedContentScope` itself — see [Shared ele
 // app/src/main/kotlin/com/pierre/tunescout/navigation/TuneScoutNavDisplay.kt
 entryProvider = entryProvider<NavKey> {
     splash()
-    songs()
+    home(tabsState)
     player()
     album()
 }
 ```
 
 `app` is the only module that depends on every feature, which is why the registration lives there.
+
+## The tab host
+
+`HomeRoute` is one entry of the root back stack, and it renders a **second `NavDisplay`** with one
+`NavBackStack` per tab (`app/navigation/home/`). The tab entries are built with
+`rememberDecoratedNavEntries` and handed to the `entries =` overload — not `backStack =` — which is
+what gives each tab its own saved state and its own `ViewModelStore` across a switch.
+
+While a tab other than the first is selected, the first tab's entries stay at the head of that
+list, so system back animates from the second tab to the first the way Android expects, and
+`onBack` only has to move the selection.
+
+Only the two tabs live in the nested display. **Everything a tab opens — the player, an album, a
+playlist, the queue, any sheet — is pushed onto the root back stack**, over the bar, through the
+same `Navigator`. That is what keeps the `Navigator` and the `BackStackController` free of any
+notion of tabs.
+
+The bar itself is drawn by `TuneScoutNavigationSuite` (`:ui:component`) *outside* the root
+`NavDisplay`, so the mini player sits between the content and the bar. It is hidden with
+`NavigationSuiteType.None` rather than by removing the scaffold: removing it would rebuild the
+`NavDisplay` underneath and take the back stack with it.
 
 ## Shared elements
 

@@ -3,7 +3,7 @@ package com.pierre.tunescout.feature.splash.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.SongsRoute
+import com.pierre.tunescout.core.navigation.route.HomeRoute
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
@@ -18,7 +18,7 @@ class SplashViewModel(
     init {
         viewModelScope.launch {
             delay(holdDuration)
-            navigator.navigateReplacingTop(SongsRoute)
+            navigator.navigateReplacingTop(HomeRoute)
         }
     }
 }

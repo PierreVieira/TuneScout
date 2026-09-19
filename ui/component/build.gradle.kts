@@ -10,6 +10,7 @@ dependencies {
     implementation(projects.ui.theme)
     implementation(projects.ui.utils)
 
+    implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.coil.compose)
     implementation(libs.compose.shimmer)

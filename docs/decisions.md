@@ -2,6 +2,121 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-19 — Liking an album, and chips to find one
+
+**Liking is a state, so it stays on the bar; queueing is a command, so it moves behind the
+overflow.** The album top bar carried both queue actions and had no room for a third; a filled heart
+has to be visible without opening anything, while "Play next" and "Add to queue" have no state to
+show. The bar is now a heart and a `⋮`, and the two queue actions moved into an album options sheet
+that lives in `feature/album` — nothing outside it opens that sheet, which is the line the module
+split is drawn on.
+
+**Every track of an album opens the same sheet every other list opens.** The rows had no overflow at
+all, so a song was likeable from Songs and from a playlist but not from the album it belongs to.
+
+**A liked album is a library row that opens the album screen.** It is not a collection of its own:
+the album screen already lists its tracks, caches them and plays them with the album as context.
+That is why `CollectionViewModel` stopped taking a `LibraryItemKey` and took a `CollectionKey` of
+its own — favourites or a playlist, the two things that *are* a list of songs the library owns.
+`LibraryItemKey` stays the library-wide identifier, and it is what a recent search stores.
+
+**The chips filter, they do not navigate.** Nothing selected means everything, and tapping the chip
+already on clears it — the same bar Spotify puts at the top of its library. The filter is one field
+of the UiState and the filtering is a property on it, so the list and the grid cannot disagree about
+what is on screen. The liked songs row files under Playlists, because that is what it is.
+
+**`favorite_albums` went into version 3 rather than a version 4.** The schema had not left this
+branch, so a migration between two unreleased versions would have been noise to keep forever.
+
+## 2026-09-19 — Two tabs, a library, and one ruler for responsiveness
+
+**The tab host lives in `app`, not in a `feature/home`.** It composes `songs` and `library`, and a
+feature may never depend on a feature — the same rule that put `MiniPlayerScaffold` in `app`.
+`HomeRoute` is one entry of the root back stack and renders a nested `NavDisplay` with one
+`NavBackStack` per tab, built through `rememberDecoratedNavEntries` and the `entries =` overload,
+which is what preserves each tab's scroll, query and ViewModel across a switch. Cost: a second
+display to keep in step with the first.
+
+**Only the tabs live in that nested display.** The player, an album, a playlist, the library search
+and every sheet are pushed onto the root back stack and cover the bar, exactly as the album screen
+already did. The alternative — depth inside a tab, so the bar stays visible on a playlist the way
+Spotify does — would mean teaching `Navigator` and `BackStackController` which stack a route
+belongs to. That is the trade this PR declines: the bar disappears on a playlist, and the two
+navigation classes stay tab-agnostic.
+
+**The bar is hidden with `NavigationSuiteType.None`, not by removing the scaffold.** Swapping the
+composable that wraps the content would rebuild the `NavDisplay` inside it and take the back stack
+with it.
+
+**Responsiveness is one ruler now: the window size class.** `SongsContent`, `AlbumContent` and
+`PlayerContent` decided landscape with `maxWidth > maxHeight` inside their own `BoxWithConstraints`,
+which measures whatever box they happen to sit in — a rail on the side would have changed their
+answer. They now read `TuneScoutWindowSize` (`:ui:utils`, over `currentWindowAdaptiveInfoV2()`, the
+overload that replaced the deprecated one and reports the L and XL width classes), and
+the `*Screen` composable resolves it and passes a plain `Boolean` down, so the `*Content`
+composables stay renderable on their own by the screenshot generators and the Compose tests, which
+have no real window. `PlayerContent` keeps its `BoxWithConstraints`: it still needs the real `Dp`
+to clamp the artwork; only the breakpoint moved. Cost: one new dependency (`material3-adaptive`),
+and a `Boolean` parameter on three `*Content` signatures.
+
+**Nothing caps the content's width any more.** `Modifier.readableWidth()` held every list near the
+width a phone gives it in portrait and centred the rest, which kept rows readable but left a
+landscape window mostly empty. The cap is gone from every screen and from the mini player, and the
+modifier with it: the width a landscape window buys is about to be spent on a second pane, and
+capping it now would only have to be undone then. Cost: until that lands, a song row stretches all
+the way across a landscape phone, which is exactly the layout the cap was added to avoid.
+
+**The accent comes from the splash gradient, and the tab bar wears its container, not the accent.**
+`TuneScoutColorPalette` gains an `accent` — deep green in the light palette, a lighter one in the
+dark, both keeping the hue the splash gradient ends on, since that colour itself is far too dark to
+read as a highlight — and an `accentContainer`, the same hue with most of the chroma taken out. The
+selected tab sits on the container with a plain `textPrimary` icon and label, which is how Material
+derives a navigation bar from `secondaryContainer`: the bar reads as navigation, and the accent
+stays for the things meant to pull the eye. With dynamic colours on both tokens map to the platform
+scheme (`primary` and `secondaryContainer`), so the wallpaper still wins and nothing is forced.
+
+**A sheet becomes a dialog in a window too short for one.** A landscape phone leaves a bottom sheet
+about one row of content between the drag handle and the navigation bar, so `BottomSheetScene`
+draws the same entry as a centred dialog when the height class is compact. The decision lives in the
+scene, not in the four features that open sheets, so a new sheet inherits it. Cost: `core:navigation`
+now reads the window size — which it may, since it is the one `core` module allowed to depend on
+`:ui:*`.
+
+**The rail's breakpoint is written by hand.** `NavigationSuiteScaffoldDefaults.navigationSuiteType`
+returns a *bar* for a compact height, which is exactly the phone turned sideways this was meant to
+give a rail. The type is therefore computed from the width and height classes directly.
+
+**A tile asks for the artwork it is drawn at.** A grid cell is about three times the width of a
+list row, and the 200px thumbnail a row is happy with is visibly soft there, so `LibraryItemArtwork`
+takes the size it is being drawn at and picks the thumbnail or the 600px medium from it. The liked
+songs tile wears the accent container with the accent heart on it, so the one row that has no cover
+of its own still reads as one.
+
+**The view mode is a two-segment toggle, not one button.** A single icon showing the mode you would
+switch to never says which one you are looking at, so both are on screen with the current one
+filled.
+
+**Playlists and likes are rows, the view mode is a preference.** `core/database` goes to version 3
+with `playlists`, `playlist_songs` (position is an explicit column), `favorite_songs` and
+`library_recent_searches`; list-or-grid is a single value, so it lives in the Preferences DataStore
+next to the theme.
+
+**A recent search stores a library item, not a typed term.** That is what the Spotify screen shows,
+and it is what the user removes with the `X`. The row is keyed by a string the data layer encodes
+from a `LibraryItemKey`, so the liked songs — which are not a playlist row — can be one too. Cost:
+no foreign key, so deleting a playlist deletes its recent search explicitly in the repository, and
+a key that no longer resolves is dropped on read.
+
+**A playlist holds a song once.** The primary key is `(playlistId, songId)`, and `appendSong`
+returns early when the song is already there rather than upserting it to a new position — adding a
+song twice used to move it to the end of the playlist, which the instrumented test caught.
+
+**Liking a song and adding it to a playlist are rows in the options sheet.** The sheet is already
+what every list opens for a song, so neither action needed a new entry point. Picking the playlist
+is `feature/add_to_playlist`, a module of its own, because `song_options` — outside it — navigates
+there; that is the same line that created `song_options` itself. The library's own four routes stay
+in `feature/library`, because nothing outside opens them.
+
 ## 2026-09-19 — Playback split into api and impl
 
 **`core/playback` is two modules: `api` holds the role interfaces, `impl` holds ExoPlayer.** Every
@@ -33,7 +148,8 @@ timeline, so the play button used to be inert once the preview ran out. `PlayBut
 third state to the two the button had: `Replay` seeks to zero and plays, and the player and the mini
 player both show it.
 
-**Landscape caps the content instead of stretching it.** `Modifier.readableWidth()` holds a list near
+**Landscape caps the content instead of stretching it.** *(Reversed on 2026-09-19 — see "Two tabs,
+a library, and one ruler for responsiveness".)* `Modifier.readableWidth()` holds a list near
 the width a phone gives it in portrait, which is what its rows were laid out for, and the parent
 centres what is left. The cap comes before the fill — the other order hands `widthIn` a minimum that
 is already the parent's width, which it cannot go below, and nothing is capped at all. The Songs

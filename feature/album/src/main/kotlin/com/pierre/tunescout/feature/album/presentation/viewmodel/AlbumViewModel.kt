@@ -7,13 +7,13 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
-import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
-import com.pierre.tunescout.feature.album.domain.usecase.ObserveAlbum
-import com.pierre.tunescout.feature.album.domain.usecase.RefreshAlbum
+import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,19 +25,18 @@ import kotlinx.coroutines.launch
 
 class AlbumViewModel(
     private val route: AlbumRoute,
-    observeAlbum: ObserveAlbum,
-    private val refreshAlbum: RefreshAlbum,
+    private val useCases: AlbumUseCases,
     private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
-    private val enqueuer: Enqueuer,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val refreshFailed = MutableStateFlow(false)
 
     val uiState: StateFlow<AlbumUiState> = combine(
-        observeAlbum(route.albumId),
+        useCases.observeAlbum(route.albumId),
         observablePlayback.observePlaybackState(),
         refreshFailed,
+        useCases.isAlbumFavorite(route.albumId),
         ::toUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), AlbumUiState.Loading)
 
@@ -47,8 +46,9 @@ class AlbumViewModel(
 
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> playAndOpen(event.song)
-        AlbumUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
-        AlbumUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
+        is AlbumUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
+        AlbumUiEvent.OnFavoriteClicked -> toggleFavorite()
+        AlbumUiEvent.OnMoreClicked -> navigator.navigate(AlbumOptionsRoute(albumId = route.albumId))
         AlbumUiEvent.OnRetryClicked -> refresh()
         AlbumUiEvent.OnBackClicked -> navigator.navigateBack()
     }
@@ -56,13 +56,15 @@ class AlbumViewModel(
     private fun refresh() {
         refreshFailed.value = false
         viewModelScope.launch {
-            refreshAlbum(route.albumId).onFailure { refreshFailed.value = true }
+            useCases.refreshAlbum(route.albumId).onFailure { refreshFailed.value = true }
         }
     }
 
-    private fun queue(enqueue: (List<Song>) -> Unit) {
-        val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        enqueue(album.songs)
+    private fun toggleFavorite() {
+        val state = uiState.value as? AlbumUiState.Loaded ?: return
+        viewModelScope.launch {
+            useCases.toggleAlbumFavorite(album = state.album, isFavorite = state.isFavorite)
+        }
     }
 
     private fun playAndOpen(song: Song) {
@@ -79,11 +81,13 @@ class AlbumViewModel(
         album: Album?,
         playback: PlaybackState,
         refreshFailed: Boolean,
+        isFavorite: Boolean,
     ): AlbumUiState = when {
         album != null -> AlbumUiState.Loaded(
             album = album,
             nowPlayingId = playback.currentSong?.id,
             isPlaying = playback.isPlaying,
+            isFavorite = isFavorite,
         )
 
         refreshFailed -> AlbumUiState.Error

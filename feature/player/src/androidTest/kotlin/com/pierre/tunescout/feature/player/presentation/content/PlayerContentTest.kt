@@ -29,7 +29,7 @@ class PlayerContentTest {
     fun givenLoadedSongShowsTitleArtistAndTimeline() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(uiState = loaded(), onEvent = events::add)
+                PlayerContent(isSideBySide = false, uiState = loaded(), onEvent = events::add)
             }
         }
 
@@ -45,7 +45,11 @@ class PlayerContentTest {
     fun givenPlayingSongClickingPauseEmitsPlayPauseEvent() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(uiState = loaded(status = PlaybackStatus.Playing), onEvent = events::add)
+                PlayerContent(
+                    isSideBySide = false,
+                    uiState = loaded(status = PlaybackStatus.Playing),
+                    onEvent = events::add,
+                )
             }
         }
 
@@ -58,7 +62,11 @@ class PlayerContentTest {
     fun givenPausedSongShowsPlayButton() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(uiState = loaded(status = PlaybackStatus.Paused), onEvent = events::add)
+                PlayerContent(
+                    isSideBySide = false,
+                    uiState = loaded(status = PlaybackStatus.Paused),
+                    onEvent = events::add,
+                )
             }
         }
 
@@ -69,7 +77,11 @@ class PlayerContentTest {
     fun givenFirstSongOfQueuePreviousIsDisabledAndNextSkips() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(uiState = loaded(hasPrevious = false, hasNext = true), onEvent = events::add)
+                PlayerContent(
+                    isSideBySide = false,
+                    uiState = loaded(hasPrevious = false, hasNext = true),
+                    onEvent = events::add,
+                )
             }
         }
 
@@ -83,7 +95,7 @@ class PlayerContentTest {
     fun clickingBackAndMoreEmitTheirEvents() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(uiState = loaded(), onEvent = events::add)
+                PlayerContent(isSideBySide = false, uiState = loaded(), onEvent = events::add)
             }
         }
 
@@ -97,7 +109,11 @@ class PlayerContentTest {
     fun givenAFinishedSongShowsReplayAndClickingItEmitsPlayPause() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(uiState = loaded(status = PlaybackStatus.Ended), onEvent = events::add)
+                PlayerContent(
+                    isSideBySide = false,
+                    uiState = loaded(status = PlaybackStatus.Ended),
+                    onEvent = events::add,
+                )
             }
         }
 
@@ -110,7 +126,7 @@ class PlayerContentTest {
     fun givenNotFoundShowsTheMessage() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(uiState = PlayerUiState.NotFound, onEvent = events::add)
+                PlayerContent(isSideBySide = false, uiState = PlayerUiState.NotFound, onEvent = events::add)
             }
         }
 

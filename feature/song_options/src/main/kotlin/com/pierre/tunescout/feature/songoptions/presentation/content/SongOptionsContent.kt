@@ -70,11 +70,25 @@ fun SongOptionsContent(
             ),
         )
         OptionRow(
+            icon = if (uiState.isFavorite) TuneScoutIcons.favoriteFilled else TuneScoutIcons.favorite,
+            label = stringResource(
+                if (uiState.isFavorite) R.string.song_options_unfavorite else R.string.song_options_favorite,
+            ),
+            isEnabled = uiState.song != null,
+            onClick = { onEvent(SongOptionsUiEvent.OnFavoriteClicked) },
+            modifier = Modifier.padding(top = TuneScoutSpacing.large),
+        )
+        OptionRow(
+            icon = TuneScoutIcons.addToPlaylist,
+            label = stringResource(R.string.song_options_add_to_playlist),
+            isEnabled = uiState.song != null,
+            onClick = { onEvent(SongOptionsUiEvent.OnAddToPlaylistClicked) },
+        )
+        OptionRow(
             icon = TuneScoutIcons.queueNext,
             label = stringResource(R.string.song_options_play_next),
             isEnabled = uiState.song != null,
             onClick = { onEvent(SongOptionsUiEvent.OnPlayNextClicked) },
-            modifier = Modifier.padding(top = TuneScoutSpacing.large),
         )
         OptionRow(
             icon = TuneScoutIcons.addToQueue,

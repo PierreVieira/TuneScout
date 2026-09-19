@@ -3,12 +3,12 @@
 The project uses a multi-module Gradle setup. Every new feature gets its own module.
 
 ```
-app/                     # Android application: composition root (Koin appModules, TuneScoutNavDisplay, MainActivity)
+app/                     # Android application: composition root (Koin appModules, TuneScoutNavDisplay, the tab host, MainActivity)
 core/
-├── model/               # Domain models shared across features (Song, Album) — pure JVM
+├── model/               # Domain models shared across features (Song, Album, Playlist) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM
 ├── network/             # ITunesRemoteDataSource interface + Ktor implementation, DTOs (internal)
-├── database/            # Room database, DAOs, entities, migrations
+├── database/            # Room database, DAOs, entities, migrations (history, playlists, likes)
 ├── datastore/           # The Preferences DataStore and its Koin module
 ├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, BackStackController, routes
 ├── playback/
@@ -22,7 +22,9 @@ ui/
 feature/
 ├── splash/
 ├── songs/
+├── library/           # The library tab, its search, a playlist and the create dialog
 ├── song_options/
+├── add_to_playlist/
 ├── player/
 ├── queue/
 ├── mini_player/
@@ -128,6 +130,16 @@ preference through the feature's `ObserveTheme` use case, the same way it reache
 feature: `app` is the composition root and already depends on every one of them. The `Theme` enum
 itself lives in `:ui:theme`, next to the palettes it selects, so the feature and `app` agree on it
 without either owning it.
+
+`feature/album` owns its own options sheet for the same reason: only the album screen opens it.
+`feature/library` owns four routes — the tab, its search, a playlist or the liked songs, and the
+create-playlist dialog — because nothing outside it opens any of them. `feature/add_to_playlist` is
+a module of its own for the opposite reason: `feature/song_options` navigates to it.
+
+The tab host itself lives in `app`, not in a `feature/home`: it composes `songs` and `library`, and
+a feature may never depend on a feature. It is the same reason `MiniPlayerScaffold` is composed
+there. `app` is also where the navigation bar and rail are placed, so the mini player can sit
+between the content and the bar.
 
 `feature/mini_player` is the one feature that is not a route. It exposes `MiniPlayerScaffold`, which
 `app` wraps around the `NavDisplay`: the bar is laid out below every screen and owns the bottom

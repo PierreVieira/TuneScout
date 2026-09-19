@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="album_favorite">Curtir este álbum</string>
+    <string name="album_unfavorite">Remover este álbum da biblioteca</string>
     <string name="album_error_title">Não foi possível carregar este álbum</string>
     <string name="album_error_description">Verifique sua conexão e tente de novo.</string>
     <string name="album_play_next">Tocar o álbum a seguir</string>
     <string name="album_add_to_queue">Adicionar o álbum à fila</string>
+    <string name="album_more_options">Mais opções do álbum</string>
 </resources>
