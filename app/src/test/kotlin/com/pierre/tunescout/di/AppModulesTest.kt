@@ -12,6 +12,7 @@ import org.koin.dsl.module
 import org.koin.test.verify.definition
 import org.koin.test.verify.injectedParameters
 import org.koin.test.verify.verify
+import kotlin.time.Duration
 
 class AppModulesTest {
     /**
@@ -22,8 +23,8 @@ class AppModulesTest {
     @Test
     fun `WHEN verifying the graph THEN every constructor dependency has a definition`() {
         module { includes(appModules) }.verify(
-            // Built inside their definitions from another dependency, not resolved by type.
-            extraTypes = listOf(Flow::class),
+            // Passed as literals inside their definitions, not resolved by type.
+            extraTypes = listOf(Flow::class, Duration::class),
             injections = injectedParameters(
                 definition<AlbumViewModel>(AlbumRoute::class),
                 definition<PlayerViewModel>(PlayerRoute::class),

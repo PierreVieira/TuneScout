@@ -2,8 +2,10 @@ package com.pierre.tunescout.ui.component
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
@@ -36,4 +38,10 @@ object TuneScoutIcons {
     val musicList: ImageVector get() = Icons.AutoMirrored.Rounded.QueueMusic
 
     val viewAlbum: ImageVector get() = Icons.Rounded.LibraryMusic
+
+    val addToQueue: ImageVector get() = Icons.AutoMirrored.Rounded.PlaylistAdd
+
+    val removeFromQueue: ImageVector get() = Icons.Rounded.Close
+
+    val dragHandle: ImageVector get() = Icons.Rounded.DragHandle
 }

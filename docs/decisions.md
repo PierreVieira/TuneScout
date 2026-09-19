@@ -2,6 +2,51 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Queue, mini player and a saved session
+
+**The queue screen is a screen, not a sheet.** Spotify shows its queue in a near-full-height sheet;
+this one is a route with a top bar, like Album. It needs the height, it scrolls, it holds a drag
+gesture that fights a sheet's own drag-to-dismiss, and it works in landscape without a second
+layout. Cost: one more entry on the back stack where Spotify has an overlay.
+
+**Reordering uses `sh.calvin.reorderable`, and the dependency lives in `feature:queue`.** Compose
+has no reorderable `LazyColumn`, and hand-rolling one is a pile of gesture and auto-scroll code. The
+library is declared by the one module that reorders, rather than contained in `ui:component` the way
+`compose-shimmer` is — shimmer is used by four screens, this is used by one. If a second list ever
+reorders, it moves down to `ui:component`. Rows are matched by entry id, not by index: the callback
+hands back `LazyListItemInfo`, and ids survive the section headers between the two tiers.
+
+**The drag handle is not the only way to reorder.** A handle is invisible to a screen reader, so
+each queued row also carries "Move up" and "Move down" as Compose custom accessibility actions,
+which move the entry onto its neighbour's position — the same call the drag makes.
+
+**`SongRow` takes a trailing slot instead of an `onMoreClick`.** The queue row needs two controls
+where the others need one, and the row layout (artwork, title, subtitle) is now shared by four
+screens. The `⋮` moved into `SongRowMoreAction` so the call sites still read in one line.
+
+**The mini player is a feature, composed by `app`, not by the screens.** `MiniPlayerScaffold` wraps
+the `NavDisplay`; Songs and Album never reference it, so the feature-never-depends-on-feature rule
+holds and there is one place that decides where the bar appears. It is laid out below the content
+rather than over it, and it consumes the navigation bar insets while it is visible, so the screen
+above it never pads for a bar it no longer touches. Cost: `app` decides on which routes the bar is
+allowed, which is one `when` over routes in `TuneScoutNavDisplay`.
+
+**A closed app reopens paused, where it was.** `playback_queue` and a single-row `playback_session`
+table hold the entries, the current one, the position and repeat. `PlaybackSessionKeeper` restores
+before it starts recording — reversing that order would save the empty startup state over the
+session it was about to read. It saves on every change that matters (queue, current song, repeat,
+play/pause) and otherwise at most every five seconds while playing, which is the most a kill can
+cost. Restoring calls `prepare()` but never `play()`, so the song is buffered and ready at its old
+position and no notification appears until the user presses play. Cost: a 30-second preview is
+fetched at launch that the user may never resume.
+
+**The schema is exported and the migration is written by hand.** The database went to version 2
+with `exportSchema = true` (`room.schemaLocation` through KSP, no extra Gradle plugin), and the
+1 → 2 migration creates the two tables with the DDL Room generated for them. Destroying the
+database would have been one line, but it would also throw away the recently played history on
+upgrade. Version 1 was never exported, so `MigrationTestHelper` has no baseline to verify against;
+from 2 onwards it does.
+
 ## 2026-09-18 — Playback queue
 
 **The queue is explicit, and has two tiers.** `PlaybackState` no longer carries a `List<Song>` that

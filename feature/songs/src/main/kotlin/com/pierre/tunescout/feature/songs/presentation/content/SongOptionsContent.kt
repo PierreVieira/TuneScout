@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,6 +43,7 @@ fun SongOptionsContent(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
             .padding(bottom = bottomPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -65,27 +69,49 @@ fun SongOptionsContent(
                 end = TuneScoutSpacing.large,
             ),
         )
-        Row(
-            modifier = Modifier
-                .padding(top = TuneScoutSpacing.large)
-                .fillMaxWidth()
-                .height(menuItemHeight)
-                .clickable(enabled = uiState.song != null) { onEvent(SongOptionsUiEvent.OnViewAlbumClicked) }
-                .padding(horizontal = TuneScoutSpacing.large + TuneScoutSpacing.small),
-            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                imageVector = TuneScoutIcons.viewAlbum,
-                contentDescription = null,
-                tint = TuneScoutColors.textPrimary,
-                modifier = Modifier.size(menuIconSize),
-            )
-            Text(
-                text = stringResource(R.string.songs_options_view_album),
-                style = MaterialTheme.typography.bodyLarge,
-                color = TuneScoutColors.textPrimary,
-            )
-        }
+        OptionRow(
+            icon = TuneScoutIcons.addToQueue,
+            label = stringResource(R.string.songs_options_add_to_queue),
+            isEnabled = uiState.song != null,
+            onClick = { onEvent(SongOptionsUiEvent.OnAddToQueueClicked) },
+            modifier = Modifier.padding(top = TuneScoutSpacing.large),
+        )
+        OptionRow(
+            icon = TuneScoutIcons.viewAlbum,
+            label = stringResource(R.string.songs_options_view_album),
+            isEnabled = uiState.song != null,
+            onClick = { onEvent(SongOptionsUiEvent.OnViewAlbumClicked) },
+        )
+    }
+}
+
+@Composable
+private fun OptionRow(
+    icon: ImageVector,
+    label: String,
+    isEnabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(menuItemHeight)
+            .clickable(enabled = isEnabled, onClick = onClick)
+            .padding(horizontal = TuneScoutSpacing.large + TuneScoutSpacing.small),
+        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = TuneScoutColors.textPrimary,
+            modifier = Modifier.size(menuIconSize),
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = TuneScoutColors.textPrimary,
+        )
     }
 }

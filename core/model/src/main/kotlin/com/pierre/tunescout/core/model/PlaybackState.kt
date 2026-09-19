@@ -28,6 +28,9 @@ data class PlaybackState(
     val hasNext: Boolean
         get() = currentIndex >= 0 && currentIndex < entries.lastIndex
 
+    val upcomingEntries: List<QueueEntry>
+        get() = if (currentIndex < 0) emptyList() else entries.drop(currentIndex + 1)
+
     companion object {
         val Idle: PlaybackState = PlaybackState(
             entries = emptyList(),

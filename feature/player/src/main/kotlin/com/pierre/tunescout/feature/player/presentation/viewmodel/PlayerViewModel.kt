@@ -7,6 +7,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.feature.player.domain.usecase.ObserveSong
@@ -32,6 +33,7 @@ class PlayerViewModel(
         PlayerUiEvent.OnSkipNextClicked -> playbackController.skipToNext()
         PlayerUiEvent.OnSkipPreviousClicked -> playbackController.skipToPrevious()
         PlayerUiEvent.OnRepeatClicked -> playbackController.toggleRepeat()
+        PlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
         PlayerUiEvent.OnBackClicked -> navigator.navigateBack()
         PlayerUiEvent.OnMoreClicked -> navigateToOptions()
     }

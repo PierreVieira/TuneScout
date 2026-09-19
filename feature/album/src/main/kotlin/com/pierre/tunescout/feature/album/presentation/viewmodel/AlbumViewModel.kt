@@ -43,6 +43,7 @@ class AlbumViewModel(
 
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> playAndOpen(event.song)
+        AlbumUiEvent.OnAddToQueueClicked -> addToQueue()
         AlbumUiEvent.OnRetryClicked -> refresh()
         AlbumUiEvent.OnBackClicked -> navigator.navigateBack()
     }
@@ -52,6 +53,11 @@ class AlbumViewModel(
         viewModelScope.launch {
             refreshAlbum(route.albumId).onFailure { refreshFailed.value = true }
         }
+    }
+
+    private fun addToQueue() {
+        val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
+        playbackController.addToQueue(album.songs)
     }
 
     private fun playAndOpen(song: Song) {

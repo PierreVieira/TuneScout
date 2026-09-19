@@ -17,6 +17,7 @@ import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.ui.component.SongListSkeleton
 import com.pierre.tunescout.ui.component.SongRow
+import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -74,7 +75,7 @@ internal fun SearchResultsList(
                     onClick = {
                         onEvent(SongsUiEvent.OnSongClicked(song))
                     },
-                    onMoreClick = { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) },
+                    trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
                 )
             }
             when (appendState) {

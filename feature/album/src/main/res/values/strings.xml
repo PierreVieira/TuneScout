@@ -2,4 +2,5 @@
 <resources>
     <string name="album_error_title">Couldn\'t load this album</string>
     <string name="album_error_description">Check your connection and try again.</string>
+    <string name="album_add_to_queue">Add the album to the queue</string>
 </resources>

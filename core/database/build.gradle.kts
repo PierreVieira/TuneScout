@@ -7,6 +7,10 @@ android {
     namespace = "com.pierre.tunescout.core.database"
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     api(projects.core.model)
 

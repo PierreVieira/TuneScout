@@ -30,6 +30,8 @@ import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
+import com.pierre.tunescout.ui.component.TopBarAction
+import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
@@ -53,6 +55,15 @@ fun AlbumContent(
         TopBar(
             title = (uiState as? AlbumUiState.Loaded)?.album?.title.orEmpty(),
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
+            actions = {
+                if (uiState is AlbumUiState.Loaded) {
+                    TopBarAction(
+                        icon = TuneScoutIcons.addToQueue,
+                        contentDescription = stringResource(R.string.album_add_to_queue),
+                        onClick = { onEvent(AlbumUiEvent.OnAddToQueueClicked) },
+                    )
+                }
+            },
         )
         when (uiState) {
             AlbumUiState.Loading -> AlbumSkeleton(

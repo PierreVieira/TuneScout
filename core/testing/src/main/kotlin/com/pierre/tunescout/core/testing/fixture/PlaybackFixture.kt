@@ -25,6 +25,7 @@ fun queueEntries(
 
 fun playbackState(
     songs: List<Song> = listOf(song()),
+    entries: List<QueueEntry> = queueEntries(songs),
     currentIndex: Int = 0,
     status: PlaybackStatus = PlaybackStatus.Playing,
     context: PlaybackContext = PlaybackContext.SingleSong,
@@ -32,7 +33,7 @@ fun playbackState(
     duration: Duration = Duration.ZERO,
     isRepeatEnabled: Boolean = false,
 ): PlaybackState = PlaybackState(
-    entries = queueEntries(songs),
+    entries = entries,
     currentIndex = currentIndex,
     context = context,
     status = status,

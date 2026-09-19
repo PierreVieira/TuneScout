@@ -209,6 +209,7 @@ private fun PlayerDetails(
             onPreviousClick = { onEvent(PlayerUiEvent.OnSkipPreviousClicked) },
             onNextClick = { onEvent(PlayerUiEvent.OnSkipNextClicked) },
             onRepeatClick = { onEvent(PlayerUiEvent.OnRepeatClicked) },
+            onQueueClick = { onEvent(PlayerUiEvent.OnQueueClicked) },
         )
     }
 }

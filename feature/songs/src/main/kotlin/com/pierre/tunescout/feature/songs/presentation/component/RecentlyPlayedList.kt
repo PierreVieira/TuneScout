@@ -14,6 +14,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.ui.component.SongRow
+import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -57,7 +58,7 @@ internal fun RecentlyPlayedList(
                 artworkUrl = song.artwork.thumbnailUrl,
                 isHighlighted = song.id == nowPlayingId,
                 onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
-                onMoreClick = { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) },
+                trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
             )
         }
     }

@@ -18,6 +18,7 @@ import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.feature.player.R as PlayerR
 
 private val buttonSize = 48.dp
 private val skipIconSize = 44.dp
@@ -33,6 +34,7 @@ internal fun PlaybackControls(
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onRepeatClick: () -> Unit,
+    onQueueClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -60,6 +62,22 @@ internal fun PlaybackControls(
         RepeatButton(
             isEnabled = isRepeatEnabled,
             onClick = onRepeatClick,
+        )
+        QueueButton(onClick = onQueueClick)
+    }
+}
+
+@Composable
+private fun QueueButton(onClick: () -> Unit) {
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier.size(buttonSize),
+    ) {
+        Icon(
+            imageVector = TuneScoutIcons.musicList,
+            contentDescription = stringResource(PlayerR.string.player_open_queue),
+            tint = TuneScoutColors.textPrimary,
+            modifier = Modifier.size(repeatIconSize),
         )
     }
 }

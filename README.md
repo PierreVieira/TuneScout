@@ -11,23 +11,34 @@ native Android app written for the Music AI Android code challenge.
 | :--: | :--: | :--: |
 | <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet over the player"> | <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks"> |
 
+| Queue |
+| :--: |
+| <img src="docs/screenshots/queue.png" width="260" alt="The queue, with songs added by hand playing before the rest of the album"> |
+
 | Media controls |
 | :--: |
 | <img src="docs/screenshots/notification.png" width="360" alt="Media controls in the notification shade and on the lock screen"> |
 
-The six screens above are generated from the app's own composables, under Robolectric, by
+The seven screens above are generated from the app's own composables, under Robolectric, by
 `./scripts/screenshots.sh`; the notification shade is a device capture, since it is not a
 composable. See [docs/screenshots.md](docs/screenshots.md).
 
 ## What it does
 
 - **Search** the iTunes Search API as you type, with debounce and paginated results.
-- **Play** a preview from the results, from the recently played list or from an album. The
-  queue is the list you tapped in, so next and previous move through it.
+- **Play** a preview. A song tapped in search or in recently played plays on its own; a track
+  tapped inside an album plays the album from there.
+- **Queue** songs and whole albums by hand. What you add plays before the rest of the album and
+  survives starting something else, the way Spotify's queue does. The queue screen reorders by
+  drag, removes by tap, and jumps to any song.
+- **Pick up where you left off**: closing the app keeps the queue, the song and its position, and
+  reopening restores all three, paused, from the local database.
 - **Recently played** is the home screen. It is stored locally, so it works offline and survives
   restarts. Playing a song records it once, wherever playback was started from.
-- **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next and
-  repeat. Dragging the timeline seeks on release without pausing.
+- **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
+  repeat and the queue. Dragging the timeline seeks on release without pausing.
+- **Mini player** above every screen while something is loaded, with its own play/pause and a tap
+  to reopen the player.
 - **Album** screen reached from the song options sheet. Fetched once through the lookup endpoint
   and cached, so it opens offline afterwards.
 - **Media controls** in the notification shade and on the lock screen, backed by a media session.
@@ -67,7 +78,7 @@ core/
   model/             domain models, plain Kotlin
   utils/             coroutine helpers, dispatchers, duration formatting
   network/           ITunesRemoteDataSource: the iTunes API behind an interface (Ktor)
-  database/          Room: songs, albums and the recently played history
+  database/          Room: songs, albums, the recently played history and the saved session
   playback/          PlaybackController over ExoPlayer, the media session service
   navigation/        routes (NavKey), the Navigator event bus, back stack controller
   testing/           fixtures and a JUnit extension for Dispatchers.Main
@@ -76,7 +87,7 @@ ui/
   component/         top bar, song row, search field, seek bar, artwork, state messages
   utils/             Compose helpers
 feature/
-  splash/  songs/  player/  album/     data / domain / presentation in each
+  splash/  songs/  player/  queue/  miniplayer/  album/    data / domain / presentation in each
 tools/
   ktlint-custom-rules/
   screenshots/       renders the README's screenshots from the app's own composables
@@ -109,6 +120,14 @@ cursor, but it is an honest fit for the API, and the Paging load states drive th
 **Playback.** One ExoPlayer instance is shared by the app and by a `MediaSessionService` that
 posts the media notification. `PlaybackController` publishes a `PlaybackState` every screen reads,
 and a small recorder turns "first time a song plays" into a row in the history table.
+
+**The queue has two tiers.** `PlaybackState` carries `QueueEntry` items tagged `Context` (the album
+playing) or `UserQueue` (added by hand), and the play order is the context up to the current song,
+then everything queued by hand, then the rest of the context. Starting another album keeps what you
+queued. Adding, removing and reordering mutate the ExoPlayer timeline in place, so touching the
+queue never interrupts the song that is playing. A keeper writes the queue, the current entry and
+the position to Room — on every change and at most every five seconds while playing — and restores
+them, paused and prepared, when the app starts.
 
 The reasoning behind these and other choices, with what each one costs, is in
 [docs/decisions.md](docs/decisions.md). Conventions for contributors and AI assistants live under

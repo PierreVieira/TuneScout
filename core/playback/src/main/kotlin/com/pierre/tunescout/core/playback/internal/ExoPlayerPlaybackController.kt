@@ -8,6 +8,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.pierre.tunescout.core.model.NO_QUEUE_INDEX
 import com.pierre.tunescout.core.model.PlaybackContext
+import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueEntry
@@ -32,7 +33,8 @@ internal class ExoPlayerPlaybackController(
     private val player: ExoPlayer,
     private val serviceLauncher: PlaybackServiceLauncher,
     private val scope: CoroutineScope,
-) : PlaybackController {
+) : PlaybackController,
+    RestorablePlayback {
     override val state: StateFlow<PlaybackState>
         field = MutableStateFlow(PlaybackState.Idle)
 
@@ -62,6 +64,23 @@ internal class ExoPlayerPlaybackController(
         this.context = context
         player.setMediaItems(entries.map(QueueEntry::toMediaItem), timeline.startIndex, 0L)
         startPlaying()
+    }
+
+    override fun restore(session: PlaybackSession) {
+        if (session.entries.isEmpty()) return
+        entries = session.entries
+        context = session.context
+        val startIndex = entries
+            .indexOfFirst { entry -> entry.id == session.currentEntryId }
+            .coerceAtLeast(0)
+        player.setMediaItems(
+            entries.map(QueueEntry::toMediaItem),
+            startIndex,
+            session.position.inWholeMilliseconds,
+        )
+        player.repeatMode = if (session.isRepeatEnabled) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        player.prepare()
+        publish()
     }
 
     override fun addToQueue(songs: List<Song>) {
@@ -96,12 +115,11 @@ internal class ExoPlayerPlaybackController(
         val index = entries.indexOfFirst { entry -> entry.id == entryId }
         if (index < 0) return
         player.seekTo(index, 0L)
-        player.play()
-        publish()
+        resume()
     }
 
     override fun togglePlayPause() {
-        if (player.isPlaying) player.pause() else player.play()
+        if (player.isPlaying) player.pause() else resume()
     }
 
     override fun seekTo(position: Duration) {
@@ -128,6 +146,10 @@ internal class ExoPlayerPlaybackController(
 
     private fun startPlaying() {
         player.prepare()
+        resume()
+    }
+
+    private fun resume() {
         player.play()
         serviceLauncher.launch()
         publish()

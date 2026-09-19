@@ -21,8 +21,8 @@ internal class PlayerScreenshots : ReadmeScreenshotsTest() {
     fun player() {
         capture(
             fileName = "player",
-            title = "A player that keeps your queue",
-            description = "Scrub, repeat and skip through the list you started playing from",
+            title = "A player, and the queue behind it",
+            description = "Scrub, repeat, skip, and open the queue from the button on the right",
         ) {
             PlayerContent(uiState = nowPlaying, onEvent = {})
         }

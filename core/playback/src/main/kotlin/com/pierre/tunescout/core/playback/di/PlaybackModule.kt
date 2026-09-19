@@ -7,7 +7,9 @@ import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.ForegroundPlaybackServiceLauncher
 import com.pierre.tunescout.core.playback.internal.PlaybackServiceLauncher
+import com.pierre.tunescout.core.playback.internal.PlaybackSessionKeeper
 import com.pierre.tunescout.core.playback.internal.RecentlyPlayedRecorder
+import com.pierre.tunescout.core.playback.internal.RestorablePlayback
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,8 +17,10 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import kotlin.time.Duration.Companion.seconds
 
 private const val PLAYBACK_SCOPE = "playbackScope"
+private val sessionSaveInterval = 5.seconds
 
 val playbackModule: Module = module {
     single(named(PLAYBACK_SCOPE)) { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
@@ -34,12 +38,21 @@ val playbackModule: Module = module {
             .build()
     }
     single<PlaybackServiceLauncher> { ForegroundPlaybackServiceLauncher(context = androidContext()) }
-    single<PlaybackController> {
+    single {
         ExoPlayerPlaybackController(
             player = get(),
             serviceLauncher = get(),
             scope = get(named(PLAYBACK_SCOPE)),
         )
+    }
+    single<PlaybackController> { get<ExoPlayerPlaybackController>() }
+    single<RestorablePlayback> { get<ExoPlayerPlaybackController>() }
+    single(createdAtStart = true) {
+        PlaybackSessionKeeper(
+            playback = get(),
+            playbackSessionLocalDataSource = get(),
+            saveInterval = sessionSaveInterval,
+        ).also { keeper -> keeper.start(get(named(PLAYBACK_SCOPE))) }
     }
     single(createdAtStart = true) {
         RecentlyPlayedRecorder(
