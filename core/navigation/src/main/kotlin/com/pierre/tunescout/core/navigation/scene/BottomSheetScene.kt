@@ -2,6 +2,7 @@ package com.pierre.tunescout.core.navigation.scene
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
@@ -25,6 +26,8 @@ internal data class BottomSheetScene<T : Any>(
         val lifecycleOwner = rememberLifecycleOwner()
         ModalBottomSheet(
             onDismissRequest = onBack,
+            // A landscape window is short enough that the half-open state hides the last option.
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             containerColor = containerColor,
         ) {
             CompositionLocalProvider(LocalLifecycleOwner provides lifecycleOwner) {

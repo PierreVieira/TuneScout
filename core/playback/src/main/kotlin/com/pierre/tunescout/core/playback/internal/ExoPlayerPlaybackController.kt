@@ -115,7 +115,16 @@ internal class ExoPlayerPlaybackController(
     }
 
     override fun togglePlayPause() {
-        if (player.isPlaying) player.pause() else resume()
+        when {
+            player.isPlaying -> player.pause()
+            player.playbackState == Player.STATE_ENDED -> replay()
+            else -> resume()
+        }
+    }
+
+    private fun replay() {
+        player.seekTo(0L)
+        resume()
     }
 
     override fun seekTo(position: Duration) {
@@ -159,7 +168,6 @@ internal class ExoPlayerPlaybackController(
 
     private fun resume() {
         player.play()
-        serviceLauncher.launch()
         publish()
     }
 
@@ -197,7 +205,14 @@ internal class ExoPlayerPlaybackController(
 
     private inner class PlayerListener : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) startTicking() else stopTicking()
+            if (isPlaying) {
+                // Only now: the media service has five seconds to promote itself to the foreground,
+                // and Media3 can only do that once the player it wraps is actually playing.
+                serviceLauncher.launch()
+                startTicking()
+            } else {
+                stopTicking()
+            }
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {

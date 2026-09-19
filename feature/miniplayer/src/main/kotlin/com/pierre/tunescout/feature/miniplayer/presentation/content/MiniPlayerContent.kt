@@ -29,10 +29,11 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.miniplayer.R
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.ui.component.Artwork
-import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.PlayButtonState
+import com.pierre.tunescout.ui.component.contentDescription
+import com.pierre.tunescout.ui.component.icon
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
-import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val cardCornerRadius = 12.dp
 private val artworkCornerRadius = 8.dp
@@ -44,7 +45,7 @@ private val progressHeight = 2.dp
 @Composable
 fun MiniPlayerContent(
     song: Song,
-    isPlaying: Boolean,
+    playButtonState: PlayButtonState,
     progress: Float,
     onEvent: (MiniPlayerUiEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -92,10 +93,8 @@ fun MiniPlayerContent(
                 modifier = Modifier.size(buttonSize),
             ) {
                 Icon(
-                    imageVector = if (isPlaying) TuneScoutIcons.pause else TuneScoutIcons.play,
-                    contentDescription = stringResource(
-                        if (isPlaying) ComponentR.string.ui_pause else ComponentR.string.ui_play,
-                    ),
+                    imageVector = playButtonState.icon,
+                    contentDescription = stringResource(playButtonState.contentDescription),
                     tint = TuneScoutColors.textPrimary,
                     modifier = Modifier.size(iconSize),
                 )

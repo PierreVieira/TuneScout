@@ -12,6 +12,7 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -35,6 +36,8 @@ object TuneScoutIcons {
     val skipNext: ImageVector get() = Icons.Rounded.SkipNext
 
     val repeat: ImageVector get() = Icons.Rounded.Repeat
+
+    val replay: ImageVector get() = Icons.Rounded.Replay
 
     val musicList: ImageVector get() = Icons.AutoMirrored.Rounded.QueueMusic
 

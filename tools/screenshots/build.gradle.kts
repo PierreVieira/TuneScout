@@ -16,6 +16,7 @@ dependencies {
     testImplementation(projects.feature.queue)
     testImplementation(projects.feature.songs)
     testImplementation(projects.feature.splash)
+    testImplementation(projects.ui.component)
     testImplementation(projects.ui.theme)
 
     testImplementation(libs.androidx.paging.common)

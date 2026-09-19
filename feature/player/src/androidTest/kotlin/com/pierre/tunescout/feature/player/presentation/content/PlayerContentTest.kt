@@ -94,6 +94,19 @@ class PlayerContentTest {
     }
 
     @Test
+    fun givenAFinishedSongShowsReplayAndClickingItEmitsPlayPause() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                PlayerContent(uiState = loaded(status = PlaybackStatus.Ended), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Replay").performClick()
+
+        assertThat(events).containsExactly(PlayerUiEvent.OnPlayPauseClicked)
+    }
+
+    @Test
     fun givenNotFoundShowsTheMessage() = compose.use {
         setContent {
             TuneScoutTheme {

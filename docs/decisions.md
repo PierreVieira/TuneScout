@@ -2,6 +2,34 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-18 — Landscape, and a foreground service that started too early
+
+**The media service is started when the player starts playing, not when it is asked to.** Calling
+`startForegroundService` gives the service five seconds to promote itself, and Media3 can only do
+that once the player it wraps is actually playing. Pressing play on a song that had already finished
+started the service over a player that stayed in `STATE_ENDED`, and Android killed the app with
+`ForegroundServiceDidNotStartInTimeException`. The launcher now runs from
+`onIsPlayingChanged(true)`, so the service only ever starts with something to show.
+
+**A finished song replays instead of doing nothing.** ExoPlayer ignores `play()` at the end of the
+timeline, so the play button used to be inert once the preview ran out. `PlayButtonState` adds a
+third state to the two the button had: `Replay` seeks to zero and plays, and the player and the mini
+player both show it.
+
+**Landscape caps the content instead of stretching it.** `Modifier.readableWidth()` holds a list near
+the width a phone gives it in portrait, which is what its rows were laid out for, and the parent
+centres what is left. The cap comes before the fill — the other order hands `widthIn` a minimum that
+is already the parent's width, which it cannot go below, and nothing is capped at all. The Songs
+header puts its title beside the search field when the window is wider than it is tall, and the album
+header lays its artwork beside its titles, both of which buy back a row of the list. The bottom sheet
+skips its half-open state, which in a landscape window hid the last option.
+
+**The mini player only consumed the bottom navigation bar inset, not all four.** It sits below the
+content and covers the bottom bar, so that is the only side it can consume; consuming the whole
+`navigationBars` inset let a landscape side bar sit on top of the list. It is also capped and centred
+inside its own navigation bar padding rather than around it, so it lines up with the list above it
+instead of with the window.
+
 ## 2026-09-18 — Queue, mini player and a saved session
 
 **"Play next" and "Add to queue" differ only by where they insert.** Both tag the entry

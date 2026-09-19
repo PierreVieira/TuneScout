@@ -8,6 +8,7 @@ import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
+import com.pierre.tunescout.ui.component.PlayButtonState
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import de.mannodermaus.junit5.compose.createComposeExtension
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class MiniPlayerContentTest {
             TuneScoutTheme {
                 MiniPlayerContent(
                     song = song(),
-                    isPlaying = true,
+                    playButtonState = PlayButtonState.Pause,
                     progress = 0.5f,
                     onEvent = events::add,
                 )
@@ -47,7 +48,7 @@ class MiniPlayerContentTest {
             TuneScoutTheme {
                 MiniPlayerContent(
                     song = song(),
-                    isPlaying = false,
+                    playButtonState = PlayButtonState.Play,
                     progress = 0f,
                     onEvent = events::add,
                 )
@@ -58,12 +59,28 @@ class MiniPlayerContentTest {
     }
 
     @Test
+    fun givenAFinishedSongShowsTheReplayButton() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                MiniPlayerContent(
+                    song = song(),
+                    playButtonState = PlayButtonState.Replay,
+                    progress = 1f,
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Replay").assertIsDisplayed()
+    }
+
+    @Test
     fun clickingTheBarOpensThePlayer() = compose.use {
         setContent {
             TuneScoutTheme {
                 MiniPlayerContent(
                     song = song(),
-                    isPlaying = true,
+                    playButtonState = PlayButtonState.Pause,
                     progress = 0.5f,
                     onEvent = events::add,
                 )

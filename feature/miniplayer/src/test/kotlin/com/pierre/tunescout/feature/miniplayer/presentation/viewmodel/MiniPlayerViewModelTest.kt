@@ -84,6 +84,21 @@ class MiniPlayerViewModelTest {
         }
 
     @Test
+    fun `GIVEN the song has finished WHEN observing THEN reports it as ended`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(
+            playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Ended),
+        )
+
+        // When
+        val state = viewModel.uiState.value
+
+        // Then
+        assertThat(state.hasEnded).isTrue()
+        assertThat(state.isPlaying).isFalse()
+    }
+
+    @Test
     fun `GIVEN nothing is playing WHEN observing THEN exposes no song`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(playback = PlaybackState.Idle)

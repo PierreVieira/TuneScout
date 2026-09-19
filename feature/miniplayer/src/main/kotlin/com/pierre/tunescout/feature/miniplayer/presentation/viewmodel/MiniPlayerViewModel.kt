@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.miniplayer.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.playback.PlaybackController
@@ -18,7 +19,12 @@ class MiniPlayerViewModel(
     private val playbackController: PlaybackController,
     private val navigator: Navigator,
 ) : ViewModel() {
-    private val emptyUiState = MiniPlayerUiState(song = null, isPlaying = false, progress = 0f)
+    private val emptyUiState = MiniPlayerUiState(
+        song = null,
+        isPlaying = false,
+        hasEnded = false,
+        progress = 0f,
+    )
 
     val uiState: StateFlow<MiniPlayerUiState> = playbackController.state
         .map(::toUiState)
@@ -37,6 +43,7 @@ class MiniPlayerViewModel(
     private fun toUiState(playback: PlaybackState): MiniPlayerUiState = MiniPlayerUiState(
         song = playback.currentSong,
         isPlaying = playback.isPlaying,
+        hasEnded = playback.status == PlaybackStatus.Ended,
         progress = getProgress(playback),
     )
 

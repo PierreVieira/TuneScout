@@ -1,6 +1,10 @@
 package com.pierre.tunescout.feature.songs.presentation.content
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,6 +13,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,6 +25,7 @@ import com.pierre.tunescout.feature.songs.presentation.component.SearchResultsLi
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.SearchField
+import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -32,40 +38,72 @@ fun SongsContent(
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .safeDrawingPadding(),
+        contentAlignment = Alignment.TopCenter,
     ) {
-        Text(
-            text = stringResource(R.string.songs_title),
-            style = MaterialTheme.typography.headlineMedium,
-            color = TuneScoutColors.textPrimary,
+        val isHeaderInline = maxWidth > maxHeight
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = TuneScoutSpacing.screen)
-                .height(titleHeight)
-                .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
-        )
-        SearchField(
-            query = uiState.query,
-            placeholder = stringResource(R.string.songs_search_placeholder),
-            onQueryChange = { query -> onEvent(SongsUiEvent.OnQueryChanged(query)) },
-            onClear = { onEvent(SongsUiEvent.OnClearQueryClicked) },
-            modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen, vertical = TuneScoutSpacing.small),
-        )
-        if (uiState.isSearching) {
-            SearchResultsList(
-                query = uiState.query,
-                searchResults = searchResults,
-                onEvent = onEvent,
-            )
-        } else {
-            RecentlyPlayedList(
-                songs = uiState.recentlyPlayed,
-                nowPlayingId = uiState.nowPlayingId,
-                onEvent = onEvent,
-            )
+                .readableWidth()
+                .fillMaxHeight(),
+        ) {
+            if (isHeaderInline) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Title()
+                    Search(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
+                }
+            } else {
+                Title(modifier = Modifier.fillMaxWidth())
+                Search(uiState = uiState, onEvent = onEvent)
+            }
+            if (uiState.isSearching) {
+                SearchResultsList(
+                    query = uiState.query,
+                    searchResults = searchResults,
+                    onEvent = onEvent,
+                )
+            } else {
+                RecentlyPlayedList(
+                    songs = uiState.recentlyPlayed,
+                    nowPlayingId = uiState.nowPlayingId,
+                    onEvent = onEvent,
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun Title(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.songs_title),
+        style = MaterialTheme.typography.headlineMedium,
+        color = TuneScoutColors.textPrimary,
+        modifier = modifier
+            .padding(top = TuneScoutSpacing.screen)
+            .height(titleHeight)
+            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
+    )
+}
+
+@Composable
+private fun Search(
+    uiState: SongsUiState,
+    onEvent: (SongsUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SearchField(
+        query = uiState.query,
+        placeholder = stringResource(R.string.songs_search_placeholder),
+        onQueryChange = { query -> onEvent(SongsUiEvent.OnQueryChanged(query)) },
+        onClear = { onEvent(SongsUiEvent.OnClearQueryClicked) },
+        modifier = modifier.padding(horizontal = TuneScoutSpacing.screen, vertical = TuneScoutSpacing.small),
+    )
 }

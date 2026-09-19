@@ -13,6 +13,7 @@ import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.testing.fixture.song
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -25,6 +26,7 @@ class ExoPlayerPlaybackControllerTest {
     private val timeline = mutableListOf<MediaItem>()
     private var currentItemIndex = 0
     private var serviceLaunches = 0
+    private val playerListener = slot<Player.Listener>()
     private lateinit var player: ExoPlayer
     private lateinit var controller: ExoPlayerPlaybackController
 
@@ -115,7 +117,6 @@ class ExoPlayerPlaybackControllerTest {
         assertThat(queuedSongIds()).containsExactly(9L)
         verify { player.prepare() }
         verify { player.play() }
-        assertThat(serviceLaunches).isEqualTo(1)
     }
 
     @Test
@@ -250,7 +251,6 @@ class ExoPlayerPlaybackControllerTest {
         verify { player.setMediaItems(any(), 1, 12_000L) }
         verify { player.prepare() }
         verify(exactly = 0) { player.play() }
-        assertThat(serviceLaunches).isEqualTo(0)
         assertThat(
             controller.state.value.currentSong
                 ?.id,
@@ -276,7 +276,38 @@ class ExoPlayerPlaybackControllerTest {
 
         // Then
         verify { player.play() }
-        assertThat(serviceLaunches).isEqualTo(1)
+    }
+
+    @Test
+    fun `GIVEN the song has finished WHEN pressing play THEN it restarts from the beginning`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1)
+        every { player.playbackState } returns Player.STATE_ENDED
+        every { player.isPlaying } returns false
+
+        // When
+        controller.togglePlayPause()
+
+        // Then
+        verify { player.seekTo(0L) }
+        verify { player.play() }
+    }
+
+    @Test
+    fun `GIVEN the song is only paused WHEN pressing play THEN it resumes where it stopped`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1)
+        every { player.playbackState } returns Player.STATE_READY
+        every { player.isPlaying } returns false
+
+        // When
+        controller.togglePlayPause()
+
+        // Then
+        verify(exactly = 0) { player.seekTo(any<Long>()) }
+        verify { player.play() }
     }
 
     @Test
@@ -344,5 +375,6 @@ class ExoPlayerPlaybackControllerTest {
             mediaItemFactory = { entry -> MediaItem.Builder().setMediaId(entry.id).build() },
             scope = backgroundScope,
         )
+        verify { player.addListener(capture(playerListener)) }
     }
 }

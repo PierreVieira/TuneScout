@@ -21,6 +21,9 @@ sealed interface PlayerUiState {
         val isPlaying: Boolean
             get() = status == PlaybackStatus.Playing
 
+        val hasEnded: Boolean
+            get() = status == PlaybackStatus.Ended
+
         val progress: Float
             get() = if (duration > Duration.ZERO) {
                 (position / duration).toFloat().coerceIn(0f, 1f)

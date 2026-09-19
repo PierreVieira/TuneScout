@@ -12,6 +12,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerContent
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
+import com.pierre.tunescout.ui.component.PlayButtonState
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Test
 
@@ -40,7 +41,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                 }
                 MiniPlayerContent(
                     song = getLucky,
-                    isPlaying = false,
+                    playButtonState = PlayButtonState.Play,
                     progress = RESTORED_PROGRESS,
                     onEvent = {},
                 )

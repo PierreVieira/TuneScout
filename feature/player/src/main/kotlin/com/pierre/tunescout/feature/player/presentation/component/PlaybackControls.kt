@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pierre.tunescout.ui.component.PlayButtonState
 import com.pierre.tunescout.ui.component.PlayPauseButton
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -26,7 +27,7 @@ private val repeatIconSize = 24.dp
 
 @Composable
 internal fun PlaybackControls(
-    isPlaying: Boolean,
+    playButtonState: PlayButtonState,
     hasPrevious: Boolean,
     hasNext: Boolean,
     isRepeatEnabled: Boolean,
@@ -43,7 +44,7 @@ internal fun PlaybackControls(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         PlayPauseButton(
-            isPlaying = isPlaying,
+            state = playButtonState,
             onClick = onPlayPauseClick,
         )
         SkipButton(

@@ -1,8 +1,11 @@
 package com.pierre.tunescout.feature.album.presentation.content
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -20,6 +23,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.feature.album.R
@@ -32,11 +36,13 @@ import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val artworkSize = 120.dp
+private val inlineArtworkSize = 72.dp
 private val artworkCornerRadius = 20.dp
 private val artworkElevation = 8.dp
 private val rowArtworkSize = 44.dp
@@ -51,6 +57,7 @@ fun AlbumContent(
         modifier = modifier
             .fillMaxSize()
             .safeDrawingPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopBar(
             title = (uiState as? AlbumUiState.Loaded)?.album?.title.orEmpty(),
@@ -75,6 +82,7 @@ fun AlbumContent(
                 artworkSize = artworkSize,
                 artworkCornerRadius = artworkCornerRadius,
                 rowArtworkSize = rowArtworkSize,
+                modifier = Modifier.readableWidth(),
             )
 
             AlbumUiState.Error -> StateMessage(
@@ -83,11 +91,14 @@ fun AlbumContent(
                 onRetry = { onEvent(AlbumUiEvent.OnRetryClicked) },
             )
 
-            is AlbumUiState.Loaded -> LoadedContent(
-                album = uiState.album,
-                nowPlayingId = uiState.nowPlayingId,
-                onEvent = onEvent,
-            )
+            is AlbumUiState.Loaded -> BoxWithConstraints(contentAlignment = Alignment.TopCenter) {
+                LoadedContent(
+                    album = uiState.album,
+                    nowPlayingId = uiState.nowPlayingId,
+                    isHeaderInline = maxWidth > maxHeight,
+                    onEvent = onEvent,
+                )
+            }
         }
     }
 }
@@ -96,10 +107,13 @@ fun AlbumContent(
 private fun LoadedContent(
     album: Album,
     nowPlayingId: Long?,
+    isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .readableWidth()
+            .fillMaxHeight(),
         contentPadding = PaddingValues(
             start = TuneScoutSpacing.screen,
             end = TuneScoutSpacing.screen,
@@ -107,7 +121,7 @@ private fun LoadedContent(
         ),
     ) {
         item(key = "header") {
-            AlbumHeader(album = album)
+            AlbumHeader(album = album, isInline = isHeaderInline)
         }
         items(items = album.songs, key = { song -> song.id }) { song ->
             SongRow(
@@ -123,42 +137,79 @@ private fun LoadedContent(
 }
 
 @Composable
-private fun AlbumHeader(album: Album) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = TuneScoutSpacing.extraLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
-    ) {
-        Artwork(
-            url = album.artwork.mediumUrl,
-            contentDescription = stringResource(ComponentR.string.ui_artwork_of, album.title),
-            cornerRadius = artworkCornerRadius,
+private fun AlbumHeader(
+    album: Album,
+    isInline: Boolean,
+) {
+    if (isInline) {
+        Row(
             modifier = Modifier
-                .size(artworkSize)
-                .shadow(elevation = artworkElevation, shape = RoundedCornerShape(artworkCornerRadius)),
-        )
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
+                .fillMaxWidth()
+                .padding(vertical = TuneScoutSpacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = album.title,
-                style = MaterialTheme.typography.titleLarge,
-                color = TuneScoutColors.textPrimary,
+            AlbumArtwork(album = album, size = inlineArtworkSize)
+            AlbumTitles(album = album, textAlign = TextAlign.Start)
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = TuneScoutSpacing.extraLarge),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+        ) {
+            AlbumArtwork(album = album, size = artworkSize)
+            AlbumTitles(
+                album = album,
                 textAlign = TextAlign.Center,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = album.artistName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TuneScoutColors.textPrimary,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         }
+    }
+}
+
+@Composable
+private fun AlbumArtwork(
+    album: Album,
+    size: Dp,
+) {
+    Artwork(
+        url = album.artwork.mediumUrl,
+        contentDescription = stringResource(ComponentR.string.ui_artwork_of, album.title),
+        cornerRadius = artworkCornerRadius,
+        modifier = Modifier
+            .size(size)
+            .shadow(elevation = artworkElevation, shape = RoundedCornerShape(artworkCornerRadius)),
+    )
+}
+
+@Composable
+private fun AlbumTitles(
+    album: Album,
+    textAlign: TextAlign,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
+    ) {
+        Text(
+            text = album.title,
+            style = MaterialTheme.typography.titleLarge,
+            color = TuneScoutColors.textPrimary,
+            textAlign = textAlign,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = album.artistName,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TuneScoutColors.textPrimary,
+            textAlign = textAlign,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }

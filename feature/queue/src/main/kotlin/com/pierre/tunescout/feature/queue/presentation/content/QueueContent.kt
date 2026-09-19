@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.queue.presentation.content
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pierre.tunescout.core.model.QueueEntry
@@ -22,6 +24,7 @@ import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
+import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import sh.calvin.reorderable.ReorderableItem
@@ -38,6 +41,7 @@ fun QueueContent(
         modifier = modifier
             .fillMaxSize()
             .safeDrawingPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopBar(
             title = stringResource(R.string.queue_title),
@@ -77,7 +81,9 @@ private fun QueueList(
     val queuedLabel = stringResource(R.string.queue_next_in_queue)
     LazyColumn(
         state = lazyListState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .readableWidth()
+            .fillMaxHeight(),
         contentPadding = PaddingValues(
             start = TuneScoutSpacing.screen,
             end = TuneScoutSpacing.medium,
