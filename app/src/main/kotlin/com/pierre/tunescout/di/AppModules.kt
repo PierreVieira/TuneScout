@@ -13,6 +13,7 @@ import com.pierre.tunescout.feature.splash.di.splashModule
 import org.koin.core.module.Module
 
 val appModules: List<Module> = listOf(
+    mainModule,
     navigationModule,
     networkModule,
     databaseModule,
