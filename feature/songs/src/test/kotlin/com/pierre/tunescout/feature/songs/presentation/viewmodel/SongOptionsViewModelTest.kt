@@ -79,6 +79,22 @@ class SongOptionsViewModelTest {
         }
 
     @Test
+    fun `GIVEN a cached song WHEN clicking play next THEN queues it next and closes the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnPlayNextClicked)
+
+            // Then
+            verifyOrder {
+                playbackController.queueNext(listOf(song(id = 1)))
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
     fun `GIVEN no song yet WHEN clicking add to queue THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(song = null)

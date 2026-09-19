@@ -39,8 +39,8 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
     fun options() {
         capture(
             fileName = "options",
-            title = "One tap to the album",
-            description = "Song options open as a sheet, from any list or from the player",
+            title = "Queue it, or open its album",
+            description = "The same sheet from every list and from the player",
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 PlayerContent(uiState = playerBehindSheet, onEvent = {})

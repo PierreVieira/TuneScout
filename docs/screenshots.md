@@ -37,8 +37,8 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `search.png` | `SongsScreenshots.search` | Find any song as you type | The query `daft punk` over ten paged results. |
 | `player.png` | `PlayerScreenshots` | A player, and the queue behind it | Get Lucky, playing, 18 seconds into a 29-second preview. |
 | `queue.png` | `QueueScreenshots` | Queue what you want next | Random Access Memories playing, two songs queued by hand ahead of it. |
-| `options.png` | `SongOptionsScreenshots` | One tap to the album | The song options sheet over the player. |
-| `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded. |
+| `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player. |
+| `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded, with both queue actions in the top bar. |
 | `notification.png` | — | — | **Manual capture**, captioned in the README itself. |
 
 The copy is English only — the file is committed once and read in one language, so the generators

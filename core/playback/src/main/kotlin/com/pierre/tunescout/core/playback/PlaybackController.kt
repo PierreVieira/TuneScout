@@ -15,6 +15,8 @@ interface PlaybackController {
         context: PlaybackContext,
     )
 
+    fun queueNext(songs: List<Song>)
+
     fun addToQueue(songs: List<Song>)
 
     fun removeFromQueue(entryId: String)

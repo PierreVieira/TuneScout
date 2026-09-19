@@ -4,6 +4,11 @@ A running log, newest first. Each entry states the decision, why, and what it co
 
 ## 2026-09-18 — Queue, mini player and a saved session
 
+**"Play next" and "Add to queue" differ only by where they insert.** Both tag the entry
+`UserQueue`; play-next lands immediately after the current song, add-to-queue after the last thing
+already queued by hand. Calling play-next twice therefore puts the most recent one first, which is
+what the label promises and what the queue screen then shows.
+
 **The queue screen is a screen, not a sheet.** Spotify shows its queue in a near-full-height sheet;
 this one is a route with a top bar, like Album. It needs the height, it scrolls, it holds a drag
 gesture that fights a sheet's own drag-to-dismiss, and it works in landscape without a second

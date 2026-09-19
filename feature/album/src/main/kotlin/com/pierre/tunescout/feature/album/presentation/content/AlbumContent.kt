@@ -58,6 +58,11 @@ fun AlbumContent(
             actions = {
                 if (uiState is AlbumUiState.Loaded) {
                     TopBarAction(
+                        icon = TuneScoutIcons.queueNext,
+                        contentDescription = stringResource(R.string.album_play_next),
+                        onClick = { onEvent(AlbumUiEvent.OnPlayNextClicked) },
+                    )
+                    TopBarAction(
                         icon = TuneScoutIcons.addToQueue,
                         contentDescription = stringResource(R.string.album_add_to_queue),
                         onClick = { onEvent(AlbumUiEvent.OnAddToQueueClicked) },

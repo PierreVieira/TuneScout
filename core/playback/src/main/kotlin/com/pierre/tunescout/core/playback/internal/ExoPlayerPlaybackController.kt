@@ -83,14 +83,12 @@ internal class ExoPlayerPlaybackController(
         publish()
     }
 
+    override fun queueNext(songs: List<Song>) {
+        insert(songs, currentIndex + 1)
+    }
+
     override fun addToQueue(songs: List<Song>) {
-        if (songs.isEmpty()) return
-        val wasEmpty = entries.isEmpty()
-        val added = buildEntries(songs, QueueSource.UserQueue, ::createEntryId)
-        val insertIndex = getUserQueueInsertIndex(entries, currentIndex)
-        entries = entries.take(insertIndex) + added + entries.drop(insertIndex)
-        player.addMediaItems(insertIndex, added.map(QueueEntry::toMediaItem))
-        if (wasEmpty) startPlaying() else publish()
+        insert(songs, getUserQueueInsertIndex(entries, currentIndex))
     }
 
     override fun removeFromQueue(entryId: String) {
@@ -142,6 +140,18 @@ internal class ExoPlayerPlaybackController(
             Player.REPEAT_MODE_ONE
         }
         publish()
+    }
+
+    private fun insert(
+        songs: List<Song>,
+        index: Int,
+    ) {
+        if (songs.isEmpty()) return
+        val wasEmpty = entries.isEmpty()
+        val added = buildEntries(songs, QueueSource.UserQueue, ::createEntryId)
+        entries = entries.take(index) + added + entries.drop(index)
+        player.addMediaItems(index, added.map(QueueEntry::toMediaItem))
+        if (wasEmpty) startPlaying() else publish()
     }
 
     private fun startPlaying() {

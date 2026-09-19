@@ -43,7 +43,8 @@ class AlbumViewModel(
 
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> playAndOpen(event.song)
-        AlbumUiEvent.OnAddToQueueClicked -> addToQueue()
+        AlbumUiEvent.OnPlayNextClicked -> queue(playbackController::queueNext)
+        AlbumUiEvent.OnAddToQueueClicked -> queue(playbackController::addToQueue)
         AlbumUiEvent.OnRetryClicked -> refresh()
         AlbumUiEvent.OnBackClicked -> navigator.navigateBack()
     }
@@ -55,9 +56,9 @@ class AlbumViewModel(
         }
     }
 
-    private fun addToQueue() {
+    private fun queue(enqueue: (List<Song>) -> Unit) {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        playbackController.addToQueue(album.songs)
+        enqueue(album.songs)
     }
 
     private fun playAndOpen(song: Song) {

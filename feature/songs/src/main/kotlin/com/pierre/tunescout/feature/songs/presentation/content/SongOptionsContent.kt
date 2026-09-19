@@ -70,11 +70,17 @@ fun SongOptionsContent(
             ),
         )
         OptionRow(
+            icon = TuneScoutIcons.queueNext,
+            label = stringResource(R.string.songs_options_play_next),
+            isEnabled = uiState.song != null,
+            onClick = { onEvent(SongOptionsUiEvent.OnPlayNextClicked) },
+            modifier = Modifier.padding(top = TuneScoutSpacing.large),
+        )
+        OptionRow(
             icon = TuneScoutIcons.addToQueue,
             label = stringResource(R.string.songs_options_add_to_queue),
             isEnabled = uiState.song != null,
             onClick = { onEvent(SongOptionsUiEvent.OnAddToQueueClicked) },
-            modifier = Modifier.padding(top = TuneScoutSpacing.large),
         )
         OptionRow(
             icon = TuneScoutIcons.viewAlbum,

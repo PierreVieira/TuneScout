@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.songs.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
@@ -25,14 +26,15 @@ class SongOptionsViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SongOptionsUiState(song = null))
 
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
-        SongOptionsUiEvent.OnAddToQueueClicked -> addToQueue()
+        SongOptionsUiEvent.OnPlayNextClicked -> queue(playbackController::queueNext)
+        SongOptionsUiEvent.OnAddToQueueClicked -> queue(playbackController::addToQueue)
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()
         SongOptionsUiEvent.OnDismissed -> navigator.navigateBack()
     }
 
-    private fun addToQueue() {
+    private fun queue(enqueue: (List<Song>) -> Unit) {
         val song = uiState.value.song ?: return
-        playbackController.addToQueue(listOf(song))
+        enqueue(listOf(song))
         navigator.navigateBack()
     }
 

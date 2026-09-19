@@ -28,6 +28,25 @@ class AlbumContentTest {
     private val events = mutableListOf<AlbumUiEvent>()
 
     @Test
+    fun givenLoadedAlbumTheTopBarQueuesItNextOrAtTheEnd() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(
+                    uiState = AlbumUiState.Loaded(album = album(), nowPlayingId = null, isPlaying = false),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Play the album next").performClick()
+        onNodeWithContentDescription("Add the album to the queue").performClick()
+
+        assertThat(events)
+            .containsExactly(AlbumUiEvent.OnPlayNextClicked, AlbumUiEvent.OnAddToQueueClicked)
+            .inOrder()
+    }
+
+    @Test
     fun givenLoadedAlbumShowsHeaderAndTracks() = compose.use {
         val album = album(
             songs = listOf(

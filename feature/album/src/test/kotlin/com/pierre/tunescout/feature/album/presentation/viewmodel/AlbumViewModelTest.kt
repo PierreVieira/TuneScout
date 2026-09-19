@@ -125,6 +125,44 @@ class AlbumViewModelTest {
         }
 
     @Test
+    fun `GIVEN a loaded album WHEN adding it to the queue THEN queues every track in order`() = runTest {
+        // Given
+        val album = album(id = 10)
+        prepareScenario(cached = album)
+
+        // When
+        viewModel.onEvent(AlbumUiEvent.OnAddToQueueClicked)
+
+        // Then
+        verify { playbackController.addToQueue(album.songs) }
+    }
+
+    @Test
+    fun `GIVEN a loaded album WHEN playing it next THEN queues every track right after the current song`() = runTest {
+        // Given
+        val album = album(id = 10)
+        prepareScenario(cached = album)
+
+        // When
+        viewModel.onEvent(AlbumUiEvent.OnPlayNextClicked)
+
+        // Then
+        verify { playbackController.queueNext(album.songs) }
+    }
+
+    @Test
+    fun `GIVEN the album has not loaded WHEN adding it to the queue THEN does nothing`() = runTest {
+        // Given
+        prepareScenario(cached = null)
+
+        // When
+        viewModel.onEvent(AlbumUiEvent.OnAddToQueueClicked)
+
+        // Then
+        verify(exactly = 0) { playbackController.addToQueue(any()) }
+    }
+
+    @Test
     fun `WHEN clicking back THEN navigates back`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(cached = album(id = 10))

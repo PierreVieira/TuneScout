@@ -9,7 +9,7 @@ native Android app written for the Music AI Android code challenge.
 
 | Player | Song options | Album |
 | :--: | :--: | :--: |
-| <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet over the player"> | <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks"> |
+| <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet, with play next, add to queue and view album"> | <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks, with the queue actions in the top bar"> |
 
 | Queue |
 | :--: |
@@ -28,8 +28,9 @@ composable. See [docs/screenshots.md](docs/screenshots.md).
 - **Search** the iTunes Search API as you type, with debounce and paginated results.
 - **Play** a preview. A song tapped in search or in recently played plays on its own; a track
   tapped inside an album plays the album from there.
-- **Queue** songs and whole albums by hand. What you add plays before the rest of the album and
-  survives starting something else, the way Spotify's queue does. The queue screen reorders by
+- **Queue** songs and whole albums by hand, either right after the current song ("Play next") or
+  at the end of what you queued ("Add to queue"). What you add plays before the rest of the album
+  and survives starting something else, the way Spotify's queue does. The queue screen reorders by
   drag, removes by tap, and jumps to any song.
 - **Pick up where you left off**: closing the app keeps the queue, the song and its position, and
   reopening restores all three, paused, from the local database.
