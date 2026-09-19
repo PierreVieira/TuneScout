@@ -53,8 +53,11 @@ jobs:
 
       # Release matters: it is the only variant where R8 runs, so a missing keep rule for
       # kotlinx.serialization or Room surfaces here instead of on a device.
+      # Scoped to :app on purpose. The root `assemble*` tasks also bundle a debug and a release AAR
+      # for every library module, about 300 uncacheable tasks whose output nothing consumes; :app
+      # already compiles every production module on its way to the APK.
       - name: Assemble debug and release
-        run: ./gradlew assembleDebug assembleRelease
+        run: ./gradlew :app:assembleDebug :app:assembleRelease
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

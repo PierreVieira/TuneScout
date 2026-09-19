@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.pierre.tunescout.buildlogic.addInstrumentedTestDependencies
 import com.pierre.tunescout.buildlogic.addUnitTestDependencies
 import com.pierre.tunescout.buildlogic.configureAndroid
@@ -30,6 +31,15 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             testOptions {
                 unitTests.isIncludeAndroidResources = true
+            }
+        }
+
+        // Without this every library gets an androidTest component, so a module with no
+        // instrumented tests still compiles, packages and installs an empty test APK.
+        extensions.configure<LibraryAndroidComponentsExtension> {
+            beforeVariants { variant ->
+                variant.androidTest.enable =
+                    variant.androidTest.enable && projectDir.resolve("src/androidTest").exists()
             }
         }
 
