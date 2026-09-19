@@ -30,7 +30,7 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
     NavigationCommandCollector(backStackController = backStackController)
 
     MiniPlayerScaffold(
-        isAllowed = isMiniPlayerAllowed(backStack.lastOrNull()),
+        isAllowed = isMiniPlayerAllowed(backStack),
         modifier = modifier,
     ) {
         NavDisplay(

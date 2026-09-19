@@ -80,7 +80,12 @@ the `NavDisplay`; Songs and Album never reference it, so the feature-never-depen
 holds and there is one place that decides where the bar appears. It is laid out below the content
 rather than over it, and it consumes the navigation bar insets while it is visible, so the screen
 above it never pads for a bar it no longer touches. Cost: `app` decides on which routes the bar is
-allowed, which is one `when` over routes in `TuneScoutNavDisplay`.
+allowed, which is one `when` over routes in `MiniPlayerRoutes.kt`.
+
+**A sheet does not change which screen the user is on.** That `when` first looks past any route
+marked `OverlayRoute` — the song options and the queue — because the options sheet opened from the
+player is still the player, and the bar was appearing behind it. The marker lives on the routes in
+`core:navigation` rather than as a list in `app`, so a new sheet cannot forget to join it.
 
 **A closed app reopens paused, where it was.** `playback_queue` and a single-row `playback_session`
 table hold the entries, the current one, the position and repeat. `PlaybackSessionKeeper` restores
