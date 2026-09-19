@@ -38,7 +38,7 @@ fun Artwork(
         modifier = modifier
             .aspectRatio(1f)
             .clip(shape)
-            .background(TuneScoutColors.white10),
+            .background(TuneScoutColors.surfaceSubtle),
         contentAlignment = Alignment.Center,
     ) {
         AsyncImage(

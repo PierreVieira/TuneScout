@@ -5,12 +5,18 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DragHandle
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LibraryMusic
+import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.Replay
@@ -53,4 +59,16 @@ object TuneScoutIcons {
     val dragHandle: ImageVector get() = Icons.Rounded.DragHandle
 
     val delete: ImageVector get() = Icons.Rounded.Delete
+
+    val check: ImageVector get() = Icons.Rounded.Check
+
+    val info: ImageVector get() = Icons.Rounded.Info
+
+    val theme: ImageVector get() = Icons.Rounded.Palette
+
+    val lightTheme: ImageVector get() = Icons.Rounded.LightMode
+
+    val darkTheme: ImageVector get() = Icons.Rounded.DarkMode
+
+    val systemTheme: ImageVector get() = Icons.Rounded.PhoneAndroid
 }

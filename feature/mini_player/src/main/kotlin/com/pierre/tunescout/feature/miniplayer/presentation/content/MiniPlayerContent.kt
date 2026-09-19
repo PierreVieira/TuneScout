@@ -57,7 +57,7 @@ fun MiniPlayerContent(
             .fillMaxWidth()
             .padding(horizontal = TuneScoutSpacing.small, vertical = TuneScoutSpacing.extraSmall)
             .clip(RoundedCornerShape(cardCornerRadius))
-            .background(TuneScoutColors.white10)
+            .background(TuneScoutColors.surfaceSubtle)
             .clickable(onClickLabel = openLabel) { onEvent(MiniPlayerUiEvent.OnClicked) },
     ) {
         Row(
@@ -119,14 +119,16 @@ fun MiniPlayerContent(
 @Composable
 private fun ProgressLine(progress: Float) {
     val animated by animateFloatAsState(targetValue = progress, label = "miniPlayerProgress")
+    val trackColor = TuneScoutColors.surfaceSubtle
+    val playedColor = TuneScoutColors.trackActive
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(progressHeight)
             .drawBehind {
-                drawRect(color = TuneScoutColors.white10)
+                drawRect(color = trackColor)
                 drawRect(
-                    color = TuneScoutColors.white60,
+                    color = playedColor,
                     size = size.copy(width = size.width * animated.coerceIn(0f, 1f)),
                 )
             },

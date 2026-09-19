@@ -32,7 +32,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                             recentlyPlayed = recentlyPlayed,
                             nowPlayingId = getLucky.id,
                         ),
-                        searchResults = pagingItems(emptyList()),
+                        searchResults = emptyPagingItems(),
                         onEvent = {},
                     )
                 }
@@ -68,5 +68,8 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
 }
 
 @Composable
-private fun pagingItems(songs: List<Song>): LazyPagingItems<Song> =
+internal fun pagingItems(songs: List<Song>): LazyPagingItems<Song> =
     flowOf(PagingData.from(songs)).collectAsLazyPagingItems()
+
+@Composable
+internal fun emptyPagingItems(): LazyPagingItems<Song> = pagingItems(emptyList())

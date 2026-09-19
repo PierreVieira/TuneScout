@@ -49,7 +49,7 @@ internal fun SearchResultsList(
         ) {
             when {
                 refreshState is LoadState.Loading && searchResults.itemCount == 0 -> item(key = "loading") {
-                    SongListSkeleton()
+                    SongListSkeleton(hasMoreAction = true)
                 }
 
                 refreshState is LoadState.Error -> item(key = "error") {
@@ -79,7 +79,9 @@ internal fun SearchResultsList(
                 )
             }
             when (appendState) {
-                is LoadState.Loading -> item(key = "appending") { SongListSkeleton(rows = APPEND_SKELETON_ROWS) }
+                is LoadState.Loading -> item(key = "appending") {
+                    SongListSkeleton(rows = APPEND_SKELETON_ROWS, hasMoreAction = true)
+                }
 
                 is LoadState.Error -> item(key = "append-error") {
                     ErrorMessage(error = appendState.error, onRetry = searchResults::retry)

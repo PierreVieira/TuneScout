@@ -76,14 +76,14 @@ private fun Track(sliderState: SliderState) {
         modifier = Modifier
             .fillMaxWidth()
             .height(trackHeight)
-            .background(TuneScoutColors.white25, RoundedCornerShape(trackCornerRadius)),
+            .background(TuneScoutColors.elementSubtle, RoundedCornerShape(trackCornerRadius)),
         contentAlignment = Alignment.CenterStart,
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth(fraction)
                 .height(trackHeight)
-                .background(TuneScoutColors.white60, RoundedCornerShape(trackCornerRadius)),
+                .background(TuneScoutColors.trackActive, RoundedCornerShape(trackCornerRadius)),
         )
     }
 }

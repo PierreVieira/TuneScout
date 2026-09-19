@@ -30,7 +30,7 @@ fun PlayPauseButton(
         modifier = modifier
             .size(buttonSize)
             .clip(CircleShape)
-            .background(TuneScoutColors.white20)
+            .background(TuneScoutColors.surfaceRaised)
             .clickable(onClick = onClick, role = Role.Button),
         contentAlignment = Alignment.Center,
     ) {

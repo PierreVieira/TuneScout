@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +26,8 @@ import com.pierre.tunescout.feature.songs.presentation.component.SearchResultsLi
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.SearchField
+import com.pierre.tunescout.ui.component.TopBarAction
+import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.component.readableWidth
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -51,16 +54,16 @@ fun SongsContent(
                 .fillMaxHeight(),
         ) {
             if (isHeaderInline) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                HeaderRow(horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small)) {
                     Title()
                     Search(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
+                    ThemeAction(onEvent = onEvent)
                 }
             } else {
-                Title(modifier = Modifier.fillMaxWidth())
+                HeaderRow {
+                    Title(modifier = Modifier.weight(1f))
+                    ThemeAction(onEvent = onEvent)
+                }
                 Search(uiState = uiState, onEvent = onEvent)
             }
             if (uiState.isSearching) {
@@ -81,15 +84,39 @@ fun SongsContent(
 }
 
 @Composable
+private fun HeaderRow(
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    content: @Composable RowScope.() -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = TuneScoutSpacing.screen),
+        horizontalArrangement = horizontalArrangement,
+        verticalAlignment = Alignment.CenterVertically,
+        content = content,
+    )
+}
+
+@Composable
 private fun Title(modifier: Modifier = Modifier) {
     Text(
         text = stringResource(R.string.songs_title),
         style = MaterialTheme.typography.headlineMedium,
         color = TuneScoutColors.textPrimary,
         modifier = modifier
-            .padding(top = TuneScoutSpacing.screen)
             .height(titleHeight)
             .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
+    )
+}
+
+@Composable
+private fun ThemeAction(onEvent: (SongsUiEvent) -> Unit) {
+    TopBarAction(
+        icon = TuneScoutIcons.theme,
+        contentDescription = stringResource(R.string.songs_open_theme),
+        onClick = { onEvent(SongsUiEvent.OnThemeClicked) },
+        modifier = Modifier.padding(end = TuneScoutSpacing.small),
     )
 }
 

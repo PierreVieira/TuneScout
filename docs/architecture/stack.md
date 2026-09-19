@@ -5,7 +5,8 @@
 - **Dependency injection:** Koin (`koin-android`, `koin-androidx-compose`)
 - **Network:** Ktor client (OkHttp engine) behind the `ITunesApi` interface in `core/network`
 - **Serialization:** kotlinx.serialization (JSON)
-- **Local data:** Room 3 (`androidx.room3`) with the bundled SQLite driver
+- **Local data:** Room 3 (`androidx.room3`) with the bundled SQLite driver; Preferences DataStore
+  (`core/datastore`) for the handful of user preferences that are not rows
 - **Paging:** Paging 3 (`paging-common` + `paging-compose`)
 - **Navigation:** Navigation 3 (`androidx.navigation3`, Android only) with type-safe `@Serializable` `NavKey` routes
 - **Images:** Coil 3 with the Ktor network fetcher

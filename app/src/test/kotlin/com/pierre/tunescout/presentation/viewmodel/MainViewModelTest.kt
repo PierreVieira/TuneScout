@@ -7,7 +7,10 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.presentation.model.MainUiState
+import com.pierre.tunescout.ui.theme.Theme
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -16,12 +19,29 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class MainViewModelTest {
     private lateinit var viewModel: MainViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
+    private lateinit var themeFlow: MutableStateFlow<Theme>
 
     @BeforeEach
     fun setUp() {
         playbackStateFlow = MutableStateFlow(PlaybackState.Idle)
-        viewModel = MainViewModel(observablePlayback = { playbackStateFlow })
+        themeFlow = MutableStateFlow(Theme.SYSTEM)
+        viewModel = MainViewModel(
+            observablePlayback = { playbackStateFlow },
+            observeTheme = { themeFlow },
+            observeDynamicColorEnabled = { flowOf(false) },
+        )
     }
+
+    @Test
+    fun `WHEN the stored theme arrives THEN leaves the loading state the splash waits on`() =
+        runTest(mainDispatcher.dispatcher) {
+            // When
+            themeFlow.value = Theme.LIGHT
+
+            // Then
+            assertThat(viewModel.uiState.value)
+                .isEqualTo(MainUiState.Ready(theme = Theme.LIGHT, isDynamicColorEnabled = false))
+        }
 
     @Test
     fun `WHEN nothing has played yet THEN does not request the notification permission`() =

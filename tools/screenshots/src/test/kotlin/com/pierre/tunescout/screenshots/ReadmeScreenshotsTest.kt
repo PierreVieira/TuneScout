@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil3.SingletonImageLoader
+import com.pierre.tunescout.ui.theme.Theme
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import dev.lucianosantos.storescreenshots.FormFactor
 import dev.lucianosantos.storescreenshots.ScreenshotStyle
@@ -48,7 +49,8 @@ internal abstract class ReadmeScreenshotsTest :
             fileName = fileName,
             subdir = README_SUBDIR,
         ) {
-            TuneScoutTheme(content = content)
+            // Pinned: the generators run under Robolectric, whose system theme is light.
+            TuneScoutTheme(theme = Theme.DARK, content = content)
         }
     }
 

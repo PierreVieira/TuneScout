@@ -2,6 +2,7 @@
 <resources>
     <string name="songs_title">Songs</string>
     <string name="songs_search_placeholder">Search</string>
+    <string name="songs_open_theme">Change theme</string>
     <string name="songs_recently_played">Recently played</string>
     <string name="songs_empty_title">Nothing played yet</string>
     <string name="songs_empty_description">Search for a song and tap it to start listening. It will show up here.</string>

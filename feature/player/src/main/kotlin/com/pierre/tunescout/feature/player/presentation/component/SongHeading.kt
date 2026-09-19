@@ -34,7 +34,7 @@ internal fun SongHeading(
         Text(
             text = artistName,
             style = MaterialTheme.typography.bodyLarge,
-            color = TuneScoutColors.white70,
+            color = TuneScoutColors.textEmphasis,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth(),

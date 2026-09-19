@@ -9,6 +9,7 @@ This document describes the architecture conventions of this project. Follow the
 - [@docs/architecture/dependency-injection.md](architecture/dependency-injection.md)
 - [@docs/architecture/navigation.md](architecture/navigation.md)
 - [@docs/architecture/data-sources.md](architecture/data-sources.md)
+- [@docs/architecture/theming.md](architecture/theming.md)
 - [@docs/architecture/new-feature-checklist.md](architecture/new-feature-checklist.md)
 - [@docs/architecture/code-style.md](architecture/code-style.md)
 - [@docs/architecture/dry.md](architecture/dry.md)

@@ -9,6 +9,8 @@ sealed interface SongsUiEvent {
 
     data object OnClearQueryClicked : SongsUiEvent
 
+    data object OnThemeClicked : SongsUiEvent
+
     data class OnSongClicked(
         val song: Song,
     ) : SongsUiEvent
