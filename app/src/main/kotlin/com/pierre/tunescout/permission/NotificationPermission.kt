@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 
 @Composable
-fun playbackNotificationPermissionRequest(): () -> Unit {
+fun rememberNotificationPermissionRequest(): () -> Unit {
     val context = LocalContext.current
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
     return remember(context, launcher) {
