@@ -16,12 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import com.pierre.tunescout.ui.component.shimmer.ShimmerBox
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.animation.sharedArtwork
 
 private val placeholderIconSize = 48.dp
 
@@ -29,13 +29,15 @@ private val placeholderIconSize = 48.dp
 fun Artwork(
     url: String,
     contentDescription: String?,
-    cornerRadius: Dp,
+    cornerPercent: Int,
     modifier: Modifier = Modifier,
+    sharedKey: SongSharedKey? = null,
 ) {
-    val shape = RoundedCornerShape(cornerRadius)
+    val shape = RoundedCornerShape(percent = cornerPercent)
     var state by remember(url) { mutableStateOf(getInitialArtworkState(url)) }
     Box(
         modifier = modifier
+            .sharedArtwork(sharedKey)
             .aspectRatio(1f)
             .clip(shape)
             .background(TuneScoutColors.surfaceSubtle),

@@ -1,6 +1,8 @@
 package com.pierre.tunescout.navigation
 
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -12,6 +14,7 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import com.pierre.tunescout.core.navigation.BackStackController
 import com.pierre.tunescout.core.navigation.NavigationCommandCollector
+import com.pierre.tunescout.core.navigation.animation.rememberSharedElementNavEntryDecorator
 import com.pierre.tunescout.core.navigation.route.SplashRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
 import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
@@ -24,6 +27,9 @@ import com.pierre.tunescout.feature.splash.presentation.navigation.splashEntry
 import com.pierre.tunescout.feature.themeselection.presentation.navigation.dynamicColorInfoEntry
 import com.pierre.tunescout.feature.themeselection.presentation.navigation.themeSelectionEntry
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.animation.LocalSharedTransitionScope
+import com.pierre.tunescout.ui.utils.animation.LocalTappedSharedArtworkSurface
+import com.pierre.tunescout.ui.utils.animation.rememberTappedSharedArtworkSurface
 
 @Composable
 fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
@@ -34,28 +40,38 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
 
     NavigationCommandCollector(backStackController = backStackController)
 
-    MiniPlayerScaffold(
-        isAllowed = isMiniPlayerAllowed(backStack),
-        modifier = modifier,
-    ) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = backStackController::navigateBack,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-            sceneStrategies = listOf(bottomSheetStrategy, dialogStrategy),
-            entryProvider = entryProvider {
-                splashEntry()
-                songsEntry()
-                songOptionsEntry()
-                playerEntry()
-                queueEntry()
-                albumEntry()
-                themeSelectionEntry()
-                dynamicColorInfoEntry()
-            },
-        )
+    // The layout covers the mini player bar as well as the NavDisplay: the artwork flies between
+    // the two, so both halves have to sit in the same shared transition scope.
+    SharedTransitionLayout(modifier = modifier) {
+        CompositionLocalProvider(
+            LocalSharedTransitionScope provides this,
+            LocalTappedSharedArtworkSurface provides rememberTappedSharedArtworkSurface(),
+        ) {
+            MiniPlayerScaffold(isAllowed = isMiniPlayerAllowed(backStack)) {
+                NavDisplay(
+                    backStack = backStack,
+                    onBack = backStackController::navigateBack,
+                    entryDecorators = listOf(
+                        rememberSaveableStateHolderNavEntryDecorator(),
+                        rememberViewModelStoreNavEntryDecorator(),
+                        rememberSharedElementNavEntryDecorator(),
+                    ),
+                    sceneStrategies = listOf(bottomSheetStrategy, dialogStrategy),
+                    transitionSpec = createNavTransitionSpec(),
+                    popTransitionSpec = createNavTransitionSpec(),
+                    predictivePopTransitionSpec = createNavPredictivePopTransitionSpec(),
+                    entryProvider = entryProvider {
+                        splashEntry()
+                        songsEntry()
+                        songOptionsEntry()
+                        playerEntry()
+                        queueEntry()
+                        albumEntry()
+                        themeSelectionEntry()
+                        dynamicColorInfoEntry()
+                    },
+                )
+            }
+        }
     }
 }

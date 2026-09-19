@@ -9,15 +9,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import com.pierre.tunescout.ui.component.SongSharedElement
+import com.pierre.tunescout.ui.component.getSongSharedKey
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.animation.isSharedTransitionActive
+import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
+
+private const val MARQUEE_STOPPED = 0
 
 @Composable
 internal fun SongHeading(
+    songId: Long,
     title: String,
     artistName: String,
     modifier: Modifier = Modifier,
 ) {
+    val marqueeIterations = if (isSharedTransitionActive()) MARQUEE_STOPPED else Int.MAX_VALUE
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
@@ -29,7 +37,8 @@ internal fun SongHeading(
             maxLines = 1,
             modifier = Modifier
                 .fillMaxWidth()
-                .basicMarquee(),
+                .sharedTextBounds(getSongSharedKey(songId, SongSharedElement.TITLE))
+                .basicMarquee(iterations = marqueeIterations),
         )
         Text(
             text = artistName,
@@ -37,7 +46,9 @@ internal fun SongHeading(
             color = TuneScoutColors.textEmphasis,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .sharedTextBounds(getSongSharedKey(songId, SongSharedElement.ARTIST)),
         )
     }
 }

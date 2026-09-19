@@ -29,7 +29,7 @@ private const val SKELETON_ROWS = 6
 @Composable
 internal fun AlbumSkeleton(
     artworkSize: Dp,
-    artworkCornerRadius: Dp,
+    artworkCornerPercent: Int,
     rowArtworkSize: Dp,
     modifier: Modifier = Modifier,
 ) {
@@ -42,7 +42,7 @@ internal fun AlbumSkeleton(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ShimmerBox(
-            shape = RoundedCornerShape(artworkCornerRadius),
+            shape = RoundedCornerShape(percent = artworkCornerPercent),
             modifier = Modifier.size(artworkSize),
         )
         ShimmerBox(

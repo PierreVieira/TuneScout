@@ -72,6 +72,7 @@ internal fun SearchResultsList(
                     title = song.title,
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
+                    sharedSongId = song.id,
                     onClick = {
                         onEvent(SongsUiEvent.OnSongClicked(song))
                     },

@@ -87,7 +87,7 @@ what anything reading the back stack uses to tell "which screen is the user on" 
 top of it" — the mini player is hidden on the player, and must stay hidden when a sheet opens over it.
 Give every new sheet route the marker.
 
-For shared-element transitions, the entry's animation scope is `LocalNavAnimatedContentScope.current`.
+A screen does not read `LocalNavAnimatedContentScope` itself — see [Shared elements](#shared-elements).
 
 ### 4. Register in `TuneScoutNavDisplay`
 
@@ -102,6 +102,72 @@ entryProvider = entryProvider<NavKey> {
 ```
 
 `app` is the only module that depends on every feature, which is why the registration lives there.
+
+## Shared elements
+
+The artwork of a song follows it from wherever it is tapped into the player, and back out again on
+the way home. The same flight carries the title and the artist.
+
+### The wiring
+
+`TuneScoutNavDisplay` wraps a `SharedTransitionLayout` around **both** the `NavDisplay` and the
+`MiniPlayerScaffold` and publishes the scope as `LocalSharedTransitionScope` (`:ui:utils`). Flying
+between the bar and a screen only works while the two sit in the same scope.
+
+A shared element also needs the visibility scope of whoever draws it, and that differs by drawer:
+
+| Drawer | Visibility scope | Provided by |
+|---|---|---|
+| A screen inside the `NavDisplay` | `LocalNavAnimatedContentScope.current` | `rememberSharedElementNavEntryDecorator()`, registered in `entryDecorators` |
+| The mini player bar | its own `AnimatedVisibility` | `MiniPlayerScaffold` |
+
+Both publish the pair as `LocalSharedElementScopes`, so a screen never names either scope: it tags
+the element and nothing else.
+
+```kotlin
+Artwork(
+    url = song.artwork.largeUrl,
+    cornerPercent = ARTWORK_CORNER_PERCENT,
+    sharedKey = getSongSharedKey(song.id, SongSharedElement.ARTWORK),
+    modifier = Modifier.size(size),
+)
+```
+
+`LocalSharedElementScopes` is `null` by default, and `Modifier.sharedArtwork`/`sharedTextBounds` are
+a no-op without it. That is what keeps every `*Content` composable renderable under `androidTest`
+and `:tools:screenshots`, where there is no `NavDisplay` to provide a scope.
+
+`Artwork` takes a corner **percent**, not a `Dp`, so the radius follows the animated bounds instead
+of snapping to the target's on the first frame.
+
+### One key, one source
+
+A key may only be flown by one element at a time, and the song that is playing is on screen twice:
+its row in the list and the mini player bar. The one that flies is **the one the finger landed on**.
+
+Each surface declares itself with `LocalSharedArtworkSurface` (`SongRow` is `LIST_ROW`,
+`MiniPlayerContent` is `MINI_PLAYER`; the player declares nothing, since it is the other end of
+every flight) and writes itself into `LocalTappedSharedArtworkSurface` when it is tapped. A surface
+that is not the tapped one gets no modifier at all, so at any moment exactly one source claims a key
+— and before the first tap, none does.
+
+The pop reads the same state, so the artwork returns to whichever surface it came from.
+
+The bar also holds the song it was drawing once it starts leaving (`rememberBarSong`): opening the
+player changes what is playing a frame or two later, and a bar that swapped its song mid-fade would
+read as a glitch.
+
+### Sheets do not take part
+
+`LocalNavAnimatedContentScope` is a no-op inside an `OverlayScene`, so the options and queue sheets
+get no shared elements — and a queue row does not navigate anyway, it swaps the song in the player
+already behind the sheet. Their rows pass no key.
+
+### Timing
+
+`NavTransitions.kt` replaces the Navigation 3 default 700 ms fade with a 350 ms one, and drops the
+`scaleOut` from the predictive-back spec: a screen that scales while an element flies over it drags
+the eye off the element.
 
 ## Composable Structure
 
