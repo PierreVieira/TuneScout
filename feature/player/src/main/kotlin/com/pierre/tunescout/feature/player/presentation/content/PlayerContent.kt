@@ -26,18 +26,20 @@ import com.pierre.tunescout.feature.player.presentation.component.SongHeading
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.ui.component.Artwork
+import com.pierre.tunescout.ui.component.SongSharedElement
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.component.getPlayButtonState
+import com.pierre.tunescout.ui.component.getSongSharedKey
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val maxArtworkSize = 264.dp
 private val minArtworkSize = 120.dp
 private val maxArtworkTopSpacing = 100.dp
-private val artworkCornerRadius = 32.dp
+private const val ARTWORK_CORNER_PERCENT = 12
 private val detailsHeight = 260.dp
 
 @Composable
@@ -76,7 +78,7 @@ fun PlayerContent(
                     isSideBySide = isSideBySide,
                     artworkSize = artworkSize,
                     artworkTopSpacing = getArtworkTopSpacing(maxHeight = maxHeight, artworkSize = artworkSize),
-                    artworkCornerRadius = artworkCornerRadius,
+                    artworkCornerPercent = ARTWORK_CORNER_PERCENT,
                 )
 
                 PlayerUiState.NotFound -> StateMessage(
@@ -174,7 +176,8 @@ private fun SongArtwork(
     Artwork(
         url = uiState.song.artwork.largeUrl,
         contentDescription = stringResource(ComponentR.string.ui_artwork_of, uiState.song.albumTitle),
-        cornerRadius = artworkCornerRadius,
+        cornerPercent = ARTWORK_CORNER_PERCENT,
+        sharedKey = getSongSharedKey(uiState.song.id, SongSharedElement.ARTWORK),
         modifier = Modifier.size(size),
     )
 }
@@ -190,6 +193,7 @@ private fun PlayerDetails(
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen),
     ) {
         SongHeading(
+            songId = uiState.song.id,
             title = uiState.song.title,
             artistName = uiState.song.artistName,
         )

@@ -43,7 +43,7 @@ import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val artworkSize = 120.dp
 private val inlineArtworkSize = 72.dp
-private val artworkCornerRadius = 20.dp
+private const val ARTWORK_CORNER_PERCENT = 17
 private val artworkElevation = 8.dp
 private val rowArtworkSize = 44.dp
 
@@ -80,7 +80,7 @@ fun AlbumContent(
         when (uiState) {
             AlbumUiState.Loading -> AlbumSkeleton(
                 artworkSize = artworkSize,
-                artworkCornerRadius = artworkCornerRadius,
+                artworkCornerPercent = ARTWORK_CORNER_PERCENT,
                 rowArtworkSize = rowArtworkSize,
                 modifier = Modifier.readableWidth(),
             )
@@ -130,6 +130,7 @@ private fun LoadedContent(
                 artworkUrl = song.artwork.thumbnailUrl,
                 artworkSize = rowArtworkSize,
                 isHighlighted = song.id == nowPlayingId,
+                sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
             )
         }
@@ -178,10 +179,13 @@ private fun AlbumArtwork(
     Artwork(
         url = album.artwork.mediumUrl,
         contentDescription = stringResource(ComponentR.string.ui_artwork_of, album.title),
-        cornerRadius = artworkCornerRadius,
+        cornerPercent = ARTWORK_CORNER_PERCENT,
         modifier = Modifier
             .size(size)
-            .shadow(elevation = artworkElevation, shape = RoundedCornerShape(artworkCornerRadius)),
+            .shadow(
+                elevation = artworkElevation,
+                shape = RoundedCornerShape(percent = ARTWORK_CORNER_PERCENT),
+            ),
     )
 }
 

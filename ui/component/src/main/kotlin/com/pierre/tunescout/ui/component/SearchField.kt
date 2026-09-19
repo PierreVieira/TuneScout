@@ -48,7 +48,7 @@ fun SearchField(
         modifier = modifier
             .fillMaxWidth()
             .height(fieldHeight)
-            .background(TuneScoutColors.white10, RoundedCornerShape(fieldCornerRadius))
+            .background(TuneScoutColors.surfaceSubtle, RoundedCornerShape(fieldCornerRadius))
             .padding(horizontal = TuneScoutSpacing.medium),
         textStyle = textStyle,
         singleLine = true,
@@ -63,7 +63,7 @@ fun SearchField(
                 Icon(
                     imageVector = TuneScoutIcons.search,
                     contentDescription = stringResource(R.string.ui_search),
-                    tint = TuneScoutColors.white25,
+                    tint = TuneScoutColors.elementSubtle,
                     modifier = Modifier.size(leadingIconSize),
                 )
                 Box(

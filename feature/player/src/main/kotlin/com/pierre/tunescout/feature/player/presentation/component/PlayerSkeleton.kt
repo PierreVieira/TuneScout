@@ -37,12 +37,12 @@ internal fun PlayerSkeleton(
     isSideBySide: Boolean,
     artworkSize: Dp,
     artworkTopSpacing: Dp,
-    artworkCornerRadius: Dp,
+    artworkCornerPercent: Int,
 ) {
     val description = stringResource(R.string.ui_loading)
     val artwork = @Composable {
         ShimmerBox(
-            shape = RoundedCornerShape(artworkCornerRadius),
+            shape = RoundedCornerShape(percent = artworkCornerPercent),
             modifier = Modifier
                 .size(artworkSize)
                 .semantics { contentDescription = description },

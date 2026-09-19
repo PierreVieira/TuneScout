@@ -38,7 +38,7 @@ class ArtworkTest {
     val compose = createComposeExtension()
 
     private val artworkSize = 64.dp
-    private val artworkCornerRadius = 8.dp
+    private val artworkCornerPercent = 15
 
     @Test
     fun whileTheImageLoadsTheBoxShimmersWithoutThePlaceholderIcon() = compose.use {
@@ -87,9 +87,27 @@ class ArtworkTest {
         assertThat(pixels[pixels.width / 2, pixels.height / 2]).isEqualTo(Color.Magenta)
     }
 
+    @Test
+    fun givenASharedKeyButNoSharedTransitionTheBoxStillDrawsTheImage() = compose.use {
+        setContent {
+            Content(
+                sharedKey = SongSharedKey(songId = 1, element = SongSharedElement.ARTWORK),
+                state = { request ->
+                    AsyncImagePainter.State.Success(ColorPainter(Color.Magenta), successResult(request))
+                },
+            )
+        }
+
+        val artwork = onNodeWithTag(ARTWORK_TAG).captureToImage()
+
+        val pixels = artwork.toPixelMap()
+        assertThat(pixels[pixels.width / 2, pixels.height / 2]).isEqualTo(Color.Magenta)
+    }
+
     @Composable
     private fun Content(
         url: String = ARTWORK_URL,
+        sharedKey: SongSharedKey? = null,
         state: (ImageRequest) -> AsyncImagePainter.State,
     ) {
         CompositionLocalProvider(
@@ -100,7 +118,8 @@ class ArtworkTest {
                 Artwork(
                     url = url,
                     contentDescription = null,
-                    cornerRadius = artworkCornerRadius,
+                    cornerPercent = artworkCornerPercent,
+                    sharedKey = sharedKey,
                     modifier = Modifier
                         .size(artworkSize)
                         .testTag(ARTWORK_TAG),

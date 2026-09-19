@@ -17,7 +17,7 @@ internal data class BottomSheetScene<T : Any>(
     override val previousEntries: List<NavEntry<T>>,
     override val overlaidEntries: List<NavEntry<T>>,
     private val entry: NavEntry<T>,
-    private val containerColor: Color,
+    private val containerColor: @Composable () -> Color,
     private val onBack: () -> Unit,
 ) : OverlayScene<T> {
     override val entries: List<NavEntry<T>> = listOf(entry)
@@ -28,7 +28,7 @@ internal data class BottomSheetScene<T : Any>(
             onDismissRequest = onBack,
             // A landscape window is short enough that the half-open state hides the last option.
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = containerColor,
+            containerColor = containerColor(),
         ) {
             CompositionLocalProvider(LocalLifecycleOwner provides lifecycleOwner) {
                 entry.Content()

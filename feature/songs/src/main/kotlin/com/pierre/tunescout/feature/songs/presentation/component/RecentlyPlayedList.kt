@@ -61,6 +61,7 @@ internal fun RecentlyPlayedList(
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
                     isHighlighted = song.id == nowPlayingId,
+                    sharedSongId = song.id,
                     onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
                     trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
                 )

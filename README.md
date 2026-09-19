@@ -11,15 +11,15 @@ native Android app written for the Music AI Android code challenge.
 | :--: | :--: | :--: |
 | <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet, with play next, add to queue and view album"> | <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks, with the queue actions in the top bar"> |
 
-| Queue |
-| :--: |
-| <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> |
+| Queue | Theme |
+| :--: | :--: |
+| <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> | <img src="docs/screenshots/theme.png" width="260" alt="The theme sheet over the songs screen, with light, dark and system previews and a dynamic colors toggle"> |
 
 | Media controls |
 | :--: |
 | <img src="docs/screenshots/notification.png" width="360" alt="Media controls in the notification shade and on the lock screen"> |
 
-The seven screens above are generated from the app's own composables, under Robolectric, by
+The eight screens above are generated from the app's own composables, under Robolectric, by
 `./scripts/screenshots.sh`; the notification shade is a device capture, since it is not a
 composable. See [docs/screenshots.md](docs/screenshots.md).
 
@@ -43,6 +43,10 @@ composable. See [docs/screenshots.md](docs/screenshots.md).
   to reopen the player.
 - **Album** screen reached from the song options sheet. Fetched once through the lookup endpoint
   and cached, so it opens offline afterwards.
+- **Theme** picked from a sheet on the songs screen: light, dark, or whatever the system says.
+  On Android 12+ the palette can follow the wallpaper instead, explained by a dialog behind the
+  (i) next to the toggle. The choice is stored on the device with DataStore, and the splash holds
+  until it is read, so the first frame is already in the chosen theme.
 - **Media controls** in the notification shade and on the lock screen, backed by a media session.
 - Loading, empty, error, offline and rate-limited states on every screen; pull to refresh on
   search results; English and Brazilian Portuguese; content descriptions on every control.
@@ -84,13 +88,15 @@ core/
   playback/api/      the playback role interfaces every screen depends on, plain Kotlin
   playback/impl/     ExoPlayer behind those interfaces, the media session service; only app sees it
   navigation/        routes (NavKey), the Navigator event bus, back stack controller
+  datastore/         the Preferences DataStore the theme preference is written to
   testing/           fixtures and a JUnit extension for Dispatchers.Main
 ui/
-  theme/             colors, type scale and spacing from the Figma file
+  theme/             the light and dark palettes, dynamic color, type scale and spacing
   component/         top bar, song row, search field, seek bar, artwork, state messages
   utils/             Compose helpers
 feature/
-  splash/  songs/  song_options/  player/  queue/  mini_player/  album/   data / domain / presentation in each
+  splash/  songs/  song_options/  player/  queue/  mini_player/  album/  theme_selection/
+                     data / domain / presentation in each
 tools/
   ktlint_custom_rules/
   screenshots/       renders the README's screenshots from the app's own composables
@@ -151,8 +157,9 @@ Tests follow Given / When / Then with a `prepareScenario` factory; see
 
 ## Stack
 
-Kotlin · Jetpack Compose · Navigation 3 · Koin · Ktor + kotlinx.serialization · Room 3 · Paging 3 ·
-Coil 3 · Media3 ExoPlayer · ktlint with project rules · JUnit 6 · Truth · MockK · Turbine
+Kotlin · Jetpack Compose · Navigation 3 · Koin · Ktor + kotlinx.serialization · Room 3 ·
+DataStore · Paging 3 · Coil 3 · Media3 ExoPlayer · ktlint with project rules · JUnit 6 · Truth ·
+MockK · Turbine
 
 ## Not done, on purpose or for lack of time
 
@@ -161,7 +168,9 @@ Coil 3 · Media3 ExoPlayer · ktlint with project rules · JUnit 6 · Truth · M
 - The splash window Android draws before the app's first frame only accepts a flat colour, so it
   shows the same note over the gradient's average colour; the gradient itself starts with the
   first frame the app draws.
-- Dark theme only, matching the Figma file. The theme is one object, so a light scheme is a
-  small change.
+- The light palette is derived from the Figma dark one rather than designed: the file only
+  specifies dark.
+- The theme preference stays on the device. There is no account, so there is nothing to sync it
+  to.
 - The 200-item cap of the API is the end of every search; there is no "load more" beyond it.
 - No favorites, playlists or queue editing. The queue is always the list you tapped in.

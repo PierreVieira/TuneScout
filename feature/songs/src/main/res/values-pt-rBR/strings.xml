@@ -2,6 +2,7 @@
 <resources>
     <string name="songs_title">Músicas</string>
     <string name="songs_search_placeholder">Buscar</string>
+    <string name="songs_open_theme">Mudar o tema</string>
     <string name="songs_recently_played">Tocadas recentemente</string>
     <string name="songs_empty_title">Nada tocado ainda</string>
     <string name="songs_empty_description">Busque uma música e toque nela para começar a ouvir. Ela vai aparecer aqui.</string>

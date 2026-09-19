@@ -49,7 +49,7 @@ internal fun SearchResultsList(
         ) {
             when {
                 refreshState is LoadState.Loading && searchResults.itemCount == 0 -> item(key = "loading") {
-                    SongListSkeleton()
+                    SongListSkeleton(hasMoreAction = true)
                 }
 
                 refreshState is LoadState.Error -> item(key = "error") {
@@ -72,6 +72,7 @@ internal fun SearchResultsList(
                     title = song.title,
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
+                    sharedSongId = song.id,
                     onClick = {
                         onEvent(SongsUiEvent.OnSongClicked(song))
                     },
@@ -79,7 +80,9 @@ internal fun SearchResultsList(
                 )
             }
             when (appendState) {
-                is LoadState.Loading -> item(key = "appending") { SongListSkeleton(rows = APPEND_SKELETON_ROWS) }
+                is LoadState.Loading -> item(key = "appending") {
+                    SongListSkeleton(rows = APPEND_SKELETON_ROWS, hasMoreAction = true)
+                }
 
                 is LoadState.Error -> item(key = "append-error") {
                     ErrorMessage(error = appendState.error, onRetry = searchResults::retry)

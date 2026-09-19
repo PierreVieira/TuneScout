@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
@@ -74,6 +75,7 @@ class SongsViewModel(
     fun onEvent(event: SongsUiEvent) = when (event) {
         is SongsUiEvent.OnQueryChanged -> query.value = event.query
         SongsUiEvent.OnClearQueryClicked -> query.value = ""
+        SongsUiEvent.OnThemeClicked -> navigator.navigate(ThemeSelectionRoute)
         is SongsUiEvent.OnSongClicked -> playAndOpen(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
         is SongsUiEvent.OnRecentSongSwipedAway -> removeFromRecentlyPlayed(event.song)
