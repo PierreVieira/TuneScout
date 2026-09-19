@@ -39,7 +39,7 @@ This applies to:
 - Composable functions (return `Unit` — use block body, omit return type)
 
 The block-body half of this is enforced by the custom ktlint rule
-`tunescout-style:unit-function-block-body` (in `tools/ktlint-custom-rules`). Ktlint rules have no type
+`tunescout-style:unit-function-block-body` (in `tools/ktlint_custom_rules`). Ktlint rules have no type
 resolution, so the rule flags the two cases it can prove: an explicit `: Unit` return type paired with an
 expression body, and an expression body that delegates to a `Unit`-returning function declared in the same
 class or file. A body that calls a `Unit` function from another file (`= println(...)`) is invisible to it —
@@ -121,7 +121,7 @@ Note that `get` is **not** a catch-all. In Kotlin a parameterless `getX()` shoul
 `get` on a factory would claim the instance already exists.
 
 This is enforced automatically by the custom ktlint rule
-`tunescout-style:value-returning-function-naming` (in `tools/ktlint-custom-rules`), which flags any
+`tunescout-style:value-returning-function-naming` (in `tools/ktlint_custom_rules`), which flags any
 function with a non-`Unit` return type whose name does not start with an approved verb.
 
 **Exempt** (the rule skips these):
@@ -286,7 +286,7 @@ This does **not** apply to:
 - Actual constants: `private const val` at companion-object scope stays `UPPER_SNAKE_CASE` (see [dry.md](dry.md) / no-constant-value-params convention).
 - Public `CompositionLocal` instances (e.g. `val LocalSnackbarHostState = ...`) and public singleton-like objects (e.g. `val NoClip = object : ...`) — these keep `PascalCase`, following standard Compose/Kotlin convention for object-like values.
 
-This is enforced automatically: the custom ktlint rule `tunescout-style:private-top-level-val-naming` (in `tools/ktlint-custom-rules`) fails the build on a violation. Stock ktlint's `standard:property-naming` rule permits `PascalCase` for this kind of file-scoped `Dp`/`Color`-typed `val` (it treats them as "constant-like"), which is why a dedicated rule was needed.
+This is enforced automatically: the custom ktlint rule `tunescout-style:private-top-level-val-naming` (in `tools/ktlint_custom_rules`) fails the build on a violation. Stock ktlint's `standard:property-naming` rule permits `PascalCase` for this kind of file-scoped `Dp`/`Color`-typed `val` (it treats them as "constant-like"), which is why a dedicated rule was needed.
 
 ## Positioning File-Scoped Constants
 
@@ -368,7 +368,7 @@ PlaybackState.Unavailable ->
 
 Braces stay when a branch is genuinely multi-statement, or when the branch's sole statement is itself a bare lambda literal (removing the outer braces there would change meaning — the outer `{ }` is the required block syntax, not optional wrapping).
 
-Because this is the opposite of stock ktlint's `standard:when-entry-bracing` (which forces braces onto *every* entry in a `when` if *any* entry needs them), that stock rule is disabled in `.editorconfig` (`ktlint_standard_when-entry-bracing = disabled`) in favor of the custom rule `tunescout-style:when-entry-single-statement-braces` (in `tools/ktlint-custom-rules`).
+Because this is the opposite of stock ktlint's `standard:when-entry-bracing` (which forces braces onto *every* entry in a `when` if *any* entry needs them), that stock rule is disabled in `.editorconfig` (`ktlint_standard_when-entry-bracing = disabled`) in favor of the custom rule `tunescout-style:when-entry-single-statement-braces` (in `tools/ktlint_custom_rules`).
 
 ## fun interface
 

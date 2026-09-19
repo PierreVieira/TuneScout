@@ -1,6 +1,7 @@
 ## Checklist for a New Feature
 
 - [ ] Create a new Gradle module under `feature/` with the standard layer structure, applying the `tunescout.android.feature` convention plugin
+      — name the directory `snake_case` and the Kotlin package without the separator, see [Module names](module-structure.md#module-names)
 - [ ] Add the new Gradle module to `settings.gradle.kts`
 - [ ] Define `UiState`, `UiEvent`, `UiAction` in `presentation/model/`
 - [ ] Define repository interface in `domain/repository/`

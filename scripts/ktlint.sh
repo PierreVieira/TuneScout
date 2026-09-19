@@ -56,7 +56,7 @@ fi
 
 KTLINT_CACHE_DIR="${KTLINT_CACHE_DIR:-$HOME/.cache/ktlint}"
 KTLINT_BIN="$KTLINT_CACHE_DIR/ktlint-$KTLINT_VERSION"
-RULESET_JAR="tools/ktlint-custom-rules/build/libs/ktlint-custom-rules.jar"
+RULESET_JAR="tools/ktlint_custom_rules/build/libs/ktlint_custom_rules.jar"
 REPORT_PATH="build/ktlint-report.xml"
 
 # Download the ktlint CLI once per version and reuse it afterwards
@@ -82,7 +82,7 @@ NEEDS_RULESET_BUILD=false
 
 if [ ! -f "$RULESET_JAR" ]; then
     NEEDS_RULESET_BUILD=true
-elif [ -n "$(find tools/ktlint-custom-rules/src tools/ktlint-custom-rules/build.gradle.kts \
+elif [ -n "$(find tools/ktlint_custom_rules/src tools/ktlint_custom_rules/build.gradle.kts \
         -newer "$RULESET_JAR" -print -quit 2> /dev/null)" ]; then
     NEEDS_RULESET_BUILD=true
 fi
@@ -95,7 +95,7 @@ if [ "$NEEDS_RULESET_BUILD" = true ]; then
 
     echo "🔨 Building the custom ktlint ruleset..."
     chmod +x ./gradlew
-    ./gradlew :tools:ktlint-custom-rules:jar --quiet
+    ./gradlew :tools:ktlint_custom_rules:jar --quiet
     echo ""
 fi
 

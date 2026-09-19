@@ -27,10 +27,10 @@ runs:
       id: ruleset-cache
       uses: actions/cache@v4
       with:
-        path: tools/ktlint-custom-rules/build/libs/ktlint-custom-rules.jar
+        path: tools/ktlint_custom_rules/build/libs/ktlint_custom_rules.jar
         key: >-
           ktlint-ruleset-${{ steps.ktlint-version.outputs.version }}-${{
-          hashFiles('tools/ktlint-custom-rules/**/*.kt', 'tools/ktlint-custom-rules/build.gradle.kts',
+          hashFiles('tools/ktlint_custom_rules/**/*.kt', 'tools/ktlint_custom_rules/build.gradle.kts',
           'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
 
     # actions/checkout stamps every source file with the current time, so a restored jar would
@@ -38,7 +38,7 @@ runs:
     - name: Mark cached ruleset jar as up to date
       if: steps.ruleset-cache.outputs.cache-hit == 'true'
       shell: bash
-      run: touch tools/ktlint-custom-rules/build/libs/ktlint-custom-rules.jar
+      run: touch tools/ktlint_custom_rules/build/libs/ktlint_custom_rules.jar
 
     # Gradle is only needed to rebuild the ruleset jar, which changes rarely
     - name: Setup Gradle

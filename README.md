@@ -90,9 +90,9 @@ ui/
   component/         top bar, song row, search field, seek bar, artwork, state messages
   utils/             Compose helpers
 feature/
-  splash/  songs/  player/  queue/  miniplayer/  album/    data / domain / presentation in each
+  splash/  songs/  song_options/  player/  queue/  mini_player/  album/   data / domain / presentation in each
 tools/
-  ktlint-custom-rules/
+  ktlint_custom_rules/
   screenshots/       renders the README's screenshots from the app's own composables
 ```
 

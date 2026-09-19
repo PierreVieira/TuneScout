@@ -52,10 +52,11 @@ include(":ui:utils")
 
 include(":feature:splash")
 include(":feature:songs")
+include(":feature:song_options")
 include(":feature:album")
 include(":feature:player")
-include(":feature:miniplayer")
+include(":feature:mini_player")
 include(":feature:queue")
 
-include(":tools:ktlint-custom-rules")
+include(":tools:ktlint_custom_rules")
 include(":tools:screenshots")

@@ -1,4 +1,4 @@
-package com.pierre.tunescout.feature.songs.presentation.content
+package com.pierre.tunescout.feature.songoptions.presentation.content
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,9 +22,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.pierre.tunescout.feature.songs.R
-import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiEvent
-import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiState
+import com.pierre.tunescout.feature.songoptions.R
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -71,27 +71,27 @@ fun SongOptionsContent(
         )
         OptionRow(
             icon = TuneScoutIcons.queueNext,
-            label = stringResource(R.string.songs_options_play_next),
+            label = stringResource(R.string.song_options_play_next),
             isEnabled = uiState.song != null,
             onClick = { onEvent(SongOptionsUiEvent.OnPlayNextClicked) },
             modifier = Modifier.padding(top = TuneScoutSpacing.large),
         )
         OptionRow(
             icon = TuneScoutIcons.addToQueue,
-            label = stringResource(R.string.songs_options_add_to_queue),
+            label = stringResource(R.string.song_options_add_to_queue),
             isEnabled = uiState.song != null,
             onClick = { onEvent(SongOptionsUiEvent.OnAddToQueueClicked) },
         )
         OptionRow(
             icon = TuneScoutIcons.viewAlbum,
-            label = stringResource(R.string.songs_options_view_album),
+            label = stringResource(R.string.song_options_view_album),
             isEnabled = uiState.song != null,
             onClick = { onEvent(SongOptionsUiEvent.OnViewAlbumClicked) },
         )
         if (uiState.isRecentlyPlayed) {
             OptionRow(
                 icon = TuneScoutIcons.delete,
-                label = stringResource(R.string.songs_remove_recent),
+                label = stringResource(R.string.song_options_remove_recent),
                 isEnabled = true,
                 onClick = { onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked) },
             )

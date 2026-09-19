@@ -301,4 +301,4 @@ screens tested on a real Android runtime.
 
 **ktlint with project rules instead of detekt.** Formatting and a handful of conventions
 (function naming, explicit backing fields, `fun interface`, `when` bracing) are enforced by a
-custom ruleset in `tools/ktlint-custom-rules`, run by the same script locally and in CI.
+custom ruleset in `tools/ktlint_custom_rules`, run by the same script locally and in CI.

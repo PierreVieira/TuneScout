@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.Flow
 interface RecentlyPlayedLocalDataSource {
     fun observe(limit: Int): Flow<List<Song>>
 
+    fun observeIsRecentlyPlayed(songId: Long): Flow<Boolean>
+
     suspend fun record(song: Song)
 
     suspend fun remove(songId: Long)

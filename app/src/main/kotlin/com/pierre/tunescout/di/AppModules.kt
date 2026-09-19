@@ -9,6 +9,7 @@ import com.pierre.tunescout.feature.album.di.albumModule
 import com.pierre.tunescout.feature.miniplayer.di.miniPlayerModule
 import com.pierre.tunescout.feature.player.di.playerModule
 import com.pierre.tunescout.feature.queue.di.queueModule
+import com.pierre.tunescout.feature.songoptions.di.songOptionsModule
 import com.pierre.tunescout.feature.songs.di.songsModule
 import com.pierre.tunescout.feature.splash.di.splashModule
 import org.koin.core.module.Module
@@ -22,6 +23,7 @@ val appModules: List<Module> = listOf(
     playbackModule,
     splashModule,
     songsModule,
+    songOptionsModule,
     miniPlayerModule,
     playerModule,
     queueModule,

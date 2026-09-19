@@ -80,6 +80,48 @@ class RoomRecentlyPlayedLocalDataSourceTest {
         }
     }
 
+    @Test
+    fun aRecordedSongIsReportedAsRecentlyPlayed() {
+        runBlocking {
+            // Given
+            prepareScenario(recorded = listOf(song(id = 1)))
+
+            // When
+            val isRecentlyPlayed = dataSource.observeIsRecentlyPlayed(songId = 1).first()
+
+            // Then
+            assertThat(isRecentlyPlayed).isTrue()
+        }
+    }
+
+    @Test
+    fun aSongOutsideTheHistoryIsNotReportedAsRecentlyPlayed() {
+        runBlocking {
+            // Given
+            prepareScenario(recorded = listOf(song(id = 1)))
+
+            // When
+            val isRecentlyPlayed = dataSource.observeIsRecentlyPlayed(songId = 2).first()
+
+            // Then
+            assertThat(isRecentlyPlayed).isFalse()
+        }
+    }
+
+    @Test
+    fun aRemovedSongStopsBeingReportedAsRecentlyPlayed() {
+        runBlocking {
+            // Given
+            prepareScenario(recorded = listOf(song(id = 1)))
+
+            // When
+            dataSource.remove(songId = 1)
+
+            // Then
+            assertThat(dataSource.observeIsRecentlyPlayed(songId = 1).first()).isFalse()
+        }
+    }
+
     private suspend fun observedIds(): List<Long> =
         dataSource.observe(limit = MAX_ENTRIES).first().map { song -> song.id }
 

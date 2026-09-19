@@ -50,9 +50,9 @@ moduleGraphAssert {
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
-    if (path != ":tools:ktlint-custom-rules") {
+    if (path != ":tools:ktlint_custom_rules") {
         dependencies {
-            add("ktlintRuleset", project(":tools:ktlint-custom-rules"))
+            add("ktlintRuleset", project(":tools:ktlint_custom_rules"))
         }
     }
 

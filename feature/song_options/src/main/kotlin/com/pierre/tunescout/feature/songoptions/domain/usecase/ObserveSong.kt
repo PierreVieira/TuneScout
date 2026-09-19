@@ -1,4 +1,4 @@
-package com.pierre.tunescout.feature.songs.domain.usecase
+package com.pierre.tunescout.feature.songoptions.domain.usecase
 
 import com.pierre.tunescout.core.model.Song
 import kotlinx.coroutines.flow.Flow

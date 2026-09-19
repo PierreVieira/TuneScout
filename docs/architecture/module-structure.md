@@ -21,12 +21,13 @@ ui/
 feature/
 ├── splash/
 ├── songs/
+├── song_options/
 ├── player/
 ├── queue/
-├── miniplayer/
+├── mini_player/
 └── album/
 tools/
-├── ktlint-custom-rules/ # The tunescout-style ktlint ruleset
+├── ktlint_custom_rules/ # The tunescout-style ktlint ruleset
 └── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
 build-logic/             # Convention plugins (tunescout.android.feature, tunescout.jvm.library, ...)
 ```
@@ -75,7 +76,32 @@ interfaces has no `presentation/`).
 | DTO | `NounDto` | `SongDto` |
 | Entity | `NounEntity` | `SongEntity` |
 | Mapper | `NounMapper` / `NounMapperImpl` | `SongMapper` |
-| Root composable extension | `EntryProviderScope<NavKey>.featureName()` | `EntryProviderScope<NavKey>.player()` |
+| Root composable extension | `EntryProviderScope<NavKey>.featureEntry()` | `EntryProviderScope<NavKey>.songOptionsEntry()` |
+| Gradle module | `snake_case` directory | `feature/song_options` |
+| Kotlin package | the module name with the separators dropped | `com.pierre.tunescout.feature.songoptions` |
+
+### Module names
+
+A Gradle module's directory is `snake_case`: `feature/song_options`, `feature/mini_player`,
+`tools/ktlint_custom_rules`. Single-word modules (`feature/songs`, `core/database`) need no
+separator and get none.
+
+Three names follow from that one, and they are not all spelled the same way:
+
+| Where | Spelling | Why |
+|---|---|---|
+| `settings.gradle.kts`, project paths | `:feature:song_options` | the directory name |
+| Typesafe accessor in a `build.gradle.kts` | `projects.feature.songOptions` | Gradle camel-cases the separator; it is not a name you choose |
+| Kotlin package and `namespace` | `...feature.songoptions` | the [Kotlin style guide](https://kotlinlang.org/docs/coding-conventions.html#naming-rules) rules out underscores in package names |
+
+So the directory and the package deliberately disagree, and renaming a module never touches a `.kt`
+file.
+
+One thing to watch in `tools/`: a JVM module's jar is named after the project, so
+`tools/ktlint_custom_rules` produces `ktlint_custom_rules.jar`. Renaming it means updating
+`RULESET_JAR` in [`scripts/ktlint.sh`](../../scripts/ktlint.sh) and the cache paths in
+[`.github/actions/ktlint/action.yml`](../../.github/actions/ktlint/action.yml), which refer to the
+jar by name.
 
 ## Dependency rules
 
@@ -91,7 +117,11 @@ Shared things live in core: domain models (`core/model`), `NavKey` routes and th
 (`core/navigation`), the playback interfaces (`core/playback/api`) and the recently-played repository
 (`core/database`). Features talk to each other only through those.
 
-`feature/miniplayer` is the one feature that is not a route. It exposes `MiniPlayerScaffold`, which
+`feature/song_options` owns the song bottom sheet, which `songs` and `player` both open — an entry
+gets its own module once something outside the module that hosts it navigates to it. They reach it
+through `SongOptionsRoute` in `core/navigation`, so neither knows who draws it.
+
+`feature/mini_player` is the one feature that is not a route. It exposes `MiniPlayerScaffold`, which
 `app` wraps around the `NavDisplay`: the bar is laid out below every screen and owns the bottom
 window insets while it is on screen. Songs and Album do not know it exists, which keeps the
 feature-to-feature rule intact.
