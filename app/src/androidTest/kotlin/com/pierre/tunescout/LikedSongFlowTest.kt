@@ -74,7 +74,7 @@ class LikedSongFlowTest {
         assertThat(storedFavoriteIds()).containsExactly(201L)
 
         // The library tab lists it under the liked songs.
-        onNodeWithText("Your Library").performClick()
+        onNodeWithText("Library").performClick()
         waitUntilAtLeastOneExists(hasText("Liked songs"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Liked songs").performClick()
         waitUntilAtLeastOneExists(hasText("Digital Love"), SCREEN_TIMEOUT_MILLIS)

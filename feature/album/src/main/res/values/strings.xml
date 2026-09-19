@@ -6,4 +6,5 @@
     <string name="album_error_description">Check your connection and try again.</string>
     <string name="album_play_next">Play the album next</string>
     <string name="album_add_to_queue">Add the album to the queue</string>
+    <string name="album_more_options">More options for this album</string>
 </resources>

@@ -68,7 +68,7 @@ fun AlbumContent(
                     FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
                     TopBarAction(
                         icon = TuneScoutIcons.moreMenu,
-                        contentDescription = stringResource(ComponentR.string.ui_more_options),
+                        contentDescription = stringResource(R.string.album_more_options),
                         onClick = { onEvent(AlbumUiEvent.OnMoreClicked) },
                     )
                 }

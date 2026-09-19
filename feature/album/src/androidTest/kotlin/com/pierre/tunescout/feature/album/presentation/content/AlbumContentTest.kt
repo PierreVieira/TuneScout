@@ -3,7 +3,6 @@ package com.pierre.tunescout.feature.album.presentation.content
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -39,7 +38,7 @@ class AlbumContentTest {
         }
 
         onNodeWithContentDescription("Like this album").performClick()
-        onNodeWithContentDescription("More options").performClick()
+        onNodeWithContentDescription("More options for this album").performClick()
 
         assertThat(events)
             .containsExactly(AlbumUiEvent.OnFavoriteClicked, AlbumUiEvent.OnMoreClicked)
@@ -79,7 +78,7 @@ class AlbumContentTest {
             }
         }
 
-        onAllNodesWithContentDescription("More options")[1].performClick()
+        onNodeWithContentDescription("More options").performClick()
 
         assertThat(events).containsExactly(AlbumUiEvent.OnSongOptionsClicked(album.songs.first()))
     }
