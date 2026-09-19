@@ -14,4 +14,4 @@
 - [ ] Create `EntryProviderScope<NavKey>.feature()` extension (Root composable)
 - [ ] Register the entry in `TuneScoutNavDisplay`'s `entryProvider` (`app`)
 - [ ] Create a Koin module in `di/` and register it in `AppModules.kt` (`appModules`)
-- [ ] Write unit tests for the ViewModel, repository and mappers (Given/When/Then) — see [docs/testing/README.md](../testing/README.md)
+- [ ] Write unit tests for the ViewModel, repository and mappers (Given/When/Then) — see [docs/testing/README.md](../testing/README.md). Every new file has to reach 80% line coverage on its own: `./gradlew :koverVerifyCi :verifyNewFilesCoverage` — see [docs/code-quality.md](../code-quality.md#test-coverage)

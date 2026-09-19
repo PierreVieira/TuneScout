@@ -1,4 +1,5 @@
 import com.pierre.tunescout.buildlogic.addUnitTestDependencies
+import com.pierre.tunescout.buildlogic.configureCoverage
 import com.pierre.tunescout.buildlogic.libs
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -36,5 +37,6 @@ class JvmLibraryConventionPlugin : Plugin<Project> {
             add("implementation", libs.findLibrary("kotlinx-coroutines-core").get())
         }
         addUnitTestDependencies()
+        configureCoverage(testedVariant = "jvm")
     }
 }
