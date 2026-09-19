@@ -26,8 +26,6 @@ import org.koin.core.context.unloadKoinModules
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-private const val SCREEN_TIMEOUT_MILLIS = 10_000L
-
 @OptIn(ExperimentalTestApi::class)
 class QueueFlowTest {
     @JvmField
@@ -81,6 +79,10 @@ class QueueFlowTest {
         waitUntilAtLeastOneExists(hasText("Next in queue"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Queue").assertExists()
         onNodeWithText("Instant Crush").assertExists()
+    }
+
+    private companion object {
+        const val SCREEN_TIMEOUT_MILLIS = 10_000L
     }
 }
 

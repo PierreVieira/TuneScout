@@ -7,4 +7,6 @@ interface RecentlyPlayedLocalDataSource {
     fun observe(limit: Int): Flow<List<Song>>
 
     suspend fun record(song: Song)
+
+    suspend fun remove(songId: Long)
 }

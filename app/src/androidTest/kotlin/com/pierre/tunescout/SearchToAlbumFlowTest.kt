@@ -24,8 +24,6 @@ import org.koin.core.context.unloadKoinModules
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-private const val SCREEN_TIMEOUT_MILLIS = 10_000L
-
 @OptIn(ExperimentalTestApi::class)
 class SearchToAlbumFlowTest {
     @JvmField
@@ -64,6 +62,10 @@ class SearchToAlbumFlowTest {
         onNodeWithText("View album").performClick()
 
         waitUntilAtLeastOneExists(hasText("Give Life Back to Music"), SCREEN_TIMEOUT_MILLIS)
+    }
+
+    private companion object {
+        const val SCREEN_TIMEOUT_MILLIS = 10_000L
     }
 }
 

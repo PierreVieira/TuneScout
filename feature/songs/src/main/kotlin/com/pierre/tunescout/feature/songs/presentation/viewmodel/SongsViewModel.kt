@@ -12,8 +12,7 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlaybackController
-import com.pierre.tunescout.feature.songs.domain.usecase.ObserveRecentlyPlayed
-import com.pierre.tunescout.feature.songs.domain.usecase.SearchSongs
+import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,12 +28,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
-    searchSongs: SearchSongs,
-    observeRecentlyPlayed: ObserveRecentlyPlayed,
+    private val useCases: SongsUseCases,
     private val playbackController: PlaybackController,
     private val navigator: Navigator,
 ) : ViewModel() {
@@ -48,7 +47,7 @@ class SongsViewModel(
 
     val uiState: StateFlow<SongsUiState> = combine(
         query,
-        observeRecentlyPlayed(),
+        useCases.observeRecentlyPlayed(),
         playbackController.state,
     ) { query, recentlyPlayed, playback ->
         SongsUiState(
@@ -66,18 +65,24 @@ class SongsViewModel(
         .debounce(searchDebounce)
         .map { query -> query.trim() }
         .distinctUntilChanged()
-        .flatMapLatest { term -> if (term.isBlank()) flowOf(PagingData.empty(idleLoadStates)) else searchSongs(term) }
-        .cachedIn(viewModelScope)
+        .flatMapLatest { term ->
+            if (term.isBlank()) flowOf(PagingData.empty(idleLoadStates)) else useCases.searchSongs(term)
+        }.cachedIn(viewModelScope)
 
     fun onEvent(event: SongsUiEvent) = when (event) {
         is SongsUiEvent.OnQueryChanged -> query.value = event.query
         SongsUiEvent.OnClearQueryClicked -> query.value = ""
         is SongsUiEvent.OnSongClicked -> playAndOpen(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
+        is SongsUiEvent.OnRecentSongSwipedAway -> removeFromRecentlyPlayed(event.song)
     }
 
     private fun playAndOpen(song: Song) {
         playbackController.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
         navigator.navigate(PlayerRoute(songId = song.id))
+    }
+
+    private fun removeFromRecentlyPlayed(song: Song) {
+        viewModelScope.launch { useCases.removeFromRecentlyPlayed(song.id) }
     }
 }

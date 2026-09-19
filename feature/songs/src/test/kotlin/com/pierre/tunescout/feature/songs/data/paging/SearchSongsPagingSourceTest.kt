@@ -14,8 +14,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
-private const val PAGE_SIZE = 25
-
 class SearchSongsPagingSourceTest {
     private lateinit var pagingSource: SearchSongsPagingSource
     private lateinit var pager: TestPager<Int, Song>
@@ -140,6 +138,10 @@ class SearchSongsPagingSourceTest {
     }
 
     private fun songs(count: Int): List<Song> = (1..count).map { index -> song(id = index.toLong()) }
+
+    private companion object {
+        const val PAGE_SIZE = 25
+    }
 }
 
 private class FakeRemoteDataSource(

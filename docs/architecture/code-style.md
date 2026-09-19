@@ -248,10 +248,23 @@ class SplashViewModel(...) {
 The `Wrong` example above is the constructor-default case from the previous section: it cannot move
 into the class body, so it moves to file scope instead.
 
-Enforced by the custom ktlint rule `tunescout-style:companion-object-constants`, which flags a
-non-`const` property that is private, or that sits in a `private companion object`. The class-body
-preference above is **not** enforced: telling a Compose `Dp` constant apart from a piece of state
-needs type resolution, which ktlint rules do not have. It is a review convention.
+Enforced by two custom ktlint rules. `tunescout-style:companion-object-constants` flags a non-`const`
+property that is private, or that sits in a `private companion object`.
+`tunescout-style:top-level-val-ownership` flags the opposite mistake — a top-level `private val` or
+`private const val` that belongs in a type — and reports where it should go: a `const val` into that
+type's `private companion object`, anything else into its class body.
+
+The ownership rule decides by **where the value is read**, which is what lets it keep the four
+exceptions above without any type resolution:
+
+- it only fires when *every* reference sits inside one top-level class or object, so a `Dp` a
+  top-level `@Composable` sizes itself with is left alone, and so is a constant two top-level
+  declarations share;
+- a reference from the primary constructor or the superclass constructor call does not count as
+  ownership, which covers the `holdDuration: Duration = defaultHoldDuration` case;
+- a file with no class has no owner to move anything into;
+- interfaces, annotation classes and `value class` bodies are skipped, since they cannot hold the
+  property anyway.
 
 ## Naming File-Scoped Constants
 

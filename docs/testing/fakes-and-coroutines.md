@@ -44,6 +44,33 @@ A fake only needs real behavior for the methods under test; stub the rest with `
 - **Flows with Turbine**: `flow.test { assertThat(awaitItem()).isEqualTo(x) }` when the assertion is
   about the sequence of emissions; it fails fast on unconsumed events and reads well in **Then**.
 
+## Gotcha: a `@Test` that returns a value is never run
+
+Jupiter only treats a method as a test when it returns `void`/`Unit`, and a method that returns
+anything else is **silently skipped** — no failure, no warning, it simply never appears in the report.
+`= runTest { ... }` is safe because `TestResult` is `Unit` on the JVM, but `= runBlocking { ... }`
+returns whatever its last expression evaluates to, and plenty of assertions are not `Unit`
+(`assertThat(x).containsExactly(y)` returns Truth's `Ordered`).
+
+```kotlin
+// Wrong — returns Ordered, so the test never runs
+@Test
+fun removingAnEntry() = runBlocking {
+    assertThat(observedIds()).containsExactly(1L)
+}
+
+// Correct — block body, returns Unit
+@Test
+fun removingAnEntry() {
+    runBlocking {
+        assertThat(observedIds()).containsExactly(1L)
+    }
+}
+```
+
+Give any `runBlocking` test a block body. When a test you just wrote does not show up in the run,
+check its return type first.
+
 ## Gotcha: exception identity
 
 `kotlinx-coroutines` stacktrace recovery may **copy** an exception as it crosses coroutine boundaries,

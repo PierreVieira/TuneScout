@@ -26,4 +26,8 @@ internal class RoomRecentlyPlayedLocalDataSource(
             keep = maxEntries,
         )
     }
+
+    override suspend fun remove(songId: Long) {
+        recentlyPlayedDao.deleteBySongId(songId)
+    }
 }

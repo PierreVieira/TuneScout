@@ -88,6 +88,14 @@ fun SongOptionsContent(
             isEnabled = uiState.song != null,
             onClick = { onEvent(SongOptionsUiEvent.OnViewAlbumClicked) },
         )
+        if (uiState.isRecentlyPlayed) {
+            OptionRow(
+                icon = TuneScoutIcons.delete,
+                label = stringResource(R.string.songs_remove_recent),
+                isEnabled = true,
+                onClick = { onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked) },
+            )
+        }
     }
 }
 

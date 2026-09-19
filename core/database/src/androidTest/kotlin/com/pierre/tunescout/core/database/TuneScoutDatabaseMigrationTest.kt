@@ -13,8 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.File
 
-private const val TEST_DATABASE = "tunescout-migration-test.db"
-
 class TuneScoutDatabaseMigrationTest {
     private lateinit var databaseFile: File
     private lateinit var helper: MigrationTestHelper
@@ -84,6 +82,10 @@ class TuneScoutDatabaseMigrationTest {
 
     private fun deleteDatabaseFiles() {
         listOf("", "-wal", "-shm").forEach { suffix -> File("${databaseFile.path}$suffix").delete() }
+    }
+
+    private companion object {
+        const val TEST_DATABASE = "tunescout-migration-test.db"
     }
 }
 

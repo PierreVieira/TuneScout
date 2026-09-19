@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.MoreVert
@@ -50,4 +51,6 @@ object TuneScoutIcons {
     val removeFromQueue: ImageVector get() = Icons.Rounded.Close
 
     val dragHandle: ImageVector get() = Icons.Rounded.DragHandle
+
+    val delete: ImageVector get() = Icons.Rounded.Delete
 }

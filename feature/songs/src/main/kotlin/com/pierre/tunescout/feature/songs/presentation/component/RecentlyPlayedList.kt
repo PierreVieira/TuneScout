@@ -52,14 +52,19 @@ internal fun RecentlyPlayedList(
             )
         }
         items(items = songs, key = { song -> song.id }) { song ->
-            SongRow(
-                title = song.title,
-                subtitle = song.artistName,
-                artworkUrl = song.artwork.thumbnailUrl,
-                isHighlighted = song.id == nowPlayingId,
-                onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
-                trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
-            )
+            SwipeToRemoveBox(
+                onRemove = { onEvent(SongsUiEvent.OnRecentSongSwipedAway(song)) },
+                modifier = Modifier.animateItem(),
+            ) {
+                SongRow(
+                    title = song.title,
+                    subtitle = song.artistName,
+                    artworkUrl = song.artwork.thumbnailUrl,
+                    isHighlighted = song.id == nowPlayingId,
+                    onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
+                    trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
+                )
+            }
         }
     }
 }

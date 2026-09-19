@@ -32,32 +32,52 @@ fun Artwork(
     cornerRadius: Dp,
     modifier: Modifier = Modifier,
 ) {
-    var isLoading by remember(url) { mutableStateOf(url.isNotBlank()) }
+    val shape = RoundedCornerShape(cornerRadius)
+    var state by remember(url) { mutableStateOf(getInitialArtworkState(url)) }
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(cornerRadius))
+            .clip(shape)
             .background(TuneScoutColors.white10),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            imageVector = TuneScoutIcons.musicList,
-            contentDescription = null,
-            tint = TuneScoutColors.elementPlaceholder,
-            modifier = Modifier.size(placeholderIconSize),
-        )
         AsyncImage(
             model = url,
             contentDescription = contentDescription,
             contentScale = ContentScale.Crop,
-            onState = { state -> isLoading = state is AsyncImagePainter.State.Loading },
-            modifier = Modifier.aspectRatio(1f),
+            onState = { newState -> state = newState.toArtworkState(url) },
+            modifier = Modifier.fillMaxSize(),
         )
-        if (isLoading) {
-            ShimmerBox(
-                shape = RoundedCornerShape(cornerRadius),
-                modifier = Modifier.fillMaxSize(),
-            )
+        when (state) {
+            ArtworkState.LOADING -> ShimmerBox(shape = shape, modifier = Modifier.fillMaxSize())
+            ArtworkState.EMPTY -> PlaceholderIcon()
+            ArtworkState.LOADED -> Unit
         }
     }
+}
+
+@Composable
+private fun PlaceholderIcon() {
+    Icon(
+        imageVector = TuneScoutIcons.musicList,
+        contentDescription = null,
+        tint = TuneScoutColors.elementPlaceholder,
+        modifier = Modifier.size(placeholderIconSize),
+    )
+}
+
+private enum class ArtworkState {
+    LOADING,
+    LOADED,
+    EMPTY,
+}
+
+private fun getInitialArtworkState(url: String): ArtworkState =
+    if (url.isBlank()) ArtworkState.EMPTY else ArtworkState.LOADING
+
+private fun AsyncImagePainter.State.toArtworkState(url: String): ArtworkState = when (this) {
+    is AsyncImagePainter.State.Loading -> ArtworkState.LOADING
+    is AsyncImagePainter.State.Success -> ArtworkState.LOADED
+    is AsyncImagePainter.State.Error -> ArtworkState.EMPTY
+    AsyncImagePainter.State.Empty -> getInitialArtworkState(url)
 }

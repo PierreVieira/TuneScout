@@ -10,8 +10,6 @@ import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
-private const val TAG = "PlaybackSessionKeeper"
-
 internal class PlaybackSessionKeeper(
     private val playback: RestorablePlayback,
     private val playbackSessionLocalDataSource: PlaybackSessionLocalDataSource,
@@ -69,4 +67,8 @@ internal class PlaybackSessionKeeper(
         val isRepeatEnabled: Boolean,
         val positionBucket: Long,
     )
+
+    private companion object {
+        const val TAG = "PlaybackSessionKeeper"
+    }
 }

@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
-private const val SOURCE_URL = "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/ab/cd/source/100x100bb.jpg"
-
 class ArtworkTest {
     @ParameterizedTest(name = "GIVEN an iTunes url WHEN reading the {0} url THEN resizes it to {1}")
     @CsvSource(
@@ -62,6 +60,10 @@ class ArtworkTest {
 
         // Then
         assertThat(url).isEmpty()
+    }
+
+    private companion object {
+        const val SOURCE_URL = "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/ab/cd/source/100x100bb.jpg"
     }
 }
 
