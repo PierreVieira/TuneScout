@@ -19,6 +19,7 @@ import com.pierre.tunescout.ui.component.SongListSkeleton
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
+import com.pierre.tunescout.ui.component.getRowSharedSongId
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 private const val APPEND_SKELETON_ROWS = 2
@@ -28,6 +29,7 @@ private const val APPEND_SKELETON_ROWS = 2
 internal fun SearchResultsList(
     query: String,
     searchResults: LazyPagingItems<Song>,
+    nowPlayingId: Long?,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -72,6 +74,7 @@ internal fun SearchResultsList(
                     title = song.title,
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
+                    sharedSongId = getRowSharedSongId(songId = song.id, nowPlayingId = nowPlayingId),
                     onClick = {
                         onEvent(SongsUiEvent.OnSongClicked(song))
                     },

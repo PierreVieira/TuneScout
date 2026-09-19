@@ -24,9 +24,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
 
 private val rowCornerRadius = 8.dp
-private val artworkCornerRadius = 8.dp
+private const val ARTWORK_CORNER_PERCENT = 15
 private val actionButtonSize = 36.dp
 private val actionIconSize = 20.dp
 
@@ -39,6 +40,7 @@ fun SongRow(
     modifier: Modifier = Modifier,
     artworkSize: Dp = 52.dp,
     isHighlighted: Boolean = false,
+    sharedSongId: Long? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
@@ -58,7 +60,8 @@ fun SongRow(
             Artwork(
                 url = artworkUrl,
                 contentDescription = null,
-                cornerRadius = artworkCornerRadius,
+                cornerPercent = ARTWORK_CORNER_PERCENT,
+                sharedKey = getSongSharedKey(sharedSongId, SongSharedElement.ARTWORK),
                 modifier = Modifier.size(artworkSize),
             )
             Column(
@@ -71,6 +74,7 @@ fun SongRow(
                     color = TuneScoutColors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.sharedTextBounds(getSongSharedKey(sharedSongId, SongSharedElement.TITLE)),
                 )
                 Text(
                     text = subtitle,
@@ -78,6 +82,7 @@ fun SongRow(
                     color = if (isHighlighted) TuneScoutColors.textEmphasis else TuneScoutColors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.sharedTextBounds(getSongSharedKey(sharedSongId, SongSharedElement.ARTIST)),
                 )
             }
         }

@@ -70,6 +70,7 @@ fun SongsContent(
                 SearchResultsList(
                     query = uiState.query,
                     searchResults = searchResults,
+                    nowPlayingId = uiState.nowPlayingId,
                     onEvent = onEvent,
                 )
             } else {

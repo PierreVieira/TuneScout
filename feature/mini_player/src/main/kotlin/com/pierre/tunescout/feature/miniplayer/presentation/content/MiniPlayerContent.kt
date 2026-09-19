@@ -30,14 +30,17 @@ import com.pierre.tunescout.feature.miniplayer.R
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.PlayButtonState
+import com.pierre.tunescout.ui.component.SongSharedElement
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.component.contentDescription
+import com.pierre.tunescout.ui.component.getSongSharedKey
 import com.pierre.tunescout.ui.component.icon
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
 
 private val cardCornerRadius = 12.dp
-private val artworkCornerRadius = 8.dp
+private const val ARTWORK_CORNER_PERCENT = 18
 private val artworkSize = 44.dp
 private val buttonSize = 40.dp
 private val iconSize = 24.dp
@@ -70,7 +73,8 @@ fun MiniPlayerContent(
             Artwork(
                 url = song.artwork.thumbnailUrl,
                 contentDescription = null,
-                cornerRadius = artworkCornerRadius,
+                cornerPercent = ARTWORK_CORNER_PERCENT,
+                sharedKey = getSongSharedKey(song.id, SongSharedElement.ARTWORK),
                 modifier = Modifier.size(artworkSize),
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -80,6 +84,7 @@ fun MiniPlayerContent(
                     color = TuneScoutColors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.sharedTextBounds(getSongSharedKey(song.id, SongSharedElement.TITLE)),
                 )
                 Text(
                     text = song.artistName,
@@ -87,6 +92,7 @@ fun MiniPlayerContent(
                     color = TuneScoutColors.textSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.sharedTextBounds(getSongSharedKey(song.id, SongSharedElement.ARTIST)),
                 )
             }
             IconButton(
