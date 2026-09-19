@@ -27,6 +27,9 @@ jobs:
         shard: [0, 1]
     env:
       SHARD_COUNT: 2
+      # The slowest job of a pull request, and compilation is over half of a cold run. See
+      # .github/actions/gradle.
+      GRADLE_CACHE_WRITE_ON_PULL_REQUESTS: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v5

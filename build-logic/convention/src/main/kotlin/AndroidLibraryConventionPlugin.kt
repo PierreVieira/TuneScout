@@ -4,6 +4,7 @@ import com.pierre.tunescout.buildlogic.addInstrumentedTestDependencies
 import com.pierre.tunescout.buildlogic.addUnitTestDependencies
 import com.pierre.tunescout.buildlogic.configureAndroid
 import com.pierre.tunescout.buildlogic.configureJUnitPlatform
+import com.pierre.tunescout.buildlogic.hasInstrumentedTests
 import com.pierre.tunescout.buildlogic.libs
 import com.pierre.tunescout.buildlogic.minSdkVersion
 import org.gradle.api.Plugin
@@ -34,12 +35,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
         }
 
-        // Without this every library gets an androidTest component, so a module with no
-        // instrumented tests still compiles, packages and installs an empty test APK.
+        val hasInstrumentedTests = hasInstrumentedTests
         extensions.configure<LibraryAndroidComponentsExtension> {
             beforeVariants { variant ->
-                variant.androidTest.enable =
-                    variant.androidTest.enable && projectDir.resolve("src/androidTest").exists()
+                variant.androidTest.enable = variant.androidTest.enable && hasInstrumentedTests
             }
         }
 
@@ -50,7 +49,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             add("implementation", libs.findLibrary("koin-core").get())
         }
         addUnitTestDependencies()
-        addInstrumentedTestDependencies()
+        if (hasInstrumentedTests) {
+            addInstrumentedTestDependencies()
+        }
         configureJUnitPlatform()
     }
 }

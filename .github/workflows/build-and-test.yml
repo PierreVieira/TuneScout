@@ -40,6 +40,10 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    # The longest job after the emulators, see .github/actions/gradle. unit-tests stays read-only:
+    # even a cold run of it finishes first, and every writer takes its share of the 10 GB budget.
+    env:
+      GRADLE_CACHE_WRITE_ON_PULL_REQUESTS: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v5

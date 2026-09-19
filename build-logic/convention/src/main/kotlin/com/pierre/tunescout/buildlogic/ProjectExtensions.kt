@@ -16,6 +16,14 @@ val Project.minSdkVersion: Int
     get() = libs.requireVersion("android-minSdk").toInt()
 
 /**
+ * A library only gets an androidTest component, and the dependencies that go with it, when it has
+ * instrumented tests. Otherwise it compiles, packages and installs an empty test APK, and AGP warns
+ * about androidTest dependencies declared on a component that does not exist.
+ */
+val Project.hasInstrumentedTests: Boolean
+    get() = projectDir.resolve("src/androidTest").exists()
+
+/**
  * SDK level and Java target shared by every Android module. The version catalog is the single
  * source of truth so a bump is a one-line change.
  */

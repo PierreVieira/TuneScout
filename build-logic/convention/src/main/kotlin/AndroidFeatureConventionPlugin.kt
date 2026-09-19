@@ -1,3 +1,4 @@
+import com.pierre.tunescout.buildlogic.hasInstrumentedTests
 import com.pierre.tunescout.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -23,7 +24,9 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             add("implementation", project(":ui:component"))
             add("implementation", project(":ui:utils"))
             add("testImplementation", project(":core:testing"))
-            add("androidTestImplementation", project(":core:testing"))
+            if (hasInstrumentedTests) {
+                add("androidTestImplementation", project(":core:testing"))
+            }
 
             add("implementation", libs.findLibrary("androidx-lifecycle-viewmodel-compose").get())
             add("implementation", libs.findLibrary("androidx-lifecycle-runtime-compose").get())
