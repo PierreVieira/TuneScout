@@ -1,6 +1,6 @@
 package com.pierre.tunescout.ui.utils.window
 
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.window.core.layout.WindowSizeClass
 
@@ -35,7 +35,7 @@ data class TuneScoutWindowSize(
 }
 
 @Composable
-fun rememberWindowSize(): TuneScoutWindowSize = currentWindowAdaptiveInfo().windowSizeClass.toWindowSize()
+fun rememberWindowSize(): TuneScoutWindowSize = currentWindowAdaptiveInfoV2().windowSizeClass.toWindowSize()
 
 private fun WindowSizeClass.toWindowSize(): TuneScoutWindowSize = TuneScoutWindowSize(
     isWidthCompact = !isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND),

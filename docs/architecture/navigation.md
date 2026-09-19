@@ -77,6 +77,10 @@ fun EntryProviderScope<NavKey>.player() {
 Route arguments reach the ViewModel as a constructor parameter (`route: PlayerRoute`) injected via
 `parametersOf(route)` — never via `SavedStateHandle.toRoute()`.
 
+A sheet route is drawn as a bottom sheet, or as a centred dialog when the window's height class is
+compact — a landscape phone has no room to open one. `BottomSheetScene` decides that, so a new sheet
+route inherits the behaviour without asking for it.
+
 Bottom sheets are routes too: the more-options sheet is `SongOptionsRoute` and the queue is
 `QueueRoute`, pushed with `navigator.navigate(...)` and dismissed with `navigateBack()`. Their entries
 carry the metadata of a bottom-sheet scene strategy so `NavDisplay` renders them over the previous

@@ -25,7 +25,8 @@ with it.
 **Responsiveness is one ruler now: the window size class.** `SongsContent`, `AlbumContent` and
 `PlayerContent` decided landscape with `maxWidth > maxHeight` inside their own `BoxWithConstraints`,
 which measures whatever box they happen to sit in — a rail on the side would have changed their
-answer. They now read `TuneScoutWindowSize` (`:ui:utils`, over `currentWindowAdaptiveInfo()`), and
+answer. They now read `TuneScoutWindowSize` (`:ui:utils`, over `currentWindowAdaptiveInfoV2()`, the
+overload that replaced the deprecated one and reports the L and XL width classes), and
 the `*Screen` composable resolves it and passes a plain `Boolean` down, so the `*Content`
 composables stay renderable on their own by the screenshot generators and the Compose tests, which
 have no real window. `PlayerContent` keeps its `BoxWithConstraints`: it still needs the real `Dp`
@@ -44,6 +45,13 @@ the way across a landscape phone, which is exactly the layout the cap was added 
 splash gradient ends on — that colour itself is far too dark to read as a highlight. With dynamic
 colours on, `accent` maps to the platform scheme's `primary` like every other token, so the
 wallpaper still wins and nothing is forced.
+
+**A sheet becomes a dialog in a window too short for one.** A landscape phone leaves a bottom sheet
+about one row of content between the drag handle and the navigation bar, so `BottomSheetScene`
+draws the same entry as a centred dialog when the height class is compact. The decision lives in the
+scene, not in the four features that open sheets, so a new sheet inherits it. Cost: `core:navigation`
+now reads the window size — which it may, since it is the one `core` module allowed to depend on
+`:ui:*`.
 
 **The rail's breakpoint is written by hand.** `NavigationSuiteScaffoldDefaults.navigationSuiteType`
 returns a *bar* for a compact height, which is exactly the phone turned sideways this was meant to
