@@ -41,7 +41,7 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
                 rememberViewModelStoreNavEntryDecorator(),
             ),
             sceneStrategies = listOf(bottomSheetStrategy),
-            entryProvider = entryProvider<NavKey> {
+            entryProvider = entryProvider {
                 splashEntry()
                 songsEntries()
                 playerEntry()
