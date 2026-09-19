@@ -8,14 +8,6 @@ inputs:
       configuration cache is discarded between runs, so every job pays full configuration time.
     required: false
     default: ''
-  cache-read-only:
-    description: >-
-      The default is setup-gradle's own: only the default branch writes the cache, so every push
-      to a pull request starts from main's entries and recompiles the whole diff again. Jobs on
-      the pull request's critical path pass 'false': the entry is scoped to the pull request's
-      ref, so the next push restores it and only compiles what changed since the previous one.
-    required: false
-    default: ${{ github.event.repository != null && github.ref_name != github.event.repository.default_branch }}
 
 runs:
   using: "composite"
@@ -30,7 +22,20 @@ runs:
       uses: gradle/actions/setup-gradle@v6
       with:
         cache-encryption-key: ${{ inputs.cache-encryption-key }}
-        cache-read-only: ${{ inputs.cache-read-only }}
+        # setup-gradle only lets the default branch write the cache, so every push to a pull
+        # request starts from main's entries and recompiles the whole diff again. A job on the pull
+        # request's critical path sets GRADLE_CACHE_WRITE_ON_PULL_REQUESTS=true: its entries are
+        # scoped to the pull request's ref, so the next push only compiles what changed since the
+        # previous one. This is an environment variable and not an input because the ktlint action
+        # nests this one, and the runner evaluates a nested action's inputs as empty in the post
+        # step, which is exactly where the cache is written.
+        cache-read-only: >-
+          ${{ env.GRADLE_CACHE_WRITE_ON_PULL_REQUESTS != 'true' && github.event.repository != null
+          && github.ref_name != github.event.repository.default_branch }}
+        # Cleanup drops whatever a build did not touch, and a warm build touches fewer dependencies
+        # and transforms than a cold one, so each push would save new 250-550 MB entries that differ
+        # only by what is missing. Pull request entries are deleted when it closes instead.
+        cache-cleanup: ${{ github.event_name == 'pull_request' && 'never' || 'on-success' }}
 
     - name: Make gradlew executable
       shell: bash

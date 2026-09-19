@@ -27,6 +27,9 @@ jobs:
         shard: [0, 1]
     env:
       SHARD_COUNT: 2
+      # The slowest job of a pull request, and compilation is over half of a cold run. See
+      # .github/actions/gradle.
+      GRADLE_CACHE_WRITE_ON_PULL_REQUESTS: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -43,8 +46,6 @@ jobs:
         uses: ./.github/actions/gradle
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-          # The slowest job of a pull request, and compilation is over half of a cold run
-          cache-read-only: false
 
       # Compiling before the emulator exists gives Gradle all four cores, and a compilation error
       # fails the job without paying for the SDK download and the boot.
