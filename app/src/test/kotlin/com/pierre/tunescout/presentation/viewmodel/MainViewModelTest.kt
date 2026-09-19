@@ -8,7 +8,6 @@ import com.pierre.tunescout.core.playback.PlaybackController
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
-import com.pierre.tunescout.presentation.model.MainUiAction
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,7 +47,7 @@ class MainViewModelTest {
             playbackStateFlow.value = playbackState(songs = listOf(song()))
 
             // Then
-            assertThat(awaitItem()).isEqualTo(MainUiAction.RequestNotificationPermission)
+            assertThat(awaitItem()).isEqualTo(Unit)
         }
     }
 

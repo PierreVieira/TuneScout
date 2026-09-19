@@ -22,7 +22,7 @@ class MainViewModel(
     private fun requestNotificationPermissionOnPlayback() {
         viewModelScope.launch {
             playbackController.state.first { state -> state.isPlaying }
-            uiAction.emit(MainUiAction.RequestNotificationPermission)
+            uiAction.emit(Unit)
         }
     }
 }

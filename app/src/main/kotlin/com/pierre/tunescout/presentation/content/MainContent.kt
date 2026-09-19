@@ -16,10 +16,8 @@ fun MainContent(
     modifier: Modifier = Modifier,
 ) {
     val requestNotificationPermission = rememberNotificationPermissionRequest()
-    ActionCollector(flow = uiAction) { action ->
-        when (action) {
-            MainUiAction.RequestNotificationPermission -> requestNotificationPermission()
-        }
+    ActionCollector(flow = uiAction) {
+        requestNotificationPermission()
     }
     Surface(modifier = modifier.fillMaxSize()) {
         TuneScoutNavDisplay()
