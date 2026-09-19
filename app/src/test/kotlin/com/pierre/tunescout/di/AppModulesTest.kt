@@ -5,7 +5,7 @@ import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.feature.album.presentation.viewmodel.AlbumViewModel
 import com.pierre.tunescout.feature.player.presentation.viewmodel.PlayerViewModel
-import com.pierre.tunescout.feature.songs.presentation.viewmodel.SongOptionsViewModel
+import com.pierre.tunescout.feature.songoptions.presentation.viewmodel.SongOptionsViewModel
 import kotlinx.coroutines.flow.Flow
 import org.junit.jupiter.api.Test
 import org.koin.dsl.module

@@ -1,8 +1,8 @@
-package com.pierre.tunescout.feature.songs.domain.usecase.impl
+package com.pierre.tunescout.feature.songoptions.domain.usecase.impl
 
 import com.pierre.tunescout.core.database.SongLocalDataSource
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.feature.songs.domain.usecase.ObserveSong
+import com.pierre.tunescout.feature.songoptions.domain.usecase.ObserveSong
 import kotlinx.coroutines.flow.Flow
 
 internal class ObserveSongUseCase(

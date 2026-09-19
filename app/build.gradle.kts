@@ -39,7 +39,8 @@ dependencies {
 
     implementation(projects.feature.splash)
     implementation(projects.feature.songs)
-    implementation(projects.feature.miniplayer)
+    implementation(projects.feature.songOptions)
+    implementation(projects.feature.miniPlayer)
     implementation(projects.feature.player)
     implementation(projects.feature.queue)
     implementation(projects.feature.album)

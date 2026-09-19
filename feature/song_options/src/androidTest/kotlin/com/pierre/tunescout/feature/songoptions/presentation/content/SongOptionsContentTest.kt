@@ -1,4 +1,4 @@
-package com.pierre.tunescout.feature.songs.presentation.content
+package com.pierre.tunescout.feature.songoptions.presentation.content
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -7,8 +7,8 @@ import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
-import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiEvent
-import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiState
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import de.mannodermaus.junit5.compose.createComposeExtension
 import org.junit.jupiter.api.Test

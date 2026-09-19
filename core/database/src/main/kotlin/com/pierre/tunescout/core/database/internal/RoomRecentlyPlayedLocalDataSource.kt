@@ -19,6 +19,8 @@ internal class RoomRecentlyPlayedLocalDataSource(
     override fun observe(limit: Int): Flow<List<Song>> =
         recentlyPlayedDao.observeMostRecent(limit).map { entities -> entities.map { entity -> entity.toSong() } }
 
+    override fun observeIsRecentlyPlayed(songId: Long): Flow<Boolean> = recentlyPlayedDao.observeContains(songId)
+
     override suspend fun record(song: Song) {
         songDao.upsertAll(listOf(song.toEntity()))
         recentlyPlayedDao.record(

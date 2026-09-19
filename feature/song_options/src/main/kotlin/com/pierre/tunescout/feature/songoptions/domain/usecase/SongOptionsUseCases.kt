@@ -1,7 +1,7 @@
-package com.pierre.tunescout.feature.songs.domain.usecase
+package com.pierre.tunescout.feature.songoptions.domain.usecase
 
 data class SongOptionsUseCases(
     val observeSong: ObserveSong,
-    val observeRecentlyPlayed: ObserveRecentlyPlayed,
+    val isRecentlyPlayed: IsRecentlyPlayed,
     val removeFromRecentlyPlayed: RemoveFromRecentlyPlayed,
 )

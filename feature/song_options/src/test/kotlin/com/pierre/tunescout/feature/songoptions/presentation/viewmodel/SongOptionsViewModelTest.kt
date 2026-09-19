@@ -1,4 +1,4 @@
-package com.pierre.tunescout.feature.songs.presentation.viewmodel
+package com.pierre.tunescout.feature.songoptions.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Song
@@ -8,8 +8,8 @@ import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.song
-import com.pierre.tunescout.feature.songs.domain.usecase.SongOptionsUseCases
-import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiEvent
+import com.pierre.tunescout.feature.songoptions.domain.usecase.SongOptionsUseCases
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -112,7 +112,7 @@ class SongOptionsViewModelTest {
     fun `GIVEN a song outside the history WHEN observing THEN does not offer to remove it`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(song = song(id = 1), recentlyPlayed = listOf(song(id = 2)))
+            prepareScenario(song = song(id = 1), isRecentlyPlayed = false)
 
             // When
             val state = viewModel.uiState.value
@@ -125,7 +125,7 @@ class SongOptionsViewModelTest {
     fun `GIVEN a song in the history WHEN clicking remove THEN drops it and closes the sheet`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(song = song(id = 1), recentlyPlayed = listOf(song(id = 1)))
+            prepareScenario(song = song(id = 1), isRecentlyPlayed = true)
 
             // When
             viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
@@ -165,7 +165,7 @@ class SongOptionsViewModelTest {
 
     private fun TestScope.prepareScenario(
         song: Song?,
-        recentlyPlayed: List<Song> = emptyList(),
+        isRecentlyPlayed: Boolean = false,
     ) {
         removedSongIds = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
@@ -174,7 +174,7 @@ class SongOptionsViewModelTest {
             route = SongOptionsRoute(songId = 1),
             useCases = SongOptionsUseCases(
                 observeSong = { flowOf(song) },
-                observeRecentlyPlayed = { flowOf(recentlyPlayed) },
+                isRecentlyPlayed = { flowOf(isRecentlyPlayed) },
                 removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
             ),
             enqueuer = enqueuer,

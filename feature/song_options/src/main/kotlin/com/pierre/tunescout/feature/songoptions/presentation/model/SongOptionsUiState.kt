@@ -1,4 +1,4 @@
-package com.pierre.tunescout.feature.songs.presentation.model
+package com.pierre.tunescout.feature.songoptions.presentation.model
 
 import com.pierre.tunescout.core.model.Song
 

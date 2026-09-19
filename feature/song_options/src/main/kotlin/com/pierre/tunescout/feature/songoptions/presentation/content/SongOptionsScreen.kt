@@ -1,10 +1,10 @@
-package com.pierre.tunescout.feature.songs.presentation.content
+package com.pierre.tunescout.feature.songoptions.presentation.content
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.feature.songs.presentation.viewmodel.SongOptionsViewModel
+import com.pierre.tunescout.feature.songoptions.presentation.viewmodel.SongOptionsViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 

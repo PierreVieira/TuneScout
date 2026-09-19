@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
-import com.pierre.tunescout.feature.songs.presentation.content.SongOptionsContent
-import com.pierre.tunescout.feature.songs.presentation.model.SongOptionsUiState
+import com.pierre.tunescout.feature.songoptions.presentation.content.SongOptionsContent
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import org.junit.Test
 import kotlin.time.Duration.Companion.seconds

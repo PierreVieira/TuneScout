@@ -20,6 +20,9 @@ internal interface RecentlyPlayedDao {
     )
     fun observeMostRecent(limit: Int): Flow<List<SongEntity>>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM recently_played WHERE songId = :songId)")
+    fun observeContains(songId: Long): Flow<Boolean>
+
     @Upsert
     suspend fun upsert(entry: RecentlyPlayedEntity)
 

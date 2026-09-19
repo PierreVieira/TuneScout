@@ -80,6 +80,8 @@ private class FakeRecentlyPlayedLocalDataSource : RecentlyPlayedLocalDataSource 
 
     override fun observe(limit: Int): Flow<List<Song>> = error("unused")
 
+    override fun observeIsRecentlyPlayed(songId: Long): Flow<Boolean> = error("unused")
+
     override suspend fun record(song: Song) {
         recorded += song
     }

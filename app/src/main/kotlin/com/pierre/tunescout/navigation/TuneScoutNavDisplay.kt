@@ -17,7 +17,8 @@ import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerScaffold
 import com.pierre.tunescout.feature.player.presentation.navigation.playerEntry
 import com.pierre.tunescout.feature.queue.presentation.navigation.queueEntry
-import com.pierre.tunescout.feature.songs.presentation.navigation.songsEntries
+import com.pierre.tunescout.feature.songoptions.presentation.navigation.songOptionsEntry
+import com.pierre.tunescout.feature.songs.presentation.navigation.songsEntry
 import com.pierre.tunescout.feature.splash.presentation.navigation.splashEntry
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 
@@ -43,7 +44,8 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
             sceneStrategies = listOf(bottomSheetStrategy),
             entryProvider = entryProvider {
                 splashEntry()
-                songsEntries()
+                songsEntry()
+                songOptionsEntry()
                 playerEntry()
                 queueEntry()
                 albumEntry()
