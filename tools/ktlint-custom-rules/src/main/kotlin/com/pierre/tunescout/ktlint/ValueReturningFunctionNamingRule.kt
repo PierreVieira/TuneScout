@@ -23,12 +23,13 @@ private const val ALLOWED_VERB_PREFIXES =
         "select send should show shows sign skip sort split start stop store stream suspend sync " +
         "take throttle to toggle track transform trim unbind unregister update upload upsert use validate " +
         "verify was were will with wrap write"
-private val allowedVerbPrefixes = ALLOWED_VERB_PREFIXES.split(' ').toSet()
-private val ignoredReturnTypes = setOf("Unit", "Nothing")
-private val exemptContainerAnnotations = setOf("Dao", "Database")
-private val idiomaticSuffixes = listOf("OrNull", "Of", "For")
 
 class ValueReturningFunctionNamingRule : TuneScoutRule("value-returning-function-naming") {
+    private val allowedVerbPrefixes = ALLOWED_VERB_PREFIXES.split(' ').toSet()
+    private val ignoredReturnTypes = setOf("Unit", "Nothing")
+    private val exemptContainerAnnotations = setOf("Dao", "Database")
+    private val idiomaticSuffixes = listOf("OrNull", "Of", "For")
+
     override fun beforeVisitChildNodes(
         node: ASTNode,
         emit: (offset: Int, errorMessage: String, canBeAutoCorrected: Boolean) -> AutocorrectDecision,

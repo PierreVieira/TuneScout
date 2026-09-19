@@ -14,12 +14,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration
 
-private val emptyUiState = MiniPlayerUiState(song = null, isPlaying = false, progress = 0f)
-
 class MiniPlayerViewModel(
     private val playbackController: PlaybackController,
     private val navigator: Navigator,
 ) : ViewModel() {
+    private val emptyUiState = MiniPlayerUiState(song = null, isPlaying = false, progress = 0f)
+
     val uiState: StateFlow<MiniPlayerUiState> = playbackController.state
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)

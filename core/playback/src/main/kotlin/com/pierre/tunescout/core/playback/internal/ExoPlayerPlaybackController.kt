@@ -25,8 +25,6 @@ import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-private val positionTick = 250.milliseconds
-
 internal class ExoPlayerPlaybackController(
     private val player: ExoPlayer,
     private val serviceLauncher: PlaybackServiceLauncher,
@@ -37,6 +35,7 @@ internal class ExoPlayerPlaybackController(
     override val state: StateFlow<PlaybackState>
         field = MutableStateFlow(PlaybackState.Idle)
 
+    private val positionTick = 250.milliseconds
     private var entries: List<QueueEntry> = emptyList()
     private var context: PlaybackContext? = null
     private var positionTicker: Job? = null

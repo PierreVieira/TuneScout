@@ -31,13 +31,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration.Companion.milliseconds
 
-private val searchDebounce = 300.milliseconds
-private val idleLoadStates = LoadStates(
-    refresh = LoadState.NotLoading(endOfPaginationReached = true),
-    prepend = LoadState.NotLoading(endOfPaginationReached = true),
-    append = LoadState.NotLoading(endOfPaginationReached = true),
-)
-
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
     searchSongs: SearchSongs,
@@ -45,6 +38,12 @@ class SongsViewModel(
     private val playbackController: PlaybackController,
     private val navigator: Navigator,
 ) : ViewModel() {
+    private val searchDebounce = 300.milliseconds
+    private val idleLoadStates = LoadStates(
+        refresh = LoadState.NotLoading(endOfPaginationReached = true),
+        prepend = LoadState.NotLoading(endOfPaginationReached = true),
+        append = LoadState.NotLoading(endOfPaginationReached = true),
+    )
     private val query = MutableStateFlow("")
 
     val uiState: StateFlow<SongsUiState> = combine(

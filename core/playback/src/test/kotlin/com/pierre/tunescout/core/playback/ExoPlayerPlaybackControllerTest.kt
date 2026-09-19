@@ -19,9 +19,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
-private val randomAccessMemories = PlaybackContext.Album(id = 10, title = "Random Access Memories")
-
 class ExoPlayerPlaybackControllerTest {
+    private val randomAccessMemories = PlaybackContext.Album(id = 10, title = "Random Access Memories")
+
     private val timeline = mutableListOf<MediaItem>()
     private var currentItemIndex = 0
     private var serviceLaunches = 0

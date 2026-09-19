@@ -24,17 +24,18 @@ import org.junit.Test
 import kotlin.time.Duration.Companion.seconds
 
 private val sheetCornerRadius = 28.dp
-private val playerBehindSheet = PlayerUiState.Loaded(
-    song = getLucky,
-    status = PlaybackStatus.Paused,
-    position = 18.seconds,
-    duration = 29.seconds,
-    isRepeatEnabled = false,
-    hasPrevious = true,
-    hasNext = true,
-)
 
 internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
+    private val playerBehindSheet = PlayerUiState.Loaded(
+        song = getLucky,
+        status = PlaybackStatus.Paused,
+        position = 18.seconds,
+        duration = 29.seconds,
+        isRepeatEnabled = false,
+        hasPrevious = true,
+        hasNext = true,
+    )
+
     @Test
     fun options() {
         capture(

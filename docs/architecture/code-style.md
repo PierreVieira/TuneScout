@@ -186,6 +186,73 @@ Unlike the rule above, this one is **not** autocorrectable, since ktlint cannot 
 symbols a wildcard stands for. `--format` will not fix it; expand the import by hand, or let the IDE's
 *Optimize Imports* do it.
 
+## Where a `private val` Lives
+
+A `private val` belongs to the **class body** whenever a class in the file can hold it. File scope is
+for values that genuinely have no owner, not a default.
+
+```kotlin
+// Correct — the empty state belongs to the ViewModel that falls back to it
+class MiniPlayerViewModel(...) : ViewModel() {
+    private val emptyUiState = MiniPlayerUiState(song = null, isPlaying = false, progress = 0f)
+
+    val uiState: StateFlow<MiniPlayerUiState> = playbackController.state
+        .map(::toUiState)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
+}
+
+// Wrong — file scope for something only this class ever reads
+private val emptyUiState = MiniPlayerUiState(song = null, isPlaying = false, progress = 0f)
+
+class MiniPlayerViewModel(...) : ViewModel() { ... }
+```
+
+**Declare it before the property that reads it.** A class body initializes top to bottom, so a
+`private val` declared *after* the `val` whose initializer uses it is still `null` at that point and
+the class throws on construction. Keep these declarations at the top of the body.
+
+File scope stays right in four cases:
+
+- **Compose sizing and styling constants** — the `Dp`, `Shape`, `Color` and `TextUnit` values above
+  the composable they size. A `@Composable` function is not a class, and one instance per file is the
+  point. This is the convention the next two sections describe.
+- **A value the instance cannot see yet** — a default for a constructor parameter
+  (`holdDuration: Duration = defaultHoldDuration`) or an argument to a superclass constructor call is
+  evaluated before the class body exists, so it cannot read a class-body property.
+- **Files with no class** — a Koin module, a fixture file, a theme.
+- **`value class` bodies**, which cannot declare properties at all (`Artwork`'s `sizeSegment` regex).
+
+## Companion Objects Hold Constants, Not State
+
+A companion object is for `const val` and for values that are part of the type's public API
+(`PlaybackState.Idle`, a JUnit `@RegisterExtension` that has to be static). The class's own private
+values go in the class body — putting them in the companion hides instance state in a singleton and
+reads like a namespace that is not one.
+
+```kotlin
+// Correct
+class KtorITunesRemoteDataSource(...) {
+    private companion object {
+        const val SEARCH_PATH = "search"
+    }
+}
+
+// Wrong — a private val hidden in a companion
+class SplashViewModel(...) {
+    private companion object {
+        val defaultHoldDuration = 700.milliseconds
+    }
+}
+```
+
+The `Wrong` example above is the constructor-default case from the previous section: it cannot move
+into the class body, so it moves to file scope instead.
+
+Enforced by the custom ktlint rule `tunescout-style:companion-object-constants`, which flags a
+non-`const` property that is private, or that sits in a `private companion object`. The class-body
+preference above is **not** enforced: telling a Compose `Dp` constant apart from a piece of state
+needs type resolution, which ktlint rules do not have. It is a review convention.
+
 ## Naming File-Scoped Constants
 
 A `private val` declared at file (top-level) scope — typically right above the `@Composable` function it sizes/shapes for, e.g. a `Dp`, `Shape`, or `TextUnit` constant — **must** use `lowerCamelCase`, never `PascalCase` or `SCREAMING_SNAKE_CASE`.

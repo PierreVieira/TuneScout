@@ -6,17 +6,17 @@ import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import org.junit.Test
 import kotlin.time.Duration.Companion.seconds
 
-private val nowPlaying = PlayerUiState.Loaded(
-    song = getLucky,
-    status = PlaybackStatus.Playing,
-    position = 18.seconds,
-    duration = 29.seconds,
-    isRepeatEnabled = false,
-    hasPrevious = true,
-    hasNext = true,
-)
-
 internal class PlayerScreenshots : ReadmeScreenshotsTest() {
+    private val nowPlaying = PlayerUiState.Loaded(
+        song = getLucky,
+        status = PlaybackStatus.Playing,
+        position = 18.seconds,
+        duration = 29.seconds,
+        isRepeatEnabled = false,
+        hasPrevious = true,
+        hasNext = true,
+    )
+
     @Test
     fun player() {
         capture(

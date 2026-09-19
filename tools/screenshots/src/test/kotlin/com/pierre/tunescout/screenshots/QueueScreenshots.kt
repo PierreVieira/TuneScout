@@ -7,14 +7,14 @@ import com.pierre.tunescout.feature.queue.presentation.content.QueueContent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import org.junit.Test
 
-private val queue = QueueUiState(
-    contextTitle = randomAccessMemories.title,
-    nowPlaying = contextEntry(getLucky),
-    queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),
-    upNext = listOf(contextEntry(instantCrush), contextEntry(loseYourselfToDance), contextEntry(touch)),
-)
-
 internal class QueueScreenshots : ReadmeScreenshotsTest() {
+    private val queue = QueueUiState(
+        contextTitle = randomAccessMemories.title,
+        nowPlaying = contextEntry(getLucky),
+        queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),
+        upNext = listOf(contextEntry(instantCrush), contextEntry(loseYourselfToDance), contextEntry(touch)),
+    )
+
     @Test
     fun queue() {
         capture(

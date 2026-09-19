@@ -16,5 +16,6 @@ class TuneScoutRuleSetProvider : RuleSetProviderV3(RuleSetId(RULE_SET_ID)) {
         RuleProvider { UnitFunctionBlockBodyRule() },
         RuleProvider { PreferMethodReferenceRule() },
         RuleProvider { ExplicitBackingFieldRule() },
+        RuleProvider { CompanionObjectConstantsRule() },
     )
 }

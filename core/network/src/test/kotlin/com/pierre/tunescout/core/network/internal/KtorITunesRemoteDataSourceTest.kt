@@ -13,46 +13,47 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-private val searchBody =
-    """
-    {
-      "resultCount": 2,
-      "results": [
-        {
-          "wrapperType": "track", "kind": "song", "trackId": 1, "trackName": "Get Lucky",
-          "artistName": "Daft Punk", "collectionId": 10, "collectionName": "Random Access Memories",
-          "artworkUrl100": "https://example.com/a.jpg", "previewUrl": "https://example.com/p.m4a",
-          "trackTimeMillis": 369000, "trackNumber": 8
-        },
-        {
-          "wrapperType": "track", "kind": "music-video", "trackId": 2, "trackName": "Get Lucky (Video)",
-          "artistName": "Daft Punk", "collectionId": 10, "previewUrl": "https://example.com/v.m4v"
-        }
-      ]
-    }
-    """.trimIndent()
-private val lookupBody =
-    """
-    {
-      "resultCount": 3,
-      "results": [
-        {
-          "wrapperType": "collection", "collectionId": 10, "collectionName": "Random Access Memories",
-          "artistName": "Daft Punk", "artworkUrl100": "https://example.com/album.jpg"
-        },
-        {
-          "wrapperType": "track", "kind": "song", "trackId": 2, "trackName": "The Game of Love",
-          "artistName": "Daft Punk", "collectionId": 10, "previewUrl": "https://example.com/2.m4a", "trackNumber": 2
-        },
-        {
-          "wrapperType": "track", "kind": "song", "trackId": 1, "trackName": "Give Life Back to Music",
-          "artistName": "Daft Punk", "collectionId": 10, "previewUrl": "https://example.com/1.m4a", "trackNumber": 1
-        }
-      ]
-    }
-    """.trimIndent()
-
 class KtorITunesRemoteDataSourceTest {
+    private val searchBody =
+        """
+        {
+          "resultCount": 2,
+          "results": [
+            {
+              "wrapperType": "track", "kind": "song", "trackId": 1, "trackName": "Get Lucky",
+              "artistName": "Daft Punk", "collectionId": 10, "collectionName": "Random Access Memories",
+              "artworkUrl100": "https://example.com/a.jpg", "previewUrl": "https://example.com/p.m4a",
+              "trackTimeMillis": 369000, "trackNumber": 8
+            },
+            {
+              "wrapperType": "track", "kind": "music-video", "trackId": 2, "trackName": "Get Lucky (Video)",
+              "artistName": "Daft Punk", "collectionId": 10, "previewUrl": "https://example.com/v.m4v"
+            }
+          ]
+        }
+        """.trimIndent()
+
+    private val lookupBody =
+        """
+        {
+          "resultCount": 3,
+          "results": [
+            {
+              "wrapperType": "collection", "collectionId": 10, "collectionName": "Random Access Memories",
+              "artistName": "Daft Punk", "artworkUrl100": "https://example.com/album.jpg"
+            },
+            {
+              "wrapperType": "track", "kind": "song", "trackId": 2, "trackName": "The Game of Love",
+              "artistName": "Daft Punk", "collectionId": 10, "previewUrl": "https://example.com/2.m4a", "trackNumber": 2
+            },
+            {
+              "wrapperType": "track", "kind": "song", "trackId": 1, "trackName": "Give Life Back to Music",
+              "artistName": "Daft Punk", "collectionId": 10, "previewUrl": "https://example.com/1.m4a", "trackNumber": 1
+            }
+          ]
+        }
+        """.trimIndent()
+
     private lateinit var dataSource: KtorITunesRemoteDataSource
     private lateinit var requestedUrls: MutableList<Url>
 

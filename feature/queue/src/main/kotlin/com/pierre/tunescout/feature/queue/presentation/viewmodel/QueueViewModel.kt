@@ -14,17 +14,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-private val emptyUiState = QueueUiState(
-    contextTitle = null,
-    nowPlaying = null,
-    queuedByUser = emptyList(),
-    upNext = emptyList(),
-)
-
 class QueueViewModel(
     private val playbackController: PlaybackController,
     private val navigator: Navigator,
 ) : ViewModel() {
+    private val emptyUiState = QueueUiState(
+        contextTitle = null,
+        nowPlaying = null,
+        queuedByUser = emptyList(),
+        upNext = emptyList(),
+    )
+
     val uiState: StateFlow<QueueUiState> = playbackController.state
         .map(::toUiState)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
