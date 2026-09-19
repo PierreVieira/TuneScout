@@ -41,7 +41,11 @@ internal fun LibraryItemRow(
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LibraryItemArtwork(item = item, modifier = Modifier.size(artworkSize))
+        LibraryItemArtwork(
+            item = item,
+            size = LibraryArtworkSize.ROW,
+            modifier = Modifier.size(artworkSize),
+        )
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),

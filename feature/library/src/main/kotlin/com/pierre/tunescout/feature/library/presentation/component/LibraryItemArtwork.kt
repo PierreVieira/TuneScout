@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -24,6 +25,22 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 
 private const val ARTWORK_CORNER_PERCENT = 8
 private const val QUADRANT_COUNT = 4
+private const val ICON_FRACTION = 0.4f
+
+/**
+ * How big the tile is drawn, which is what decides the artwork it asks Apple for: a grid cell is
+ * three times the width of a row, and the thumbnail a row is happy with is visibly soft there.
+ */
+internal enum class LibraryArtworkSize {
+    ROW,
+    CELL,
+    ;
+
+    fun getUrl(artwork: Artwork): String = when (this) {
+        ROW -> artwork.thumbnailUrl
+        CELL -> artwork.mediumUrl
+    }
+}
 
 /**
  * A playlist has no cover of its own, so it wears the first four songs' artwork as a quadrant grid,
@@ -32,33 +49,52 @@ private const val QUADRANT_COUNT = 4
 @Composable
 internal fun LibraryItemArtwork(
     item: LibraryItemUiModel,
+    size: LibraryArtworkSize,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(percent = ARTWORK_CORNER_PERCENT))
-            .background(TuneScoutColors.surfaceSubtle),
+            .background(backgroundOf(item)),
         contentAlignment = Alignment.Center,
     ) {
         when (item) {
-            is LibraryItemUiModel.Favorites -> CenteredIcon(isFavorites = true)
-            is LibraryItemUiModel.Playlist -> PlaylistCover(artworks = item.artworks)
+            is LibraryItemUiModel.Favorites -> FavoritesIcon()
+            is LibraryItemUiModel.Playlist -> PlaylistCover(artworks = item.artworks, size = size)
         }
     }
 }
 
 @Composable
-private fun PlaylistCover(artworks: List<Artwork>) {
+private fun backgroundOf(item: LibraryItemUiModel): Color = when (item) {
+    is LibraryItemUiModel.Favorites -> TuneScoutColors.accentContainer
+    is LibraryItemUiModel.Playlist -> TuneScoutColors.surfaceSubtle
+}
+
+@Composable
+private fun PlaylistCover(
+    artworks: List<Artwork>,
+    size: LibraryArtworkSize,
+) {
     when {
-        artworks.isEmpty() -> CenteredIcon(isFavorites = false)
-        artworks.size < QUADRANT_COUNT -> CoverImage(artwork = artworks.first(), modifier = Modifier.fillMaxSize())
-        else -> QuadrantGrid(artworks = artworks)
+        artworks.isEmpty() -> PlaceholderIcon()
+
+        artworks.size < QUADRANT_COUNT -> CoverImage(
+            artwork = artworks.first(),
+            size = size,
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        else -> QuadrantGrid(artworks = artworks, size = size)
     }
 }
 
 @Composable
-private fun QuadrantGrid(artworks: List<Artwork>) {
+private fun QuadrantGrid(
+    artworks: List<Artwork>,
+    size: LibraryArtworkSize,
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(0.dp),
@@ -70,7 +106,7 @@ private fun QuadrantGrid(artworks: List<Artwork>) {
                     .weight(1f),
             ) {
                 pair.forEach { artwork ->
-                    CoverImage(artwork = artwork, modifier = Modifier.weight(1f))
+                    CoverImage(artwork = artwork, size = size, modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -80,10 +116,11 @@ private fun QuadrantGrid(artworks: List<Artwork>) {
 @Composable
 private fun CoverImage(
     artwork: Artwork,
+    size: LibraryArtworkSize,
     modifier: Modifier = Modifier,
 ) {
     AsyncImage(
-        model = artwork.thumbnailUrl,
+        model = size.getUrl(artwork),
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = modifier.fillMaxSize(),
@@ -91,11 +128,21 @@ private fun CoverImage(
 }
 
 @Composable
-private fun CenteredIcon(isFavorites: Boolean) {
+private fun FavoritesIcon() {
     Icon(
-        imageVector = if (isFavorites) TuneScoutIcons.favoriteFilled else TuneScoutIcons.musicList,
+        imageVector = TuneScoutIcons.favoriteFilled,
         contentDescription = null,
-        tint = if (isFavorites) TuneScoutColors.textEmphasis else TuneScoutColors.elementPlaceholder,
-        modifier = Modifier.fillMaxSize(fraction = 0.4f),
+        tint = TuneScoutColors.accent,
+        modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
+    )
+}
+
+@Composable
+private fun PlaceholderIcon() {
+    Icon(
+        imageVector = TuneScoutIcons.musicList,
+        contentDescription = null,
+        tint = TuneScoutColors.elementPlaceholder,
+        modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
     )
 }

@@ -60,6 +60,12 @@ now reads the window size — which it may, since it is the one `core` module al
 returns a *bar* for a compact height, which is exactly the phone turned sideways this was meant to
 give a rail. The type is therefore computed from the width and height classes directly.
 
+**A tile asks for the artwork it is drawn at.** A grid cell is about three times the width of a
+list row, and the 200px thumbnail a row is happy with is visibly soft there, so `LibraryItemArtwork`
+takes the size it is being drawn at and picks the thumbnail or the 600px medium from it. The liked
+songs tile wears the accent container with the accent heart on it, so the one row that has no cover
+of its own still reads as one.
+
 **The view mode is a two-segment toggle, not one button.** A single icon showing the mode you would
 switch to never says which one you are looking at, so both are on screen with the current one
 filled.

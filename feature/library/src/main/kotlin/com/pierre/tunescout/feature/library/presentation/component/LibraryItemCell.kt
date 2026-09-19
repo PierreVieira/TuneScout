@@ -34,7 +34,11 @@ internal fun LibraryItemCell(
             .padding(bottom = TuneScoutSpacing.small),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
     ) {
-        LibraryItemArtwork(item = item, modifier = Modifier.fillMaxWidth())
+        LibraryItemArtwork(
+            item = item,
+            size = LibraryArtworkSize.CELL,
+            modifier = Modifier.fillMaxWidth(),
+        )
         Text(
             text = name,
             style = MaterialTheme.typography.bodyLarge,
