@@ -41,14 +41,18 @@ class MainViewModelTest {
 
             // Then
             assertThat(viewModel.uiState.value)
-                .isEqualTo(
-                    MainUiState.Ready(
-                        theme = Theme.LIGHT,
-                        isDynamicColorEnabled = false,
-                        systemBars = Theme.LIGHT.toSystemBarsUiModel(),
-                    ),
-                )
+                .isEqualTo(MainUiState.Ready(theme = Theme.LIGHT, isDynamicColorEnabled = false))
         }
+
+    @Test
+    fun `WHEN the stored theme changes THEN the system bars follow it`() = runTest(mainDispatcher.dispatcher) {
+        // When
+        themeFlow.value = Theme.DARK
+
+        // Then
+        val state = viewModel.uiState.value as MainUiState.Ready
+        assertThat(state.systemBars).isEqualTo(Theme.DARK.toSystemBarsUiModel())
+    }
 
     @Test
     fun `WHEN nothing has played yet THEN does not request the notification permission`() =

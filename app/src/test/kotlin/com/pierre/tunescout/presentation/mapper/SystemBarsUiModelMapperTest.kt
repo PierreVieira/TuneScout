@@ -1,29 +1,64 @@
 package com.pierre.tunescout.presentation.mapper
 
+import androidx.compose.ui.graphics.Color
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.presentation.model.SystemBarUiModel
+import com.pierre.tunescout.presentation.model.SystemBarsUiModel
 import com.pierre.tunescout.ui.theme.Theme
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 
 class SystemBarsUiModelMapperTest {
-    @ParameterizedTest
-    @EnumSource(Theme::class)
-    fun `GIVEN a theme WHEN mapped twice THEN returns the same system bars both times`(theme: Theme) {
+    private val navigationBarLightScrim = Color(color = 0xE6FFFFFF)
+    private val navigationBarDarkScrim = Color(color = 0x801B1B1B)
+
+    @Test
+    fun `GIVEN the light theme WHEN mapped THEN draws dark icons over a light navigation bar`() {
         // When
-        val first = theme.toSystemBarsUiModel()
-        val second = theme.toSystemBarsUiModel()
+        val systemBars = Theme.LIGHT.toSystemBarsUiModel()
 
         // Then
-        assertThat(second).isEqualTo(first)
+        assertThat(systemBars).isEqualTo(
+            SystemBarsUiModel(
+                statusBar = SystemBarUiModel.Light(scrim = Color.Transparent, darkScrim = Color.Transparent),
+                navigationBar = SystemBarUiModel.Light(
+                    scrim = navigationBarLightScrim,
+                    darkScrim = navigationBarDarkScrim,
+                ),
+            ),
+        )
     }
 
     @Test
-    fun `WHEN every theme is mapped THEN each gets system bars of its own`() {
+    fun `GIVEN the dark theme WHEN mapped THEN draws light icons over a dark navigation bar`() {
         // When
-        val systemBars = Theme.entries.map { theme -> theme.toSystemBarsUiModel() }
+        val systemBars = Theme.DARK.toSystemBarsUiModel()
 
         // Then
-        assertThat(systemBars).containsNoDuplicates()
+        assertThat(systemBars).isEqualTo(
+            SystemBarsUiModel(
+                statusBar = SystemBarUiModel.Dark(scrim = Color.Transparent),
+                navigationBar = SystemBarUiModel.Dark(scrim = navigationBarDarkScrim),
+            ),
+        )
+    }
+
+    @Test
+    fun `GIVEN the system theme WHEN mapped THEN leaves the icons to the device with the scrims of both themes`() {
+        // When
+        val systemBars = Theme.SYSTEM.toSystemBarsUiModel()
+
+        // Then
+        assertThat(systemBars).isEqualTo(
+            SystemBarsUiModel(
+                statusBar = SystemBarUiModel.FollowSystem(
+                    lightScrim = Color.Transparent,
+                    darkScrim = Color.Transparent,
+                ),
+                navigationBar = SystemBarUiModel.FollowSystem(
+                    lightScrim = navigationBarLightScrim,
+                    darkScrim = navigationBarDarkScrim,
+                ),
+            ),
+        )
     }
 }

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveDynamicColorEnabled
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveTheme
-import com.pierre.tunescout.presentation.mapper.toSystemBarsUiModel
 import com.pierre.tunescout.presentation.model.MainUiState
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -24,13 +23,8 @@ class MainViewModel(
     val uiState: StateFlow<MainUiState> = combine(
         observeTheme(),
         observeDynamicColorEnabled(),
-    ) { theme, isDynamicColorEnabled ->
-        MainUiState.Ready(
-            theme = theme,
-            isDynamicColorEnabled = isDynamicColorEnabled,
-            systemBars = theme.toSystemBarsUiModel(),
-        )
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
+        MainUiState::Ready,
+    ).stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
 
     val requestNotificationPermissionsUiAction: SharedFlow<Unit>
         field = MutableSharedFlow<Unit>()
