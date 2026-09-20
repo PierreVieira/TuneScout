@@ -86,6 +86,30 @@ internal class PlaybackQueueTest {
     }
 
     @Test
+    fun `GIVEN an album is playing WHEN playing songs now THEN they land next and the player jumps to them`() {
+        // Given
+        startAlbum(startingAt = 1)
+
+        // When
+        queue.playNow(listOf(song(id = 8), song(id = 9)))
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 8L, 9L, 2L, 3L).inOrder()
+        assertThat(entryIds()).isEqualTo(fakeExoPlayer.mediaIds)
+        verify { fakeExoPlayer.player.seekTo(1, 0L) }
+    }
+
+    @Test
+    fun `GIVEN nothing is queued WHEN playing songs now THEN they become the whole timeline`() {
+        // When
+        queue.playNow(listOf(song(id = 8)))
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(8L)
+        verify { fakeExoPlayer.player.seekTo(0, 0L) }
+    }
+
+    @Test
     fun `WHEN queueing songs THEN they are tagged as the user's own`() {
         // Given
         startAlbum(startingAt = 1)

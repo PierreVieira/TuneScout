@@ -3,24 +3,23 @@ package com.pierre.tunescout.feature.library.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
-import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
-import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
+import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectionSongs
+import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectionTitle
+import com.pierre.tunescout.feature.library.presentation.mapper.toOptionsRoute
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -29,24 +28,12 @@ class CollectionViewModel(
     private val useCases: CollectionUseCases,
     private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
+    private val enqueuer: Enqueuer,
     private val navigator: Navigator,
 ) : ViewModel() {
-    private val songs: Flow<List<Song>> = when (key) {
-        CollectionKey.Favorites -> useCases.observeFavorites()
-        is CollectionKey.Playlist -> useCases.observePlaylistSongs(key.playlistId)
-    }
-    private val title: Flow<CollectionTitle?> = when (key) {
-        CollectionKey.Favorites -> flowOf(CollectionTitle.Favorites)
-
-        is CollectionKey.Playlist ->
-            useCases
-                .observePlaylist(key.playlistId)
-                .map { playlist -> playlist?.let(::toCustomTitle) }
-    }
-
     val uiState: StateFlow<CollectionUiState> = combine(
-        title,
-        songs,
+        observeCollectionTitle(key = key, useCases = useCases),
+        observeCollectionSongs(key = key, useCases = useCases),
         observablePlayback.observePlaybackState(),
     ) { title, songs, playback ->
         if (title == null) {
@@ -69,13 +56,20 @@ class CollectionViewModel(
         is CollectionUiEvent.OnSongClicked -> playAndOpen(event.song)
         is CollectionUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
         is CollectionUiEvent.OnSongRemoved -> removeSong(event.song)
-        CollectionUiEvent.OnDeleteClicked -> deleteCollection()
+        CollectionUiEvent.OnPlayNowClicked -> playNow()
+        CollectionUiEvent.OnMoreClicked -> navigator.navigate(key.toOptionsRoute())
         CollectionUiEvent.OnBackClicked -> navigator.navigateBack()
     }
 
     private fun playAndOpen(song: Song) {
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
         navigator.navigate(PlayerRoute(songId = song.id))
+    }
+
+    private fun playNow() {
+        val songs = (uiState.value as? CollectionUiState.Loaded)?.songs.orEmpty()
+        if (songs.isEmpty()) return
+        enqueuer.playNow(songs)
     }
 
     private fun removeSong(song: Song) {
@@ -88,12 +82,4 @@ class CollectionViewModel(
             }
         }
     }
-
-    private fun deleteCollection() {
-        if (key !is CollectionKey.Playlist) return
-        viewModelScope.launch { useCases.deletePlaylist(key.playlistId) }
-        navigator.navigateBack()
-    }
 }
-
-private fun toCustomTitle(playlist: Playlist): CollectionTitle = CollectionTitle.Custom(playlist.name)

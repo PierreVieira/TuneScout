@@ -46,6 +46,12 @@ internal class PlaybackQueue(
         replaceWith(restoredEntries, startIndex, position.inWholeMilliseconds)
     }
 
+    fun playNow(songs: List<Song>) {
+        val index = currentIndex + 1
+        insertAt(songs, index)
+        player.seekTo(index, 0L)
+    }
+
     fun queueNext(songs: List<Song>) {
         insertAt(songs, currentIndex + 1)
     }

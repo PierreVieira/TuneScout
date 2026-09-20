@@ -72,6 +72,10 @@ internal class ExoPlayerPlaybackController(
         publish()
     }
 
+    override fun playNow(songs: List<Song>) {
+        insert(songs, queue::playNow, onInserted = ::resume)
+    }
+
     override fun queueNext(songs: List<Song>) {
         insert(songs, queue::queueNext)
     }
@@ -138,11 +142,12 @@ internal class ExoPlayerPlaybackController(
     private fun insert(
         songs: List<Song>,
         insertSongs: (List<Song>) -> Unit,
+        onInserted: () -> Unit = ::publish,
     ) {
         if (songs.isEmpty()) return
         val wasEmpty = queue.isEmpty
         insertSongs(songs)
-        if (wasEmpty) startPlaying() else publish()
+        if (wasEmpty) startPlaying() else onInserted()
     }
 
     private fun startPlaying() {

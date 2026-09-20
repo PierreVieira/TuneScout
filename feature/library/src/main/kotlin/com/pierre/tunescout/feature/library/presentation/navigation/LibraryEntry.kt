@@ -4,11 +4,15 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.scene.DialogSceneStrategy
 import com.pierre.tunescout.core.navigation.route.CreatePlaylistRoute
+import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesRoute
 import com.pierre.tunescout.core.navigation.route.LibraryRoute
 import com.pierre.tunescout.core.navigation.route.LibrarySearchRoute
+import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistRoute
+import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
+import com.pierre.tunescout.feature.library.presentation.content.CollectionOptionsScreen
 import com.pierre.tunescout.feature.library.presentation.content.CollectionScreen
 import com.pierre.tunescout.feature.library.presentation.content.CreatePlaylistScreen
 import com.pierre.tunescout.feature.library.presentation.content.LibraryScreen
@@ -35,6 +39,18 @@ fun EntryProviderScope<NavKey>.favoritesEntry() {
 fun EntryProviderScope<NavKey>.playlistEntry() {
     entry<PlaylistRoute> { route ->
         CollectionScreen(key = CollectionKey.Playlist(playlistId = route.playlistId))
+    }
+}
+
+fun EntryProviderScope<NavKey>.favoritesOptionsEntry() {
+    entry<FavoritesOptionsRoute>(metadata = BottomSheetSceneStrategy.bottomSheet()) {
+        CollectionOptionsScreen(key = CollectionKey.Favorites)
+    }
+}
+
+fun EntryProviderScope<NavKey>.playlistOptionsEntry() {
+    entry<PlaylistOptionsRoute>(metadata = BottomSheetSceneStrategy.bottomSheet()) { route ->
+        CollectionOptionsScreen(key = CollectionKey.Playlist(playlistId = route.playlistId))
     }
 }
 

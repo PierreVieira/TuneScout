@@ -1,0 +1,98 @@
+package com.pierre.tunescout.feature.library.presentation.mapper
+
+import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.Playlist
+import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.testing.fixture.playlist
+import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.library.domain.model.CollectionKey
+import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
+import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Test
+
+class CollectionStreamsTest {
+    @Test
+    fun `GIVEN the favourites WHEN observing them THEN the liked songs are the collection`() = runTest {
+        // Given
+        val useCases = createUseCases(favorites = listOf(song(id = 1)))
+
+        // When
+        val songs = observeCollectionSongs(key = CollectionKey.Favorites, useCases = useCases).first()
+
+        // Then
+        assertThat(songs.map(Song::id)).containsExactly(1L)
+    }
+
+    @Test
+    fun `GIVEN a playlist WHEN observing it THEN its own songs are the collection`() = runTest {
+        // Given
+        val useCases = createUseCases(favorites = listOf(song(id = 1)), playlistSongs = listOf(song(id = 2)))
+
+        // When
+        val songs = observeCollectionSongs(
+            key = CollectionKey.Playlist(playlistId = 7),
+            useCases = useCases,
+        ).first()
+
+        // Then
+        assertThat(songs.map(Song::id)).containsExactly(2L)
+    }
+
+    @Test
+    fun `GIVEN the favourites WHEN observing the title THEN it is the liked songs title`() = runTest {
+        // Given
+        val useCases = createUseCases()
+
+        // When
+        val title = observeCollectionTitle(key = CollectionKey.Favorites, useCases = useCases).first()
+
+        // Then
+        assertThat(title).isEqualTo(CollectionTitle.Favorites)
+    }
+
+    @Test
+    fun `GIVEN a playlist WHEN observing the title THEN it takes the playlist name`() = runTest {
+        // Given
+        val useCases = createUseCases(playlist = playlist(id = 7, name = "Road trip"))
+
+        // When
+        val title = observeCollectionTitle(
+            key = CollectionKey.Playlist(playlistId = 7),
+            useCases = useCases,
+        ).first()
+
+        // Then
+        assertThat(title).isEqualTo(CollectionTitle.Custom(name = "Road trip"))
+    }
+
+    @Test
+    fun `GIVEN a playlist that is gone WHEN observing the title THEN there is none`() = runTest {
+        // Given
+        val useCases = createUseCases(playlist = null)
+
+        // When
+        val title = observeCollectionTitle(
+            key = CollectionKey.Playlist(playlistId = 7),
+            useCases = useCases,
+        ).first()
+
+        // Then
+        assertThat(title).isNull()
+    }
+
+    private fun createUseCases(
+        favorites: List<Song> = emptyList(),
+        playlistSongs: List<Song> = emptyList(),
+        playlist: Playlist? = null,
+    ): CollectionUseCases = CollectionUseCases(
+        observePlaylist = { flowOf(playlist) },
+        observePlaylistSongs = { flowOf(playlistSongs) },
+        observeFavorites = { flowOf(favorites) },
+        removeSongFromPlaylist = { _, _ -> },
+        removeFavorite = { },
+        deletePlaylist = { },
+    )
+}

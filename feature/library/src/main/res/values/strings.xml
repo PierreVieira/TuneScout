@@ -19,6 +19,10 @@
     <string name="library_collection_empty_title">No songs yet</string>
     <string name="library_collection_empty_description">Songs you add show up here.</string>
     <string name="library_delete_playlist">Delete playlist</string>
+    <string name="library_collection_play_now">Play now</string>
+    <string name="library_collection_more_options">More options for this collection</string>
+    <string name="library_collection_play_next">Play next</string>
+    <string name="library_collection_add_to_queue">Add to queue</string>
     <string name="library_create_playlist_title">Name your playlist</string>
     <string name="library_create_playlist_placeholder">My playlist</string>
     <string name="library_create_playlist_confirm">Create</string>

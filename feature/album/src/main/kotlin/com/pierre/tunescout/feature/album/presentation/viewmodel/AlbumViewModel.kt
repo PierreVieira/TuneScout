@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
@@ -28,6 +29,7 @@ class AlbumViewModel(
     private val useCases: AlbumUseCases,
     private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
+    private val enqueuer: Enqueuer,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val refreshFailed = MutableStateFlow(false)
@@ -47,6 +49,7 @@ class AlbumViewModel(
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> playAndOpen(event.song)
         is AlbumUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
+        AlbumUiEvent.OnPlayNowClicked -> playNow()
         AlbumUiEvent.OnFavoriteClicked -> toggleFavorite()
         AlbumUiEvent.OnMoreClicked -> navigator.navigate(AlbumOptionsRoute(albumId = route.albumId))
         AlbumUiEvent.OnRetryClicked -> refresh()
@@ -58,6 +61,11 @@ class AlbumViewModel(
         viewModelScope.launch {
             useCases.refreshAlbum(route.albumId).onFailure { refreshFailed.value = true }
         }
+    }
+
+    private fun playNow() {
+        val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
+        enqueuer.playNow(album.songs)
     }
 
     private fun toggleFavorite() {

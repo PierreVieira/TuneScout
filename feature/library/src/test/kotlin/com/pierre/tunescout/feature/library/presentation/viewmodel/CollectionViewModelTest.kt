@@ -5,8 +5,11 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
@@ -33,9 +36,9 @@ class CollectionViewModelTest {
     private lateinit var viewModel: CollectionViewModel
     private lateinit var navigator: Navigator
     private lateinit var playbackStarter: PlaybackStarter
+    private lateinit var enqueuer: Enqueuer
     private lateinit var removedFavoriteIds: MutableList<Long>
     private lateinit var removedFromPlaylist: MutableList<Pair<Long, Long>>
-    private lateinit var deletedPlaylistIds: MutableList<Long>
 
     @Test
     fun `GIVEN the favourites WHEN observing THEN titles itself with the liked songs and cannot be deleted`() =
@@ -117,6 +120,62 @@ class CollectionViewModelTest {
     }
 
     @Test
+    fun `GIVEN the favourites WHEN playing them now THEN the whole list takes over the current song`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = listOf(song(id = 1), song(id = 2))
+            prepareScenario(key = CollectionKey.Favorites, favorites = songs)
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnPlayNowClicked)
+
+            // Then
+            verify { enqueuer.playNow(songs) }
+        }
+
+    @Test
+    fun `GIVEN an empty collection WHEN playing it now THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(key = CollectionKey.Favorites)
+
+        // When
+        viewModel.onEvent(CollectionUiEvent.OnPlayNowClicked)
+
+        // Then
+        verify(exactly = 0) { enqueuer.playNow(any()) }
+    }
+
+    @Test
+    fun `GIVEN the favourites WHEN clicking the overflow THEN opens their options sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnMoreClicked)
+
+            // Then
+            verify { navigator.navigate(FavoritesOptionsRoute) }
+        }
+
+    @Test
+    fun `GIVEN a playlist WHEN clicking the overflow THEN opens its own options sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnMoreClicked)
+
+            // Then
+            verify { navigator.navigate(PlaylistOptionsRoute(playlistId = 7)) }
+        }
+
+    @Test
     fun `GIVEN the favourites WHEN removing a song THEN unlikes it`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
@@ -149,34 +208,6 @@ class CollectionViewModelTest {
             assertThat(removedFavoriteIds).isEmpty()
         }
 
-    @Test
-    fun `GIVEN a playlist WHEN deleting it THEN removes it and goes back`() = runTest(mainDispatcher.dispatcher) {
-        // Given
-        prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
-
-        // When
-        viewModel.onEvent(CollectionUiEvent.OnDeleteClicked)
-        runCurrent()
-
-        // Then
-        assertThat(deletedPlaylistIds).containsExactly(7L)
-        verify { navigator.navigateBack() }
-    }
-
-    @Test
-    fun `GIVEN the favourites WHEN deleting THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
-        // Given
-        prepareScenario(key = CollectionKey.Favorites)
-
-        // When
-        viewModel.onEvent(CollectionUiEvent.OnDeleteClicked)
-        runCurrent()
-
-        // Then
-        assertThat(deletedPlaylistIds).isEmpty()
-        verify(exactly = 0) { navigator.navigateBack() }
-    }
-
     private fun TestScope.prepareScenario(
         key: CollectionKey,
         favorites: List<Song> = emptyList(),
@@ -185,9 +216,9 @@ class CollectionViewModelTest {
     ) {
         removedFavoriteIds = mutableListOf()
         removedFromPlaylist = mutableListOf()
-        deletedPlaylistIds = mutableListOf()
         navigator = mockk(relaxUnitFun = true)
         playbackStarter = mockk(relaxUnitFun = true)
+        enqueuer = mockk(relaxUnitFun = true)
         viewModel = CollectionViewModel(
             key = key,
             useCases = CollectionUseCases(
@@ -196,10 +227,11 @@ class CollectionViewModelTest {
                 observeFavorites = { flowOf(favorites) },
                 removeSongFromPlaylist = { playlistId, songId -> removedFromPlaylist += playlistId to songId },
                 removeFavorite = { songId -> removedFavoriteIds += songId },
-                deletePlaylist = { playlistId -> deletedPlaylistIds += playlistId },
+                deletePlaylist = { },
             ),
             observablePlayback = ObservablePlayback { MutableStateFlow(playbackState()) },
             playbackStarter = playbackStarter,
+            enqueuer = enqueuer,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
