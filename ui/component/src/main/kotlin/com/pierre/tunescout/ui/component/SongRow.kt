@@ -1,5 +1,6 @@
 package com.pierre.tunescout.ui.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -73,11 +74,10 @@ fun SongRow(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        NowPlayingBarsIcon(state = nowPlaying)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        AnimatedVisibility(visible = nowPlaying == NowPlayingState.Playing) {
+                            NowPlayingBarsIcon(modifier = Modifier.padding(end = TuneScoutSpacing.small))
+                        }
                         Text(
                             text = title,
                             style = MaterialTheme.typography.bodyLarge,
