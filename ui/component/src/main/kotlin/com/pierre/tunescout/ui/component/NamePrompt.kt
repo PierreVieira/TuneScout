@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
@@ -116,7 +117,10 @@ private fun NameField(
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = TuneScoutColors.textPrimary),
         singleLine = true,
         cursorBrush = SolidColor(TuneScoutColors.textPrimary),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            imeAction = ImeAction.Done,
+        ),
         keyboardActions = KeyboardActions(onDone = { onConfirm() }),
         decorationBox = { innerTextField ->
             Box(
