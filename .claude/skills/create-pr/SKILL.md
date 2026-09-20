@@ -131,14 +131,16 @@ gh pr create \
 Ask the user whether to squash merge now. If yes:
 
 ```bash
-gh pr merge --squash --auto
+gh pr merge --squash
 ```
 
-If the merge fails (pending checks), notify the user and stop.
+Merge right away: `main` has no branch protection, so there is no need to wait for CI or pass
+`--auto`. If the merge fails (e.g. a conflict with `main`), notify the user and stop.
 
-Once merged, use the `finish-task` skill to clean up. It handles both worktree and in-place tasks,
-verifies the merge, and asks for confirmation before removing the branch (and worktree, if any) —
-don't duplicate that logic here.
+Once the squash merge succeeds, immediately run the `finish-task` skill in the same turn — don't
+wait for the user to ask for it. Asking for the squash merge is also the request to clean up the
+task. `finish-task` handles both worktree and in-place tasks and checks the merge before removing
+the branch (and the worktree, if there is one), so don't duplicate its logic here.
 
 ## Edge cases
 
