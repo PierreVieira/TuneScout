@@ -1,5 +1,8 @@
 package com.pierre.tunescout.core.navigation.scene
 
+import android.view.View
+import android.view.ViewParent
+import android.view.Window
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,14 +24,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.rememberLifecycleOwner
 import androidx.navigation3.runtime.NavEntry
@@ -41,6 +49,7 @@ import com.pierre.tunescout.ui.utils.window.rememberWindowSize
 
 private const val DIALOG_WIDTH_FRACTION = 0.9f
 private const val DIALOG_HEIGHT_FRACTION = 0.9f
+private const val LIGHT_BACKGROUND_MIN_LUMINANCE = 0.5f
 private val dialogMaxWidth = 560.dp
 private val dialogCornerRadius = 16.dp
 private val closeButtonSize = 40.dp
@@ -73,6 +82,7 @@ internal data class BottomSheetScene<T : Any>(
     override val content: @Composable (() -> Unit) = {
         val lifecycleOwner = rememberLifecycleOwner()
         val entryContent: @Composable () -> Unit = {
+            OverlaySystemBarsEffect(containerColor = containerColor())
             CompositionLocalProvider(LocalLifecycleOwner provides lifecycleOwner) {
                 entry.Content()
             }
@@ -93,6 +103,31 @@ internal data class BottomSheetScene<T : Any>(
         }
     }
 }
+
+/**
+ * The overlay opens a window of its own, and the system bars take their icons from it while it is
+ * in front. `ModalBottomSheet` picks those icons once, when the window is created, so a theme
+ * switched from inside the sheet left them the colour of the old one: dark icons on a dark bar
+ * until the sheet closed. They are chosen again here whenever the overlay's background changes,
+ * by the same rule the sheet uses — dark icons over a light background.
+ */
+@Composable
+private fun OverlaySystemBarsEffect(containerColor: Color) {
+    val view = LocalView.current
+    val hasLightBackground = containerColor.luminance() > LIGHT_BACKGROUND_MIN_LUMINANCE
+    LaunchedEffect(view, hasLightBackground) {
+        val window = view.findOverlayWindow() ?: return@LaunchedEffect
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = hasLightBackground
+            isAppearanceLightNavigationBars = hasLightBackground
+        }
+    }
+}
+
+private fun View.findOverlayWindow(): Window? = generateSequence(this as ViewParent?) { it.parent }
+    .filterIsInstance<DialogWindowProvider>()
+    .firstOrNull()
+    ?.window
 
 /**
  * A landscape window is short enough that the half-open state hides the last option.

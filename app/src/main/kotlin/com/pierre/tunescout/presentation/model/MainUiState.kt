@@ -12,5 +12,6 @@ sealed interface MainUiState {
     data class Ready(
         val theme: Theme,
         val isDynamicColorEnabled: Boolean,
+        val systemBars: SystemBarsUiModel,
     ) : MainUiState
 }
