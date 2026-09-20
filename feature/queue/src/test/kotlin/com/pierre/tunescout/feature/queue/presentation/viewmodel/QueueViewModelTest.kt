@@ -5,6 +5,8 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueSource
+import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
@@ -25,6 +27,7 @@ class QueueViewModelTest {
     private lateinit var viewModel: QueueViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var queueControls: QueueControls
+    private lateinit var navigator: Navigator
 
     @Test
     fun `GIVEN songs queued by hand WHEN observing THEN they come before the rest of the album`() =
@@ -94,6 +97,31 @@ class QueueViewModelTest {
     }
 
     @Test
+    fun `WHEN clicking the now-playing entry THEN opens the player on it`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = queuedOverAlbum())
+
+        // When
+        viewModel.onEvent(QueueUiEvent.OnNowPlayingClicked)
+
+        // Then
+        verify { navigator.navigate(PlayerRoute(songId = 1)) }
+    }
+
+    @Test
+    fun `GIVEN nothing is playing WHEN clicking the now-playing entry THEN does not navigate`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playback = PlaybackState.Idle)
+
+            // When
+            viewModel.onEvent(QueueUiEvent.OnNowPlayingClicked)
+
+            // Then
+            verify(exactly = 0) { navigator.navigate(any()) }
+        }
+
+    @Test
     fun `WHEN removing an entry THEN drops it from the queue`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(playback = queuedOverAlbum())
@@ -141,7 +169,12 @@ class QueueViewModelTest {
     private fun TestScope.prepareScenario(playback: PlaybackState) {
         playbackStateFlow = MutableStateFlow(playback)
         queueControls = mockk(relaxUnitFun = true)
-        viewModel = QueueViewModel(observablePlayback = { playbackStateFlow }, queueControls = queueControls)
+        navigator = mockk(relaxUnitFun = true)
+        viewModel = QueueViewModel(
+            observablePlayback = { playbackStateFlow },
+            queueControls = queueControls,
+            navigator = navigator,
+        )
         backgroundScope.launch { viewModel.uiState.collect {} }
         runCurrent()
     }

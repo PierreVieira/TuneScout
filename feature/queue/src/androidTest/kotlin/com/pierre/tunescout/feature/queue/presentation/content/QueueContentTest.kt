@@ -89,6 +89,19 @@ class QueueContentTest {
     }
 
     @Test
+    fun clickingTheNowPlayingRowEmitsOpeningThePlayer() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Get Lucky").performClick()
+
+        assertThat(events).containsExactly(QueueUiEvent.OnNowPlayingClicked)
+    }
+
+    @Test
     fun clickingAQueuedSongEmitsSkipToIt() = compose.use {
         setContent {
             TuneScoutTheme {
