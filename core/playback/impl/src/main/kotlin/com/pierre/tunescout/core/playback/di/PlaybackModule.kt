@@ -12,6 +12,7 @@ import com.pierre.tunescout.core.playback.internal.AndroidMediaItemFactory
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.ForegroundPlaybackServiceLauncher
 import com.pierre.tunescout.core.playback.internal.MediaItemFactory
+import com.pierre.tunescout.core.playback.internal.PlaybackFavoriteController
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
 import com.pierre.tunescout.core.playback.internal.PlaybackServiceLauncher
 import com.pierre.tunescout.core.playback.internal.PlaybackSessionKeeper
@@ -28,7 +29,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import kotlin.time.Duration.Companion.seconds
 
-private const val PLAYBACK_SCOPE = "playbackScope"
+internal const val PLAYBACK_SCOPE = "playbackScope"
 private val sessionSaveInterval = 5.seconds
 
 val playbackModule: Module = module {
@@ -77,5 +78,11 @@ val playbackModule: Module = module {
             playbackState = get<ObservablePlayback>().observePlaybackState(),
             recentlyPlayedLocalDataSource = get(),
         ).also { recorder -> recorder.start(get(named(PLAYBACK_SCOPE))) }
+    }
+    single {
+        PlaybackFavoriteController(
+            playbackState = get<ObservablePlayback>().observePlaybackState(),
+            favoriteSongLocalDataSource = get(),
+        )
     }
 }
