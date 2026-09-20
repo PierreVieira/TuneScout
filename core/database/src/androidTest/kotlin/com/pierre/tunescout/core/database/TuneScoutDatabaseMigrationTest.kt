@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.internal.MIGRATION_1_2
 import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
+import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -134,6 +135,23 @@ class TuneScoutDatabaseMigrationTest {
             assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_songs")).isEqualTo(1)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM favorite_albums")).isEqualTo(1)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM library_recent_searches")).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun givenAVersionThreeDatabaseTheMigrationKeepsTheSessionAndMarksItAsNotEnded() = runBlocking {
+        // Given
+        helper.createDatabase(version = 3).use { connection ->
+            connection.execSQL("INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 0, 10, 'Album')")
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 4, migrations = listOf(MIGRATION_3_4))
+
+        // Then
+        migrated.use { connection ->
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM playback_session")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT hasEnded FROM playback_session")).isEqualTo(0)
         }
     }
 

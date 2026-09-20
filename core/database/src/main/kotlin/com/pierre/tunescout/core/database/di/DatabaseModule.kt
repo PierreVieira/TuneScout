@@ -21,6 +21,7 @@ import com.pierre.tunescout.core.database.dao.RecentlyPlayedDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.internal.MIGRATION_1_2
 import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
+import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
 import com.pierre.tunescout.core.database.internal.RoomAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteSongLocalDataSource
@@ -47,7 +48,7 @@ val databaseModule: Module = module {
             .databaseBuilder<TuneScoutDatabase>(androidContext(), DATABASE_NAME)
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
     }
     single<SongDao> { get<TuneScoutDatabase>().songDao() }

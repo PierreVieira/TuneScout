@@ -87,6 +87,25 @@ class RoomPlaybackSessionLocalDataSourceTest {
     }
 
     @Test
+    fun `GIVEN the song had ended WHEN reading back THEN it is still ended`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.save(
+            session(
+                entries = listOf(entry(id = "a", song = song(id = 1))),
+                currentEntryId = "a",
+                hasEnded = true,
+            ),
+        )
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.hasEnded).isTrue()
+    }
+
+    @Test
     fun `GIVEN a single song context WHEN reading back THEN it is not mistaken for an album`() = runTest {
         // Given
         prepareScenario()
@@ -175,12 +194,14 @@ class RoomPlaybackSessionLocalDataSourceTest {
         context: PlaybackContext = PlaybackContext.SingleSong,
         position: kotlin.time.Duration = 5.seconds,
         isRepeatEnabled: Boolean = false,
+        hasEnded: Boolean = false,
     ): PlaybackSession = PlaybackSession(
         entries = entries,
         currentEntryId = currentEntryId,
         context = context,
         position = position,
         isRepeatEnabled = isRepeatEnabled,
+        hasEnded = hasEnded,
     )
 
     private fun prepareScenario() {
