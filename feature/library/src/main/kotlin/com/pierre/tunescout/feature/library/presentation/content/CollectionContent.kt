@@ -19,6 +19,7 @@ import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
+import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
@@ -93,10 +94,29 @@ private fun CollectionLoaded(
                 songs = uiState.songs,
                 nowPlayingId = uiState.nowPlayingId,
                 isPlaying = uiState.isPlaying,
+                songPendingRemoval = uiState.songPendingRemoval,
                 onEvent = onEvent,
             )
         }
     }
+    uiState.songPendingRemoval?.let { song ->
+        RemoveSongDialog(song = song, onEvent = onEvent)
+    }
+}
+
+@Composable
+private fun RemoveSongDialog(
+    song: Song,
+    onEvent: (CollectionUiEvent) -> Unit,
+) {
+    ConfirmationDialog(
+        title = stringResource(R.string.library_remove_song_confirm_title),
+        message = stringResource(R.string.library_remove_song_confirm_message, song.title),
+        confirmLabel = stringResource(R.string.library_remove_song_confirm_action),
+        cancelLabel = stringResource(R.string.library_confirm_cancel),
+        onConfirm = { onEvent(CollectionUiEvent.OnRemovalConfirmed) },
+        onCancel = { onEvent(CollectionUiEvent.OnRemovalDismissed) },
+    )
 }
 
 @Composable
@@ -104,6 +124,7 @@ private fun SongList(
     songs: List<Song>,
     nowPlayingId: Long?,
     isPlaying: Boolean,
+    songPendingRemoval: Song?,
     onEvent: (CollectionUiEvent) -> Unit,
 ) {
     LazyColumn(
@@ -114,8 +135,9 @@ private fun SongList(
     ) {
         items(items = songs, key = { song -> song.id }) { song ->
             SwipeToRemoveBox(
-                onRemove = { onEvent(CollectionUiEvent.OnSongRemoved(song)) },
+                onRemove = { onEvent(CollectionUiEvent.OnSongSwipedAway(song)) },
                 modifier = Modifier.animateItem(),
+                isRemovalPending = song == songPendingRemoval,
             ) {
                 SongRow(
                     title = song.title,

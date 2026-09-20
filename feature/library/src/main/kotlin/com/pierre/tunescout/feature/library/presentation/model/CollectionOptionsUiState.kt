@@ -6,4 +6,5 @@ data class CollectionOptionsUiState(
     val title: CollectionTitle?,
     val songs: List<Song>,
     val isDeletable: Boolean,
+    val isConfirmingDelete: Boolean,
 )

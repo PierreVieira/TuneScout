@@ -11,6 +11,7 @@ import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectio
 import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiState
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -24,19 +25,33 @@ class CollectionOptionsViewModel(
     private val navigator: Navigator,
 ) : ViewModel() {
     private val isDeletable = key is CollectionKey.Playlist
-    private val emptyUiState = CollectionOptionsUiState(title = null, songs = emptyList(), isDeletable = isDeletable)
+    private val emptyUiState = CollectionOptionsUiState(
+        title = null,
+        songs = emptyList(),
+        isDeletable = isDeletable,
+        isConfirmingDelete = false,
+    )
+    private val isConfirmingDelete = MutableStateFlow(false)
 
     val uiState: StateFlow<CollectionOptionsUiState> = combine(
         observeCollectionTitle(key = key, useCases = useCases),
         observeCollectionSongs(key = key, useCases = useCases),
-    ) { title, songs ->
-        CollectionOptionsUiState(title = title, songs = songs, isDeletable = isDeletable)
+        isConfirmingDelete,
+    ) { title, songs, isConfirming ->
+        CollectionOptionsUiState(
+            title = title,
+            songs = songs,
+            isDeletable = isDeletable,
+            isConfirmingDelete = isConfirming,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: CollectionOptionsUiEvent) = when (event) {
         CollectionOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         CollectionOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
-        CollectionOptionsUiEvent.OnDeleteClicked -> deleteCollection()
+        CollectionOptionsUiEvent.OnDeleteClicked -> askForDeleteConfirmation()
+        CollectionOptionsUiEvent.OnDeleteConfirmed -> deleteCollection()
+        CollectionOptionsUiEvent.OnDeleteDismissed -> isConfirmingDelete.value = false
     }
 
     private fun queue(enqueue: (List<Song>) -> Unit) {
@@ -46,8 +61,14 @@ class CollectionOptionsViewModel(
         navigator.navigateBack()
     }
 
+    private fun askForDeleteConfirmation() {
+        if (key !is CollectionKey.Playlist) return
+        isConfirmingDelete.value = true
+    }
+
     private fun deleteCollection() {
         if (key !is CollectionKey.Playlist) return
+        isConfirmingDelete.value = false
         viewModelScope.launch { useCases.deletePlaylist(key.playlistId) }
         closeSheetAndCollection()
     }

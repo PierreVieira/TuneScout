@@ -75,7 +75,12 @@ private fun BoxScope.OptionsSheet() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             BottomSheetDefaults.DragHandle()
             SongOptionsContent(
-                uiState = SongOptionsUiState(song = getLucky, isRecentlyPlayed = true, isFavorite = false),
+                uiState = SongOptionsUiState(
+                    song = getLucky,
+                    isRecentlyPlayed = true,
+                    isFavorite = false,
+                    isConfirmingRemoval = false,
+                ),
                 onEvent = {},
             )
         }

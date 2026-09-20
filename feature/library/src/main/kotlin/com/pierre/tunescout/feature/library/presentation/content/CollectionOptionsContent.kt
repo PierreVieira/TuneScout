@@ -7,6 +7,7 @@ import androidx.compose.ui.res.stringResource
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiState
+import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -17,8 +18,9 @@ fun CollectionOptionsContent(
     onEvent: (CollectionOptionsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val title = uiState.title?.let { title -> collectionTitleText(title) }.orEmpty()
     OptionsSheet(
-        title = uiState.title?.let { title -> collectionTitleText(title) }.orEmpty(),
+        title = title,
         subtitle = pluralStringResource(R.plurals.library_song_count, uiState.songs.size, uiState.songs.size),
         modifier = modifier,
     ) {
@@ -43,5 +45,15 @@ fun CollectionOptionsContent(
                 onClick = { onEvent(CollectionOptionsUiEvent.OnDeleteClicked) },
             )
         }
+    }
+    if (uiState.isConfirmingDelete) {
+        ConfirmationDialog(
+            title = stringResource(R.string.library_delete_playlist_confirm_title),
+            message = stringResource(R.string.library_delete_playlist_confirm_message, title),
+            confirmLabel = stringResource(R.string.library_delete_playlist_confirm_action),
+            cancelLabel = stringResource(R.string.library_confirm_cancel),
+            onConfirm = { onEvent(CollectionOptionsUiEvent.OnDeleteConfirmed) },
+            onCancel = { onEvent(CollectionOptionsUiEvent.OnDeleteDismissed) },
+        )
     }
 }

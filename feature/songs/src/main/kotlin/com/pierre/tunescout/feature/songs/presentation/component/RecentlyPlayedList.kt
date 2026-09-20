@@ -26,6 +26,7 @@ internal fun RecentlyPlayedList(
     songs: List<Song>,
     nowPlayingId: Long?,
     isPlaying: Boolean,
+    songPendingRemoval: Song?,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -58,6 +59,7 @@ internal fun RecentlyPlayedList(
             SwipeToRemoveBox(
                 onRemove = { onEvent(SongsUiEvent.OnRecentSongSwipedAway(song)) },
                 modifier = Modifier.animateItem(),
+                isRemovalPending = song == songPendingRemoval,
             ) {
                 SongRow(
                     title = song.title,

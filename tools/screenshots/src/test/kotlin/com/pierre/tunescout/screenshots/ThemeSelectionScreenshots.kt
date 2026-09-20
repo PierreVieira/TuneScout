@@ -45,6 +45,7 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
                         recentlyPlayed = recentlyPlayed,
                         nowPlayingId = null,
                         isPlaying = false,
+                        songPendingRemoval = null,
                     ),
                     searchResults = emptyPagingItems(),
                     onEvent = {},

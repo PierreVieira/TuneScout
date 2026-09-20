@@ -103,10 +103,48 @@ class SongOptionsContentTest {
         onNodeWithText("Remove from recently played").assertDoesNotExist()
     }
 
+    @Test
+    fun givenAPendingRemovalTheDialogConfirmsIt() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                SongOptionsContent(
+                    uiState = state(song = song(), isRecentlyPlayed = true, isConfirmingRemoval = true),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithText("Remove from recently played?").assertIsDisplayed()
+        onNodeWithText("Remove").performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedConfirmed)
+    }
+
+    @Test
+    fun givenAPendingRemovalTheDialogCancels() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                SongOptionsContent(
+                    uiState = state(song = song(), isRecentlyPlayed = true, isConfirmingRemoval = true),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithText("Cancel").performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedDismissed)
+    }
+
     private fun state(
         song: Song?,
         isRecentlyPlayed: Boolean = false,
         isFavorite: Boolean = false,
-    ): SongOptionsUiState =
-        SongOptionsUiState(song = song, isRecentlyPlayed = isRecentlyPlayed, isFavorite = isFavorite)
+        isConfirmingRemoval: Boolean = false,
+    ): SongOptionsUiState = SongOptionsUiState(
+        song = song,
+        isRecentlyPlayed = isRecentlyPlayed,
+        isFavorite = isFavorite,
+        isConfirmingRemoval = isConfirmingRemoval,
+    )
 }

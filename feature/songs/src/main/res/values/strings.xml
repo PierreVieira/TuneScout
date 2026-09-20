@@ -11,4 +11,8 @@
     <string name="songs_error_title">Couldn\'t load songs</string>
     <string name="songs_error_offline">Check your connection and try again.</string>
     <string name="songs_error_rate_limited">The iTunes catalog is busy right now. Wait a moment and try again.</string>
+    <string name="songs_confirm_cancel">Cancel</string>
+    <string name="songs_remove_recent_confirm_title">Remove from recently played?</string>
+    <string name="songs_remove_recent_confirm_message">%1$s leaves your history. You can always search for it again.</string>
+    <string name="songs_remove_recent_confirm_action">Remove</string>
 </resources>

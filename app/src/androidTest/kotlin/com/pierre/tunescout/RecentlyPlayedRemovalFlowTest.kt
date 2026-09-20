@@ -69,8 +69,10 @@ class RecentlyPlayedRemovalFlowTest {
         onNodeWithText("Around the World").assertExists()
         onNodeWithText("Digital Love").assertExists()
 
-        // Swiping a row drops it, and the database keeps it dropped.
+        // Swiping a row only asks; confirming drops it, and the database keeps it dropped.
         onNodeWithText("Around the World").performTouchInput { swipeRight() }
+        waitUntilAtLeastOneExists(hasText("Remove from recently played?"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Remove").performClick()
         waitUntilDoesNotExist(hasText("Around the World"), SCREEN_TIMEOUT_MILLIS)
         assertThat(storedIds()).containsExactly(102L)
 
@@ -78,6 +80,8 @@ class RecentlyPlayedRemovalFlowTest {
         onAllNodesWithContentDescription("More options")[0].performClick()
         waitUntilAtLeastOneExists(hasText("Remove from recently played"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Remove from recently played").performClick()
+        waitUntilAtLeastOneExists(hasText("Remove from recently played?"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Remove").performClick()
 
         waitUntilAtLeastOneExists(hasText("Nothing played yet"), SCREEN_TIMEOUT_MILLIS)
         onAllNodesWithText("Digital Love").assertCountEquals(0)

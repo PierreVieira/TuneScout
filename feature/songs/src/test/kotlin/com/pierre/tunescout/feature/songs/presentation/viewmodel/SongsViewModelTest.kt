@@ -146,7 +146,7 @@ class SongsViewModelTest {
     }
 
     @Test
-    fun `GIVEN a recently played song WHEN swiping it away THEN removes it from the history`() =
+    fun `GIVEN a recently played song WHEN swiping it away THEN only asks for confirmation`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(recentlyPlayed = listOf(song(id = 7)))
@@ -156,8 +156,54 @@ class SongsViewModelTest {
             runCurrent()
 
             // Then
-            assertThat(removedSongIds).containsExactly(7L)
+            assertThat(viewModel.uiState.value.songPendingRemoval).isEqualTo(song(id = 7))
+            assertThat(removedSongIds).isEmpty()
         }
+
+    @Test
+    fun `GIVEN a pending removal WHEN confirming it THEN removes the song from the history`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(recentlyPlayed = listOf(song(id = 7)))
+            viewModel.onEvent(SongsUiEvent.OnRecentSongSwipedAway(song(id = 7)))
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnRemoveRecentConfirmed)
+            runCurrent()
+
+            // Then
+            assertThat(removedSongIds).containsExactly(7L)
+            assertThat(viewModel.uiState.value.songPendingRemoval).isNull()
+        }
+
+    @Test
+    fun `GIVEN a pending removal WHEN dismissing it THEN the song stays in the history`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(recentlyPlayed = listOf(song(id = 7)))
+            viewModel.onEvent(SongsUiEvent.OnRecentSongSwipedAway(song(id = 7)))
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnRemoveRecentDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.songPendingRemoval).isNull()
+            assertThat(removedSongIds).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN no pending removal WHEN confirming THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(recentlyPlayed = listOf(song(id = 7)))
+
+        // When
+        viewModel.onEvent(SongsUiEvent.OnRemoveRecentConfirmed)
+        runCurrent()
+
+        // Then
+        assertThat(removedSongIds).isEmpty()
+    }
 
     private fun TestScope.prepareScenario(
         recentlyPlayed: List<Song> = emptyList(),

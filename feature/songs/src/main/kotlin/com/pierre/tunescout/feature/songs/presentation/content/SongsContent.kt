@@ -25,6 +25,7 @@ import com.pierre.tunescout.feature.songs.presentation.component.RecentlyPlayedL
 import com.pierre.tunescout.feature.songs.presentation.component.SearchResultsList
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
+import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.SearchField
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -74,11 +75,30 @@ fun SongsContent(
                     songs = uiState.recentlyPlayed,
                     nowPlayingId = uiState.nowPlayingId,
                     isPlaying = uiState.isPlaying,
+                    songPendingRemoval = uiState.songPendingRemoval,
                     onEvent = onEvent,
                 )
             }
         }
+        uiState.songPendingRemoval?.let { song ->
+            RemoveRecentDialog(song = song, onEvent = onEvent)
+        }
     }
+}
+
+@Composable
+private fun RemoveRecentDialog(
+    song: Song,
+    onEvent: (SongsUiEvent) -> Unit,
+) {
+    ConfirmationDialog(
+        title = stringResource(R.string.songs_remove_recent_confirm_title),
+        message = stringResource(R.string.songs_remove_recent_confirm_message, song.title),
+        confirmLabel = stringResource(R.string.songs_remove_recent_confirm_action),
+        cancelLabel = stringResource(R.string.songs_confirm_cancel),
+        onConfirm = { onEvent(SongsUiEvent.OnRemoveRecentConfirmed) },
+        onCancel = { onEvent(SongsUiEvent.OnRemoveRecentDismissed) },
+    )
 }
 
 @Composable

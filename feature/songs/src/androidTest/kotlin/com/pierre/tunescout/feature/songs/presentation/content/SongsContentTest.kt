@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.songs.presentation.content
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -74,6 +75,22 @@ class SongsContentTest {
         waitForIdle()
 
         assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[1]))
+    }
+
+    @Test
+    fun givenASwipedRowWaitingOnConfirmationTheRowStaysInPlace() = compose.use {
+        val recents = listOf(song(id = 1, title = "One More Time"))
+        val uiState = mutableStateOf(state(recentlyPlayed = recents))
+        setContent { Content(uiState = uiState.value) }
+
+        onNodeWithText("One More Time").performTouchInput { swipeRight() }
+        waitForIdle()
+        uiState.value = state(recentlyPlayed = recents, songPendingRemoval = recents[0])
+        waitForIdle()
+
+        onNodeWithText("One More Time").assertIsDisplayed()
+        onNodeWithText("One More Time").performClick()
+        assertThat(events).contains(SongsUiEvent.OnSongClicked(recents[0]))
     }
 
     @Test
@@ -177,11 +194,13 @@ class SongsContentTest {
         recentlyPlayed: List<Song> = emptyList(),
         nowPlayingId: Long? = null,
         isPlaying: Boolean = false,
+        songPendingRemoval: Song? = null,
     ): SongsUiState = SongsUiState(
         query = query,
         recentlyPlayed = recentlyPlayed,
         nowPlayingId = nowPlayingId,
         isPlaying = isPlaying,
+        songPendingRemoval = songPendingRemoval,
     )
 
     private val loadedStates = LoadStates(
