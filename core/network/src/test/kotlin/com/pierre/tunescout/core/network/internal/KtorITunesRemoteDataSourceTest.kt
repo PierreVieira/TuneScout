@@ -5,6 +5,7 @@ import com.pierre.tunescout.core.network.RemoteException
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.respondError
+import io.ktor.client.request.HttpRequestData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.Url
@@ -33,6 +34,21 @@ class KtorITunesRemoteDataSourceTest {
         }
         """.trimIndent()
 
+    private val updatedSearchBody =
+        """
+        {
+          "resultCount": 1,
+          "results": [
+            {
+              "wrapperType": "track", "kind": "song", "trackId": 1, "trackName": "Get Lucky (Remix)",
+              "artistName": "Daft Punk", "collectionId": 10, "collectionName": "Random Access Memories",
+              "artworkUrl100": "https://example.com/a.jpg", "previewUrl": "https://example.com/p.m4a",
+              "trackTimeMillis": 369000, "trackNumber": 8
+            }
+          ]
+        }
+        """.trimIndent()
+
     private val lookupBody =
         """
         {
@@ -56,6 +72,7 @@ class KtorITunesRemoteDataSourceTest {
 
     private lateinit var dataSource: KtorITunesRemoteDataSource
     private lateinit var requestedUrls: MutableList<Url>
+    private lateinit var requestedData: MutableList<HttpRequestData>
 
     @Test
     fun `GIVEN a successful search WHEN searching songs THEN returns only the song results`() = runTest {
@@ -63,7 +80,7 @@ class KtorITunesRemoteDataSourceTest {
         prepareScenario(body = searchBody)
 
         // When
-        val songs = dataSource.searchSongs(term = "daft punk", limit = 25)
+        val songs = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
 
         // Then
         assertThat(songs.map { song -> song.title }).containsExactly("Get Lucky")
@@ -75,7 +92,7 @@ class KtorITunesRemoteDataSourceTest {
         prepareScenario(body = searchBody, country = "BR")
 
         // When
-        dataSource.searchSongs(term = "daft punk", limit = 25)
+        dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
 
         // Then
         val url = requestedUrls.single()
@@ -86,6 +103,87 @@ class KtorITunesRemoteDataSourceTest {
         assertThat(url.parameters["entity"]).isEqualTo("song")
         assertThat(url.parameters["limit"]).isEqualTo("25")
     }
+
+    @Test
+    fun `GIVEN a plain search WHEN searching songs THEN does not force-bypass the HTTP cache`() = runTest {
+        // Given
+        prepareScenario(body = searchBody)
+
+        // When
+        dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
+
+        // Then
+        assertThat(requestedData.single().headers[HttpHeaders.CacheControl]).isNull()
+    }
+
+    @Test
+    fun `GIVEN forceRefresh WHEN searching songs THEN sends a no-cache header`() = runTest {
+        // Given
+        prepareScenario(body = searchBody)
+
+        // When
+        dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = true)
+
+        // Then
+        assertThat(requestedData.single().headers[HttpHeaders.CacheControl]).isEqualTo("no-cache")
+    }
+
+    @Test
+    fun `GIVEN a server-cacheable search WHEN refreshing without forceRefresh THEN serves the stale cached result`() =
+        runTest {
+            // Given
+            var networkHits = 0
+            val engine = MockEngine {
+                networkHits++
+                respond(
+                    content = if (networkHits == 1) searchBody else updatedSearchBody,
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
+                        HttpHeaders.ContentType to listOf("text/javascript"),
+                        HttpHeaders.CacheControl to listOf("max-age=86400"),
+                    ),
+                )
+            }
+            dataSource =
+                KtorITunesRemoteDataSource(client = HttpClientFactory().create(engine), countryProvider = { "US" })
+
+            // When
+            val firstSearch = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
+            val plainRefresh = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
+
+            // Then
+            assertThat(networkHits).isEqualTo(1)
+            assertThat(plainRefresh).isEqualTo(firstSearch)
+        }
+
+    @Test
+    fun `GIVEN a server-cacheable search WHEN pulling to refresh with forceRefresh THEN fetches the updated result`() =
+        runTest {
+            // Given
+            var networkHits = 0
+            val engine = MockEngine {
+                networkHits++
+                respond(
+                    content = if (networkHits == 1) searchBody else updatedSearchBody,
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
+                        HttpHeaders.ContentType to listOf("text/javascript"),
+                        HttpHeaders.CacheControl to listOf("max-age=86400"),
+                    ),
+                )
+            }
+            dataSource =
+                KtorITunesRemoteDataSource(client = HttpClientFactory().create(engine), countryProvider = { "US" })
+
+            // When
+            val firstSearch = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
+            val pullToRefresh = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = true)
+
+            // Then
+            assertThat(networkHits).isEqualTo(2)
+            assertThat(firstSearch.map { song -> song.title }).containsExactly("Get Lucky")
+            assertThat(pullToRefresh.map { song -> song.title }).containsExactly("Get Lucky (Remix)")
+        }
 
     @Test
     fun `GIVEN a lookup response WHEN fetching an album THEN builds the album with its tracks`() = runTest {
@@ -108,7 +206,13 @@ class KtorITunesRemoteDataSourceTest {
         prepareScenario(status = HttpStatusCode.TooManyRequests)
 
         // When / Then
-        assertThrows<RemoteException.RateLimited> { dataSource.searchSongs(term = "x", limit = 1) }
+        assertThrows<RemoteException.RateLimited> {
+            dataSource.searchSongs(
+                term = "x",
+                limit = 1,
+                forceRefresh = false,
+            )
+        }
     }
 
     @Test
@@ -117,7 +221,13 @@ class KtorITunesRemoteDataSourceTest {
         prepareScenario(status = HttpStatusCode.Forbidden)
 
         // When / Then
-        assertThrows<RemoteException.RateLimited> { dataSource.searchSongs(term = "x", limit = 1) }
+        assertThrows<RemoteException.RateLimited> {
+            dataSource.searchSongs(
+                term = "x",
+                limit = 1,
+                forceRefresh = false,
+            )
+        }
     }
 
     @Test
@@ -126,7 +236,13 @@ class KtorITunesRemoteDataSourceTest {
         prepareScenario(status = HttpStatusCode.InternalServerError)
 
         // When / Then
-        assertThrows<RemoteException.Unavailable> { dataSource.searchSongs(term = "x", limit = 1) }
+        assertThrows<RemoteException.Unavailable> {
+            dataSource.searchSongs(
+                term = "x",
+                limit = 1,
+                forceRefresh = false,
+            )
+        }
     }
 
     @Test
@@ -135,7 +251,7 @@ class KtorITunesRemoteDataSourceTest {
         prepareScenario(body = "not json")
 
         // When / Then
-        assertThrows<RemoteException.Unexpected> { dataSource.searchSongs(term = "x", limit = 1) }
+        assertThrows<RemoteException.Unexpected> { dataSource.searchSongs(term = "x", limit = 1, forceRefresh = false) }
     }
 
     private fun prepareScenario(
@@ -144,8 +260,10 @@ class KtorITunesRemoteDataSourceTest {
         country: String = "US",
     ) {
         requestedUrls = mutableListOf()
+        requestedData = mutableListOf()
         val engine = MockEngine { request ->
             requestedUrls += request.url
+            requestedData += request
             if (status.value >= 400) {
                 respondError(status)
             } else {

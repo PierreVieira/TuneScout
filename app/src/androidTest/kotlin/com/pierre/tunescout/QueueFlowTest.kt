@@ -118,6 +118,7 @@ private class FakeCatalogRemoteDataSource : ITunesRemoteDataSource {
     override suspend fun searchSongs(
         term: String,
         limit: Int,
+        forceRefresh: Boolean,
     ): List<Song> = catalog.take(limit)
 
     override suspend fun fetchAlbum(albumId: Long): Album? = album(id = albumId)

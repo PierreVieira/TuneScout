@@ -13,7 +13,9 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
@@ -25,6 +27,7 @@ internal class KtorITunesRemoteDataSource(
     override suspend fun searchSongs(
         term: String,
         limit: Int,
+        forceRefresh: Boolean,
     ): List<Song> = request {
         client
             .get(SEARCH_PATH) {
@@ -33,6 +36,7 @@ internal class KtorITunesRemoteDataSource(
                 parameter("media", "music")
                 parameter("entity", "song")
                 parameter("limit", limit)
+                if (forceRefresh) header(HttpHeaders.CacheControl, "no-cache")
             }.body<SearchResponseDto>()
             .results
             .mapNotNull { result -> result.toSongOrNull() }
