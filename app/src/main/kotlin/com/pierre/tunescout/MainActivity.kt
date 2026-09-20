@@ -2,19 +2,16 @@ package com.pierre.tunescout
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.presentation.content.MainContent
 import com.pierre.tunescout.presentation.model.MainUiState
-import com.pierre.tunescout.presentation.model.SystemBarUiModel
 import com.pierre.tunescout.presentation.viewmodel.MainViewModel
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -41,8 +38,8 @@ class MainActivity : ComponentActivity() {
     private fun ThemedContent(state: MainUiState.Ready) {
         LaunchedEffect(state.systemBars) {
             enableEdgeToEdge(
-                statusBarStyle = state.systemBars.statusBar.toSystemBarStyle(),
-                navigationBarStyle = state.systemBars.navigationBar.toSystemBarStyle(),
+                statusBarStyle = state.systemBars.statusBar.style,
+                navigationBarStyle = state.systemBars.navigationBar.style,
             )
         }
         TuneScoutTheme(
@@ -53,11 +50,5 @@ class MainActivity : ComponentActivity() {
                 requestNotificationPermissionsUiAction = viewModel.requestNotificationPermissionsUiAction,
             )
         }
-    }
-
-    private fun SystemBarUiModel.toSystemBarStyle(): SystemBarStyle = when (this) {
-        is SystemBarUiModel.Light -> SystemBarStyle.light(scrim.toArgb(), darkScrim.toArgb())
-        is SystemBarUiModel.Dark -> SystemBarStyle.dark(scrim.toArgb())
-        is SystemBarUiModel.FollowSystem -> SystemBarStyle.auto(lightScrim.toArgb(), darkScrim.toArgb())
     }
 }

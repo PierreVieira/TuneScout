@@ -1,13 +1,19 @@
 package com.pierre.tunescout.presentation.model
 
+import androidx.activity.SystemBarStyle
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 
 /**
- * One system bar, described with the same three cases `SystemBarStyle` is built from. The activity
- * turns it into that style; it is kept as plain data here because `SystemBarStyle` has no `equals`
- * and hides its fields, so a state holding one could neither be compared nor checked in a test.
+ * One system bar, described with the same three cases [SystemBarStyle] is built from. It is kept as
+ * plain data because [SystemBarStyle] has no `equals` and hides its fields, so a state holding one
+ * could neither be compared nor checked in a test. The style is built from that data on read, and
+ * being a getter it stays out of the generated `equals`.
  */
 sealed interface SystemBarUiModel {
+    /** What the activity hands to `enableEdgeToEdge` for this bar. */
+    val style: SystemBarStyle
+
     /**
      * Dark icons over a light bar.
      *
@@ -17,7 +23,10 @@ sealed interface SystemBarUiModel {
     data class Light(
         val scrim: Color,
         val darkScrim: Color,
-    ) : SystemBarUiModel
+    ) : SystemBarUiModel {
+        override val style: SystemBarStyle
+            get() = SystemBarStyle.light(scrim.toArgb(), darkScrim.toArgb())
+    }
 
     /**
      * Light icons over a dark bar.
@@ -26,7 +35,10 @@ sealed interface SystemBarUiModel {
      */
     data class Dark(
         val scrim: Color,
-    ) : SystemBarUiModel
+    ) : SystemBarUiModel {
+        override val style: SystemBarStyle
+            get() = SystemBarStyle.dark(scrim.toArgb())
+    }
 
     /**
      * Light or dark as the device is when the style is applied. Whether the device is in dark mode
@@ -39,5 +51,8 @@ sealed interface SystemBarUiModel {
     data class FollowSystem(
         val lightScrim: Color,
         val darkScrim: Color,
-    ) : SystemBarUiModel
+    ) : SystemBarUiModel {
+        override val style: SystemBarStyle
+            get() = SystemBarStyle.auto(lightScrim.toArgb(), darkScrim.toArgb())
+    }
 }
