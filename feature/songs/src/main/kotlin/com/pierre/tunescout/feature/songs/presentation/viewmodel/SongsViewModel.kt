@@ -9,7 +9,6 @@ import androidx.paging.cachedIn
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
@@ -57,11 +56,17 @@ class SongsViewModel(
             query = query,
             recentlyPlayed = recentlyPlayed,
             nowPlayingId = playback.currentSong?.id,
+            isPlaying = playback.isPlaying,
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(),
-        initialValue = SongsUiState(query = "", recentlyPlayed = emptyList(), nowPlayingId = null),
+        initialValue = SongsUiState(
+            query = "",
+            recentlyPlayed = emptyList(),
+            nowPlayingId = null,
+            isPlaying = false,
+        ),
     )
 
     val searchResults: Flow<PagingData<Song>> = query
@@ -76,14 +81,13 @@ class SongsViewModel(
         is SongsUiEvent.OnQueryChanged -> query.value = event.query
         SongsUiEvent.OnClearQueryClicked -> query.value = ""
         SongsUiEvent.OnThemeClicked -> navigator.navigate(ThemeSelectionRoute)
-        is SongsUiEvent.OnSongClicked -> playAndOpen(event.song)
+        is SongsUiEvent.OnSongClicked -> play(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
         is SongsUiEvent.OnRecentSongSwipedAway -> removeFromRecentlyPlayed(event.song)
     }
 
-    private fun playAndOpen(song: Song) {
+    private fun play(song: Song) {
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
-        navigator.navigate(PlayerRoute(songId = song.id))
     }
 
     private fun removeFromRecentlyPlayed(song: Song) {

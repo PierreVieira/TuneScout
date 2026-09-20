@@ -17,6 +17,7 @@ import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.SwipeToRemoveBox
+import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -24,6 +25,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 internal fun RecentlyPlayedList(
     songs: List<Song>,
     nowPlayingId: Long?,
+    isPlaying: Boolean,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -61,7 +63,10 @@ internal fun RecentlyPlayedList(
                     title = song.title,
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
-                    isHighlighted = song.id == nowPlayingId,
+                    nowPlaying = getNowPlayingState(
+                        isCurrentSong = song.id == nowPlayingId,
+                        isPlaying = isPlaying,
+                    ),
                     sharedSongId = song.id,
                     onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
                     trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },

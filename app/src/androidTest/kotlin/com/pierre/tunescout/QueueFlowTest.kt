@@ -2,6 +2,7 @@ package com.pierre.tunescout
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -55,13 +56,10 @@ class QueueFlowTest {
         onNode(hasSetTextAction()).performImeAction()
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
 
-        // Playing a search result opens the player on it.
+        // Playing a search result raises the mini player and leaves the results on screen, so the
+        // same song is now drawn twice: its row and the bar under the list.
         onNodeWithText("Get Lucky").performClick()
-        waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
-
-        // Back on the results, the mini player carries the same song under the list.
-        onNodeWithContentDescription("Back").performClick()
-        waitUntilAtLeastOneExists(hasText("Instant Crush"), SCREEN_TIMEOUT_MILLIS)
+        waitUntilAtLeastOneExists(hasContentDescription("Open the queue"), SCREEN_TIMEOUT_MILLIS)
         onAllNodesWithText("Get Lucky").assertCountEquals(2)
 
         // Queueing a second song from its options sheet.
@@ -72,13 +70,14 @@ class QueueFlowTest {
 
         // Starting the first song again keeps what was queued by hand.
         onAllNodesWithText("Get Lucky")[0].performClick()
-        waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("Open the queue").performClick()
 
-        // Both tiers are on screen: what plays, and what was queued by hand.
+        // Both tiers are on screen: what plays, and what was queued by hand. The results are still
+        // behind the sheet, so the queued song is taken by its row's reorder handle rather than by
+        // a title the list under it also carries.
         waitUntilAtLeastOneExists(hasText("Next in queue"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Queue").assertExists()
-        onNodeWithText("Instant Crush").assertExists()
+        onNodeWithContentDescription("Reorder Instant Crush").assertExists()
     }
 
     private companion object {

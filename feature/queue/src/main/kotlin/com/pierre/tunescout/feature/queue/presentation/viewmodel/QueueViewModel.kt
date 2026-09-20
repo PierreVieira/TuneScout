@@ -21,6 +21,7 @@ class QueueViewModel(
     private val emptyUiState = QueueUiState(
         contextTitle = null,
         nowPlaying = null,
+        isPlaying = false,
         queuedByUser = emptyList(),
         upNext = emptyList(),
     )
@@ -53,6 +54,7 @@ class QueueViewModel(
         return QueueUiState(
             contextTitle = (playback.context as? PlaybackContext.Album)?.title,
             nowPlaying = playback.currentEntry,
+            isPlaying = playback.isPlaying,
             queuedByUser = queuedByUser,
             upNext = upcoming.drop(queuedByUser.size),
         )

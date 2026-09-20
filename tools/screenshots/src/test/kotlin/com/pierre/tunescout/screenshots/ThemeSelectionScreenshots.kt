@@ -40,7 +40,12 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
             Box(modifier = Modifier.fillMaxSize()) {
                 SongsContent(
                     isHeaderInline = false,
-                    uiState = SongsUiState(query = "", recentlyPlayed = recentlyPlayed, nowPlayingId = null),
+                    uiState = SongsUiState(
+                        query = "",
+                        recentlyPlayed = recentlyPlayed,
+                        nowPlayingId = null,
+                        isPlaying = false,
+                    ),
                     searchResults = emptyPagingItems(),
                     onEvent = {},
                 )

@@ -36,6 +36,7 @@ class QueueViewModelTest {
 
             // Then
             assertThat(state.nowPlaying?.song?.id).isEqualTo(1L)
+            assertThat(state.isPlaying).isTrue()
             assertThat(state.queuedByUser.map { entry -> entry.song.id }).containsExactly(9L)
             assertThat(state.upNext.map { entry -> entry.song.id }).containsExactly(2L, 3L).inOrder()
         }

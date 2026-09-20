@@ -2,6 +2,36 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-20 — Playing a song no longer leaves the list
+
+**Tapping a song raises the mini player instead of opening the player.** Every list — search,
+recently played, an album, a playlist, the liked songs — used to `navigate(PlayerRoute)` right
+after starting playback, which threw the user off the list they were browsing for a screen they
+had not asked for. The three ViewModels now only call `PlaybackStarter`; the bar rises on its own,
+because it already observes playback, and it stays the one way into the player. Cost: reaching the
+player is two taps rather than one.
+
+**The row that is playing says so, the way Spotify's does.** `SongRow` took an `isHighlighted`
+flag that only tinted the subtitle, which is invisible once the screen no longer changes on a tap.
+It now takes a `NowPlayingState` — `None`, `Playing` or `Paused` — that colours the title with the
+accent and puts three animated bars in front of it. Three states rather than two booleans, so a row
+cannot claim to be paused while it is not the current song at all.
+
+**Pausing freezes the bars at a shape of their own, not mid-flight.** An `InfiniteTransition`
+cannot be paused, and resuming one from the height it stopped at would leave that bar bouncing
+between there and the top forever. `NowPlayingBars` therefore composes the transition only while
+the song plays and draws a fixed set of fractions otherwise. That also keeps the frame clock free
+on a paused screen, and keeps `androidTest` free of an infinite animation it has to idle around.
+
+**`isPlaying` went into four UiStates.** Songs, the collection and the queue carried
+`nowPlayingId` but not whether it was actually playing; the album carried `isPlaying` and never
+read it. All four now hand both to the rows, which is the whole input the indicator needs.
+
+**A list row no longer writes `LocalTappedSharedArtworkSurface`.** The arbitration stays — a row
+and the bar still draw the same song, and only one of them may claim a shared key — but the tap
+that used to point it at `LIST_ROW` was starting a flight that no longer happens. The bar is now
+the only surface that writes itself in, and so the only one that ever flies.
+
 ## 2026-09-19 — Liking an album, and chips to find one
 
 **Liking is a state, so it stays on the bar; queueing is a command, so it moves behind the

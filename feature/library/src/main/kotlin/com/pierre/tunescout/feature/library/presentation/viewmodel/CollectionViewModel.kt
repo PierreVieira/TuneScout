@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
@@ -43,6 +42,7 @@ class CollectionViewModel(
                 title = title,
                 songs = songs,
                 nowPlayingId = playback.currentSong?.id,
+                isPlaying = playback.isPlaying,
                 isDeletable = key is CollectionKey.Playlist,
             )
         }
@@ -53,7 +53,7 @@ class CollectionViewModel(
     )
 
     fun onEvent(event: CollectionUiEvent) = when (event) {
-        is CollectionUiEvent.OnSongClicked -> playAndOpen(event.song)
+        is CollectionUiEvent.OnSongClicked -> play(event.song)
         is CollectionUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
         is CollectionUiEvent.OnSongRemoved -> removeSong(event.song)
         CollectionUiEvent.OnPlayNowClicked -> playNow()
@@ -61,9 +61,8 @@ class CollectionViewModel(
         CollectionUiEvent.OnBackClicked -> navigator.navigateBack()
     }
 
-    private fun playAndOpen(song: Song) {
+    private fun play(song: Song) {
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
-        navigator.navigate(PlayerRoute(songId = song.id))
     }
 
     private fun playNow() {

@@ -37,6 +37,7 @@ import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
@@ -99,6 +100,7 @@ fun AlbumContent(
                 LoadedContent(
                     album = uiState.album,
                     nowPlayingId = uiState.nowPlayingId,
+                    isPlaying = uiState.isPlaying,
                     isHeaderInline = isHeaderInline,
                     onEvent = onEvent,
                 )
@@ -130,6 +132,7 @@ private fun FavoriteAction(
 private fun LoadedContent(
     album: Album,
     nowPlayingId: Long?,
+    isPlaying: Boolean,
     isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
 ) {
@@ -152,7 +155,10 @@ private fun LoadedContent(
                 subtitle = song.artistName,
                 artworkUrl = song.artwork.thumbnailUrl,
                 artworkSize = rowArtworkSize,
-                isHighlighted = song.id == nowPlayingId,
+                nowPlaying = getNowPlayingState(
+                    isCurrentSong = song.id == nowPlayingId,
+                    isPlaying = isPlaying,
+                ),
                 sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
                 trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },

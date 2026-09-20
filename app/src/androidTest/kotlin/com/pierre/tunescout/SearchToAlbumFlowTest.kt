@@ -1,6 +1,7 @@
 package com.pierre.tunescout
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
@@ -45,7 +46,7 @@ class SearchToAlbumFlowTest {
     }
 
     @Test
-    fun searchingASongOpensThePlayerAndItsAlbum() = compose.use {
+    fun searchingASongPlaysItAndTheMiniPlayerLeadsToThePlayerAndItsAlbum() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
 
         onNode(hasSetTextAction()).performTextInput("daft")
@@ -55,6 +56,11 @@ class SearchToAlbumFlowTest {
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
         // Anything already loaded is also in the mini player, so this takes the list row.
         onAllNodesWithText("Get Lucky")[0].performClick()
+
+        // The row only starts the song: the bar that rises under the results is what opens the
+        // player, and it is the second of the two places the song is now drawn.
+        waitUntilAtLeastOneExists(hasContentDescription("Open the queue"), SCREEN_TIMEOUT_MILLIS)
+        onAllNodesWithText("Get Lucky")[1].performClick()
 
         waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("More options").performClick()

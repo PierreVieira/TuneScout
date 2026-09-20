@@ -41,6 +41,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
     private val queue = QueueUiState(
         contextTitle = randomAccessMemories.title,
         nowPlaying = contextEntry(getLucky),
+        isPlaying = true,
         queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),
         upNext = listOf(contextEntry(instantCrush), contextEntry(loseYourselfToDance)),
     )

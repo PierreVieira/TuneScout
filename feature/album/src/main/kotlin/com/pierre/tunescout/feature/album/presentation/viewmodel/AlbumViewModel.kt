@@ -9,7 +9,6 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
@@ -47,7 +46,7 @@ class AlbumViewModel(
     }
 
     fun onEvent(event: AlbumUiEvent) = when (event) {
-        is AlbumUiEvent.OnSongClicked -> playAndOpen(event.song)
+        is AlbumUiEvent.OnSongClicked -> play(event.song)
         is AlbumUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
         AlbumUiEvent.OnPlayNowClicked -> playNow()
         AlbumUiEvent.OnFavoriteClicked -> toggleFavorite()
@@ -75,14 +74,13 @@ class AlbumViewModel(
         }
     }
 
-    private fun playAndOpen(song: Song) {
+    private fun play(song: Song) {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
         playbackStarter.play(
             song = song,
             songs = album.songs,
             context = PlaybackContext.Album(id = album.id, title = album.title),
         )
-        navigator.navigate(PlayerRoute(songId = song.id))
     }
 
     private fun toUiState(

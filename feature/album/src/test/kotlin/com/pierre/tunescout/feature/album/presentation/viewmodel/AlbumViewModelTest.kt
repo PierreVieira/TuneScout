@@ -7,7 +7,6 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -20,7 +19,6 @@ import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import io.mockk.mockk
 import io.mockk.verify
-import io.mockk.verifyOrder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -110,25 +108,24 @@ class AlbumViewModelTest {
     }
 
     @Test
-    fun `GIVEN a loaded album WHEN clicking a song THEN plays it with the album as queue and opens the player`() =
-        runTest {
-            // Given
-            val album = album(id = 10)
-            prepareScenario(cached = album)
+    fun `GIVEN a loaded album WHEN clicking a song THEN plays it with the album as queue and stays on it`() = runTest {
+        // Given
+        val album = album(id = 10)
+        prepareScenario(cached = album)
 
-            // When
-            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
+        // When
+        viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
 
-            // Then
-            verifyOrder {
-                playbackStarter.play(
-                    song = album.songs[1],
-                    songs = album.songs,
-                    context = PlaybackContext.Album(id = album.id, title = album.title),
-                )
-                navigator.navigate(PlayerRoute(songId = album.songs[1].id))
-            }
+        // Then
+        verify {
+            playbackStarter.play(
+                song = album.songs[1],
+                songs = album.songs,
+                context = PlaybackContext.Album(id = album.id, title = album.title),
+            )
         }
+        verify(exactly = 0) { navigator.navigate(any()) }
+    }
 
     @Test
     fun `GIVEN an album that is not liked WHEN clicking the heart THEN stores it`() =

@@ -168,13 +168,15 @@ of snapping to the target's on the first frame.
 ### One key, one source
 
 A key may only be flown by one element at a time, and the song that is playing is on screen twice:
-its row in the list and the mini player bar. The one that flies is **the one the finger landed on**.
+its row in the list and the mini player bar. The one that flies is **the one the finger landed on**
+— which, since a row only starts a song and never opens the player, is always the bar.
 
 Each surface declares itself with `LocalSharedArtworkSurface` (`SongRow` is `LIST_ROW`,
 `MiniPlayerContent` is `MINI_PLAYER`; the player declares nothing, since it is the other end of
-every flight) and writes itself into `LocalTappedSharedArtworkSurface` when it is tapped. A surface
-that is not the tapped one gets no modifier at all, so at any moment exactly one source claims a key
-— and before the first tap, none does.
+every flight), and the one that navigates writes itself into `LocalTappedSharedArtworkSurface` as it
+is tapped. Only `MiniPlayerContent` does, so a row's keys are never claimed: a surface that is not
+the tapped one gets no modifier at all, and before the first tap none does. The rows keep passing
+their keys so that the day something flies out of one, only the write is missing.
 
 The pop reads the same state, so the artwork returns to whichever surface it came from.
 
