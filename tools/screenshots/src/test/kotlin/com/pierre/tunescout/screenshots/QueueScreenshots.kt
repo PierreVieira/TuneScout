@@ -42,6 +42,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
         contextTitle = randomAccessMemories.title,
         nowPlaying = contextEntry(getLucky),
         isPlaying = true,
+        hasEnded = false,
         queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),
         upNext = listOf(contextEntry(instantCrush), contextEntry(loseYourselfToDance)),
     )

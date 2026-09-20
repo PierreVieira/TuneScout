@@ -41,7 +41,7 @@ class CollectionViewModel(
             CollectionUiState.Loaded(
                 title = title,
                 songs = songs,
-                nowPlayingId = playback.currentSong?.id,
+                nowPlayingId = playback.nowPlayingSong?.id,
                 isPlaying = playback.isPlaying,
                 isDeletable = key is CollectionKey.Playlist,
             )

@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.queue.presentation.viewmodel
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
@@ -39,6 +40,21 @@ class QueueViewModelTest {
             assertThat(state.isPlaying).isTrue()
             assertThat(state.queuedByUser.map { entry -> entry.song.id }).containsExactly(9L)
             assertThat(state.upNext.map { entry -> entry.song.id }).containsExactly(2L, 3L).inOrder()
+        }
+
+    @Test
+    fun `GIVEN the song reached its end WHEN observing THEN it is still listed, but as ended`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Ended))
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.nowPlaying?.song?.id).isEqualTo(1L)
+            assertThat(state.isPlaying).isFalse()
+            assertThat(state.hasEnded).isTrue()
         }
 
     @Test

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -98,6 +99,34 @@ class SongsContentTest {
     }
 
     @Test
+    fun givenASongIsPlayingItsRowShowsTheAnimatedBars() = compose.use {
+        val recents = listOf(song(id = 1, title = "One More Time"), song(id = 2, title = "Get Lucky"))
+        setContent { Content(uiState = state(recentlyPlayed = recents, nowPlayingId = 2, isPlaying = true)) }
+
+        onNodeWithContentDescription("Now playing").assertIsDisplayed()
+        onNodeWithContentDescription("Paused").assertDoesNotExist()
+    }
+
+    @Test
+    fun givenPlaybackIsPausedTheRowKeepsTheBarsAtRest() = compose.use {
+        val recents = listOf(song(id = 2, title = "Get Lucky"))
+        setContent { Content(uiState = state(recentlyPlayed = recents, nowPlayingId = 2, isPlaying = false)) }
+
+        onNodeWithContentDescription("Paused").assertIsDisplayed()
+        onNodeWithContentDescription("Now playing").assertDoesNotExist()
+    }
+
+    @Test
+    fun givenNoSongIsPlayingNoRowShowsTheBars() = compose.use {
+        val recents = listOf(song(id = 2, title = "Get Lucky"))
+        setContent { Content(uiState = state(recentlyPlayed = recents, nowPlayingId = null)) }
+
+        onNodeWithText("Get Lucky").assertIsDisplayed()
+        onNodeWithContentDescription("Now playing").assertDoesNotExist()
+        onNodeWithContentDescription("Paused").assertDoesNotExist()
+    }
+
+    @Test
     fun typingInTheSearchFieldEmitsQueryChanges() = compose.use {
         setContent { Content(uiState = state(recentlyPlayed = emptyList())) }
 
@@ -146,11 +175,13 @@ class SongsContentTest {
     private fun state(
         query: String = "",
         recentlyPlayed: List<Song> = emptyList(),
+        nowPlayingId: Long? = null,
+        isPlaying: Boolean = false,
     ): SongsUiState = SongsUiState(
         query = query,
         recentlyPlayed = recentlyPlayed,
-        nowPlayingId = null,
-        isPlaying = false,
+        nowPlayingId = nowPlayingId,
+        isPlaying = isPlaying,
     )
 
     private val loadedStates = LoadStates(

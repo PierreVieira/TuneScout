@@ -25,8 +25,21 @@ class PlaybackStateTest {
 
         // When / Then
         assertThat(state.currentSong?.id).isEqualTo(1L)
+        assertThat(state.nowPlayingSong?.id).isEqualTo(1L)
         assertThat(state.hasPrevious).isFalse()
         assertThat(state.hasNext).isTrue()
+    }
+
+    @Test
+    fun `GIVEN the song reached its end WHEN reading the state THEN it stays current, but none is playing`() {
+        // Given
+        val state = stateOf(currentIndex = 0, status = PlaybackStatus.Ended)
+
+        // When / Then
+        assertThat(state.hasEnded).isTrue()
+        assertThat(state.isPlaying).isFalse()
+        assertThat(state.currentSong?.id).isEqualTo(1L)
+        assertThat(state.nowPlayingSong).isNull()
     }
 
     @Test
@@ -59,12 +72,15 @@ class PlaybackStateTest {
         assertThat(state.hasNext).isFalse()
     }
 
-    private fun stateOf(currentIndex: Int): PlaybackState = PlaybackState.Idle.copy(
+    private fun stateOf(
+        currentIndex: Int,
+        status: PlaybackStatus = PlaybackStatus.Playing,
+    ): PlaybackState = PlaybackState.Idle.copy(
         entries = listOf(1L, 2L, 3L).map { id ->
             QueueEntry(id = "entry-$id", song = songOf(id), source = QueueSource.Context)
         },
         currentIndex = currentIndex,
-        status = PlaybackStatus.Playing,
+        status = status,
     )
 
     private fun songOf(id: Long): Song = Song(
