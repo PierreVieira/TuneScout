@@ -12,7 +12,8 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTextInput
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
+import com.pierre.tunescout.core.network.AlbumRemoteDataSource
+import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.song
 import de.mannodermaus.junit5.compose.ComposeContext
@@ -33,7 +34,8 @@ class SearchToAlbumFlowTest {
     val compose = createAndroidComposeExtension<MainActivity>()
 
     private val fakeRemoteModule: Module = module {
-        single<ITunesRemoteDataSource> { FakeITunesRemoteDataSource() }
+        single<SongSearchRemoteDataSource> { FakeSongSearchRemoteDataSource() }
+        single<AlbumRemoteDataSource> { FakeAlbumRemoteDataSource() }
     }
 
     @BeforeEach
@@ -98,7 +100,7 @@ class SearchToAlbumFlowTest {
     }
 }
 
-private class FakeITunesRemoteDataSource : ITunesRemoteDataSource {
+private class FakeSongSearchRemoteDataSource : SongSearchRemoteDataSource {
     private val catalog = listOf(
         song(id = 1, title = "Get Lucky"),
         song(id = 2, title = "Instant Crush"),
@@ -109,7 +111,9 @@ private class FakeITunesRemoteDataSource : ITunesRemoteDataSource {
         limit: Int,
         forceRefresh: Boolean,
     ): List<Song> = catalog.take(limit)
+}
 
+private class FakeAlbumRemoteDataSource : AlbumRemoteDataSource {
     override suspend fun fetchAlbum(albumId: Long): Album? = album(
         id = albumId,
         songs = listOf(

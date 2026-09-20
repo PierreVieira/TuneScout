@@ -2,19 +2,30 @@
 
 ### Remote (iTunes Search API over Ktor)
 
-The network layer is the `ITunesApi` interface in `core/network`, implemented with a Ktor client
-(OkHttp engine, `ContentNegotiation` with kotlinx.serialization JSON). Only the interface is `public`:
-the DTOs (`SongDto`, `SearchResponseDto`, ...) and the Ktor implementation are `internal` to
-`core/network`, and every response is mapped once, at the module boundary, to the `core/model` types
-(`Song`, `Album`). Nothing outside `core/network` sees a DTO or a Ktor type, so the HTTP stack can be
-swapped without touching a feature.
+The network layer is one interface per endpoint in `core/network/api`, each implemented in
+`core/network/impl` with a Ktor client (OkHttp engine, `ContentNegotiation` with kotlinx.serialization
+JSON). The features depend on the api module only — plain Kotlin, no Ktor on its classpath — and only
+`:app` depends on the impl, where the DTOs (`ResultDto`, `SearchResponseDto`) and the Ktor
+implementations are `internal`. Every response is mapped once, at the module boundary, to the
+`core/model` types (`Song`, `Album`). Nothing outside `core/network/impl` sees a DTO or a Ktor type, so
+the HTTP stack can be swapped without touching a feature, and the module graph check keeps it that way
+(see [module-structure.md](module-structure.md)).
 
 ```kotlin
-interface ITunesApi {
-    suspend fun searchSongs(term: String, limit: Int): List<Song>
-    suspend fun fetchAlbum(albumId: Long): Album
+fun interface SongSearchRemoteDataSource {
+    suspend fun searchSongs(term: String, limit: Int, forceRefresh: Boolean): List<Song>
+}
+
+fun interface AlbumRemoteDataSource {
+    suspend fun fetchAlbum(albumId: Long): Album?
 }
 ```
+
+A feature injects the one it calls: `feature/songs` searches, `feature/album` looks an album up, and
+neither sees the other's endpoint — nor does a fake have to stub it. The two share everything below the
+interface: the `HttpClient`, the DTOs and `toSongOrNull()`, because an album lookup returns the album's
+tracks in the same shape a search does, and both end up in the same `songs` table. `runRemoteRequest`
+turns what Ktor throws into a `RemoteException` for both.
 
 Suspend calls that can fail are wrapped at the repository boundary with `suspendRunCatching` and
 returned as `Result<T>` — see [coroutine-error-handling.md](coroutine-error-handling.md).
@@ -96,7 +107,7 @@ Repositories live in the feature that owns the screen (`feature/<name>/data/repo
 recently-played repository, which is shared and lives in core. They combine the two sources:
 
 - **Cache then network.** Observe Room first so the screen renders immediately, then refresh from
-  `ITunesApi` and write the result into Room; the observed `Flow` emits the update.
+  the remote data source and write the result into Room; the observed `Flow` emits the update.
 - **Recently played comes from Room only.** The list is local state (`RecentlyPlayedEntity`), never
   refetched.
 - **A refresh that fails does not clear the screen.** The cached rows stay, and the state carries a
@@ -108,7 +119,7 @@ recently-played repository, which is shared and lives in core. They combine the 
 
 ```kotlin
 class AlbumRepositoryImpl(
-    private val api: ITunesApi,
+    private val api: AlbumRemoteDataSource,
     private val dao: AlbumDao,
     private val mapper: AlbumMapper,
 ) : AlbumRepository {
@@ -133,7 +144,7 @@ is shorter than the requested `limit` or the cap is reached.
 
 ```kotlin
 class SearchSongsPagingSource(
-    private val api: ITunesApi,
+    private val api: SongSearchRemoteDataSource,
     private val term: String,
 ) : PagingSource<Int, Song>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Song> {
@@ -176,7 +187,7 @@ exactly what the app can still show with no connection.
 
 ### Connectivity
 
-`NetworkMonitor` (`core/network`) exposes `observeIsOnline(): Flow<Boolean>` over
+`NetworkMonitor` (`core/network/api`, implemented in `core/network/impl`) exposes `observeIsOnline(): Flow<Boolean>` over
 `ConnectivityManager.registerDefaultNetworkCallback`, with the state at subscription read from the
 active network's `NET_CAPABILITY_VALIDATED`. A screen uses it to say where its rows come from, to pick
 the right wording for a failure, and to retry by itself — never to decide whether to make a call.

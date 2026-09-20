@@ -325,7 +325,7 @@ reads like a namespace that is not one.
 
 ```kotlin
 // Correct
-class KtorITunesRemoteDataSource(...) {
+class KtorSongSearchRemoteDataSource(...) {
     private companion object {
         const val SEARCH_PATH = "search"
     }

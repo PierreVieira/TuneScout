@@ -4,14 +4,14 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.pierre.tunescout.core.database.SongLocalDataSource
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
 import com.pierre.tunescout.core.network.RemoteException
+import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
 
 internal const val MAX_SEARCH_RESULTS = 200
 internal const val MAX_CACHED_RESULTS = 50
 
 internal class SearchSongsPagingSource(
-    private val remoteDataSource: ITunesRemoteDataSource,
+    private val remoteDataSource: SongSearchRemoteDataSource,
     private val songLocalDataSource: SongLocalDataSource,
     private val term: String,
 ) : PagingSource<Int, Song>() {

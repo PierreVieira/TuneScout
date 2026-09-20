@@ -2,7 +2,7 @@ package com.pierre.tunescout.feature.album.data.repository
 
 import com.pierre.tunescout.core.database.AlbumLocalDataSource
 import com.pierre.tunescout.core.model.Album
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
+import com.pierre.tunescout.core.network.AlbumRemoteDataSource
 import com.pierre.tunescout.core.utils.suspendRunCatching
 import com.pierre.tunescout.feature.album.domain.repository.AlbumRepository
 import kotlinx.coroutines.flow.Flow
@@ -18,7 +18,7 @@ import kotlin.time.Duration
  * the rows already on screen — and one the throttling limit could refuse.
  */
 internal class AlbumRepositoryImpl(
-    private val remoteDataSource: ITunesRemoteDataSource,
+    private val remoteDataSource: AlbumRemoteDataSource,
     private val albumLocalDataSource: AlbumLocalDataSource,
     private val cacheMaxAge: Duration,
 ) : AlbumRepository {

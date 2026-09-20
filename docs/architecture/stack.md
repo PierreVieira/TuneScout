@@ -4,7 +4,7 @@
 - **UI:** Jetpack Compose with Material 3, plus `material3-adaptive` for the window size class and
   `material3-adaptive-navigation-suite` for the bar-or-rail the two tabs are drawn in
 - **Dependency injection:** Koin (`koin-android`, `koin-androidx-compose`)
-- **Network:** Ktor client (OkHttp engine) behind the `ITunesApi` interface in `core/network`
+- **Network:** Ktor client (OkHttp engine) behind the `SongSearchRemoteDataSource` and `AlbumRemoteDataSource` interfaces in `core/network/api` (implemented in `core/network/impl`)
 - **Serialization:** kotlinx.serialization (JSON)
 - **Local data:** Room 3 (`androidx.room3`) with the bundled SQLite driver; Preferences DataStore
   (`core/datastore`) for the handful of user preferences that are not rows

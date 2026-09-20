@@ -5,10 +5,9 @@ import androidx.paging.PagingSource.LoadResult
 import androidx.paging.testing.TestPager
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.SongLocalDataSource
-import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
 import com.pierre.tunescout.core.network.RemoteException
+import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.test.runTest
@@ -231,7 +230,7 @@ class SearchSongsPagingSourceTest {
 private class FakeRemoteDataSource(
     private val catalog: List<Song>,
     var failure: RemoteException?,
-) : ITunesRemoteDataSource {
+) : SongSearchRemoteDataSource {
     val requestedLimits = mutableListOf<Int>()
     val requestedForceRefresh = mutableListOf<Boolean>()
 
@@ -245,8 +244,6 @@ private class FakeRemoteDataSource(
         failure?.let { throw it }
         return catalog.take(limit)
     }
-
-    override suspend fun fetchAlbum(albumId: Long): Album? = error("unused")
 }
 
 private class FakeSongLocalDataSource(

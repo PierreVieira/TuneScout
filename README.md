@@ -104,8 +104,10 @@ app/                 composition root: Koin modules, MainActivity, NavDisplay, p
 core/
   model/             domain models, plain Kotlin
   utils/             coroutine helpers, dispatchers, duration formatting
-  network/           ITunesRemoteDataSource: the iTunes API behind an interface (Ktor),
-                     and NetworkMonitor: whether the device can reach it
+  network/api/       the iTunes API behind one interface per endpoint, and NetworkMonitor:
+                     whether the device can reach it; plain Kotlin
+  network/impl/      Ktor behind those interfaces: the HTTP client, its disk cache, DTOs and
+                     mappers; only app sees it, so the API client can be swapped for another
   database/api/      the local data source interfaces every feature depends on, plain Kotlin
   database/impl/     Room: songs, albums, the history, the saved session, playlists and likes
   playback/api/      the playback role interfaces every screen depends on, plain Kotlin
