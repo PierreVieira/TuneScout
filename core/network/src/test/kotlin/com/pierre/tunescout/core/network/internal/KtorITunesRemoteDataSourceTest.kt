@@ -34,6 +34,21 @@ class KtorITunesRemoteDataSourceTest {
         }
         """.trimIndent()
 
+    private val updatedSearchBody =
+        """
+        {
+          "resultCount": 1,
+          "results": [
+            {
+              "wrapperType": "track", "kind": "song", "trackId": 1, "trackName": "Get Lucky (Remix)",
+              "artistName": "Daft Punk", "collectionId": 10, "collectionName": "Random Access Memories",
+              "artworkUrl100": "https://example.com/a.jpg", "previewUrl": "https://example.com/p.m4a",
+              "trackTimeMillis": 369000, "trackNumber": 8
+            }
+          ]
+        }
+        """.trimIndent()
+
     private val lookupBody =
         """
         {
@@ -112,6 +127,63 @@ class KtorITunesRemoteDataSourceTest {
         // Then
         assertThat(requestedData.single().headers[HttpHeaders.CacheControl]).isEqualTo("no-cache")
     }
+
+    @Test
+    fun `GIVEN a server-cacheable search WHEN refreshing without forceRefresh THEN serves the stale cached result`() =
+        runTest {
+            // Given
+            var networkHits = 0
+            val engine = MockEngine {
+                networkHits++
+                respond(
+                    content = if (networkHits == 1) searchBody else updatedSearchBody,
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
+                        HttpHeaders.ContentType to listOf("text/javascript"),
+                        HttpHeaders.CacheControl to listOf("max-age=86400"),
+                    ),
+                )
+            }
+            dataSource =
+                KtorITunesRemoteDataSource(client = HttpClientFactory().create(engine), countryProvider = { "US" })
+
+            // When
+            val firstSearch = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
+            val plainRefresh = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
+
+            // Then
+            assertThat(networkHits).isEqualTo(1)
+            assertThat(plainRefresh).isEqualTo(firstSearch)
+        }
+
+    @Test
+    fun `GIVEN a server-cacheable search WHEN pulling to refresh with forceRefresh THEN fetches the updated result`() =
+        runTest {
+            // Given
+            var networkHits = 0
+            val engine = MockEngine {
+                networkHits++
+                respond(
+                    content = if (networkHits == 1) searchBody else updatedSearchBody,
+                    status = HttpStatusCode.OK,
+                    headers = headersOf(
+                        HttpHeaders.ContentType to listOf("text/javascript"),
+                        HttpHeaders.CacheControl to listOf("max-age=86400"),
+                    ),
+                )
+            }
+            dataSource =
+                KtorITunesRemoteDataSource(client = HttpClientFactory().create(engine), countryProvider = { "US" })
+
+            // When
+            val firstSearch = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
+            val pullToRefresh = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = true)
+
+            // Then
+            assertThat(networkHits).isEqualTo(2)
+            assertThat(firstSearch.map { song -> song.title }).containsExactly("Get Lucky")
+            assertThat(pullToRefresh.map { song -> song.title }).containsExactly("Get Lucky (Remix)")
+        }
 
     @Test
     fun `GIVEN a lookup response WHEN fetching an album THEN builds the album with its tracks`() = runTest {
