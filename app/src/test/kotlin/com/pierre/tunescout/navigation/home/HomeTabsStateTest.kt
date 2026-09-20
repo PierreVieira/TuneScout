@@ -63,6 +63,8 @@ class HomeTabsStateTest {
     /**
      * The back stacks are only read by `toDecoratedEntries`, which is a composable and belongs to
      * the instrumented suites, so the state under test here needs none of them.
+     *
+     * @return a state with no back stacks, on the tab at [selectedIndex].
      */
     private fun prepareScenario(selectedIndex: Int = 0): HomeTabsState = HomeTabsState(
         backStacks = emptyMap(),

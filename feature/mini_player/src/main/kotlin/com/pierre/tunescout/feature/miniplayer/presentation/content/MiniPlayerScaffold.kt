@@ -42,6 +42,8 @@ private val consumedInsets: WindowInsets
  * The song the bar draws, held at its last value once the bar starts leaving. Opening the player
  * changes what is playing a frame or two later, and a bar that followed that change mid-exit would
  * claim the shared artwork key of the song the list row is already flying.
+ *
+ * @return [song] while [isVisible], and the last song seen once it is not.
  */
 @Composable
 internal fun rememberBarSong(

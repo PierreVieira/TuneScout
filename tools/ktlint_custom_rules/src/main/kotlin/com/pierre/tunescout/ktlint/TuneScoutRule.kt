@@ -14,6 +14,8 @@ private val tuneScoutAbout = About(
 /**
  * Base class for every custom rule in this rule set: fills in [RuleId] (prefixed with [RULE_SET_ID]) and the
  * shared [About] block so each rule only has to name itself.
+ *
+ * @param id the name of the rule, without the rule set prefix.
  */
 abstract class TuneScoutRule(
     id: String,

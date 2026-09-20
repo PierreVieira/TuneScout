@@ -178,6 +178,8 @@ private class FakePlaylistSongDao : SongDao {
 /**
  * Implements only the members the DAO declares, so `appendSong` — the one with a body of its own,
  * and the guard against adding the same song twice — runs for real.
+ *
+ * @property songs the song table the fake reads from, by song id.
  */
 private class FakePlaylistDao(
     private val songs: Map<Long, SongEntity>,

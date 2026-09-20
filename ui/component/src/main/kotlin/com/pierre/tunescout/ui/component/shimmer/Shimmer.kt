@@ -44,6 +44,8 @@ private val tuneScoutShimmerTheme = defaultShimmerTheme.copy(
  * where the band is and fades towards its edges. On the dark palette the stock edge alpha of 0.25
  * leaves a placeholder at 5% white — invisible against a black background — so the edges are held
  * much higher and the pause between sweeps shortened.
+ *
+ * @return this modifier with the placeholder sweep drawn over it.
  */
 @Composable
 fun Modifier.shimmer(): Modifier {

@@ -41,6 +41,55 @@ private fun rememberFullyExpandedSheetState(): SheetState =
     rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ```
 
+### KDoc tags
+
+A KDoc follows the shape of the [official Kotlin documentation](https://kotlinlang.org/docs/kotlin-doc.html).
+The summary says what the declaration is and why it is the way it is; the tags then describe its parts:
+
+- **A documented class describes everything its constructor takes**: `@property` for each `val` / `var`,
+  `@param` for each plain parameter and each type parameter, in declaration order.
+- **A documented function that returns a value says what with `@return`.** Its parameters are referred to
+  inline, as `[name]` links in the text, and get a `@param` only when one needs a longer explanation.
+- A tag starts in lower case and ends with a period, after one blank ` *` line.
+
+```kotlin
+// Correct
+/**
+ * The state behind the tab host: one back stack per tab, and which one is on screen.
+ *
+ * @property backStacks the back stack of each tab.
+ * @param selectedIndexState the saveable holder of the selected tab's position in [HomeTab.entries].
+ */
+internal class HomeTabsState(
+    private val backStacks: Map<HomeTab, NavBackStack<NavKey>>,
+    selectedIndexState: MutableIntState,
+)
+
+/**
+ * The song the bar draws, held at its last value once the bar starts leaving.
+ *
+ * @return [song] while [isVisible], and the last song seen once it is not.
+ */
+@Composable
+internal fun rememberBarSong(song: Song?, isVisible: Boolean): Song?
+
+// Wrong — the reader still has to open the class to learn what it holds, and the function to learn
+// what comes back
+/** The state behind the tab host. */
+internal class HomeTabsState(private val backStacks: ..., selectedIndexState: MutableIntState)
+
+/** The song the bar draws. */
+@Composable
+internal fun rememberBarSong(song: Song?, isVisible: Boolean): Song?
+```
+
+Nothing here asks for a KDoc to exist — a declaration whose name says it all still has none. The tags
+complete the KDocs that do exist.
+
+This is enforced by the custom ktlint rule `tunescout-style:kdoc-tags`, which also reports a `@param` /
+`@property` naming something the constructor no longer declares, so a rename cannot leave a stale tag
+behind.
+
 The `// Correct` / `// Wrong` markers in this document are annotations for the examples, not something to
 copy into code. Test bodies keep one exception: their `// Given` / `// When` / `// Then` section markers
 are intentional structure — see [docs/testing/given-when-then.md](../testing/given-when-then.md). Any

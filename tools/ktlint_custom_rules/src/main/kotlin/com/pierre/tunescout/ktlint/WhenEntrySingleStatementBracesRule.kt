@@ -38,6 +38,8 @@ class WhenEntrySingleStatementBracesRule : TuneScoutRule("when-entry-single-stat
      * A bare lambda literal as the sole statement is the block's return value (e.g. a branch typed
      * `() -> Unit`). The outer braces are the required block syntax and cannot be collapsed into the
      * lambda's own braces without changing meaning (eager execution instead of a deferred lambda).
+     *
+     * @return whether this statement is a lambda literal.
      */
     private fun ASTNode.isReturnedLambda(): Boolean = elementType == LAMBDA_EXPRESSION
 }

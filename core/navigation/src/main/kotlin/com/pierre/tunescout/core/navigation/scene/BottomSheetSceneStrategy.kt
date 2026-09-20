@@ -14,6 +14,9 @@ import androidx.navigation3.scene.SceneStrategyScope
 /**
  * [containerColor] is read inside the sheet's own composition rather than captured here, so the
  * sheet follows a theme the user changes while it is open.
+ *
+ * @param T the type of the back stack keys.
+ * @property containerColor the background of the sheets this strategy opens.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 class BottomSheetSceneStrategy<T : Any>(

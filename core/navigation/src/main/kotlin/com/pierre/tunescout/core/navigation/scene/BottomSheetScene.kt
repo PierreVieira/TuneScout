@@ -50,6 +50,14 @@ private val closeIconSize = 20.dp
  * A sheet, or a dialog in a window too short to open one. A landscape phone leaves a bottom sheet
  * barely a row of content between the drag handle and the navigation bar, so the same entry is
  * centred as a dialog there instead.
+ *
+ * @param T the type of the back stack keys.
+ * @property key the key of the entry shown, which identifies the scene.
+ * @property previousEntries the entries to go back to when the overlay is dismissed.
+ * @property overlaidEntries the entries that stay drawn underneath the overlay.
+ * @property entry the entry drawn inside the sheet or the dialog.
+ * @property containerColor the background of the sheet, read inside its own composition.
+ * @property onBack called when the user dismisses the overlay.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 internal data class BottomSheetScene<T : Any>(
@@ -86,7 +94,11 @@ internal data class BottomSheetScene<T : Any>(
     }
 }
 
-/** A landscape window is short enough that the half-open state hides the last option. */
+/**
+ * A landscape window is short enough that the half-open state hides the last option.
+ *
+ * @return a sheet state that skips the half-open position.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun rememberFullyExpandedSheetState(): SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

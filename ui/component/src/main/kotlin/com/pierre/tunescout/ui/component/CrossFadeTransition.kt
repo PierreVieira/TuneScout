@@ -14,6 +14,8 @@ private const val CROSS_FADE_MILLIS = 220
  *
  * It is the motion for a swap between siblings — the tabs of the home display — where a slide would
  * claim a direction, and with it a hierarchy, that the two panes do not have between them.
+ *
+ * @return the transform that fades the incoming pane in while the outgoing one fades out.
  */
 fun AnimatedContentTransitionScope<*>.createCrossFadeTransition(): ContentTransform =
     fadeIn(animationSpec = tween(CROSS_FADE_MILLIS)) togetherWith

@@ -22,6 +22,9 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
  * The entries of the first tab are kept in the list while another tab is selected, so the nested
  * display has something to animate back to and the system back gesture lands on the first tab —
  * the behaviour Android asks of a tabbed app.
+ *
+ * @property backStacks the back stack of each tab.
+ * @param selectedIndexState the saveable holder of the selected tab's position in [HomeTab.entries].
  */
 @Stable
 internal class HomeTabsState(

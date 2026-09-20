@@ -103,6 +103,8 @@ private fun FollowHideableBarsEffect(
  * navigation and the accent itself stays for the things that should pull the eye. Both tokens
  * follow the wallpaper when dynamic colours are on, so nothing here has to know which palette is
  * in force.
+ *
+ * @return the colours of a navigation item, selected or not, in the palette in force.
  */
 @Composable
 private fun navigationItemColors(): NavigationItemColors = NavigationItemColors(
