@@ -5,13 +5,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.isImeVisible
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
@@ -39,15 +38,6 @@ private val consumedInsets: WindowInsets
     @Composable get() = WindowInsets.navigationBars.only(WindowInsetsSides.Bottom)
 
 /**
- * The bar gives its room back to whatever is being typed into: it sits where the keyboard opens, and
- * a landscape window has little enough height without it. This reads the visibility flag rather than
- * the inset, which still measures the navigation bar while the keyboard is closed.
- */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun isKeyboardOpen(): Boolean = WindowInsets.isImeVisible
-
-/**
  * The song the bar draws, held at its last value once the bar starts leaving. Opening the player
  * changes what is playing a frame or two later, and a bar that followed that change mid-exit would
  * claim the shared artwork key of the song the list row is already flying.
@@ -72,12 +62,13 @@ fun MiniPlayerScaffold(
     content: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isVisible = isAllowed && !isKeyboardOpen() && uiState.song != null
+    val isVisible = isAllowed && uiState.song != null
     val song = rememberBarSong(song = uiState.song, isVisible = isVisible)
     Column(modifier = modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .weight(1f)
+                .consumeWindowInsets(WindowInsets.ime)
                 .then(if (isVisible) Modifier.consumeWindowInsets(consumedInsets) else Modifier),
         ) {
             content()

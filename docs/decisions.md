@@ -32,6 +32,20 @@ reports as it animates, so the list grows into the room instead of a gap opening
 screen keeps its `safeDrawingPadding`, so nothing ever runs under the status bar — the cost is that
 the room won is the header's, not the status bar's as well.
 
+**The keyboard covers the bar, it no longer sends it away.** This replaces "The mini player stands
+down while the keyboard is up", of 2026-09-18: the bar stood down on `WindowInsets.isImeVisible`,
+which stays true after a back gesture dismisses the keyboard, so the bar left for a search and never
+came back — what is playing vanished until the process restarted.
+Nothing reads the flag now. The keyboard simply draws over the navigation bar and the bar, both of
+which are there again the moment it closes, and there is no state left to get stuck.
+
+**Which means the content stops paying for the keyboard too.** The scaffold consumes the `ime`
+inset on behalf of the screen above it: a screen that padded for a keyboard already covering the
+chrome below it left a band of nothing between the list and the keys. The list now runs under the
+keyboard and is scrolled out from under it, which is the same bargain the navigation bar and the
+bar take. The cost is that the bar is out of reach while typing — already true of the rule this
+replaces, and one tap of the keyboard's own dismiss away.
+
 ## 2026-09-20 — Playing a song no longer leaves the list
 
 **Tapping a song raises the mini player instead of opening the player.** Every list — search,
