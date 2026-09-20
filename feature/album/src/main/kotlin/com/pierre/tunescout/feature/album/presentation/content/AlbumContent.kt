@@ -66,6 +66,13 @@ fun AlbumContent(
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
             actions = {
                 if (uiState is AlbumUiState.Loaded) {
+                    if (uiState.album.songs.isNotEmpty()) {
+                        TopBarAction(
+                            icon = TuneScoutIcons.play,
+                            contentDescription = stringResource(R.string.album_play_now),
+                            onClick = { onEvent(AlbumUiEvent.OnPlayNowClicked) },
+                        )
+                    }
                     FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
                     TopBarAction(
                         icon = TuneScoutIcons.moreMenu,

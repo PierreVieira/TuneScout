@@ -22,8 +22,10 @@ import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
 import com.pierre.tunescout.feature.album.presentation.navigation.albumOptionsEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.createPlaylistEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.favoritesEntry
+import com.pierre.tunescout.feature.library.presentation.navigation.favoritesOptionsEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.librarySearchEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.playlistEntry
+import com.pierre.tunescout.feature.library.presentation.navigation.playlistOptionsEntry
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerScaffold
 import com.pierre.tunescout.feature.player.presentation.navigation.playerEntry
 import com.pierre.tunescout.feature.queue.presentation.navigation.queueEntry
@@ -81,7 +83,9 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
                             homeEntry(tabsState = tabsState)
                             librarySearchEntry()
                             favoritesEntry()
+                            favoritesOptionsEntry()
                             playlistEntry()
+                            playlistOptionsEntry()
                             createPlaylistEntry()
                             songOptionsEntry()
                             addToPlaylistEntry()

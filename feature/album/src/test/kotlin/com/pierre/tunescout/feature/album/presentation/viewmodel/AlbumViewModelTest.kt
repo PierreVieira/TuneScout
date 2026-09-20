@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.album
@@ -31,6 +32,7 @@ class AlbumViewModelTest {
     private lateinit var viewModel: AlbumViewModel
     private lateinit var localAlbum: MutableStateFlow<Album?>
     private lateinit var playbackStarter: PlaybackStarter
+    private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var refreshCalls: MutableList<Long>
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
@@ -170,6 +172,32 @@ class AlbumViewModelTest {
         }
 
     @Test
+    fun `GIVEN a loaded album WHEN playing it now THEN it takes over the current song`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnPlayNowClicked)
+
+            // Then
+            verify { enqueuer.playNow(album.songs) }
+        }
+
+    @Test
+    fun `GIVEN the album has not loaded WHEN playing it now THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(cached = null)
+
+        // When
+        viewModel.onEvent(AlbumUiEvent.OnPlayNowClicked)
+
+        // Then
+        verify(exactly = 0) { enqueuer.playNow(any()) }
+    }
+
+    @Test
     fun `GIVEN a loaded album WHEN clicking the overflow THEN opens the album options`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
@@ -219,6 +247,7 @@ class AlbumViewModelTest {
         favoriteToggles = mutableListOf()
         val playbackStateFlow = MutableStateFlow(playback)
         playbackStarter = mockk(relaxUnitFun = true)
+        enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = AlbumViewModel(
             route = AlbumRoute(albumId = 10),
@@ -233,6 +262,7 @@ class AlbumViewModelTest {
             ),
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
+            enqueuer = enqueuer,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
