@@ -13,7 +13,7 @@ import kotlinx.coroutines.awaitCancellation
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun CapturingEditorInfo(
+fun CapturingEditorInfoBox(
     onEditorInfo: (EditorInfo) -> Unit,
     content: @Composable () -> Unit,
 ) {

@@ -5,13 +5,12 @@ import com.pierre.tunescout.core.model.NO_QUEUE_INDEX
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.utils.IdGenerator
 import kotlin.time.Duration
 
 internal class PlaybackQueue(
     private val player: ExoPlayer,
     private val mediaItemFactory: MediaItemFactory,
-    private val idGenerator: IdGenerator,
+    private val timelineFactory: QueueTimelineFactory,
 ) {
     var entries: List<QueueEntry> = emptyList()
         private set
@@ -26,11 +25,10 @@ internal class PlaybackQueue(
         song: Song,
         songs: List<Song>,
     ) {
-        val timeline = buildTimeline(
+        val timeline = timelineFactory.buildTimeline(
             songs = songs.ifEmpty { listOf(song) },
             startSongId = song.id,
-            carriedEntries = getCarriedEntries(entries, currentIndex),
-            createEntryId = idGenerator::createId,
+            carriedEntries = timelineFactory.getCarriedEntries(entries, currentIndex),
         )
         replaceWith(timeline.entries, timeline.startIndex, 0L)
     }
@@ -57,7 +55,7 @@ internal class PlaybackQueue(
     }
 
     fun addToQueue(songs: List<Song>) {
-        insertAt(songs, getUserQueueInsertIndex(entries, currentIndex))
+        insertAt(songs, timelineFactory.getUserQueueInsertIndex(entries, currentIndex))
     }
 
     fun remove(entryId: String) {
@@ -82,7 +80,7 @@ internal class PlaybackQueue(
         songs: List<Song>,
         index: Int,
     ) {
-        val added = buildEntries(songs, QueueSource.UserQueue, idGenerator::createId)
+        val added = timelineFactory.buildEntries(songs, QueueSource.UserQueue)
         entries = entries.take(index) + added + entries.drop(index)
         player.addMediaItems(index, added.map(mediaItemFactory::createMediaItem))
     }

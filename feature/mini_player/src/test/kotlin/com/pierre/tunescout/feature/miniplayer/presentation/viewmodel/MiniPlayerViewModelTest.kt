@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
+import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,10 +42,10 @@ class MiniPlayerViewModelTest {
             )
 
             // When
-            val state = viewModel.uiState.value
+            val state = viewModel.uiState.value as MiniPlayerUiState.Loaded
 
             // Then
-            assertThat(state.song?.id).isEqualTo(1L)
+            assertThat(state.song.id).isEqualTo(1L)
             assertThat(state.isPlaying).isTrue()
             assertThat(state.progress).isEqualTo(0.5f)
         }
@@ -61,7 +62,7 @@ class MiniPlayerViewModelTest {
             )
 
             // When
-            val state = viewModel.uiState.value
+            val state = viewModel.uiState.value as MiniPlayerUiState.Loaded
 
             // Then
             assertThat(state.progress).isEqualTo(0.25f)
@@ -76,10 +77,10 @@ class MiniPlayerViewModelTest {
             )
 
             // When
-            val state = viewModel.uiState.value
+            val state = viewModel.uiState.value as MiniPlayerUiState.Loaded
 
             // Then
-            assertThat(state.song?.id).isEqualTo(7L)
+            assertThat(state.song.id).isEqualTo(7L)
             assertThat(state.isPlaying).isFalse()
         }
 
@@ -91,7 +92,7 @@ class MiniPlayerViewModelTest {
         )
 
         // When
-        val state = viewModel.uiState.value
+        val state = viewModel.uiState.value as MiniPlayerUiState.Loaded
 
         // Then
         assertThat(state.hasEnded).isTrue()
@@ -107,7 +108,7 @@ class MiniPlayerViewModelTest {
         val state = viewModel.uiState.value
 
         // Then
-        assertThat(state.song).isNull()
+        assertThat(state).isEqualTo(MiniPlayerUiState.Empty)
     }
 
     @Test

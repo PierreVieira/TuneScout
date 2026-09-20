@@ -24,8 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
 import com.pierre.tunescout.feature.miniplayer.presentation.viewmodel.MiniPlayerViewModel
-import com.pierre.tunescout.ui.component.getPlayButtonState
+import com.pierre.tunescout.ui.component.PlayButtonState
 import com.pierre.tunescout.ui.utils.animation.LocalSharedElementScopes
 import com.pierre.tunescout.ui.utils.animation.rememberSharedElementScopes
 import org.koin.compose.viewmodel.koinViewModel
@@ -41,6 +42,8 @@ private val consumedInsets: WindowInsets
  * The song the bar draws, held at its last value once the bar starts leaving. Opening the player
  * changes what is playing a frame or two later, and a bar that followed that change mid-exit would
  * claim the shared artwork key of the song the list row is already flying.
+ *
+ * @return [song] while [isVisible], and the last song seen once it is not.
  */
 @Composable
 internal fun rememberBarSong(
@@ -54,6 +57,13 @@ internal fun rememberBarSong(
     return barSong
 }
 
+/**
+ * The bar fades alone, with no expand or shrink: it keeps its bounds while it leaves, which is what
+ * the artwork flying out of it animates from.
+ *
+ * It is capped inside the navigation bar padding, not around it, so it centres on the same axis as
+ * the content above rather than on the whole window.
+ */
 @Composable
 fun MiniPlayerScaffold(
     isAllowed: Boolean,
@@ -62,8 +72,9 @@ fun MiniPlayerScaffold(
     content: @Composable () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isVisible = isAllowed && uiState.song != null
-    val song = rememberBarSong(song = uiState.song, isVisible = isVisible)
+    val loaded = uiState as? MiniPlayerUiState.Loaded
+    val isVisible = isAllowed && loaded != null
+    val song = rememberBarSong(song = loaded?.song, isVisible = isVisible)
     Column(modifier = modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -73,8 +84,6 @@ fun MiniPlayerScaffold(
         ) {
             content()
         }
-        // Fade alone, with no expand or shrink: the bar keeps its bounds while it leaves, which is
-        // what the artwork flying out of it animates from.
         AnimatedVisibility(
             visible = isVisible,
             enter = fadeIn(),
@@ -84,8 +93,6 @@ fun MiniPlayerScaffold(
                 CompositionLocalProvider(
                     LocalSharedElementScopes provides rememberSharedElementScopes(this@AnimatedVisibility),
                 ) {
-                    // The bar is capped inside the navigation bar padding, not around it, so it
-                    // centres on the same axis as the content above rather than on the whole window.
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -94,11 +101,11 @@ fun MiniPlayerScaffold(
                     ) {
                         MiniPlayerContent(
                             song = song,
-                            playButtonState = getPlayButtonState(
-                                isPlaying = uiState.isPlaying,
-                                hasEnded = uiState.hasEnded,
+                            playButtonState = PlayButtonState.of(
+                                isPlaying = loaded?.isPlaying == true,
+                                hasEnded = loaded?.hasEnded == true,
                             ),
-                            progress = uiState.progress,
+                            progress = loaded?.progress ?: 0f,
                             onEvent = viewModel::onEvent,
                             modifier = Modifier.fillMaxWidth(),
                         )

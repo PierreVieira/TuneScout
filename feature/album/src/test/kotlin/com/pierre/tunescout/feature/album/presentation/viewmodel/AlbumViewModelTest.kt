@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.album.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.navigation.Navigator
@@ -65,8 +66,7 @@ class AlbumViewModelTest {
 
             // Then
             assertThat(state.album.id).isEqualTo(10L)
-            assertThat(state.nowPlayingId).isEqualTo(2L)
-            assertThat(state.isPlaying).isTrue()
+            assertThat(state.nowPlaying).isEqualTo(NowPlaying(songId = 2L, isPlaying = true))
         }
 
     @Test

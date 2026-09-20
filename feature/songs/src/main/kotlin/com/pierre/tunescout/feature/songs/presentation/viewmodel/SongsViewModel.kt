@@ -35,9 +35,9 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
     private val useCases: SongsUseCases,
-    private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val navigator: Navigator,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     private val searchDebounce = 300.milliseconds
     private val idleLoadStates = LoadStates(
@@ -57,8 +57,7 @@ class SongsViewModel(
         SongsUiState(
             query = query,
             recentlyPlayed = recentlyPlayed,
-            nowPlayingId = playback.nowPlayingSong?.id,
-            isPlaying = playback.isPlaying,
+            nowPlaying = playback.nowPlaying,
             songPendingRemoval = pendingRemoval,
         )
     }.stateIn(
@@ -67,8 +66,7 @@ class SongsViewModel(
         initialValue = SongsUiState(
             query = "",
             recentlyPlayed = emptyList(),
-            nowPlayingId = null,
-            isPlaying = false,
+            nowPlaying = null,
             songPendingRemoval = null,
         ),
     )

@@ -7,7 +7,7 @@ class SongSharedKeysTest {
     @Test
     fun givenNoSongIdTheKeyIsNull() {
         // Given / When
-        val key = getSongSharedKey(songId = null, element = SongSharedElement.ARTWORK)
+        val key = SongSharedKey.createOrNull(songId = null, element = SongSharedElement.ARTWORK)
 
         // Then
         assertThat(key).isNull()
@@ -16,8 +16,8 @@ class SongSharedKeysTest {
     @Test
     fun givenASongIdEachElementGetsItsOwnKey() {
         // Given / When
-        val artwork = getSongSharedKey(songId = 7, element = SongSharedElement.ARTWORK)
-        val title = getSongSharedKey(songId = 7, element = SongSharedElement.TITLE)
+        val artwork = SongSharedKey.createOrNull(songId = 7, element = SongSharedElement.ARTWORK)
+        val title = SongSharedKey.createOrNull(songId = 7, element = SongSharedElement.TITLE)
 
         // Then
         assertThat(artwork).isEqualTo(SongSharedKey(songId = 7, element = SongSharedElement.ARTWORK))

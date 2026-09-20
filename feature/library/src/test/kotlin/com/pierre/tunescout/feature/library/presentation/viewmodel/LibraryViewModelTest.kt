@@ -19,6 +19,7 @@ import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.LibraryUseCases
+import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiEvent
 import io.mockk.mockk
@@ -241,6 +242,7 @@ class LibraryViewModelTest {
                 observeViewMode = { storedViewMode },
                 setViewMode = { mode -> storedViewMode.value = mode },
             ),
+            itemMapper = LibraryItemUiModelMapper(),
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }

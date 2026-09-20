@@ -20,7 +20,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
  * the same bar behaves in Spotify's library.
  */
 @Composable
-internal fun LibraryFilterChips(
+internal fun LibraryFilterChipRow(
     selected: LibraryFilter?,
     onFilterClick: (LibraryFilter) -> Unit,
     modifier: Modifier = Modifier,

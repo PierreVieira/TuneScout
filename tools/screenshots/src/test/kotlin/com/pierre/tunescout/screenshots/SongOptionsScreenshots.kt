@@ -45,7 +45,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 PlayerContent(uiState = playerBehindSheet, isSideBySide = false, onEvent = {})
-                Scrim()
+                ScrimBox()
                 OptionsSheet()
             }
         }
@@ -54,7 +54,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Scrim() {
+private fun ScrimBox() {
     Box(
         modifier = Modifier
             .fillMaxSize()

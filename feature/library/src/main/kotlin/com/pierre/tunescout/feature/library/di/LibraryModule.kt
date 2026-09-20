@@ -33,6 +33,8 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveFavoriteUs
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveLibrarySearchUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveSongFromPlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryViewModeUseCase
+import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
+import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
 import com.pierre.tunescout.feature.library.presentation.viewmodel.CollectionOptionsViewModel
 import com.pierre.tunescout.feature.library.presentation.viewmodel.CollectionViewModel
 import com.pierre.tunescout.feature.library.presentation.viewmodel.CreatePlaylistViewModel
@@ -63,6 +65,8 @@ val libraryModule: Module = module {
     factoryOf(::LibraryUseCases)
     factoryOf(::LibrarySearchUseCases)
     factoryOf(::CollectionUseCases)
+    factoryOf(::CollectionStreams)
+    factoryOf(::LibraryItemUiModelMapper)
     viewModelOf(::LibraryViewModel)
     viewModelOf(::LibrarySearchViewModel)
     viewModelOf(::CollectionViewModel)

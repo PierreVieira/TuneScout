@@ -29,9 +29,12 @@ internal abstract class ReadmeScreenshotsTest :
             mockupElevation = mockupElevation,
             edgeToEdge = false,
             statusBarClock = STATUS_BAR_CLOCK,
-            background = { CanvasBackground() },
+            background = { CanvasBackgroundBox() },
         ),
     ) {
+    /** Pinned: the generators run under Robolectric, whose system theme is light. */
+    private val pinnedTheme = Theme.DARK
+
     @Before
     fun setUpArtwork() {
         SingletonImageLoader.setSafe(::createArtworkImageLoader)
@@ -49,8 +52,7 @@ internal abstract class ReadmeScreenshotsTest :
             fileName = fileName,
             subdir = README_SUBDIR,
         ) {
-            // Pinned: the generators run under Robolectric, whose system theme is light.
-            TuneScoutTheme(theme = Theme.DARK, content = content)
+            TuneScoutTheme(theme = pinnedTheme, content = content)
         }
     }
 
@@ -60,7 +62,7 @@ internal abstract class ReadmeScreenshotsTest :
 }
 
 @Composable
-private fun CanvasBackground() {
+private fun CanvasBackgroundBox() {
     Box(
         modifier = Modifier
             .fillMaxSize()

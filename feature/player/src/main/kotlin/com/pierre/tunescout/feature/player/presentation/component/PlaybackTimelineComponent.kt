@@ -17,7 +17,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import kotlin.time.Duration
 
 @Composable
-internal fun PlaybackTimeline(
+internal fun PlaybackTimelineComponent(
     progress: Float,
     position: Duration,
     duration: Duration,

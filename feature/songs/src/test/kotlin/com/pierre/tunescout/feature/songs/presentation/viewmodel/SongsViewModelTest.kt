@@ -5,6 +5,7 @@ import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.testing.asSnapshot
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
@@ -49,8 +50,7 @@ class SongsViewModelTest {
 
             // Then
             assertThat(state.recentlyPlayed.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
-            assertThat(state.nowPlayingId).isEqualTo(2L)
-            assertThat(state.isPlaying).isTrue()
+            assertThat(state.nowPlaying).isEqualTo(NowPlaying(songId = 2L, isPlaying = true))
             assertThat(state.isSearching).isFalse()
         }
 
@@ -67,8 +67,7 @@ class SongsViewModelTest {
             val state = viewModel.uiState.value
 
             // Then
-            assertThat(state.nowPlayingId).isNull()
-            assertThat(state.isPlaying).isFalse()
+            assertThat(state.nowPlaying).isNull()
         }
 
     @Test

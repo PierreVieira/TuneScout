@@ -58,9 +58,9 @@ fun LibrarySearchContent(
             SearchBar(uiState = uiState, onEvent = onEvent)
             Box(modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen)) {
                 if (uiState.isSearching) {
-                    Results(items = results, favoritesName = favoritesName, onEvent = onEvent)
+                    LibrarySearchResultsList(items = results, favoritesName = favoritesName, onEvent = onEvent)
                 } else {
-                    RecentSearches(
+                    RecentSearchesList(
                         items = uiState.recentSearches,
                         favoritesName = favoritesName,
                         onEvent = onEvent,
@@ -98,7 +98,7 @@ private fun SearchBar(
 }
 
 @Composable
-private fun Results(
+private fun LibrarySearchResultsList(
     items: List<LibraryItemUiModel>,
     favoritesName: String,
     onEvent: (LibrarySearchUiEvent) -> Unit,
@@ -114,7 +114,7 @@ private fun Results(
 }
 
 @Composable
-private fun RecentSearches(
+private fun RecentSearchesList(
     items: List<LibraryItemUiModel>,
     favoritesName: String,
     onEvent: (LibrarySearchUiEvent) -> Unit,

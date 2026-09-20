@@ -9,6 +9,8 @@ import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiMode
 /**
  * Only a playlist says it is one: calling the liked songs a playlist would name a row the user
  * never created, and an album is better described by who made it than by how long it is.
+ *
+ * @return the line drawn under the name of [item].
  */
 @Composable
 internal fun libraryItemSubtitle(item: LibraryItemUiModel): String = when (item) {

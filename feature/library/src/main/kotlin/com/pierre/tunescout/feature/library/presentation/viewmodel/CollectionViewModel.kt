@@ -11,8 +11,7 @@ import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
-import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectionSongs
-import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectionTitle
+import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
 import com.pierre.tunescout.feature.library.presentation.mapper.toOptionsRoute
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
@@ -26,16 +25,17 @@ import kotlinx.coroutines.launch
 class CollectionViewModel(
     private val key: CollectionKey,
     private val useCases: CollectionUseCases,
-    private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    collectionStreams: CollectionStreams,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     private val songPendingRemoval = MutableStateFlow<Song?>(null)
 
     val uiState: StateFlow<CollectionUiState> = combine(
-        observeCollectionTitle(key = key, useCases = useCases),
-        observeCollectionSongs(key = key, useCases = useCases),
+        collectionStreams.observeTitle(key),
+        collectionStreams.observeSongs(key),
         observablePlayback.observePlaybackState(),
         songPendingRemoval,
     ) { title, songs, playback, pendingRemoval ->
@@ -45,8 +45,7 @@ class CollectionViewModel(
             CollectionUiState.Loaded(
                 title = title,
                 songs = songs,
-                nowPlayingId = playback.nowPlayingSong?.id,
-                isPlaying = playback.isPlaying,
+                nowPlaying = playback.nowPlaying,
                 isDeletable = key is CollectionKey.Playlist,
                 songPendingRemoval = pendingRemoval,
             )

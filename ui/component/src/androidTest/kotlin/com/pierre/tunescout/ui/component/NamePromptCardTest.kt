@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
 @OptIn(ExperimentalTestApi::class)
-class NamePromptTest {
+class NamePromptCardTest {
     @JvmField
     @RegisterExtension
     val compose = createComposeExtension()
@@ -19,8 +19,8 @@ class NamePromptTest {
     fun theNameFieldAsksTheKeyboardToCapitalizeTheFirstLetter() = compose.use {
         var editorInfo: EditorInfo? = null
         setContent {
-            CapturingEditorInfo(onEditorInfo = { editorInfo = it }) {
-                NamePrompt(
+            CapturingEditorInfoBox(onEditorInfo = { editorInfo = it }) {
+                NamePromptCard(
                     title = "New playlist",
                     placeholder = "Playlist name",
                     confirmLabel = "Create",

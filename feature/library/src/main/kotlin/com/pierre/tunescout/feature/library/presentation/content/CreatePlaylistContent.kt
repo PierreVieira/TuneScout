@@ -6,7 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CreatePlaylistUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CreatePlaylistUiState
-import com.pierre.tunescout.ui.component.NamePrompt
+import com.pierre.tunescout.ui.component.NamePromptCard
 
 @Composable
 fun CreatePlaylistContent(
@@ -14,7 +14,7 @@ fun CreatePlaylistContent(
     onEvent: (CreatePlaylistUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    NamePrompt(
+    NamePromptCard(
         title = stringResource(R.string.library_create_playlist_title),
         placeholder = stringResource(R.string.library_create_playlist_placeholder),
         confirmLabel = stringResource(R.string.library_create_playlist_confirm),

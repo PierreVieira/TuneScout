@@ -19,11 +19,13 @@ import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
+import de.mannodermaus.junit5.compose.ComposeContext
 import de.mannodermaus.junit5.compose.createComposeExtension
 import kotlinx.coroutines.flow.flowOf
 import org.junit.jupiter.api.Test
@@ -71,8 +73,7 @@ class SongsContentTest {
         setContent { Content(uiState = state(recentlyPlayed = recents)) }
 
         onNodeWithText("Get Lucky").performTouchInput { swipeRight() }
-        // The row settles on the dismissed anchor first; the callback lands on the next frame.
-        waitForIdle()
+        waitForTheSwipeCallback()
 
         assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[1]))
     }
@@ -84,7 +85,7 @@ class SongsContentTest {
         setContent { Content(uiState = uiState.value) }
 
         onNodeWithText("One More Time").performTouchInput { swipeRight() }
-        waitForIdle()
+        waitForTheSwipeCallback()
         uiState.value = state(recentlyPlayed = recents, songPendingRemoval = recents[0])
         waitForIdle()
 
@@ -99,7 +100,7 @@ class SongsContentTest {
         setContent { Content(uiState = state(recentlyPlayed = recents)) }
 
         onNodeWithText("One More Time").performTouchInput { swipeLeft() }
-        waitForIdle()
+        waitForTheSwipeCallback()
 
         assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[0]))
     }
@@ -110,7 +111,7 @@ class SongsContentTest {
         setContent { Content(uiState = state(query = "daft"), results = results) }
 
         onNodeWithText("Around the World").performTouchInput { swipeRight() }
-        waitForIdle()
+        waitForTheSwipeCallback()
 
         assertThat(events.filterIsInstance<SongsUiEvent.OnRecentSongSwipedAway>()).isEmpty()
     }
@@ -118,7 +119,11 @@ class SongsContentTest {
     @Test
     fun givenASongIsPlayingItsRowShowsTheAnimatedBars() = compose.use {
         val recents = listOf(song(id = 1, title = "One More Time"), song(id = 2, title = "Get Lucky"))
-        setContent { Content(uiState = state(recentlyPlayed = recents, nowPlayingId = 2, isPlaying = true)) }
+        setContent {
+            Content(
+                uiState = state(recentlyPlayed = recents, nowPlaying = NowPlaying(songId = 2, isPlaying = true)),
+            )
+        }
 
         onNodeWithContentDescription("Now playing").assertIsDisplayed()
         onNodeWithContentDescription("Paused").assertDoesNotExist()
@@ -127,7 +132,9 @@ class SongsContentTest {
     @Test
     fun givenPlaybackIsPausedTheRowKeepsTheBarsAtRest() = compose.use {
         val recents = listOf(song(id = 2, title = "Get Lucky"))
-        setContent { Content(uiState = state(recentlyPlayed = recents, nowPlayingId = 2, isPlaying = false)) }
+        setContent {
+            Content(uiState = state(recentlyPlayed = recents, nowPlaying = NowPlaying(songId = 2, isPlaying = false)))
+        }
 
         onNodeWithContentDescription("Paused").assertIsDisplayed()
         onNodeWithContentDescription("Now playing").assertDoesNotExist()
@@ -136,7 +143,7 @@ class SongsContentTest {
     @Test
     fun givenNoSongIsPlayingNoRowShowsTheBars() = compose.use {
         val recents = listOf(song(id = 2, title = "Get Lucky"))
-        setContent { Content(uiState = state(recentlyPlayed = recents, nowPlayingId = null)) }
+        setContent { Content(uiState = state(recentlyPlayed = recents, nowPlaying = null)) }
 
         onNodeWithText("Get Lucky").assertIsDisplayed()
         onNodeWithContentDescription("Now playing").assertDoesNotExist()
@@ -173,6 +180,11 @@ class SongsContentTest {
         onNodeWithText("No songs found").assertIsDisplayed()
     }
 
+    /** The row settles on the dismissed anchor first; the callback lands on the next frame. */
+    private fun ComposeContext.waitForTheSwipeCallback() {
+        waitForIdle()
+    }
+
     @Composable
     private fun Content(
         uiState: SongsUiState,
@@ -192,14 +204,12 @@ class SongsContentTest {
     private fun state(
         query: String = "",
         recentlyPlayed: List<Song> = emptyList(),
-        nowPlayingId: Long? = null,
-        isPlaying: Boolean = false,
+        nowPlaying: NowPlaying? = null,
         songPendingRemoval: Song? = null,
     ): SongsUiState = SongsUiState(
         query = query,
         recentlyPlayed = recentlyPlayed,
-        nowPlayingId = nowPlayingId,
-        isPlaying = isPlaying,
+        nowPlaying = nowPlaying,
         songPendingRemoval = songPendingRemoval,
     )
 

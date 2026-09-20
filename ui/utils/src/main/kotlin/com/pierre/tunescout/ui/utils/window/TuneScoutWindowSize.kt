@@ -12,6 +12,10 @@ import androidx.window.core.layout.WindowSizeClass
  * It is resolved once, in the `*Screen` composable, and passed down: the `*Content` composables are
  * rendered on their own by the screenshot generators and the Compose tests, where there is no real
  * window to measure.
+ *
+ * @property isWidthCompact whether the window is as narrow as a phone held upright.
+ * @property isWidthExpanded whether the window is wide enough to lay panes side by side.
+ * @property isHeightCompact whether the window is as short as a phone held sideways.
  */
 data class TuneScoutWindowSize(
     val isWidthCompact: Boolean,

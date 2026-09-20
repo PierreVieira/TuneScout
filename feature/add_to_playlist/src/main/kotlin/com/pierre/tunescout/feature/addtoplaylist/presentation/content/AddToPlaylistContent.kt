@@ -27,7 +27,7 @@ import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.feature.addtoplaylist.R
 import com.pierre.tunescout.feature.addtoplaylist.presentation.model.AddToPlaylistUiEvent
 import com.pierre.tunescout.feature.addtoplaylist.presentation.model.AddToPlaylistUiState
-import com.pierre.tunescout.ui.component.NamePrompt
+import com.pierre.tunescout.ui.component.NamePromptCard
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -96,7 +96,7 @@ private fun NewPlaylistDialog(
     onEvent: (AddToPlaylistUiEvent) -> Unit,
 ) {
     Dialog(onDismissRequest = { onEvent(AddToPlaylistUiEvent.OnNewPlaylistDismissed) }) {
-        NamePrompt(
+        NamePromptCard(
             title = stringResource(R.string.add_to_playlist_prompt_title),
             placeholder = stringResource(R.string.add_to_playlist_prompt_placeholder),
             confirmLabel = stringResource(R.string.add_to_playlist_prompt_confirm),

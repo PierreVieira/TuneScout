@@ -2,6 +2,35 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-20 — Conventions that are rules, not reviews
+
+**Eight more conventions moved into the ktlint ruleset.** Loose top-level functions, constructor
+properties that could be plain parameters, plain parameters declared before the properties, KDocs
+without `@property` / `@param` / `@return`, DTO fields without `@SerialName` or with defaults, unused
+parameters, composables without a kind-of-UI suffix, and `//` comments were all things a review had
+let through more than once. Each is now a rule in `tools/ktlint_custom_rules`, documented in
+[code-style.md](architecture/code-style.md). Cost: ktlint has no type resolution, so every rule
+reports only what it can prove from the syntax tree — name shadowing, for instance, reads as a use —
+and they are nets, not guarantees.
+
+**Logic is owned by an injected class, except where nothing can be injected.** `buildTimeline` and
+its siblings became `QueueTimelineFactory`; `createHttpClient` became `HttpClientFactory`. In `:ui:*`,
+which Koin does not reach and which cannot see `:core:*`, a value type builds itself from primitives
+through its companion (`PlayButtonState.of(isPlaying, hasEnded)`), and a function with a natural
+subject became an extension on it (`List<NavKey>.isMiniPlayerAllowed()`). Cost: a few more classes
+and Koin definitions for what used to be one-liners.
+
+**The composable suffix list is wide on purpose.** `Row`, `List`, `Dialog`, `Skeleton` and the like
+already said what they draw, so they stayed; only names that said nothing (`NamePrompt`, `Results`,
+`Track`) were renamed, with `Component` as the fallback. Cost: the list has some thirty entries to
+keep in mind instead of three. Benefit: 24 renames instead of 110, and names that stay specific.
+
+**A UiState holds one source of truth per question.** `MiniPlayerUiState` became a sealed
+`Empty`/`Loaded`, `QueueUiState` holds a `PlaybackStatus`, and the `nowPlayingId` + `isPlaying` pair
+became one nullable `NowPlaying` in `core/model`. The booleans the composables read are derived
+getters, so the UI did not change. This one stays a review convention: no syntax-level rule can tell
+a contradiction from two independent flags.
+
 ## 2026-09-20 — Scrolling a list takes the bars away, but never the mini player
 
 **One shared piece of state, not one per bar.** The header belongs to whichever screen is on top and
@@ -63,7 +92,7 @@ cannot claim to be paused while it is not the current song at all.
 
 **Pausing freezes the bars at a shape of their own, not mid-flight.** An `InfiniteTransition`
 cannot be paused, and resuming one from the height it stopped at would leave that bar bouncing
-between there and the top forever. `NowPlayingBars` therefore composes the transition only while
+between there and the top forever. `NowPlayingBarsIcon` therefore composes the transition only while
 the song plays and draws a fixed set of fractions otherwise. That also keeps the frame clock free
 on a paused screen, and keeps `androidTest` free of an infinite animation it has to idle around.
 
@@ -342,7 +371,7 @@ returned the first copy rather than the one playing.
 **The ExoPlayer timeline is mutated, never rebuilt.** Adding, removing and reordering go through
 `addMediaItems`/`removeMediaItem`/`moveMediaItem` on the existing timeline, so touching the queue
 never interrupts the song that is playing. The controller keeps a `List<QueueEntry>` mirror of that
-timeline; the ordering logic it needs lives in `QueueTimeline.kt` as pure functions, which is what
+timeline; the ordering logic it needs lives in `QueueTimelineFactory` as pure methods, which is what
 the unit tests exercise — ExoPlayer is final and faking it would test the mock.
 
 ## 2026-09-18 — README screenshots

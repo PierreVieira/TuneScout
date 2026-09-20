@@ -3,16 +3,14 @@ package com.pierre.tunescout.core.playback
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.NO_QUEUE_INDEX
 import com.pierre.tunescout.core.model.QueueSource
-import com.pierre.tunescout.core.playback.internal.buildEntries
-import com.pierre.tunescout.core.playback.internal.buildTimeline
-import com.pierre.tunescout.core.playback.internal.getCarriedEntries
-import com.pierre.tunescout.core.playback.internal.getUserQueueInsertIndex
+import com.pierre.tunescout.core.playback.internal.QueueTimelineFactory
 import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import org.junit.jupiter.api.Test
 
-class QueueTimelineTest {
+class QueueTimelineFactoryTest {
     private var nextEntryId = 0
+    private val timelineFactory = QueueTimelineFactory(idGenerator = ::createEntryId)
 
     @Test
     fun `GIVEN an album WHEN building the timeline THEN keeps its order and starts at the chosen song`() {
@@ -20,11 +18,10 @@ class QueueTimelineTest {
         val songs = listOf(song(id = 1), song(id = 2), song(id = 3))
 
         // When
-        val timeline = buildTimeline(
+        val timeline = timelineFactory.buildTimeline(
             songs = songs,
             startSongId = 2,
             carriedEntries = emptyList(),
-            createEntryId = ::createEntryId,
         )
 
         // Then
@@ -41,11 +38,10 @@ class QueueTimelineTest {
         )
 
         // When
-        val timeline = buildTimeline(
+        val timeline = timelineFactory.buildTimeline(
             songs = listOf(song(id = 1), song(id = 2), song(id = 3)),
             startSongId = 2,
             carriedEntries = carried,
-            createEntryId = ::createEntryId,
         )
 
         // Then
@@ -59,11 +55,10 @@ class QueueTimelineTest {
         val songs = listOf(song(id = 1), song(id = 2))
 
         // When
-        val timeline = buildTimeline(
+        val timeline = timelineFactory.buildTimeline(
             songs = songs,
             startSongId = 99,
             carriedEntries = emptyList(),
-            createEntryId = ::createEntryId,
         )
 
         // Then
@@ -76,7 +71,7 @@ class QueueTimelineTest {
         val songs = listOf(song(id = 1), song(id = 1))
 
         // When
-        val entries = buildEntries(songs, QueueSource.UserQueue, ::createEntryId)
+        val entries = timelineFactory.buildEntries(songs, QueueSource.UserQueue)
 
         // Then
         assertThat(entries.map { entry -> entry.id }).containsNoDuplicates()
@@ -94,7 +89,7 @@ class QueueTimelineTest {
         )
 
         // When
-        val carried = getCarriedEntries(entries = entries, currentIndex = 1)
+        val carried = timelineFactory.getCarriedEntries(entries = entries, currentIndex = 1)
 
         // Then
         assertThat(carried.map { entry -> entry.song.id }).containsExactly(3L)
@@ -111,7 +106,7 @@ class QueueTimelineTest {
         )
 
         // When
-        val index = getUserQueueInsertIndex(entries = entries, currentIndex = 0)
+        val index = timelineFactory.getUserQueueInsertIndex(entries = entries, currentIndex = 0)
 
         // Then
         assertThat(index).isEqualTo(3)
@@ -123,7 +118,7 @@ class QueueTimelineTest {
         val entries = listOf(queueEntry(song = song(id = 1)), queueEntry(song = song(id = 2)))
 
         // When
-        val index = getUserQueueInsertIndex(entries = entries, currentIndex = 0)
+        val index = timelineFactory.getUserQueueInsertIndex(entries = entries, currentIndex = 0)
 
         // Then
         assertThat(index).isEqualTo(1)
@@ -132,7 +127,7 @@ class QueueTimelineTest {
     @Test
     fun `GIVEN nothing is playing WHEN getting the insert index THEN lands at the start`() {
         // When
-        val index = getUserQueueInsertIndex(entries = emptyList(), currentIndex = NO_QUEUE_INDEX)
+        val index = timelineFactory.getUserQueueInsertIndex(entries = emptyList(), currentIndex = NO_QUEUE_INDEX)
 
         // Then
         assertThat(index).isEqualTo(0)

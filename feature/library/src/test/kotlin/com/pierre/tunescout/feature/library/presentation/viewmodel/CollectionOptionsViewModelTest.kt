@@ -10,6 +10,7 @@ import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
+import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import io.mockk.mockk
@@ -184,16 +185,18 @@ class CollectionOptionsViewModelTest {
         deletedPlaylistIds = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
+        val useCases = CollectionUseCases(
+            observePlaylist = { flowOf(playlist) },
+            observePlaylistSongs = { flowOf(playlistSongs) },
+            observeFavorites = { flowOf(favorites) },
+            removeSongFromPlaylist = { _, _ -> },
+            removeFavorite = { },
+            deletePlaylist = { playlistId -> deletedPlaylistIds += playlistId },
+        )
         viewModel = CollectionOptionsViewModel(
             key = key,
-            useCases = CollectionUseCases(
-                observePlaylist = { flowOf(playlist) },
-                observePlaylistSongs = { flowOf(playlistSongs) },
-                observeFavorites = { flowOf(favorites) },
-                removeSongFromPlaylist = { _, _ -> },
-                removeFavorite = { },
-                deletePlaylist = { playlistId -> deletedPlaylistIds += playlistId },
-            ),
+            useCases = useCases,
+            collectionStreams = CollectionStreams(useCases),
             enqueuer = enqueuer,
             navigator = navigator,
         )

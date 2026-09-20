@@ -17,21 +17,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration
 
 class MiniPlayerViewModel(
-    private val observablePlayback: ObservablePlayback,
     private val transportControls: TransportControls,
     private val navigator: Navigator,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
-    private val emptyUiState = MiniPlayerUiState(
-        song = null,
-        isPlaying = false,
-        hasEnded = false,
-        progress = 0f,
-    )
-
     val uiState: StateFlow<MiniPlayerUiState> = observablePlayback
         .observePlaybackState()
         .map(::toUiState)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), MiniPlayerUiState.Empty)
 
     fun onEvent(event: MiniPlayerUiEvent) = when (event) {
         MiniPlayerUiEvent.OnClicked -> openPlayer()
@@ -40,16 +33,18 @@ class MiniPlayerViewModel(
     }
 
     private fun openPlayer() {
-        val songId = uiState.value.song?.id ?: return
-        navigator.navigate(PlayerRoute(songId = songId))
+        val loaded = uiState.value as? MiniPlayerUiState.Loaded ?: return
+        navigator.navigate(PlayerRoute(songId = loaded.song.id))
     }
 
-    private fun toUiState(playback: PlaybackState): MiniPlayerUiState = MiniPlayerUiState(
-        song = playback.currentSong,
-        isPlaying = playback.isPlaying,
-        hasEnded = playback.hasEnded,
-        progress = getProgress(playback),
-    )
+    private fun toUiState(playback: PlaybackState): MiniPlayerUiState {
+        val song = playback.currentSong ?: return MiniPlayerUiState.Empty
+        return MiniPlayerUiState.Loaded(
+            song = song,
+            status = playback.status,
+            progress = getProgress(playback),
+        )
+    }
 
     private fun getProgress(playback: PlaybackState): Float {
         val duration = playback.duration.takeIf { value -> value > Duration.ZERO }

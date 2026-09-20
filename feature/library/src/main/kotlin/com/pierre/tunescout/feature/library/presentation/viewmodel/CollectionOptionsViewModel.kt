@@ -7,8 +7,7 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
-import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectionSongs
-import com.pierre.tunescout.feature.library.presentation.mapper.observeCollectionTitle
+import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +22,7 @@ class CollectionOptionsViewModel(
     private val useCases: CollectionUseCases,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    collectionStreams: CollectionStreams,
 ) : ViewModel() {
     private val isDeletable = key is CollectionKey.Playlist
     private val emptyUiState = CollectionOptionsUiState(
@@ -34,8 +34,8 @@ class CollectionOptionsViewModel(
     private val isConfirmingDelete = MutableStateFlow(false)
 
     val uiState: StateFlow<CollectionOptionsUiState> = combine(
-        observeCollectionTitle(key = key, useCases = useCases),
-        observeCollectionSongs(key = key, useCases = useCases),
+        collectionStreams.observeTitle(key),
+        collectionStreams.observeSongs(key),
         isConfirmingDelete,
     ) { title, songs, isConfirming ->
         CollectionOptionsUiState(

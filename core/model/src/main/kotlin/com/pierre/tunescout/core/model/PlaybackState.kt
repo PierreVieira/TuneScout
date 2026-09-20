@@ -32,6 +32,9 @@ data class PlaybackState(
     val nowPlayingSong: Song?
         get() = currentSong.takeUnless { hasEnded }
 
+    val nowPlaying: NowPlaying?
+        get() = nowPlayingSong?.let { song -> NowPlaying(songId = song.id, isPlaying = isPlaying) }
+
     val hasPrevious: Boolean
         get() = currentIndex > 0
 

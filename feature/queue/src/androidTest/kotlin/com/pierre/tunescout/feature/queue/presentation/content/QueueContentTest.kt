@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.testing.fixture.queueEntry
@@ -51,8 +52,7 @@ class QueueContentTest {
                     uiState = QueueUiState(
                         contextTitle = null,
                         nowPlaying = null,
-                        isPlaying = false,
-                        hasEnded = false,
+                        status = PlaybackStatus.Idle,
                         queuedByUser = emptyList(),
                         upNext = emptyList(),
                     ),
@@ -79,7 +79,7 @@ class QueueContentTest {
     fun givenTheSongEndedTheNowPlayingRowStaysButDropsTheBars() = compose.use {
         setContent {
             TuneScoutTheme {
-                QueueContent(uiState = loaded(isPlaying = false, hasEnded = true), onEvent = events::add)
+                QueueContent(uiState = loaded(status = PlaybackStatus.Ended), onEvent = events::add)
             }
         }
 
@@ -144,14 +144,10 @@ class QueueContentTest {
         )
     }
 
-    private fun loaded(
-        isPlaying: Boolean = true,
-        hasEnded: Boolean = false,
-    ): QueueUiState = QueueUiState(
+    private fun loaded(status: PlaybackStatus = PlaybackStatus.Playing): QueueUiState = QueueUiState(
         contextTitle = "Random Access Memories",
         nowPlaying = queueEntry(song = song(id = 1, title = "Get Lucky")),
-        isPlaying = isPlaying,
-        hasEnded = hasEnded,
+        status = status,
         queuedByUser = listOf(userEntry(id = 9, title = "One More Time")),
         upNext = listOf(queueEntry(song = song(id = 2, title = "Around the World"))),
     )

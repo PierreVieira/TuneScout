@@ -36,7 +36,7 @@ import com.pierre.tunescout.feature.themeselection.presentation.navigation.theme
 import com.pierre.tunescout.navigation.home.homeEntry
 import com.pierre.tunescout.navigation.home.homeNavigationItems
 import com.pierre.tunescout.navigation.home.rememberHomeTabsState
-import com.pierre.tunescout.ui.component.TuneScoutNavigationSuite
+import com.pierre.tunescout.ui.component.TuneScoutNavigationSuiteScaffold
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.utils.animation.LocalSharedTransitionScope
 import com.pierre.tunescout.ui.utils.animation.LocalTappedSharedArtworkSurface
@@ -45,8 +45,12 @@ import com.pierre.tunescout.ui.utils.scroll.LocalHideableBarsState
 import com.pierre.tunescout.ui.utils.scroll.rememberHideableBarsState
 import com.pierre.tunescout.ui.utils.window.rememberWindowSize
 
+/**
+ * The shared transition layout covers the mini player bar as well as the NavDisplay: the artwork
+ * flies between the two, so both halves have to sit in the same shared transition scope.
+ */
 @Composable
-fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
+fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
     val backStack = rememberNavBackStack(SplashRoute)
     val backStackController = remember { BackStackController(backStack = backStack) }
     val bottomSheetStrategy = remember { BottomSheetSceneStrategy<NavKey>(containerColor = { TuneScoutColors.sheet }) }
@@ -55,20 +59,18 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
 
     NavigationCommandCollector(backStackController = backStackController)
 
-    // The layout covers the mini player bar as well as the NavDisplay: the artwork flies between
-    // the two, so both halves have to sit in the same shared transition scope.
     SharedTransitionLayout(modifier = modifier) {
         CompositionLocalProvider(
             LocalSharedTransitionScope provides this,
             LocalTappedSharedArtworkSurface provides rememberTappedSharedArtworkSurface(),
             LocalHideableBarsState provides rememberHideableBarsState(),
         ) {
-            TuneScoutNavigationSuite(
+            TuneScoutNavigationSuiteScaffold(
                 items = homeNavigationItems(tabsState = tabsState),
-                isVisible = isHomeVisible(backStack),
+                isVisible = backStack.isHomeVisible(),
                 windowSize = rememberWindowSize(),
             ) {
-                MiniPlayerScaffold(isAllowed = isMiniPlayerAllowed(backStack)) {
+                MiniPlayerScaffold(isAllowed = backStack.isMiniPlayerAllowed()) {
                     NavDisplay(
                         backStack = backStack,
                         onBack = backStackController::navigateBack,
@@ -78,9 +80,9 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
                             rememberSharedElementNavEntryDecorator(),
                         ),
                         sceneStrategies = listOf(bottomSheetStrategy, dialogStrategy),
-                        transitionSpec = createNavTransitionSpec(),
-                        popTransitionSpec = createNavTransitionSpec(),
-                        predictivePopTransitionSpec = createNavPredictivePopTransitionSpec(),
+                        transitionSpec = { createFadeTransform() },
+                        popTransitionSpec = { createFadeTransform() },
+                        predictivePopTransitionSpec = { createFadeTransform() },
                         entryProvider = entryProvider {
                             splashEntry()
                             homeEntry(tabsState = tabsState)

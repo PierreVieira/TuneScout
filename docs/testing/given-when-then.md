@@ -1,8 +1,9 @@
 # Test structure: Given / When / Then
 
 Every test body is split into three sections, each marked with a `// Given`, `// When`, `// Then`
-comment and separated by a blank line. (These comments are intentional structure — unlike production
-code, where comments are not used at all.)
+comment and separated by a blank line. (These markers are intentional structure, and the only `//`
+comments the `kdoc-only-comments` rule lets through: any other explanation is KDoc, on the test function
+or on a helper extracted to carry it — see [Code style](../architecture/code-style.md#comments).)
 
 - **Given** — build the scenario and inputs (usually a single `prepareScenario(...)` call; see
   [prepare-scenario.md](prepare-scenario.md)).

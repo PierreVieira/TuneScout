@@ -15,6 +15,7 @@ import com.pierre.tunescout.core.playback.internal.MediaItemFactory
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
 import com.pierre.tunescout.core.playback.internal.PlaybackServiceLauncher
 import com.pierre.tunescout.core.playback.internal.PlaybackSessionKeeper
+import com.pierre.tunescout.core.playback.internal.QueueTimelineFactory
 import com.pierre.tunescout.core.playback.internal.RecentlyPlayedRecorder
 import com.pierre.tunescout.core.playback.internal.RestorablePlayback
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import kotlin.time.Duration.Companion.seconds
@@ -46,7 +48,8 @@ val playbackModule: Module = module {
     }
     single<PlaybackServiceLauncher> { ForegroundPlaybackServiceLauncher(context = androidContext()) }
     single<MediaItemFactory> { AndroidMediaItemFactory() }
-    single { PlaybackQueue(player = get(), mediaItemFactory = get(), idGenerator = get()) }
+    singleOf(::QueueTimelineFactory)
+    single { PlaybackQueue(player = get(), mediaItemFactory = get(), timelineFactory = get()) }
     single {
         ExoPlayerPlaybackController(
             player = get(),

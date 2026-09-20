@@ -38,7 +38,7 @@ private const val OTHER_LINES_ALPHA = 0.7f
 private const val SPLIT_STOP = 0.5f
 
 @Composable
-internal fun ThemePreview(
+internal fun ThemePreviewCard(
     theme: Theme,
     isDynamicColorEnabled: Boolean,
     modifier: Modifier = Modifier,

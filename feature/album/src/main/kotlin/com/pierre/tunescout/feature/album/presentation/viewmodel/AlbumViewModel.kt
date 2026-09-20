@@ -26,10 +26,10 @@ import kotlinx.coroutines.launch
 class AlbumViewModel(
     private val route: AlbumRoute,
     private val useCases: AlbumUseCases,
-    private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     private val refreshFailed = MutableStateFlow(false)
 
@@ -91,8 +91,7 @@ class AlbumViewModel(
     ): AlbumUiState = when {
         album != null -> AlbumUiState.Loaded(
             album = album,
-            nowPlayingId = playback.nowPlayingSong?.id,
-            isPlaying = playback.isPlaying,
+            nowPlaying = playback.nowPlaying,
             isFavorite = isFavorite,
         )
 

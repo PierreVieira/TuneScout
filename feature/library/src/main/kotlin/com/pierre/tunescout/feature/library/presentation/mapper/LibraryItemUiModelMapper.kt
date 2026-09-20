@@ -7,14 +7,16 @@ import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiMode
 
 private const val MAX_COVER_ARTWORKS = 4
 
-fun buildLibraryItems(
-    favorites: List<Song>,
-    playlists: List<Playlist>,
-    albums: List<AlbumSummary>,
-): List<LibraryItemUiModel> = buildList {
-    add(favorites.toFavoritesItem())
-    addAll(playlists.map(Playlist::toUiModel))
-    addAll(albums.map(AlbumSummary::toUiModel))
+class LibraryItemUiModelMapper {
+    fun buildLibraryItems(
+        favorites: List<Song>,
+        playlists: List<Playlist>,
+        albums: List<AlbumSummary>,
+    ): List<LibraryItemUiModel> = buildList {
+        add(favorites.toFavoritesItem())
+        addAll(playlists.map(Playlist::toUiModel))
+        addAll(albums.map(AlbumSummary::toUiModel))
+    }
 }
 
 fun List<Song>.toFavoritesItem(): LibraryItemUiModel.Favorites = LibraryItemUiModel.Favorites(

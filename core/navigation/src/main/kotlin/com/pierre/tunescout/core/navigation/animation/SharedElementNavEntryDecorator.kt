@@ -13,6 +13,8 @@ import com.pierre.tunescout.ui.utils.animation.rememberSharedElementScopes
  * itself. The animation scope belongs to the `NavDisplay`'s `AnimatedContent`, which is why it can
  * only be read from inside an entry — and why this is a decorator rather than something each
  * feature's `*Entry.kt` repeats.
+ *
+ * @return the decorator, remembered across recompositions.
  */
 @Composable
 fun <T : Any> rememberSharedElementNavEntryDecorator(): NavEntryDecorator<T> = remember {

@@ -12,6 +12,6 @@
 - [ ] Create `FeatureContent` composable with Loading/Loaded split
 - [ ] Define a `@Serializable` route implementing `NavKey` in `core/navigation/.../route/` (one per file)
 - [ ] Create `EntryProviderScope<NavKey>.feature()` extension (Root composable)
-- [ ] Register the entry in `TuneScoutNavDisplay`'s `entryProvider` (`app`)
+- [ ] Register the entry in `TuneScoutNavigationContent`'s `entryProvider` (`app`)
 - [ ] Create a Koin module in `di/` and register it in `AppModules.kt` (`appModules`)
 - [ ] Write unit tests for the ViewModel, repository and mappers (Given/When/Then) — see [docs/testing/README.md](../testing/README.md). Every new file has to reach 80% line coverage on its own: `./gradlew :koverVerifyCi :verifyNewFilesCoverage` — see [docs/code-quality.md](../code-quality.md#test-coverage)

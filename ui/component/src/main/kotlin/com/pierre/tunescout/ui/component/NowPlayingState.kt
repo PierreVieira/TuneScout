@@ -4,13 +4,16 @@ enum class NowPlayingState {
     None,
     Playing,
     Paused,
-}
+    ;
 
-fun getNowPlayingState(
-    isCurrentSong: Boolean,
-    isPlaying: Boolean,
-): NowPlayingState = when {
-    !isCurrentSong -> NowPlayingState.None
-    isPlaying -> NowPlayingState.Playing
-    else -> NowPlayingState.Paused
+    companion object {
+        fun of(
+            isCurrentSong: Boolean,
+            isPlaying: Boolean,
+        ): NowPlayingState = when {
+            !isCurrentSong -> None
+            isPlaying -> Playing
+            else -> Paused
+        }
+    }
 }

@@ -19,6 +19,29 @@ interface ITunesApi {
 Suspend calls that can fail are wrapped at the repository boundary with `suspendRunCatching` and
 returned as `Result<T>` — see [coroutine-error-handling.md](coroutine-error-handling.md).
 
+#### DTOs
+
+A `*Dto` mirrors the wire format and nothing else:
+
+```kotlin
+@Serializable
+internal data class ResultDto(
+    @SerialName("trackId") val trackId: Long?,
+    @SerialName("trackName") val trackName: String?,
+    @SerialName("artworkUrl100") val artworkUrl100: String?,
+)
+```
+
+- **Every field declares its JSON key with `@SerialName`**, even when it equals the property name.
+  Renaming the Kotlin property can then never change the contract, and the key is greppable.
+- **No default values.** What the server may leave out is a nullable type, and the client's `Json` is
+  configured with `explicitNulls = false` (in `HttpClientFactory`), which reads an absent key as `null`.
+  A default would hide which fields the API really guarantees; the mapper decides what a missing value
+  means (`toSongOrNull()` drops a result with no `trackId`, and falls back to `0` for `trackNumber`).
+
+Both are enforced by the custom ktlint rule `tunescout-style:dto-serial-name`, on every class whose name
+ends in `Dto`.
+
 #### Artwork sizes
 
 The [search results](https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/UnderstandingSearchResults.html)

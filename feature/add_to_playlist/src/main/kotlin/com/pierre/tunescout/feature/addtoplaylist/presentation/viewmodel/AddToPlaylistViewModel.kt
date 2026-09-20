@@ -2,8 +2,6 @@ package com.pierre.tunescout.feature.addtoplaylist.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.pierre.tunescout.core.model.Playlist
-import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.feature.addtoplaylist.domain.usecase.AddToPlaylistUseCases
@@ -18,9 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddToPlaylistViewModel(
-    route: AddToPlaylistRoute,
     private val useCases: AddToPlaylistUseCases,
     private val navigator: Navigator,
+    route: AddToPlaylistRoute,
 ) : ViewModel() {
     private val emptyUiState = AddToPlaylistUiState(song = null, playlists = emptyList(), newPlaylistName = null)
     private val newPlaylistName = MutableStateFlow<String?>(null)
@@ -29,7 +27,7 @@ class AddToPlaylistViewModel(
         useCases.observeSong(route.songId),
         useCases.observePlaylists(),
         newPlaylistName,
-        ::toUiState,
+        ::AddToPlaylistUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: AddToPlaylistUiEvent) = when (event) {
@@ -60,13 +58,3 @@ class AddToPlaylistViewModel(
         }
     }
 }
-
-private fun toUiState(
-    song: Song?,
-    playlists: List<Playlist>,
-    newPlaylistName: String?,
-): AddToPlaylistUiState = AddToPlaylistUiState(
-    song = song,
-    playlists = playlists,
-    newPlaylistName = newPlaylistName,
-)

@@ -19,20 +19,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.player.R
-import com.pierre.tunescout.feature.player.presentation.component.PlaybackControls
-import com.pierre.tunescout.feature.player.presentation.component.PlaybackTimeline
+import com.pierre.tunescout.feature.player.presentation.component.PlaybackControlsComponent
+import com.pierre.tunescout.feature.player.presentation.component.PlaybackTimelineComponent
 import com.pierre.tunescout.feature.player.presentation.component.PlayerSkeleton
 import com.pierre.tunescout.feature.player.presentation.component.SongHeading
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.ui.component.Artwork
+import com.pierre.tunescout.ui.component.PlayButtonState
 import com.pierre.tunescout.ui.component.SongSharedElement
+import com.pierre.tunescout.ui.component.SongSharedKey
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.getPlayButtonState
-import com.pierre.tunescout.ui.component.getSongSharedKey
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.component.R as ComponentR
 
@@ -135,7 +135,7 @@ private fun StackedContent(
             SongArtwork(uiState = uiState, size = artworkSize)
         }
         Spacer(modifier = Modifier.weight(1f))
-        PlayerDetails(
+        PlayerDetailsContent(
             uiState = uiState,
             onEvent = onEvent,
             modifier = Modifier.padding(
@@ -160,7 +160,7 @@ private fun SideBySideContent(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         SongArtwork(uiState = uiState, size = artworkSize)
-        PlayerDetails(
+        PlayerDetailsContent(
             uiState = uiState,
             onEvent = onEvent,
             modifier = Modifier.weight(1f),
@@ -177,13 +177,13 @@ private fun SongArtwork(
         url = uiState.song.artwork.largeUrl,
         contentDescription = stringResource(ComponentR.string.ui_artwork_of, uiState.song.albumTitle),
         cornerPercent = ARTWORK_CORNER_PERCENT,
-        sharedKey = getSongSharedKey(uiState.song.id, SongSharedElement.ARTWORK),
+        sharedKey = SongSharedKey.createOrNull(uiState.song.id, SongSharedElement.ARTWORK),
         modifier = Modifier.size(size),
     )
 }
 
 @Composable
-private fun PlayerDetails(
+private fun PlayerDetailsContent(
     uiState: PlayerUiState.Loaded,
     onEvent: (PlayerUiEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -197,7 +197,7 @@ private fun PlayerDetails(
             title = uiState.song.title,
             artistName = uiState.song.artistName,
         )
-        PlaybackTimeline(
+        PlaybackTimelineComponent(
             progress = uiState.progress,
             position = uiState.position,
             duration = uiState.duration,
@@ -205,8 +205,8 @@ private fun PlayerDetails(
                 onEvent(PlayerUiEvent.OnSeekFinished(uiState.duration * fraction.toDouble()))
             },
         )
-        PlaybackControls(
-            playButtonState = getPlayButtonState(isPlaying = uiState.isPlaying, hasEnded = uiState.hasEnded),
+        PlaybackControlsComponent(
+            playButtonState = PlayButtonState.of(isPlaying = uiState.isPlaying, hasEnded = uiState.hasEnded),
             hasPrevious = uiState.hasPrevious,
             hasNext = uiState.hasNext,
             isRepeatEnabled = uiState.isRepeatEnabled,

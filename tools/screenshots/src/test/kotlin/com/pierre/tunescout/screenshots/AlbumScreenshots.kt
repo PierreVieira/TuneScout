@@ -7,8 +7,7 @@ import org.junit.Test
 internal class AlbumScreenshots : ReadmeScreenshotsTest() {
     private val loadedAlbum = AlbumUiState.Loaded(
         album = randomAccessMemories,
-        nowPlayingId = null,
-        isPlaying = false,
+        nowPlaying = null,
         isFavorite = true,
     )
 

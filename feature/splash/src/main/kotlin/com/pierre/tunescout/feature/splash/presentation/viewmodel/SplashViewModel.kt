@@ -12,8 +12,8 @@ import kotlin.time.Duration.Companion.milliseconds
 private val defaultHoldDuration = 700.milliseconds
 
 class SplashViewModel(
-    private val navigator: Navigator,
-    private val holdDuration: Duration = defaultHoldDuration,
+    navigator: Navigator,
+    holdDuration: Duration = defaultHoldDuration,
 ) : ViewModel() {
     init {
         viewModelScope.launch {

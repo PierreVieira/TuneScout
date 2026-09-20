@@ -44,7 +44,7 @@ internal fun LibraryViewModeToggle(
         horizontalArrangement = Arrangement.spacedBy(togglePadding),
     ) {
         LibraryViewMode.entries.forEach { mode ->
-            Segment(
+            SegmentButton(
                 icon = mode.icon,
                 contentDescription = stringResource(mode.contentDescriptionRes),
                 isSelected = mode == viewMode,
@@ -55,7 +55,7 @@ internal fun LibraryViewModeToggle(
 }
 
 @Composable
-private fun Segment(
+private fun SegmentButton(
     icon: ImageVector,
     contentDescription: String,
     isSelected: Boolean,

@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import com.pierre.tunescout.ui.component.SongSharedElement
-import com.pierre.tunescout.ui.component.getSongSharedKey
+import com.pierre.tunescout.ui.component.SongSharedKey
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.animation.loopingMarquee
@@ -33,7 +33,7 @@ internal fun SongHeading(
             maxLines = 1,
             modifier = Modifier
                 .fillMaxWidth()
-                .sharedTextBounds(getSongSharedKey(songId, SongSharedElement.TITLE))
+                .sharedTextBounds(SongSharedKey.createOrNull(songId, SongSharedElement.TITLE))
                 .loopingMarquee(),
         )
         Text(
@@ -44,7 +44,7 @@ internal fun SongHeading(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .fillMaxWidth()
-                .sharedTextBounds(getSongSharedKey(songId, SongSharedElement.ARTIST)),
+                .sharedTextBounds(SongSharedKey.createOrNull(songId, SongSharedElement.ARTIST)),
         )
     }
 }

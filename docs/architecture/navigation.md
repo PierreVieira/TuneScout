@@ -1,7 +1,7 @@
 ## Navigation
 
 The app uses Navigation 3 (`androidx.navigation3:navigation3-ui`, Android only). The back stack is a
-`NavBackStack<NavKey>` owned by `TuneScoutNavDisplay` in `app`; there is no `NavController`.
+`NavBackStack<NavKey>` owned by `TuneScoutNavigationContent` in `app`; there is no `NavController`.
 
 ### 1. Define a type-safe route in `core/navigation/src/main/kotlin/.../route/`
 
@@ -45,7 +45,7 @@ internal class SongsViewModel(
 ```
 
 `Navigator` is an event bus: the `ChannelNavigator` implementation pushes a `NavigationCommand`
-(`Navigate`, `ReplaceTop`, `Back`) into a buffered channel, and `TuneScoutNavDisplay` collects the
+(`Navigate`, `ReplaceTop`, `Back`) into a buffered channel, and `TuneScoutNavigationContent` collects the
 commands and applies them to the back stack. The back stack is only ever mutated in that one place,
 inside the composition.
 
@@ -93,10 +93,10 @@ Give every new sheet route the marker.
 
 A screen does not read `LocalNavAnimatedContentScope` itself — see [Shared elements](#shared-elements).
 
-### 4. Register in `TuneScoutNavDisplay`
+### 4. Register in `TuneScoutNavigationContent`
 
 ```kotlin
-// app/src/main/kotlin/com/pierre/tunescout/navigation/TuneScoutNavDisplay.kt
+// app/src/main/kotlin/com/pierre/tunescout/navigation/TuneScoutNavigationContent.kt
 entryProvider = entryProvider<NavKey> {
     splash()
     home(tabsState)
@@ -123,7 +123,7 @@ playlist, the queue, any sheet — is pushed onto the root back stack**, over th
 same `Navigator`. That is what keeps the `Navigator` and the `BackStackController` free of any
 notion of tabs.
 
-The bar itself is drawn by `TuneScoutNavigationSuite` (`:ui:component`) *outside* the root
+The bar itself is drawn by `TuneScoutNavigationSuiteScaffold` (`:ui:component`) *outside* the root
 `NavDisplay`, so the mini player sits between the content and the bar. It is hidden with
 `NavigationSuiteType.None` rather than by removing the scaffold: removing it would rebuild the
 `NavDisplay` underneath and take the back stack with it.
@@ -135,7 +135,7 @@ the way home. The same flight carries the title and the artist.
 
 ### The wiring
 
-`TuneScoutNavDisplay` wraps a `SharedTransitionLayout` around **both** the `NavDisplay` and the
+`TuneScoutNavigationContent` wraps a `SharedTransitionLayout` around **both** the `NavDisplay` and the
 `MiniPlayerScaffold` and publishes the scope as `LocalSharedTransitionScope` (`:ui:utils`). Flying
 between the bar and a screen only works while the two sit in the same scope.
 

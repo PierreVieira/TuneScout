@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
-import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChips
+import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChipRow
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemCell
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemRow
 import com.pierre.tunescout.feature.library.presentation.component.LibraryViewModeToggle
@@ -83,7 +83,7 @@ private fun Header(
 ) {
     Column(modifier = modifier) {
         TitleRow(onEvent = onEvent)
-        LibraryFilterChips(
+        LibraryFilterChipRow(
             selected = uiState.filter,
             onFilterClick = { filter -> onEvent(LibraryUiEvent.OnFilterClicked(filter)) },
             modifier = Modifier.padding(

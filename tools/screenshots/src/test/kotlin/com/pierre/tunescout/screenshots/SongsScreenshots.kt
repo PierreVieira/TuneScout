@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerContent
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
@@ -31,8 +32,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                         uiState = SongsUiState(
                             query = "",
                             recentlyPlayed = recentlyPlayed,
-                            nowPlayingId = getLucky.id,
-                            isPlaying = false,
+                            nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = false),
                             songPendingRemoval = null,
                         ),
                         searchResults = emptyPagingItems(),
@@ -61,8 +61,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                 uiState = SongsUiState(
                     query = SEARCH_QUERY,
                     recentlyPlayed = recentlyPlayed,
-                    nowPlayingId = null,
-                    isPlaying = false,
+                    nowPlaying = null,
                     songPendingRemoval = null,
                 ),
                 searchResults = pagingItems(searchSongs),

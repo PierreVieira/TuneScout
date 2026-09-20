@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
+import com.pierre.tunescout.core.playback.internal.QueueTimelineFactory
 import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.core.utils.UuidIdGenerator
@@ -373,7 +374,7 @@ class ExoPlayerPlaybackControllerTest {
             queue = PlaybackQueue(
                 player = fakeExoPlayer.player,
                 mediaItemFactory = ::createTestMediaItem,
-                idGenerator = UuidIdGenerator(),
+                timelineFactory = QueueTimelineFactory(idGenerator = UuidIdGenerator()),
             ),
             scope = backgroundScope,
         )

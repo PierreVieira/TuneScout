@@ -26,18 +26,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.presentation.component.AlbumSkeleton
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.Artwork
+import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
@@ -103,8 +104,7 @@ fun AlbumContent(
             is AlbumUiState.Loaded -> Box(contentAlignment = Alignment.TopCenter) {
                 LoadedContent(
                     album = uiState.album,
-                    nowPlayingId = uiState.nowPlayingId,
-                    isPlaying = uiState.isPlaying,
+                    nowPlaying = uiState.nowPlaying,
                     isHeaderInline = isHeaderInline,
                     onEvent = onEvent,
                 )
@@ -135,8 +135,7 @@ private fun FavoriteAction(
 @Composable
 private fun LoadedContent(
     album: Album,
-    nowPlayingId: Long?,
-    isPlaying: Boolean,
+    nowPlaying: NowPlaying?,
     isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
 ) {
@@ -159,9 +158,9 @@ private fun LoadedContent(
                 subtitle = song.artistName,
                 artworkUrl = song.artwork.thumbnailUrl,
                 artworkSize = rowArtworkSize,
-                nowPlaying = getNowPlayingState(
-                    isCurrentSong = song.id == nowPlayingId,
-                    isPlaying = isPlaying,
+                nowPlaying = NowPlayingState.of(
+                    isCurrentSong = song.id == nowPlaying?.songId,
+                    isPlaying = nowPlaying?.isPlaying == true,
                 ),
                 sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
@@ -185,7 +184,7 @@ private fun AlbumHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AlbumArtwork(album = album, size = inlineArtworkSize)
-            AlbumTitles(album = album, horizontalAlignment = Alignment.Start)
+            AlbumTitlesHeading(album = album, horizontalAlignment = Alignment.Start)
         }
     } else {
         Column(
@@ -196,7 +195,7 @@ private fun AlbumHeader(
             verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         ) {
             AlbumArtwork(album = album, size = artworkSize)
-            AlbumTitles(album = album, horizontalAlignment = Alignment.CenterHorizontally)
+            AlbumTitlesHeading(album = album, horizontalAlignment = Alignment.CenterHorizontally)
         }
     }
 }
@@ -220,7 +219,7 @@ private fun AlbumArtwork(
 }
 
 @Composable
-private fun AlbumTitles(
+private fun AlbumTitlesHeading(
     album: Album,
     horizontalAlignment: Alignment.Horizontal,
     modifier: Modifier = Modifier,

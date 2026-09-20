@@ -3,7 +3,7 @@
 The project uses a multi-module Gradle setup. Every new feature gets its own module.
 
 ```
-app/                     # Android application: composition root (Koin appModules, TuneScoutNavDisplay, the tab host, MainActivity)
+app/                     # Android application: composition root (Koin appModules, TuneScoutNavigationContent, the tab host, MainActivity)
 core/
 ├── model/               # Domain models shared across features (Song, Album, Playlist) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM

@@ -19,10 +19,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SongOptionsViewModel(
-    route: SongOptionsRoute,
     private val useCases: SongOptionsUseCases,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    route: SongOptionsRoute,
 ) : ViewModel() {
     private val emptyUiState = SongOptionsUiState(
         song = null,

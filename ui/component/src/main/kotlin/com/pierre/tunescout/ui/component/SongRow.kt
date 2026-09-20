@@ -66,7 +66,7 @@ fun SongRow(
                     url = artworkUrl,
                     contentDescription = null,
                     cornerPercent = ARTWORK_CORNER_PERCENT,
-                    sharedKey = getSongSharedKey(sharedSongId, SongSharedElement.ARTWORK),
+                    sharedKey = SongSharedKey.createOrNull(sharedSongId, SongSharedElement.ARTWORK),
                     modifier = Modifier.size(artworkSize),
                 )
                 Column(
@@ -77,7 +77,7 @@ fun SongRow(
                         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        NowPlayingBars(state = nowPlaying)
+                        NowPlayingBarsIcon(state = nowPlaying)
                         Text(
                             text = title,
                             style = MaterialTheme.typography.bodyLarge,
@@ -86,7 +86,7 @@ fun SongRow(
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .weight(1f, fill = false)
-                                .sharedTextBounds(getSongSharedKey(sharedSongId, SongSharedElement.TITLE)),
+                                .sharedTextBounds(SongSharedKey.createOrNull(sharedSongId, SongSharedElement.TITLE)),
                         )
                     }
                     Text(
@@ -96,7 +96,7 @@ fun SongRow(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.sharedTextBounds(
-                            getSongSharedKey(sharedSongId, SongSharedElement.ARTIST),
+                            SongSharedKey.createOrNull(sharedSongId, SongSharedElement.ARTIST),
                         ),
                     )
                 }

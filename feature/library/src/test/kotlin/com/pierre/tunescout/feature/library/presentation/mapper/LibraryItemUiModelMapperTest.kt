@@ -44,7 +44,7 @@ class LibraryItemUiModelMapperTest {
     @Test
     fun `GIVEN every kind of item WHEN building the library THEN the liked songs come first and albums last`() {
         // When
-        val items = buildLibraryItems(
+        val items = LibraryItemUiModelMapper().buildLibraryItems(
             favorites = listOf(song()),
             playlists = listOf(playlist(id = 7)),
             albums = listOf(albumSummary(id = 10)),

@@ -32,9 +32,9 @@ import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEv
 import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.PlayButtonState
 import com.pierre.tunescout.ui.component.SongSharedElement
+import com.pierre.tunescout.ui.component.SongSharedKey
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.component.contentDescription
-import com.pierre.tunescout.ui.component.getSongSharedKey
 import com.pierre.tunescout.ui.component.icon
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -84,7 +84,7 @@ fun MiniPlayerContent(
                     url = song.artwork.thumbnailUrl,
                     contentDescription = null,
                     cornerPercent = ARTWORK_CORNER_PERCENT,
-                    sharedKey = getSongSharedKey(song.id, SongSharedElement.ARTWORK),
+                    sharedKey = SongSharedKey.createOrNull(song.id, SongSharedElement.ARTWORK),
                     modifier = Modifier.size(artworkSize),
                 )
                 Column(modifier = Modifier.weight(1f)) {
@@ -94,7 +94,7 @@ fun MiniPlayerContent(
                         color = TuneScoutColors.textPrimary,
                         maxLines = 1,
                         modifier = Modifier
-                            .sharedTextBounds(getSongSharedKey(song.id, SongSharedElement.TITLE))
+                            .sharedTextBounds(SongSharedKey.createOrNull(song.id, SongSharedElement.TITLE))
                             .loopingMarquee(),
                     )
                     Text(
@@ -103,7 +103,9 @@ fun MiniPlayerContent(
                         color = TuneScoutColors.textSecondary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.sharedTextBounds(getSongSharedKey(song.id, SongSharedElement.ARTIST)),
+                        modifier = Modifier.sharedTextBounds(
+                            SongSharedKey.createOrNull(song.id, SongSharedElement.ARTIST),
+                        ),
                     )
                 }
                 IconButton(

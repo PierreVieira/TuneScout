@@ -180,16 +180,22 @@ internal class ExoPlayerPlaybackController(
         }
     }
 
-    // A player restored at the end of a song comes back paused there, not ended: the song only
-    // stops being ended once something moves the player.
+    /**
+     * A player restored at the end of a song comes back paused there, not ended: the song only
+     * stops being ended once something moves the player.
+     *
+     * @return whether [playbackState] is still on the entry that was restored as ended.
+     */
     private fun isStillEnded(playbackState: PlaybackState): Boolean = restoredEndedEntryId != null &&
         playbackState.currentEntry?.id == restoredEndedEntryId &&
         playbackState.status != PlaybackStatus.Failed
 
+    /**
+     * The service is launched only now: it has five seconds to promote itself to the foreground,
+     * and Media3 can only do that once the player it wraps is actually playing.
+     */
     private fun handlePlaybackStarted() {
         restoredEndedEntryId = null
-        // Only now: the media service has five seconds to promote itself to the foreground,
-        // and Media3 can only do that once the player it wraps is actually playing.
         serviceLauncher.launch()
         startTicking()
     }
