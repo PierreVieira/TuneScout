@@ -16,4 +16,6 @@
     <string name="ui_retry">Tentar de novo</string>
     <string name="ui_loading">Carregando</string>
     <string name="ui_close">Fechar</string>
+    <string name="ui_now_playing">Tocando agora</string>
+    <string name="ui_now_playing_paused">Pausado</string>
 </resources>
