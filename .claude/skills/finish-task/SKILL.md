@@ -11,8 +11,11 @@ This skill cleans up after `start-task`, in either mode it can create a task in:
 - **In-place mode**: switches the main checkout back to `main` and deletes the branch that was
   checked out there.
 
-In both modes this only runs after confirming the branch's PR has actually merged, and always
-confirms with the user before deleting anything — removing a worktree or a branch is destructive.
+In both modes this only runs after confirming the branch's PR has actually merged. Running this
+skill (or the user asking to clean up / finish the task) is itself the user's authorization to
+remove the worktree and branch once that merge is verified — do not ask for a second confirmation
+before step 4's cleanup. Still stop and ask before anything not covered by that authorization: an
+unmerged branch (step 3), or discarding uncommitted changes (see Edge cases).
 
 All commands in this skill must run from the **main repo checkout**, not from inside a worktree
 being removed — a worktree cannot remove itself, and `git branch -d` on a branch checked out
@@ -63,13 +66,12 @@ An empty result means every commit on the branch is already in `origin/main`.
 stop. Tell the user exactly what's unmerged and ask for explicit confirmation before proceeding —
 never delete an unmerged task silently.
 
-### 4. Confirm with the user
+### 4. Clean up
 
 State exactly what's about to happen — the worktree path and branch being removed, or "switch the
-current checkout back to `main` and delete `<branch>`" for in-place — and ask for confirmation
-before running the next step. This is a destructive action even when the merge is confirmed.
-
-### 5. Clean up
+current checkout back to `main` and delete `<branch>`" for in-place — then proceed without waiting
+for a further confirmation; the merge check in step 3 plus the user's request to finish the task
+already authorize this.
 
 **Worktree mode:**
 
@@ -90,7 +92,7 @@ git branch -d <branch>
 In both modes, use `git branch -d` (safe delete), not `-D` — it refuses to delete a branch with
 unmerged commits, which is a useful last safety check even after step 3.
 
-### 6. Verify cleanup
+### 5. Verify cleanup
 
 ```bash
 git worktree list
@@ -111,4 +113,4 @@ Neither should show the removed task anymore. Report the result to the user.
   `-D`.
 - If a worktree directory was already deleted from disk without `git worktree remove` (it will show
   as `prunable` in `git worktree list`), just run `git worktree prune` and then delete the branch as
-  in step 5.
+  in step 4.
