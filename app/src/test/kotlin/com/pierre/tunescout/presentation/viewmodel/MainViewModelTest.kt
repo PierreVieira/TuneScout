@@ -7,7 +7,6 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
-import com.pierre.tunescout.presentation.mapper.toSystemBarsUiModel
 import com.pierre.tunescout.presentation.model.MainUiState
 import com.pierre.tunescout.ui.theme.Theme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,16 +42,6 @@ class MainViewModelTest {
             assertThat(viewModel.uiState.value)
                 .isEqualTo(MainUiState.Ready(theme = Theme.LIGHT, isDynamicColorEnabled = false))
         }
-
-    @Test
-    fun `WHEN the stored theme changes THEN the system bars follow it`() = runTest(mainDispatcher.dispatcher) {
-        // When
-        themeFlow.value = Theme.DARK
-
-        // Then
-        val state = viewModel.uiState.value as MainUiState.Ready
-        assertThat(state.systemBars).isEqualTo(Theme.DARK.toSystemBarsUiModel())
-    }
 
     @Test
     fun `WHEN nothing has played yet THEN does not request the notification permission`() =

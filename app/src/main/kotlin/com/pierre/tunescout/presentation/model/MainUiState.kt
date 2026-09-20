@@ -1,6 +1,5 @@
 package com.pierre.tunescout.presentation.model
 
-import com.pierre.tunescout.presentation.mapper.toSystemBarsUiModel
 import com.pierre.tunescout.ui.theme.Theme
 
 /**
@@ -13,8 +12,5 @@ sealed interface MainUiState {
     data class Ready(
         val theme: Theme,
         val isDynamicColorEnabled: Boolean,
-    ) : MainUiState {
-        val systemBars: SystemBarsUiModel
-            get() = theme.toSystemBarsUiModel()
-    }
+    ) : MainUiState
 }

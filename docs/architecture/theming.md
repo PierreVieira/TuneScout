@@ -59,7 +59,9 @@ regardless of the one in force. The preview cards in the theme sheet are drawn w
 ## The system bars follow the app's theme
 
 `MainActivity` calls `enableEdgeToEdge` from a `LaunchedEffect(isDark)`, passing a style for **both**
-bars. Neither may be left to `SystemBarStyle.auto`: `auto` reads the platform's night mode, so an app
+bars. The styles come from `SystemBars.of(isDark)` in `ui/theme`, which describes each bar as plain
+data (`SystemBarSpec`) so the scrims can be checked in a test. `isDark` is `Theme.isDark()`, the same
+value `TuneScoutTheme` resolves `Theme.SYSTEM` with, so the bars never disagree with the palette. Neither may be left to `SystemBarStyle.auto`: `auto` reads the platform's night mode, so an app
 set to `Theme.DARK` on a phone whose system is light would keep the light bar — dark icons over a
 white scrim under a black app. The navigation bar used to be the default `auto` and showed exactly
 that.
@@ -68,6 +70,16 @@ that.
 is what leaves the bar transparent over the dark palette. The light style keeps the scrims, because
 API 26 has no `windowLightNavigationBar` flag and the bar's icons would otherwise be white on white.
 The status bar passes transparent scrims instead: its contrast is never enforced.
+
+`auto` is not only a dark mode check, either. It also drops the scrims and turns on the platform's
+navigation bar contrast from API 29, so using it for `Theme.SYSTEM` would still change the navigation
+bar on 3-button navigation. That is why dark mode is resolved in composition rather than left to
+`auto`, and why the bars are not in `MainUiState`: the ViewModel cannot see the device's night mode.
+
+A sheet or a dialog opens a window of its own, and the system bars take their icons from it while it
+is in front. `ModalBottomSheet` picks them once, when its window is created, so `BottomSheetScene`
+picks them again whenever the overlay's background switches between light and dark — otherwise a
+theme switched from the theme sheet leaves dark icons on a dark bar until the sheet closes.
 
 ## Skeletons
 
