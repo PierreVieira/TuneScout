@@ -13,11 +13,5 @@ sealed interface SongOptionsUiEvent {
 
     data object OnViewAlbumClicked : SongOptionsUiEvent
 
-    data object OnRemoveFromRecentlyPlayedClicked : SongOptionsUiEvent
-
-    data object OnRemoveFromRecentlyPlayedConfirmed : SongOptionsUiEvent
-
-    data object OnRemoveFromRecentlyPlayedDismissed : SongOptionsUiEvent
-
     data object OnDismissed : SongOptionsUiEvent
 }

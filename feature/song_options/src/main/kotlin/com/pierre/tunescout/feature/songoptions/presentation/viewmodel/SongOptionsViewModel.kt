@@ -11,7 +11,6 @@ import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.feature.songoptions.domain.usecase.SongOptionsUseCases
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -26,17 +25,12 @@ class SongOptionsViewModel(
 ) : ViewModel() {
     private val emptyUiState = SongOptionsUiState(
         song = null,
-        isRecentlyPlayed = false,
         isFavorite = false,
-        isConfirmingRemoval = false,
     )
-    private val isConfirmingRemoval = MutableStateFlow(false)
 
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
-        useCases.isRecentlyPlayed(route.songId),
         useCases.isFavorite(route.songId),
-        isConfirmingRemoval,
         ::SongOptionsUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
@@ -47,9 +41,6 @@ class SongOptionsViewModel(
         SongOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()
-        SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked -> askForRemovalConfirmation()
-        SongOptionsUiEvent.OnRemoveFromRecentlyPlayedConfirmed -> removeFromRecentlyPlayed()
-        SongOptionsUiEvent.OnRemoveFromRecentlyPlayedDismissed -> isConfirmingRemoval.value = false
         SongOptionsUiEvent.OnDismissed -> navigator.navigateBack()
     }
 
@@ -76,19 +67,5 @@ class SongOptionsViewModel(
     private fun openAlbum() {
         val albumId = uiState.value.song?.albumId ?: return
         navigator.navigateReplacingTop(AlbumRoute(albumId = albumId))
-    }
-
-    private fun askForRemovalConfirmation() {
-        if (uiState.value.song == null) return
-        isConfirmingRemoval.value = true
-    }
-
-    private fun removeFromRecentlyPlayed() {
-        val songId = uiState.value.song?.id ?: return
-        isConfirmingRemoval.value = false
-        viewModelScope.launch {
-            useCases.removeFromRecentlyPlayed(songId)
-            navigator.navigateBack()
-        }
     }
 }

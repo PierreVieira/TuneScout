@@ -26,7 +26,6 @@ class SongOptionsViewModelTest {
     private lateinit var viewModel: SongOptionsViewModel
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
-    private lateinit var removedSongIds: MutableList<Long>
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
 
     @Test
@@ -127,84 +126,6 @@ class SongOptionsViewModelTest {
     }
 
     @Test
-    fun `GIVEN a song outside the history WHEN observing THEN does not offer to remove it`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(song = song(id = 1), isRecentlyPlayed = false)
-
-            // When
-            val state = viewModel.uiState.value
-
-            // Then
-            assertThat(state.isRecentlyPlayed).isFalse()
-        }
-
-    @Test
-    fun `GIVEN a song in the history WHEN clicking remove THEN only asks for confirmation`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(song = song(id = 1), isRecentlyPlayed = true)
-
-            // When
-            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
-            runCurrent()
-
-            // Then
-            assertThat(viewModel.uiState.value.isConfirmingRemoval).isTrue()
-            assertThat(removedSongIds).isEmpty()
-            verify(exactly = 0) { navigator.navigateBack() }
-        }
-
-    @Test
-    fun `GIVEN a pending removal WHEN confirming it THEN drops the song and closes the sheet`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(song = song(id = 1), isRecentlyPlayed = true)
-            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
-
-            // When
-            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedConfirmed)
-            runCurrent()
-
-            // Then
-            assertThat(removedSongIds).containsExactly(1L)
-            verify { navigator.navigateBack() }
-        }
-
-    @Test
-    fun `GIVEN a pending removal WHEN dismissing it THEN keeps the song and the sheet`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(song = song(id = 1), isRecentlyPlayed = true)
-            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
-
-            // When
-            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedDismissed)
-            runCurrent()
-
-            // Then
-            assertThat(viewModel.uiState.value.isConfirmingRemoval).isFalse()
-            assertThat(removedSongIds).isEmpty()
-            verify(exactly = 0) { navigator.navigateBack() }
-        }
-
-    @Test
-    fun `GIVEN no song yet WHEN clicking remove THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
-        // Given
-        prepareScenario(song = null)
-
-        // When
-        viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
-        viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedConfirmed)
-        runCurrent()
-
-        // Then
-        assertThat(viewModel.uiState.value.isConfirmingRemoval).isFalse()
-        assertThat(removedSongIds).isEmpty()
-        verify(exactly = 0) { navigator.navigateBack() }
-    }
-
-    @Test
     fun `WHEN dismissing THEN navigates back`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(song = song(id = 1))
@@ -260,10 +181,8 @@ class SongOptionsViewModelTest {
 
     private fun TestScope.prepareScenario(
         song: Song?,
-        isRecentlyPlayed: Boolean = false,
         isFavorite: Boolean = false,
     ) {
-        removedSongIds = mutableListOf()
         favoriteToggles = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
@@ -271,10 +190,8 @@ class SongOptionsViewModelTest {
             route = SongOptionsRoute(songId = 1),
             useCases = SongOptionsUseCases(
                 observeSong = { flowOf(song) },
-                isRecentlyPlayed = { flowOf(isRecentlyPlayed) },
                 isFavorite = { flowOf(isFavorite) },
                 toggleFavorite = { toggled, wasFavorite -> favoriteToggles += toggled.id to wasFavorite },
-                removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
             ),
             enqueuer = enqueuer,
             navigator = navigator,
