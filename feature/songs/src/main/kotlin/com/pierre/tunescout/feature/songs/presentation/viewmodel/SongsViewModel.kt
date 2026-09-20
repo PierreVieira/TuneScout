@@ -55,7 +55,7 @@ class SongsViewModel(
         SongsUiState(
             query = query,
             recentlyPlayed = recentlyPlayed,
-            nowPlayingId = playback.currentSong?.id,
+            nowPlayingId = playback.nowPlayingSong?.id,
             isPlaying = playback.isPlaying,
         )
     }.stateIn(

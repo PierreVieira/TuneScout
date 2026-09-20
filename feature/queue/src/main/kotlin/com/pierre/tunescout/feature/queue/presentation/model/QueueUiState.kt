@@ -6,6 +6,7 @@ data class QueueUiState(
     val contextTitle: String?,
     val nowPlaying: QueueEntry?,
     val isPlaying: Boolean,
+    val hasEnded: Boolean,
     val queuedByUser: List<QueueEntry>,
     val upNext: List<QueueEntry>,
 ) {

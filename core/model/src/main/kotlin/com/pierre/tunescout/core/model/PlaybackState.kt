@@ -22,6 +22,16 @@ data class PlaybackState(
     val isPlaying: Boolean
         get() = status == PlaybackStatus.Playing
 
+    val hasEnded: Boolean
+        get() = status == PlaybackStatus.Ended
+
+    /**
+     * The song the player is still on. Once it ends, the player keeps it around so it can be
+     * replayed, but nothing is playing any more.
+     */
+    val nowPlayingSong: Song?
+        get() = currentSong.takeUnless { hasEnded }
+
     val hasPrevious: Boolean
         get() = currentIndex > 0
 

@@ -112,7 +112,10 @@ private fun QueueList(
                     subtitle = entry.song.artistName,
                     artworkUrl = entry.song.artwork.thumbnailUrl,
                     onClick = {},
-                    nowPlaying = getNowPlayingState(isCurrentSong = true, isPlaying = uiState.isPlaying),
+                    nowPlaying = getNowPlayingState(
+                        isCurrentSong = !uiState.hasEnded,
+                        isPlaying = uiState.isPlaying,
+                    ),
                 )
             }
         }

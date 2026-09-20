@@ -22,6 +22,7 @@ class QueueViewModel(
         contextTitle = null,
         nowPlaying = null,
         isPlaying = false,
+        hasEnded = false,
         queuedByUser = emptyList(),
         upNext = emptyList(),
     )
@@ -55,6 +56,7 @@ class QueueViewModel(
             contextTitle = (playback.context as? PlaybackContext.Album)?.title,
             nowPlaying = playback.currentEntry,
             isPlaying = playback.isPlaying,
+            hasEnded = playback.hasEnded,
             queuedByUser = queuedByUser,
             upNext = upcoming.drop(queuedByUser.size),
         )

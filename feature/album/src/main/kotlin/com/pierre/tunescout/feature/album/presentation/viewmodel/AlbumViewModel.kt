@@ -91,7 +91,7 @@ class AlbumViewModel(
     ): AlbumUiState = when {
         album != null -> AlbumUiState.Loaded(
             album = album,
-            nowPlayingId = playback.currentSong?.id,
+            nowPlayingId = playback.nowPlayingSong?.id,
             isPlaying = playback.isPlaying,
             isFavorite = isFavorite,
         )

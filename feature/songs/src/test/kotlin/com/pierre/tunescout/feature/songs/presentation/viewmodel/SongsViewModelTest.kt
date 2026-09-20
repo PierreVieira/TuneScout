@@ -7,6 +7,7 @@ import androidx.paging.testing.asSnapshot
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
@@ -51,6 +52,23 @@ class SongsViewModelTest {
             assertThat(state.nowPlayingId).isEqualTo(2L)
             assertThat(state.isPlaying).isTrue()
             assertThat(state.isSearching).isFalse()
+        }
+
+    @Test
+    fun `GIVEN a song that reached its end WHEN observing THEN marks no song as playing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                recentlyPlayed = listOf(song(id = 2)),
+                playback = playbackState(songs = listOf(song(id = 2)), status = PlaybackStatus.Ended),
+            )
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.nowPlayingId).isNull()
+            assertThat(state.isPlaying).isFalse()
         }
 
     @Test

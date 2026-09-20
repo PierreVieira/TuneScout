@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.queue.presentation.content
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
@@ -51,6 +52,7 @@ class QueueContentTest {
                         contextTitle = null,
                         nowPlaying = null,
                         isPlaying = false,
+                        hasEnded = false,
                         queuedByUser = emptyList(),
                         upNext = emptyList(),
                     ),
@@ -60,6 +62,30 @@ class QueueContentTest {
         }
 
         onNodeWithText("The queue is empty").assertIsDisplayed()
+    }
+
+    @Test
+    fun givenTheSongIsPlayingTheNowPlayingRowShowsTheBars() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Now playing").assertIsDisplayed()
+    }
+
+    @Test
+    fun givenTheSongEndedTheNowPlayingRowStaysButDropsTheBars() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(isPlaying = false, hasEnded = true), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Get Lucky").assertIsDisplayed()
+        onNodeWithContentDescription("Now playing").assertDoesNotExist()
+        onNodeWithContentDescription("Paused").assertDoesNotExist()
     }
 
     @Test
@@ -118,10 +144,14 @@ class QueueContentTest {
         )
     }
 
-    private fun loaded(): QueueUiState = QueueUiState(
+    private fun loaded(
+        isPlaying: Boolean = true,
+        hasEnded: Boolean = false,
+    ): QueueUiState = QueueUiState(
         contextTitle = "Random Access Memories",
         nowPlaying = queueEntry(song = song(id = 1, title = "Get Lucky")),
-        isPlaying = true,
+        isPlaying = isPlaying,
+        hasEnded = hasEnded,
         queuedByUser = listOf(userEntry(id = 9, title = "One More Time")),
         upNext = listOf(queueEntry(song = song(id = 2, title = "Around the World"))),
     )
