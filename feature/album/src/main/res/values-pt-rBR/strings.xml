@@ -5,6 +5,8 @@
     <string name="album_error_title">Não foi possível carregar este álbum</string>
     <string name="album_error_description">Verifique sua conexão e tente de novo.</string>
     <string name="album_stale_notice">Não foi possível atualizar este álbum. Mostrando a versão salva neste aparelho.</string>
+    <string name="album_partial_notice">Não foi possível carregar o álbum inteiro. Mostrando só as faixas salvas neste aparelho.</string>
+    <string name="album_song_unavailable_offline">Esta música não está salva neste aparelho. Conecte-se à internet para ouvi-la.</string>
     <string name="album_play_now">Tocar o álbum agora</string>
     <string name="album_play_next">Tocar o álbum a seguir</string>
     <string name="album_add_to_queue">Adicionar o álbum à fila</string>

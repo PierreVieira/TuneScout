@@ -6,11 +6,14 @@ import com.pierre.tunescout.core.database.dao.AlbumDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.entity.AlbumEntity
 import com.pierre.tunescout.core.database.entity.SongEntity
+import com.pierre.tunescout.core.database.mapper.toEntity
 import com.pierre.tunescout.core.database.relation.AlbumWithSongs
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -21,6 +24,7 @@ class RoomAlbumLocalDataSourceTest {
     private val cacheMaxAge = 1.hours
     private var now = 0L
     private lateinit var localDataSource: RoomAlbumLocalDataSource
+    private lateinit var songDao: FakeAlbumSongDao
 
     @Test
     fun `GIVEN a saved album WHEN observing it THEN its tracks come back in track order`() = runTest {
@@ -34,6 +38,63 @@ class RoomAlbumLocalDataSourceTest {
         // Then
         observed.test {
             assertThat(awaitItem()?.songs?.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
+        }
+    }
+
+    @Test
+    fun `GIVEN only some tracks of an album never looked up WHEN observing it THEN builds a partial album from them`() =
+        runTest {
+            // Given
+            prepareScenario()
+            songDao.upsertAll(
+                listOf(
+                    song(id = 3, albumId = 10, albumTitle = "Clarity", trackNumber = 3).toEntity(cachedAt = 0),
+                    song(id = 1, albumId = 10, albumTitle = "Clarity", trackNumber = 1).toEntity(cachedAt = 0),
+                    song(id = 7, albumId = 99, trackNumber = 1).toEntity(cachedAt = 0),
+                ),
+            )
+
+            // When
+            val observed = localDataSource.observe(albumId = 10)
+
+            // Then
+            observed.test {
+                val album = awaitItem()
+                assertThat(album?.title).isEqualTo("Clarity")
+                assertThat(album?.isComplete).isFalse()
+                assertThat(album?.songs?.map { song -> song.id }).containsExactly(1L, 3L).inOrder()
+            }
+        }
+
+    @Test
+    fun `GIVEN a partial album on screen WHEN the whole album is saved THEN emits the complete one`() = runTest {
+        // Given
+        prepareScenario()
+        songDao.upsertAll(listOf(song(id = 1, albumId = 10).toEntity(cachedAt = 0)))
+
+        // When
+        localDataSource.observe(albumId = 10).test {
+            assertThat(awaitItem()?.isComplete).isFalse()
+            localDataSource.save(album(id = 10))
+
+            // Then
+            val album = expectMostRecentItem()
+            assertThat(album?.isComplete).isTrue()
+            assertThat(album?.songs?.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
+        }
+    }
+
+    @Test
+    fun `GIVEN no album and none of its tracks WHEN observing it THEN emits null`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        val observed = localDataSource.observe(albumId = 10)
+
+        // Then
+        observed.test {
+            assertThat(awaitItem()).isNull()
         }
     }
 
@@ -91,7 +152,7 @@ class RoomAlbumLocalDataSourceTest {
     }
 
     private fun prepareScenario() {
-        val songDao = FakeAlbumSongDao()
+        songDao = FakeAlbumSongDao()
         localDataSource = RoomAlbumLocalDataSource(
             albumDao = FakeAlbumDao(songs = songDao.songs),
             songDao = songDao,
@@ -101,10 +162,10 @@ class RoomAlbumLocalDataSourceTest {
 }
 
 private class FakeAlbumSongDao : SongDao {
-    val songs = mutableMapOf<Long, SongEntity>()
+    val songs = MutableStateFlow(emptyMap<Long, SongEntity>())
 
     override suspend fun upsertAll(songs: List<SongEntity>) {
-        songs.forEach { song -> this.songs[song.id] = song }
+        this.songs.value = this.songs.value + songs.associateBy { song -> song.id }
     }
 
     override fun observeById(songId: Long): Flow<SongEntity?> = error("unused")
@@ -122,7 +183,7 @@ private class FakeAlbumSongDao : SongDao {
 }
 
 private class FakeAlbumDao(
-    private val songs: Map<Long, SongEntity>,
+    private val songs: StateFlow<Map<Long, SongEntity>>,
 ) : AlbumDao {
     private val albums = MutableStateFlow(emptyMap<Long, AlbumEntity>())
 
@@ -130,14 +191,13 @@ private class FakeAlbumDao(
         albums.value = albums.value + (album.id to album)
     }
 
-    override fun observeWithSongs(albumId: Long): Flow<AlbumWithSongs?> = albums.map { current ->
-        current[albumId]?.let { album ->
-            AlbumWithSongs(
-                album = album,
-                songs = songs.values.filter { song -> song.albumId == albumId },
-            )
+    override fun observeWithSongs(albumId: Long): Flow<AlbumWithSongs?> =
+        combine(albums, observeSavedSongs(albumId)) { current, albumSongs ->
+            current[albumId]?.let { album -> AlbumWithSongs(album = album, songs = albumSongs) }
         }
-    }
+
+    override fun observeSavedSongs(albumId: Long): Flow<List<SongEntity>> =
+        songs.map { current -> current.values.filter { song -> song.albumId == albumId } }
 
     override suspend fun findCachedAt(albumId: Long): Long? = albums.value[albumId]?.cachedAt
 }

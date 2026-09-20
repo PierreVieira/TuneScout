@@ -14,12 +14,14 @@ fun album(
         song(id = 1, albumId = id, trackNumber = 1),
         song(id = 2, albumId = id, trackNumber = 2),
     ),
+    isComplete: Boolean = true,
 ): Album = Album(
     id = id,
     title = title,
     artistName = artistName,
     artwork = artwork,
     songs = songs,
+    isComplete = isComplete,
 )
 
 fun albumSummary(

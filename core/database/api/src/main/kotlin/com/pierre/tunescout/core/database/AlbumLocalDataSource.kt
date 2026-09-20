@@ -7,6 +7,13 @@ import kotlin.time.Duration
 interface AlbumLocalDataSource {
     suspend fun save(album: Album)
 
+    /**
+     * The album as the device has it. One it never looked up is put together from the tracks it
+     * saved on their own, marked incomplete, so the screen still opens with no connection.
+     *
+     * @return the cached album, a partial one when only some of its tracks are saved, or null when
+     * none is.
+     */
     fun observe(albumId: Long): Flow<Album?>
 
     /**

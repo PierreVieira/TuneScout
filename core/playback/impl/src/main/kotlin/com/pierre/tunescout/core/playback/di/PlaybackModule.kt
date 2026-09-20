@@ -14,12 +14,14 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.PreviewCache
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.playback.internal.AndroidMediaItemFactory
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.ForegroundPlaybackServiceLauncher
 import com.pierre.tunescout.core.playback.internal.MediaCacheDataSourceFactory
+import com.pierre.tunescout.core.playback.internal.MediaCachePreviewCache
 import com.pierre.tunescout.core.playback.internal.MediaItemFactory
 import com.pierre.tunescout.core.playback.internal.PlaybackFavoriteController
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
@@ -56,6 +58,7 @@ val playbackModule: Module = module {
     }
     single<DataSource.Factory> { DefaultDataSource.Factory(androidContext()) }
     singleOf(::MediaCacheDataSourceFactory)
+    single<PreviewCache> { MediaCachePreviewCache(cache = get()) }
     single<ExoPlayer> {
         ExoPlayer
             .Builder(androidContext())
