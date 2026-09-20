@@ -32,7 +32,7 @@ class AppModulesTest {
     /**
      * Walks every constructor reachable from [appModules] and fails when a parameter has no
      * matching definition. The modules are merged into one, because verifying them one by one
-     * would hide the cross-module edges (a feature reaching into `core:network`, for instance).
+     * would hide the cross-module edges (a feature reaching into `core:network:impl`, for instance).
      */
     @Test
     fun `WHEN verifying the graph THEN every constructor dependency has a definition`() {

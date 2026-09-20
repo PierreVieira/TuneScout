@@ -6,14 +6,14 @@ import androidx.paging.PagingData
 import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.SongLocalDataSource
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
 import com.pierre.tunescout.core.network.NetworkMonitor
+import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
 import com.pierre.tunescout.feature.songs.data.paging.SearchSongsPagingSource
 import com.pierre.tunescout.feature.songs.domain.repository.SongsRepository
 import kotlinx.coroutines.flow.Flow
 
 internal class SongsRepositoryImpl(
-    private val remoteDataSource: ITunesRemoteDataSource,
+    private val remoteDataSource: SongSearchRemoteDataSource,
     private val songLocalDataSource: SongLocalDataSource,
     private val recentlyPlayedLocalDataSource: RecentlyPlayedLocalDataSource,
     private val networkMonitor: NetworkMonitor,

@@ -9,10 +9,8 @@ import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.FavoriteSongLocalDataSource
 import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
-import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
-import com.pierre.tunescout.core.testing.fixture.album
+import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
 import com.pierre.tunescout.core.testing.fixture.song
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
@@ -42,7 +40,7 @@ class LikedSongFlowTest {
     private val liked = song(id = 201, title = "Digital Love")
 
     private val fakeRemoteModule: Module = module {
-        single<ITunesRemoteDataSource> { FakeLibraryRemoteDataSource() }
+        single<SongSearchRemoteDataSource> { FakeLibraryRemoteDataSource() }
     }
 
     @BeforeEach
@@ -90,12 +88,10 @@ class LikedSongFlowTest {
     }
 }
 
-private class FakeLibraryRemoteDataSource : ITunesRemoteDataSource {
+private class FakeLibraryRemoteDataSource : SongSearchRemoteDataSource {
     override suspend fun searchSongs(
         term: String,
         limit: Int,
         forceRefresh: Boolean,
     ): List<Song> = emptyList()
-
-    override suspend fun fetchAlbum(albumId: Long): Album? = album(id = albumId)
 }

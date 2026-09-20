@@ -7,7 +7,9 @@ app/                     # Android application: composition root (Koin appModule
 core/
 ├── model/               # Domain models shared across features (Song, Album, Playlist) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM
-├── network/             # ITunesRemoteDataSource interface + Ktor implementation, DTOs (internal)
+├── network/
+│   ├── api/             # Remote data source interfaces (SongSearchRemoteDataSource, ...), NetworkMonitor — pure JVM
+│   └── impl/            # Ktor client, DTOs, mappers, connectivity monitor, Koin module — only :app sees it
 ├── database/
 │   ├── api/             # Local data source interfaces (SongLocalDataSource, PlaylistLocalDataSource, ...) — pure JVM
 │   └── impl/            # Room database, DAOs, entities, migrations, Koin module — only :app sees it
@@ -89,7 +91,7 @@ interfaces has no `presentation/`).
 ### Module names
 
 A Gradle module's directory is `snake_case`: `feature/song_options`, `feature/mini_player`,
-`tools/ktlint_custom_rules`. Single-word modules (`feature/songs`, `core/network`) need no
+`tools/ktlint_custom_rules`. Single-word modules (`feature/songs`, `core/model`) need no
 separator and get none.
 
 Three names follow from that one, and they are not all spelled the same way:
@@ -116,12 +118,13 @@ jar by name.
 - `:ui:*` is presentation only: it never depends on features or on core.
 - Core never depends on `:ui:*`, except `:core:navigation`, whose command collector is a composable.
 - Only `:app` depends on features; nothing depends on `:app`.
-- Only `:app` depends on a `:core:*:impl` module (`:core:playback:impl`, `:core:database:impl`);
+- Only `:app` depends on a `:core:*:impl` module (`:core:playback:impl`, `:core:database:impl`,
+  `:core:network:impl`);
   features and the other core modules see the matching `:core:*:api`.
 
 Shared things live in core: domain models (`core/model`), `NavKey` routes and the `Navigator`
-(`core/navigation`), the playback interfaces (`core/playback/api`) and the local data sources
-(`core/database/api`). Features talk to each other only through those.
+(`core/navigation`), the playback interfaces (`core/playback/api`), the local data sources
+(`core/database/api`) and the remote ones (`core/network/api`). Features talk to each other only through those.
 
 ### When a core module earns an `api`/`impl` split
 
@@ -138,9 +141,14 @@ implementation carries something `internal` cannot hold back:
   sources now compile against a pure-JVM module of interfaces instead of queueing behind it.
 - **An implementation that is genuinely chosen, not just hidden** — ExoPlayer and Room are both
   swappable behind their interfaces, and only `:app` decides which one is wired.
+- **A boundary the app is required to prove.** The challenge asks for a network layer whose API
+  implementation can be replaced without affecting the other layers. `internal` makes that true;
+  the split makes it enforced. `songs` and `album` compile against `core/network/api`, a pure-JVM
+  module with no Ktor on its classpath, and `assertModuleGraph` fails the build the moment a
+  feature depends on `core/network/impl`. The instrumented tests already rely on it: they replace
+  both remote data sources through Koin and no feature notices.
 
-Modules that fail all three keep a single module: `core/network` hides Ktor behind
-`ITunesRemoteDataSource` with `internal` alone, and `core/datastore`, `core/utils` and `core/model`
+Modules that fail all four keep a single module: `core/datastore`, `core/utils` and `core/model`
 have no implementation worth hiding.
 
 `feature/song_options` owns the song bottom sheet, which `songs` and `player` both open — an entry

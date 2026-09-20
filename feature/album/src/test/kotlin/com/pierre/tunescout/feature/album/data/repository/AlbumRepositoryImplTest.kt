@@ -3,7 +3,7 @@ package com.pierre.tunescout.feature.album.data.repository
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.AlbumLocalDataSource
 import com.pierre.tunescout.core.model.Album
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
+import com.pierre.tunescout.core.network.AlbumRemoteDataSource
 import com.pierre.tunescout.core.network.RemoteException
 import com.pierre.tunescout.core.testing.fixture.album
 import io.mockk.coEvery
@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.hours
 class AlbumRepositoryImplTest {
     private val cacheMaxAge = 1.hours
     private lateinit var repository: AlbumRepositoryImpl
-    private lateinit var remoteDataSource: ITunesRemoteDataSource
+    private lateinit var remoteDataSource: AlbumRemoteDataSource
     private lateinit var albumLocalDataSource: AlbumLocalDataSource
 
     @Test

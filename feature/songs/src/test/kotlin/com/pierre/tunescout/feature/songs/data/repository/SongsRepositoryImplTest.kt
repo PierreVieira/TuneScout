@@ -5,10 +5,9 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.SongLocalDataSource
-import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
 import com.pierre.tunescout.core.network.NetworkMonitor
+import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -103,7 +102,7 @@ class SongsRepositoryImplTest {
 
 private class FakeRemoteDataSource(
     private val catalog: List<Song>,
-) : ITunesRemoteDataSource {
+) : SongSearchRemoteDataSource {
     val requestedTerms = mutableSetOf<String>()
 
     override suspend fun searchSongs(
@@ -114,8 +113,6 @@ private class FakeRemoteDataSource(
         requestedTerms += term
         return catalog.take(limit)
     }
-
-    override suspend fun fetchAlbum(albumId: Long): Album? = error("unused")
 }
 
 private class FakeSongLocalDataSource : SongLocalDataSource {

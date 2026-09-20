@@ -12,10 +12,8 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeRight
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
-import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.network.ITunesRemoteDataSource
-import com.pierre.tunescout.core.testing.fixture.album
+import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
 import com.pierre.tunescout.core.testing.fixture.song
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
@@ -45,7 +43,7 @@ class RecentlyPlayedRemovalFlowTest {
     )
 
     private val fakeRemoteModule: Module = module {
-        single<ITunesRemoteDataSource> { FakeHistoryRemoteDataSource() }
+        single<SongSearchRemoteDataSource> { FakeHistoryRemoteDataSource() }
     }
 
     @BeforeEach
@@ -102,12 +100,10 @@ class RecentlyPlayedRemovalFlowTest {
     }
 }
 
-private class FakeHistoryRemoteDataSource : ITunesRemoteDataSource {
+private class FakeHistoryRemoteDataSource : SongSearchRemoteDataSource {
     override suspend fun searchSongs(
         term: String,
         limit: Int,
         forceRefresh: Boolean,
     ): List<Song> = emptyList()
-
-    override suspend fun fetchAlbum(albumId: Long): Album? = album(id = albumId)
 }
