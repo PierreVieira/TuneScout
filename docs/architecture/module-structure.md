@@ -8,7 +8,9 @@ core/
 ├── model/               # Domain models shared across features (Song, Album, Playlist) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM
 ├── network/             # ITunesRemoteDataSource interface + Ktor implementation, DTOs (internal)
-├── database/            # Room database, DAOs, entities, migrations (history, playlists, likes)
+├── database/
+│   ├── api/             # Local data source interfaces (SongLocalDataSource, PlaylistLocalDataSource, ...) — pure JVM
+│   └── impl/            # Room database, DAOs, entities, migrations, Koin module — only :app sees it
 ├── datastore/           # The Preferences DataStore and its Koin module
 ├── navigation/          # Navigator, ChannelNavigator, NavigationCommand, BackStackController, routes
 ├── playback/
@@ -87,7 +89,7 @@ interfaces has no `presentation/`).
 ### Module names
 
 A Gradle module's directory is `snake_case`: `feature/song_options`, `feature/mini_player`,
-`tools/ktlint_custom_rules`. Single-word modules (`feature/songs`, `core/database`) need no
+`tools/ktlint_custom_rules`. Single-word modules (`feature/songs`, `core/network`) need no
 separator and get none.
 
 Three names follow from that one, and they are not all spelled the same way:
@@ -114,12 +116,32 @@ jar by name.
 - `:ui:*` is presentation only: it never depends on features or on core.
 - Core never depends on `:ui:*`, except `:core:navigation`, whose command collector is a composable.
 - Only `:app` depends on features; nothing depends on `:app`.
-- Only `:app` depends on `:core:playback:impl`; features and the other core modules see
-  `:core:playback:api`, so the ExoPlayer wiring can change without recompiling a single feature.
+- Only `:app` depends on a `:core:*:impl` module (`:core:playback:impl`, `:core:database:impl`);
+  features and the other core modules see the matching `:core:*:api`.
 
 Shared things live in core: domain models (`core/model`), `NavKey` routes and the `Navigator`
-(`core/navigation`), the playback interfaces (`core/playback/api`) and the recently-played repository
-(`core/database`). Features talk to each other only through those.
+(`core/navigation`), the playback interfaces (`core/playback/api`) and the local data sources
+(`core/database/api`). Features talk to each other only through those.
+
+### When a core module earns an `api`/`impl` split
+
+A `:core:*` module stays a single module by default — `internal` already keeps its implementation
+off every consumer's classpath, and Kotlin's ABI-based compile avoidance already means editing an
+`internal` class recompiles no dependent. A split is worth its own Gradle module only when the
+implementation carries something `internal` cannot hold back:
+
+- **A manifest contribution.** `core/playback/impl` declares the exported `PlaybackService` and
+  three foreground-service permissions; without the split they would merge into the manifest of
+  every feature that plays a song.
+- **A build step the consumers should not wait for.** `core/database/impl` runs Room's KSP
+  processor, which is the heaviest task in the build; the six features that use the local data
+  sources now compile against a pure-JVM module of interfaces instead of queueing behind it.
+- **An implementation that is genuinely chosen, not just hidden** — ExoPlayer and Room are both
+  swappable behind their interfaces, and only `:app` decides which one is wired.
+
+Modules that fail all three keep a single module: `core/network` hides Ktor behind
+`ITunesRemoteDataSource` with `internal` alone, and `core/datastore`, `core/utils` and `core/model`
+have no implementation worth hiding.
 
 `feature/song_options` owns the song bottom sheet, which `songs` and `player` both open — an entry
 gets its own module once something outside the module that hosts it navigates to it. They reach it
@@ -156,9 +178,9 @@ restricted = arrayOf(
     ":ui:.* -X> :feature:.*",
     ":ui:.* -X> :core:.*",
     ":core:(?!navigation).* -X> :ui:.*",
-    ":feature:.* -X> :core:playback:impl",
-    ":core:.* -X> :core:playback:impl",
-    ":tools:.* -X> :core:playback:impl",
+    ":feature:.* -X> :core:.*:impl",
+    ":core:.* -X> :core:.*:impl",
+    ":tools:.* -X> :core:.*:impl",
     ".* -X> :app",
 )
 ```
