@@ -6,7 +6,7 @@ on:
       - '.github/workflows/translations.yml'
       - 'scripts/check_translations.py'
       - '**/res/values/strings.xml'
-      - '**/res/values-pt-rBR/strings.xml'
+      - '**/res/values-*/strings.xml'
   push:
     branches:
       - main
@@ -14,7 +14,7 @@ on:
       - '.github/workflows/translations.yml'
       - 'scripts/check_translations.py'
       - '**/res/values/strings.xml'
-      - '**/res/values-pt-rBR/strings.xml'
+      - '**/res/values-*/strings.xml'
 
 permissions:
   contents: read
