@@ -55,11 +55,19 @@ private fun CollectionLoaded(
         title = collectionTitleText(uiState.title),
         onBackClick = { onEvent(CollectionUiEvent.OnBackClicked) },
         actions = {
-            if (uiState.isDeletable) {
+            val hasSongs = uiState.songs.isNotEmpty()
+            if (hasSongs) {
                 TopBarAction(
-                    icon = TuneScoutIcons.delete,
-                    contentDescription = stringResource(R.string.library_delete_playlist),
-                    onClick = { onEvent(CollectionUiEvent.OnDeleteClicked) },
+                    icon = TuneScoutIcons.play,
+                    contentDescription = stringResource(R.string.library_collection_play_now),
+                    onClick = { onEvent(CollectionUiEvent.OnPlayNowClicked) },
+                )
+            }
+            if (hasSongs || uiState.isDeletable) {
+                TopBarAction(
+                    icon = TuneScoutIcons.moreMenu,
+                    contentDescription = stringResource(R.string.library_collection_more_options),
+                    onClick = { onEvent(CollectionUiEvent.OnMoreClicked) },
                 )
             }
         },
@@ -113,7 +121,7 @@ private fun SongList(
 }
 
 @Composable
-private fun collectionTitleText(title: CollectionTitle): String = when (title) {
+internal fun collectionTitleText(title: CollectionTitle): String = when (title) {
     CollectionTitle.Favorites -> stringResource(R.string.library_favorites)
     is CollectionTitle.Custom -> title.name
 }

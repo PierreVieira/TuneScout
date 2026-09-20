@@ -83,6 +83,22 @@ class SongOptionsViewModelTest {
         }
 
     @Test
+    fun `GIVEN a cached song WHEN clicking play now THEN it takes over the current song and closes the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnPlayNowClicked)
+
+            // Then
+            verifyOrder {
+                enqueuer.playNow(listOf(song(id = 1)))
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
     fun `GIVEN a cached song WHEN clicking play next THEN queues it next and closes the sheet`() =
         runTest(mainDispatcher.dispatcher) {
             // Given

@@ -76,6 +76,50 @@ class ExoPlayerPlaybackControllerTest {
     }
 
     @Test
+    fun `GIVEN an album is playing WHEN playing a list now THEN it takes over without losing the queue`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1)
+
+        // When
+        controller.playNow(listOf(song(id = 8), song(id = 9)))
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 8L, 9L, 2L, 3L).inOrder()
+        assertThat(
+            currentState.currentSong
+                ?.id,
+        ).isEqualTo(8L)
+        verify(exactly = 2) { fakeExoPlayer.player.play() }
+    }
+
+    @Test
+    fun `GIVEN nothing is playing WHEN playing a list now THEN playback starts on its first song`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        controller.playNow(listOf(song(id = 8), song(id = 9)))
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(8L, 9L).inOrder()
+        verify { fakeExoPlayer.player.prepare() }
+        verify { fakeExoPlayer.player.play() }
+    }
+
+    @Test
+    fun `WHEN playing an empty list now THEN the player is left alone`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        controller.playNow(emptyList())
+
+        // Then
+        verify(exactly = 0) { fakeExoPlayer.player.play() }
+    }
+
+    @Test
     fun `WHEN removing an entry THEN the shortened queue is published`() = runTest {
         // Given
         prepareScenario()

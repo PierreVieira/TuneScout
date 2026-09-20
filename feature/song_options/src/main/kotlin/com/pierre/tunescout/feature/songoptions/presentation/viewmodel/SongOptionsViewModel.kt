@@ -35,6 +35,7 @@ class SongOptionsViewModel(
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
         SongOptionsUiEvent.OnFavoriteClicked -> toggleFavorite()
         SongOptionsUiEvent.OnAddToPlaylistClicked -> openAddToPlaylist()
+        SongOptionsUiEvent.OnPlayNowClicked -> queue(enqueuer::playNow)
         SongOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()

@@ -15,7 +15,9 @@ sealed interface CollectionUiEvent {
         val song: Song,
     ) : CollectionUiEvent
 
-    data object OnDeleteClicked : CollectionUiEvent
+    data object OnPlayNowClicked : CollectionUiEvent
+
+    data object OnMoreClicked : CollectionUiEvent
 
     data object OnBackClicked : CollectionUiEvent
 }
