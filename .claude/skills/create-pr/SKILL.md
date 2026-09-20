@@ -54,9 +54,11 @@ Also check the upstream tracking branch:
 git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null
 ```
 
-**If the current branch is `main`**, or the upstream tracking branch is `origin/main`, a new branch
-must be created before committing. Continue to step 4 to determine the prefix, then create the
-branch in step 5.
+**If the current branch is `main`**, or the upstream tracking branch is `origin/main`, stop and ask
+whether the user wants to use the `start-task` skill instead — it's the preferred way to start new
+work and will ask whether to use a worktree or work in-place. If they'd rather branch directly here
+without going through that flow, continue to step 4 to determine the prefix, then create the branch
+in step 5.
 
 **If the current branch is already a feature/fix/enhancement/refactor branch**, skip branch
 creation and go directly to step 6.
@@ -71,16 +73,7 @@ git diff HEAD
 git log origin/main..HEAD --oneline
 ```
 
-| Type | When to use |
-|---|---|
-| `fix` | Corrects a bug or unintended behavior |
-| `feature` | Adds new functionality visible to the user |
-| `enhancement` | Improves existing functionality (performance, UX, accessibility) |
-| `refactor` | Internal code restructuring with no user-facing change |
-| `chore` | Build, CI, tooling or documentation only |
-
-If the changes clearly point to one type, use it without asking. If it is genuinely ambiguous, ask
-the user.
+Pick the `<type>` prefix using the table in [`branch-types.md`](../branch-types.md).
 
 ### 5. Create a new branch (if needed)
 
@@ -133,19 +126,19 @@ gh pr create \
 - Do NOT list every file changed or describe code line by line
 - Keep it to 3–8 sentences or a short bullet list
 
-### 10. Squash and switch to main (optional)
+### 10. Squash and merge (optional)
 
 Ask the user whether to squash merge now. If yes:
 
 ```bash
 gh pr merge --squash --auto
-git remote update
-git checkout main
-git pull
-git branch -D <branch>
 ```
 
 If the merge fails (pending checks), notify the user and stop.
+
+Once merged, use the `finish-task` skill to clean up. It handles both worktree and in-place tasks,
+verifies the merge, and asks for confirmation before removing the branch (and worktree, if any) —
+don't duplicate that logic here.
 
 ## Edge cases
 
