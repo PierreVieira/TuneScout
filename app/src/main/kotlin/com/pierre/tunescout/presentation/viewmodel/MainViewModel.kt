@@ -6,11 +6,15 @@ import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveDynamicColorEnabled
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveTheme
 import com.pierre.tunescout.presentation.model.MainUiState
+import com.pierre.tunescout.ui.theme.SystemBars
+import com.pierre.tunescout.ui.theme.isDark
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -20,17 +24,29 @@ class MainViewModel(
     observeTheme: ObserveTheme,
     observeDynamicColorEnabled: ObserveDynamicColorEnabled,
 ) : ViewModel() {
+    private val isSystemInDarkTheme = MutableStateFlow<Boolean?>(null)
+
     val uiState: StateFlow<MainUiState> = combine(
         observeTheme(),
         observeDynamicColorEnabled(),
-        MainUiState::Ready,
-    ).stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
+        isSystemInDarkTheme.filterNotNull(),
+    ) { theme, isDynamicColorEnabled, isSystemInDarkTheme ->
+        MainUiState.Ready(
+            theme = theme,
+            isDynamicColorEnabled = isDynamicColorEnabled,
+            systemBars = SystemBars.of(isDark = theme.isDark(isSystemInDarkTheme)),
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
 
     val requestNotificationPermissionsUiAction: SharedFlow<Unit>
         field = MutableSharedFlow<Unit>()
 
     init {
         requestNotificationPermissionOnPlayback()
+    }
+
+    fun onSystemDarkThemeChanged(isSystemInDarkTheme: Boolean) {
+        this.isSystemInDarkTheme.value = isSystemInDarkTheme
     }
 
     private fun requestNotificationPermissionOnPlayback() {

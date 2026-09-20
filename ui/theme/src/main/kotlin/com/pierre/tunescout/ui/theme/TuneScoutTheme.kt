@@ -29,10 +29,16 @@ fun TuneScoutTheme(
 }
 
 @Composable
-fun Theme.isDark(): Boolean = when (this) {
+fun Theme.isDark(): Boolean = isDark(isSystemInDarkTheme = isSystemInDarkTheme())
+
+/**
+ * @param isSystemInDarkTheme whether the device is in dark mode, which only [Theme.SYSTEM] follows.
+ * @return whether this theme draws the dark palette.
+ */
+fun Theme.isDark(isSystemInDarkTheme: Boolean): Boolean = when (this) {
     Theme.LIGHT -> false
     Theme.DARK -> true
-    Theme.SYSTEM -> isSystemInDarkTheme()
+    Theme.SYSTEM -> isSystemInDarkTheme
 }
 
 /**

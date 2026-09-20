@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.presentation.model.MainUiState
+import com.pierre.tunescout.ui.theme.SystemBars
 import com.pierre.tunescout.ui.theme.Theme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -33,14 +34,44 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `WHEN the stored theme arrives THEN leaves the loading state the splash waits on`() =
+    fun `WHEN the device's dark mode is not known yet THEN stays in the loading state the splash waits on`() =
         runTest(mainDispatcher.dispatcher) {
             // When
             themeFlow.value = Theme.LIGHT
 
             // Then
-            assertThat(viewModel.uiState.value)
-                .isEqualTo(MainUiState.Ready(theme = Theme.LIGHT, isDynamicColorEnabled = false))
+            assertThat(viewModel.uiState.value).isEqualTo(MainUiState.Loading)
+        }
+
+    @Test
+    fun `WHEN the stored theme and the device's dark mode arrive THEN leaves the loading state`() =
+        runTest(mainDispatcher.dispatcher) {
+            // When
+            themeFlow.value = Theme.LIGHT
+            viewModel.onSystemDarkThemeChanged(isSystemInDarkTheme = true)
+
+            // Then
+            assertThat(viewModel.uiState.value).isEqualTo(
+                MainUiState.Ready(
+                    theme = Theme.LIGHT,
+                    isDynamicColorEnabled = false,
+                    systemBars = SystemBars.of(isDark = false),
+                ),
+            )
+        }
+
+    @Test
+    fun `GIVEN the system theme WHEN the device turns dark THEN draws the dark system bars`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            viewModel.onSystemDarkThemeChanged(isSystemInDarkTheme = false)
+
+            // When
+            viewModel.onSystemDarkThemeChanged(isSystemInDarkTheme = true)
+
+            // Then
+            assertThat((viewModel.uiState.value as MainUiState.Ready).systemBars)
+                .isEqualTo(SystemBars.of(isDark = true))
         }
 
     @Test
