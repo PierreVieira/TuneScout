@@ -5,12 +5,14 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
 import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.core.utils.UuidIdGenerator
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.test.TestScope
@@ -192,6 +194,7 @@ class ExoPlayerPlaybackControllerTest {
             context = randomAccessMemories,
             position = 12.seconds,
             isRepeatEnabled = true,
+            hasEnded = false,
         )
 
         // When
@@ -218,6 +221,7 @@ class ExoPlayerPlaybackControllerTest {
                 context = PlaybackContext.SingleSong,
                 position = 12.seconds,
                 isRepeatEnabled = false,
+                hasEnded = false,
             ),
         )
 
@@ -228,6 +232,64 @@ class ExoPlayerPlaybackControllerTest {
         // Then
         verify { fakeExoPlayer.player.play() }
         assertThat(serviceLaunches).isEqualTo(1)
+    }
+
+    @Test
+    fun `GIVEN the saved song had ended WHEN restoring THEN it is still ended`() = runTest {
+        // Given
+        prepareScenario()
+        every { fakeExoPlayer.player.playbackState } returns Player.STATE_READY
+
+        // When
+        controller.restore(endedSession())
+
+        // Then
+        assertThat(currentState.hasEnded).isTrue()
+        assertThat(currentState.nowPlayingSong).isNull()
+    }
+
+    @Test
+    fun `GIVEN a restored ended song WHEN pressing play THEN it restarts from the beginning`() = runTest {
+        // Given
+        prepareScenario()
+        every { fakeExoPlayer.player.playbackState } returns Player.STATE_READY
+        controller.restore(endedSession())
+
+        // When
+        controller.togglePlayPause()
+
+        // Then
+        verify { fakeExoPlayer.player.seekTo(0L) }
+        verify { fakeExoPlayer.player.play() }
+        assertThat(currentState.hasEnded).isFalse()
+    }
+
+    @Test
+    fun `GIVEN a restored ended song WHEN seeking THEN it is no longer ended`() = runTest {
+        // Given
+        prepareScenario()
+        every { fakeExoPlayer.player.playbackState } returns Player.STATE_READY
+        controller.restore(endedSession())
+
+        // When
+        controller.seekTo(5.seconds)
+
+        // Then
+        assertThat(currentState.hasEnded).isFalse()
+    }
+
+    @Test
+    fun `GIVEN a restored ended song WHEN the player fails THEN the failure is published`() = runTest {
+        // Given
+        prepareScenario()
+        controller.restore(endedSession())
+        every { fakeExoPlayer.player.playerError } returns mockk()
+
+        // When
+        playerListener.captured.onPlayerErrorChanged(fakeExoPlayer.player.playerError)
+
+        // Then
+        assertThat(currentState.status).isEqualTo(PlaybackStatus.Failed)
     }
 
     @Test
@@ -275,12 +337,22 @@ class ExoPlayerPlaybackControllerTest {
                 context = null,
                 position = 12.seconds,
                 isRepeatEnabled = false,
+                hasEnded = false,
             ),
         )
 
         // Then
         verify(exactly = 0) { fakeExoPlayer.player.setMediaItems(any(), any<Int>(), any<Long>()) }
     }
+
+    private fun endedSession(): PlaybackSession = PlaybackSession(
+        entries = listOf(queueEntry(id = "a", song = song(id = 1))),
+        currentEntryId = "a",
+        context = PlaybackContext.SingleSong,
+        position = 30.seconds,
+        isRepeatEnabled = false,
+        hasEnded = true,
+    )
 
     private fun playAlbum(startingAt: Long) {
         val songs = listOf(song(id = 1), song(id = 2), song(id = 3))

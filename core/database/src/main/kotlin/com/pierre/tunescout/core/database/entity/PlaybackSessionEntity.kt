@@ -1,5 +1,6 @@
 package com.pierre.tunescout.core.database.entity
 
+import androidx.room3.ColumnInfo
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
 
@@ -13,4 +14,5 @@ internal data class PlaybackSessionEntity(
     val isRepeatEnabled: Boolean,
     val contextAlbumId: Long?,
     val contextAlbumTitle: String?,
+    @ColumnInfo(defaultValue = "0") val hasEnded: Boolean,
 )

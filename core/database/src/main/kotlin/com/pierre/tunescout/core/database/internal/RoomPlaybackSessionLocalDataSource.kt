@@ -26,6 +26,7 @@ internal class RoomPlaybackSessionLocalDataSource(
                 isRepeatEnabled = session.isRepeatEnabled,
                 contextAlbumId = album?.id,
                 contextAlbumTitle = album?.title,
+                hasEnded = session.hasEnded,
             ),
             entries = session.entries.mapIndexed { position, entry ->
                 PlaybackQueueEntity(
@@ -63,6 +64,7 @@ internal class RoomPlaybackSessionLocalDataSource(
             } ?: PlaybackContext.SingleSong,
             position = session.positionMillis.milliseconds,
             isRepeatEnabled = session.isRepeatEnabled,
+            hasEnded = session.hasEnded,
         )
     }
 }

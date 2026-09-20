@@ -5,6 +5,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
@@ -35,6 +36,7 @@ internal class ExoPlayerPlaybackController(
     private val state = MutableStateFlow<PlaybackState>(PlaybackState.Idle)
     private val positionTick = 250.milliseconds
     private var context: PlaybackContext? = null
+    private var restoredEndedEntryId: String? = null
     private var positionTicker: Job? = null
 
     init {
@@ -67,6 +69,7 @@ internal class ExoPlayerPlaybackController(
             currentEntryId = session.currentEntryId,
             position = session.position,
         )
+        restoredEndedEntryId = session.currentEntryId.takeIf { session.hasEnded }
         player.repeatMode = if (session.isRepeatEnabled) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
         player.prepare()
         publish()
@@ -107,7 +110,7 @@ internal class ExoPlayerPlaybackController(
     override fun togglePlayPause() {
         when {
             player.isPlaying -> player.pause()
-            player.playbackState == Player.STATE_ENDED -> replay()
+            player.playbackState == Player.STATE_ENDED || state.value.hasEnded -> replay()
             else -> resume()
         }
     }
@@ -118,15 +121,18 @@ internal class ExoPlayerPlaybackController(
     }
 
     override fun seekTo(position: Duration) {
+        restoredEndedEntryId = null
         player.seekTo(position.inWholeMilliseconds)
         publish()
     }
 
     override fun skipToNext() {
+        restoredEndedEntryId = null
         if (player.hasNextMediaItem()) player.seekToNextMediaItem() else player.seekTo(0L)
     }
 
     override fun skipToPrevious() {
+        restoredEndedEntryId = null
         player.seekToPrevious()
     }
 
@@ -156,19 +162,32 @@ internal class ExoPlayerPlaybackController(
     }
 
     private fun resume() {
+        restoredEndedEntryId = null
         player.play()
         publish()
     }
 
     private fun publish() {
-        state.value = player.toPlaybackState(
+        val playbackState = player.toPlaybackState(
             entries = queue.entries,
             currentIndex = queue.currentIndex,
             context = context,
         )
+        state.value = if (isStillEnded(playbackState)) {
+            playbackState.copy(status = PlaybackStatus.Ended)
+        } else {
+            playbackState
+        }
     }
 
+    // A player restored at the end of a song comes back paused there, not ended: the song only
+    // stops being ended once something moves the player.
+    private fun isStillEnded(playbackState: PlaybackState): Boolean = restoredEndedEntryId != null &&
+        playbackState.currentEntry?.id == restoredEndedEntryId &&
+        playbackState.status != PlaybackStatus.Failed
+
     private fun handlePlaybackStarted() {
+        restoredEndedEntryId = null
         // Only now: the media service has five seconds to promote itself to the foreground,
         // and Media3 can only do that once the player it wraps is actually playing.
         serviceLauncher.launch()

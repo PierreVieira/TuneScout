@@ -46,6 +46,7 @@ internal class PlaybackSessionKeeper(
                     context = state.context,
                     position = state.position,
                     isRepeatEnabled = state.isRepeatEnabled,
+                    hasEnded = state.hasEnded,
                 ),
             )
         } catch (exception: CancellationException) {
@@ -59,6 +60,7 @@ internal class PlaybackSessionKeeper(
         entryIds = state.entries.map { entry -> entry.id },
         currentEntryId = state.currentEntry?.id,
         isPlaying = state.isPlaying,
+        hasEnded = state.hasEnded,
         isRepeatEnabled = state.isRepeatEnabled,
         positionBucket = state.position.inWholeMilliseconds / saveInterval.inWholeMilliseconds,
     )
@@ -67,6 +69,7 @@ internal class PlaybackSessionKeeper(
         val entryIds: List<String>,
         val currentEntryId: String?,
         val isPlaying: Boolean,
+        val hasEnded: Boolean,
         val isRepeatEnabled: Boolean,
         val positionBucket: Long,
     )
