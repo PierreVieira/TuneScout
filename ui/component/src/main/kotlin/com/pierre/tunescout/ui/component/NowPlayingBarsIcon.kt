@@ -23,27 +23,20 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 
 private val barsSize = 14.dp
 private val barDurationsMillis = listOf(420, 580, 500)
-private val pausedBarFractions = listOf(0.4f, 0.75f, 0.55f)
 private const val LOWEST_BAR_FRACTION = 0.2f
 private const val TALLEST_BAR_FRACTION = 1f
 private const val BAR_AND_GAP_WIDTHS = 2
 
 /**
- * The three bars beside the song that is playing. A pause freezes them at a shape of their own
- * rather than wherever the animation was: an infinite transition cannot be paused, and resuming one
- * from the height it stopped at would leave that bar bouncing between there and the top forever.
+ * The three bouncing bars beside the song that is playing. They only exist while it plays: a
+ * paused song keeps its highlighted title, but the bars leave with the sound, so the caller decides
+ * when to show them.
  */
 @Composable
-fun NowPlayingBarsIcon(
-    state: NowPlayingState,
-    modifier: Modifier = Modifier,
-) {
-    if (state == NowPlayingState.None) return
-    val fractions = barFractions(isAnimating = state == NowPlayingState.Playing)
+fun NowPlayingBarsIcon(modifier: Modifier = Modifier) {
+    val fractions = barFractions()
     val color = TuneScoutColors.accent
-    val label = stringResource(
-        if (state == NowPlayingState.Playing) R.string.ui_now_playing else R.string.ui_now_playing_paused,
-    )
+    val label = stringResource(R.string.ui_now_playing)
     Canvas(
         modifier = modifier
             .size(barsSize)
@@ -54,8 +47,7 @@ fun NowPlayingBarsIcon(
 }
 
 @Composable
-private fun barFractions(isAnimating: Boolean): List<Float> {
-    if (!isAnimating) return pausedBarFractions
+private fun barFractions(): List<Float> {
     val transition = rememberInfiniteTransition(label = "nowPlayingBars")
     return barDurationsMillis.map { durationMillis ->
         transition

@@ -136,17 +136,16 @@ class SongsContentTest {
         }
 
         onNodeWithContentDescription("Now playing").assertIsDisplayed()
-        onNodeWithContentDescription("Paused").assertDoesNotExist()
     }
 
     @Test
-    fun givenPlaybackIsPausedTheRowKeepsTheBarsAtRest() = compose.use {
+    fun givenPlaybackIsPausedTheRowDropsTheBars() = compose.use {
         val recents = listOf(song(id = 2, title = "Get Lucky"))
         setContent {
             Content(uiState = state(recentlyPlayed = recents, nowPlaying = NowPlaying(songId = 2, isPlaying = false)))
         }
 
-        onNodeWithContentDescription("Paused").assertIsDisplayed()
+        onNodeWithText("Get Lucky").assertIsDisplayed()
         onNodeWithContentDescription("Now playing").assertDoesNotExist()
     }
 
@@ -157,7 +156,6 @@ class SongsContentTest {
 
         onNodeWithText("Get Lucky").assertIsDisplayed()
         onNodeWithContentDescription("Now playing").assertDoesNotExist()
-        onNodeWithContentDescription("Paused").assertDoesNotExist()
     }
 
     @Test

@@ -85,7 +85,6 @@ class QueueContentTest {
 
         onNodeWithText("Get Lucky").assertIsDisplayed()
         onNodeWithContentDescription("Now playing").assertDoesNotExist()
-        onNodeWithContentDescription("Paused").assertDoesNotExist()
     }
 
     @Test
