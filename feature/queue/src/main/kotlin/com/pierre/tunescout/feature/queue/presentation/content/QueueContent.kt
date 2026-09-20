@@ -22,6 +22,7 @@ import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.StateMessage
+import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import sh.calvin.reorderable.ReorderableItem
@@ -111,7 +112,7 @@ private fun QueueList(
                     subtitle = entry.song.artistName,
                     artworkUrl = entry.song.artwork.thumbnailUrl,
                     onClick = {},
-                    isHighlighted = true,
+                    nowPlaying = getNowPlayingState(isCurrentSong = true, isPlaying = uiState.isPlaying),
                 )
             }
         }

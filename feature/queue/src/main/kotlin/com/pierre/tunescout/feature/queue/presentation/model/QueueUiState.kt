@@ -5,6 +5,7 @@ import com.pierre.tunescout.core.model.QueueEntry
 data class QueueUiState(
     val contextTitle: String?,
     val nowPlaying: QueueEntry?,
+    val isPlaying: Boolean,
     val queuedByUser: List<QueueEntry>,
     val upNext: List<QueueEntry>,
 ) {

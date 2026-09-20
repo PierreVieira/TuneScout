@@ -69,12 +69,15 @@ fun SongsContent(
                 SearchResultsList(
                     query = uiState.query,
                     searchResults = searchResults,
+                    nowPlayingId = uiState.nowPlayingId,
+                    isPlaying = uiState.isPlaying,
                     onEvent = onEvent,
                 )
             } else {
                 RecentlyPlayedList(
                     songs = uiState.recentlyPlayed,
                     nowPlayingId = uiState.nowPlayingId,
+                    isPlaying = uiState.isPlaying,
                     onEvent = onEvent,
                 )
             }

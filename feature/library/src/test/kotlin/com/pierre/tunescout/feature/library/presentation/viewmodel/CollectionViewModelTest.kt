@@ -5,7 +5,6 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -49,6 +48,7 @@ class CollectionViewModelTest {
             // Then
             assertThat(state.title).isEqualTo(CollectionTitle.Favorites)
             assertThat(state.songs).hasSize(1)
+            assertThat(state.isPlaying).isTrue()
             assertThat(state.isDeletable).isFalse()
         }
 
@@ -85,7 +85,7 @@ class CollectionViewModelTest {
         }
 
     @Test
-    fun `GIVEN a song WHEN clicking it THEN plays it alone and opens the player`() =
+    fun `GIVEN a song WHEN clicking it THEN plays it alone and stays on the collection`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
@@ -100,8 +100,8 @@ class CollectionViewModelTest {
                     songs = listOf(song(id = 1)),
                     context = PlaybackContext.SingleSong,
                 )
-                navigator.navigate(PlayerRoute(songId = 1))
             }
+            verify(exactly = 0) { navigator.navigate(any()) }
         }
 
     @Test

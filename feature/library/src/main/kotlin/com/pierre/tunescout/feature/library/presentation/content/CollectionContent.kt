@@ -26,6 +26,7 @@ import com.pierre.tunescout.ui.component.SwipeToRemoveBox
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 @Composable
@@ -76,7 +77,12 @@ private fun CollectionLoaded(
                 description = stringResource(R.string.library_collection_empty_description),
             )
         } else {
-            SongList(songs = uiState.songs, nowPlayingId = uiState.nowPlayingId, onEvent = onEvent)
+            SongList(
+                songs = uiState.songs,
+                nowPlayingId = uiState.nowPlayingId,
+                isPlaying = uiState.isPlaying,
+                onEvent = onEvent,
+            )
         }
     }
 }
@@ -85,6 +91,7 @@ private fun CollectionLoaded(
 private fun SongList(
     songs: List<Song>,
     nowPlayingId: Long?,
+    isPlaying: Boolean,
     onEvent: (CollectionUiEvent) -> Unit,
 ) {
     LazyColumn(
@@ -102,7 +109,10 @@ private fun SongList(
                     title = song.title,
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
-                    isHighlighted = song.id == nowPlayingId,
+                    nowPlaying = getNowPlayingState(
+                        isCurrentSong = song.id == nowPlayingId,
+                        isPlaying = isPlaying,
+                    ),
                     sharedSongId = song.id,
                     onClick = { onEvent(CollectionUiEvent.OnSongClicked(song)) },
                     trailing = { SongRowMoreAction { onEvent(CollectionUiEvent.OnSongOptionsClicked(song)) } },

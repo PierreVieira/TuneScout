@@ -50,6 +50,7 @@ class QueueContentTest {
                     uiState = QueueUiState(
                         contextTitle = null,
                         nowPlaying = null,
+                        isPlaying = false,
                         queuedByUser = emptyList(),
                         upNext = emptyList(),
                     ),
@@ -120,6 +121,7 @@ class QueueContentTest {
     private fun loaded(): QueueUiState = QueueUiState(
         contextTitle = "Random Access Memories",
         nowPlaying = queueEntry(song = song(id = 1, title = "Get Lucky")),
+        isPlaying = true,
         queuedByUser = listOf(userEntry(id = 9, title = "One More Time")),
         upNext = listOf(queueEntry(song = song(id = 2, title = "Around the World"))),
     )

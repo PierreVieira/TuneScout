@@ -32,6 +32,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                             query = "",
                             recentlyPlayed = recentlyPlayed,
                             nowPlayingId = getLucky.id,
+                            isPlaying = false,
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},
@@ -56,7 +57,12 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
         ) {
             SongsContent(
                 isHeaderInline = false,
-                uiState = SongsUiState(query = SEARCH_QUERY, recentlyPlayed = recentlyPlayed, nowPlayingId = null),
+                uiState = SongsUiState(
+                    query = SEARCH_QUERY,
+                    recentlyPlayed = recentlyPlayed,
+                    nowPlayingId = null,
+                    isPlaying = false,
+                ),
                 searchResults = pagingItems(searchSongs),
                 onEvent = {},
             )

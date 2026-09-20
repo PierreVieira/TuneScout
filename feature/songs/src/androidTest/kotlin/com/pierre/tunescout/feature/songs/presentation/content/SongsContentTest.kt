@@ -146,7 +146,12 @@ class SongsContentTest {
     private fun state(
         query: String = "",
         recentlyPlayed: List<Song> = emptyList(),
-    ): SongsUiState = SongsUiState(query = query, recentlyPlayed = recentlyPlayed, nowPlayingId = null)
+    ): SongsUiState = SongsUiState(
+        query = query,
+        recentlyPlayed = recentlyPlayed,
+        nowPlayingId = null,
+        isPlaying = false,
+    )
 
     private val loadedStates = LoadStates(
         refresh = LoadState.NotLoading(endOfPaginationReached = true),

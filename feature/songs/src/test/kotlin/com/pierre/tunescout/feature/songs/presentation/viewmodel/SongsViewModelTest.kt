@@ -9,7 +9,6 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
@@ -19,7 +18,6 @@ import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import io.mockk.mockk
 import io.mockk.verify
-import io.mockk.verifyOrder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -51,6 +49,7 @@ class SongsViewModelTest {
             // Then
             assertThat(state.recentlyPlayed.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
             assertThat(state.nowPlayingId).isEqualTo(2L)
+            assertThat(state.isPlaying).isTrue()
             assertThat(state.isSearching).isFalse()
         }
 
@@ -98,7 +97,7 @@ class SongsViewModelTest {
     }
 
     @Test
-    fun `WHEN clicking a song THEN plays it alone and opens the player`() = runTest(mainDispatcher.dispatcher) {
+    fun `WHEN clicking a song THEN plays it alone and stays on the list`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario()
 
@@ -106,14 +105,14 @@ class SongsViewModelTest {
         viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
 
         // Then
-        verifyOrder {
+        verify {
             playbackStarter.play(
                 song = song(id = 2),
                 songs = listOf(song(id = 2)),
                 context = PlaybackContext.SingleSong,
             )
-            navigator.navigate(PlayerRoute(songId = 2))
         }
+        verify(exactly = 0) { navigator.navigate(any()) }
     }
 
     @Test

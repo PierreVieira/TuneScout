@@ -9,6 +9,7 @@ sealed interface CollectionUiState {
         val title: CollectionTitle,
         val songs: List<Song>,
         val nowPlayingId: Long?,
+        val isPlaying: Boolean,
         val isDeletable: Boolean,
     ) : CollectionUiState
 }
