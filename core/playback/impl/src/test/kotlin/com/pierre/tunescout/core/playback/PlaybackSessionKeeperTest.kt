@@ -5,6 +5,7 @@ import com.pierre.tunescout.core.database.PlaybackSessionLocalDataSource
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.playback.internal.PlaybackSessionKeeper
 import com.pierre.tunescout.core.testing.fixture.playbackState
@@ -33,6 +34,7 @@ class PlaybackSessionKeeperTest {
             context = PlaybackContext.Album(id = 10, title = "Random Access Memories"),
             position = 12.seconds,
             isRepeatEnabled = true,
+            hasEnded = false,
         )
 
         // When
@@ -99,6 +101,21 @@ class PlaybackSessionKeeperTest {
 
         // Then
         assertThat(localDataSource.saved.last().position).isEqualTo(saveInterval)
+    }
+
+    @Test
+    fun `WHEN the song ends THEN saves the session as ended`() = runTest {
+        // Given
+        prepareScenario(stored = null)
+        playbackState.value = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Paused)
+        runCurrent()
+
+        // When
+        playbackState.value = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Ended)
+        runCurrent()
+
+        // Then
+        assertThat(localDataSource.saved.last().hasEnded).isTrue()
     }
 
     @Test

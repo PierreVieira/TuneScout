@@ -8,4 +8,5 @@ data class PlaybackSession(
     val context: PlaybackContext?,
     val position: Duration,
     val isRepeatEnabled: Boolean,
+    val hasEnded: Boolean,
 )

@@ -19,6 +19,7 @@ internal class FakeExoPlayer {
         every { mediaItemCount } answers { timeline.size }
         every { currentMediaItemIndex } answers { currentItemIndex }
         every { repeatMode } returns Player.REPEAT_MODE_OFF
+        every { playerError } returns null
         every { setMediaItems(any(), any<Int>(), any<Long>()) } answers {
             timeline.clear()
             timeline += firstArg<List<MediaItem>>()
