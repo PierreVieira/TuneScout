@@ -36,6 +36,8 @@ import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
+import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 
 private val titleHeight = 48.dp
 private val minCellWidth = 160.dp
@@ -49,7 +51,8 @@ fun LibraryContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .safeDrawingPadding(),
+            .safeDrawingPadding()
+            .hidesBarsOnScroll(),
         contentAlignment = Alignment.TopCenter,
     ) {
         Column(
@@ -57,16 +60,11 @@ fun LibraryContent(
                 .fillMaxWidth()
                 .fillMaxHeight(),
         ) {
-            Header(onEvent = onEvent)
-            LibraryFilterChips(
-                selected = uiState.filter,
-                onFilterClick = { filter -> onEvent(LibraryUiEvent.OnFilterClicked(filter)) },
-                modifier = Modifier.padding(
-                    horizontal = TuneScoutSpacing.large,
-                    vertical = TuneScoutSpacing.small,
-                ),
+            Header(
+                uiState = uiState,
+                onEvent = onEvent,
+                modifier = Modifier.hideableTopBar(),
             )
-            SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
             Box(modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen)) {
                 when (uiState.viewMode) {
                     LibraryViewMode.LIST -> LibraryList(items = uiState.filteredItems, onEvent = onEvent)
@@ -78,7 +76,27 @@ fun LibraryContent(
 }
 
 @Composable
-private fun Header(onEvent: (LibraryUiEvent) -> Unit) {
+private fun Header(
+    uiState: LibraryUiState,
+    onEvent: (LibraryUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        TitleRow(onEvent = onEvent)
+        LibraryFilterChips(
+            selected = uiState.filter,
+            onFilterClick = { filter -> onEvent(LibraryUiEvent.OnFilterClicked(filter)) },
+            modifier = Modifier.padding(
+                horizontal = TuneScoutSpacing.large,
+                vertical = TuneScoutSpacing.small,
+            ),
+        )
+        SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
+    }
+}
+
+@Composable
+private fun TitleRow(onEvent: (LibraryUiEvent) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

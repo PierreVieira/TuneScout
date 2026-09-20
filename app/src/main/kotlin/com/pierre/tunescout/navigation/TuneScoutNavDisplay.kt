@@ -41,6 +41,8 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.utils.animation.LocalSharedTransitionScope
 import com.pierre.tunescout.ui.utils.animation.LocalTappedSharedArtworkSurface
 import com.pierre.tunescout.ui.utils.animation.rememberTappedSharedArtworkSurface
+import com.pierre.tunescout.ui.utils.scroll.LocalHideableBarsState
+import com.pierre.tunescout.ui.utils.scroll.rememberHideableBarsState
 import com.pierre.tunescout.ui.utils.window.rememberWindowSize
 
 @Composable
@@ -59,6 +61,7 @@ fun TuneScoutNavDisplay(modifier: Modifier = Modifier) {
         CompositionLocalProvider(
             LocalSharedTransitionScope provides this,
             LocalTappedSharedArtworkSurface provides rememberTappedSharedArtworkSurface(),
+            LocalHideableBarsState provides rememberHideableBarsState(),
         ) {
             TuneScoutNavigationSuite(
                 items = homeNavigationItems(tabsState = tabsState),

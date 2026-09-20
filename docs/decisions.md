@@ -2,6 +2,50 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-20 — Scrolling a list takes the bars away, but never the mini player
+
+**One shared piece of state, not one per bar.** The header belongs to whichever screen is on top and
+the navigation bar belongs to the navigation suite two modules above it, so a single scroll has to
+reach both. `HideableBarsState` in `:ui:utils` is provided once, beside the shared transition scope,
+and a screen opts in with `Modifier.hidesBarsOnScroll()` on the subtree that scrolls and
+`Modifier.hideableTopBar()` on the header. Cost: the state outlives the screen that moved it, which
+is why the bars are shown both as a list arrives and as it leaves — otherwise a screen could open
+with no header at all.
+
+**The mini player is not a bar.** It is the only thing on screen that says what is playing, and the
+only way into the player, so a scroll is no reason to lose it. It stays visible by construction
+rather than by an exception: the navigation suite gives the content its height back as the bar
+leaves, and the mini player rides down with the content it sits under.
+
+**The two directions read different numbers.** Hiding waits for what the list actually consumed, so
+a library of five rows with nothing to scroll never takes its own header away. Showing takes what
+the gesture offered, because the room a collapsed header gave back is room the list never had to
+scroll through: a list resting at its top consumes nothing, and reading only the consumed offset
+left the bars stranded off screen.
+
+**A rail does not follow.** It sits beside the content, so taking it away mid-scroll would reflow
+the list under the finger that is scrolling it. Landscape and tablets keep the rail and hide the
+header alone, which is where the vertical room was missing anyway.
+
+**The header collapses, it does not slide over.** `hideableTopBar` shrinks the height the header
+reports as it animates, so the list grows into the room instead of a gap opening behind it. The
+screen keeps its `safeDrawingPadding`, so nothing ever runs under the status bar — the cost is that
+the room won is the header's, not the status bar's as well.
+
+**The keyboard covers the bar, it no longer sends it away.** This replaces "The mini player stands
+down while the keyboard is up", of 2026-09-18: the bar stood down on `WindowInsets.isImeVisible`,
+which stays true after a back gesture dismisses the keyboard, so the bar left for a search and never
+came back — what is playing vanished until the process restarted.
+Nothing reads the flag now. The keyboard simply draws over the navigation bar and the bar, both of
+which are there again the moment it closes, and there is no state left to get stuck.
+
+**Which means the content stops paying for the keyboard too.** The scaffold consumes the `ime`
+inset on behalf of the screen above it: a screen that padded for a keyboard already covering the
+chrome below it left a band of nothing between the list and the keys. The list now runs under the
+keyboard and is scrolled out from under it, which is the same bargain the navigation bar and the
+bar take. The cost is that the bar is out of reach while typing — already true of the rule this
+replaces, and one tap of the keyboard's own dismiss away.
+
 ## 2026-09-20 — Playing a song no longer leaves the list
 
 **Tapping a song raises the mini player instead of opening the player.** Every list — search,

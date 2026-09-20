@@ -6,11 +6,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteItem
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldState
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
+import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.scroll.LocalHideableBarsState
 import com.pierre.tunescout.ui.utils.window.TuneScoutWindowSize
 
 data class TuneScoutNavigationItem(
@@ -40,6 +44,8 @@ fun TuneScoutNavigationSuite(
     content: @Composable () -> Unit,
 ) {
     val navigationSuiteType = getNavigationSuiteType(isVisible = isVisible, windowSize = windowSize)
+    val scaffoldState = rememberNavigationSuiteScaffoldState()
+    FollowHideableBars(navigationSuiteType = navigationSuiteType, scaffoldState = scaffoldState)
     NavigationSuiteScaffold(
         navigationItems = {
             items.forEach { navigationItem ->
@@ -70,8 +76,26 @@ fun TuneScoutNavigationSuite(
         ),
         containerColor = TuneScoutColors.background,
         contentColor = TuneScoutColors.textPrimary,
+        state = scaffoldState,
         content = content,
     )
+}
+
+@Composable
+private fun FollowHideableBars(
+    navigationSuiteType: NavigationSuiteType,
+    scaffoldState: NavigationSuiteScaffoldState,
+) {
+    val areBarsVisible = LocalHideableBarsState.current.areBarsVisible
+    val isBarRatherThanRail = navigationSuiteType == NavigationSuiteType.NavigationBar
+    val isBarHidden = !areBarsVisible && isBarRatherThanRail
+    LaunchedEffect(isBarHidden) {
+        if (isBarHidden) {
+            scaffoldState.hide()
+        } else {
+            scaffoldState.show()
+        }
+    }
 }
 
 /**

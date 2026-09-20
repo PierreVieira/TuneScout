@@ -30,6 +30,8 @@ import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
+import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 
 private val titleHeight = 48.dp
 
@@ -44,7 +46,8 @@ fun SongsContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .safeDrawingPadding(),
+            .safeDrawingPadding()
+            .hidesBarsOnScroll(),
         contentAlignment = Alignment.TopCenter,
     ) {
         Column(
@@ -52,19 +55,12 @@ fun SongsContent(
                 .fillMaxWidth()
                 .fillMaxHeight(),
         ) {
-            if (isHeaderInline) {
-                HeaderRow(horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small)) {
-                    Title()
-                    Search(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
-                    ThemeAction(onEvent = onEvent)
-                }
-            } else {
-                HeaderRow {
-                    Title(modifier = Modifier.weight(1f))
-                    ThemeAction(onEvent = onEvent)
-                }
-                Search(uiState = uiState, onEvent = onEvent)
-            }
+            Header(
+                uiState = uiState,
+                isHeaderInline = isHeaderInline,
+                onEvent = onEvent,
+                modifier = Modifier.hideableTopBar(),
+            )
             if (uiState.isSearching) {
                 SearchResultsList(
                     query = uiState.query,
@@ -81,6 +77,30 @@ fun SongsContent(
                     onEvent = onEvent,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun Header(
+    uiState: SongsUiState,
+    isHeaderInline: Boolean,
+    onEvent: (SongsUiEvent) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        if (isHeaderInline) {
+            HeaderRow(horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small)) {
+                Title()
+                Search(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
+                ThemeAction(onEvent = onEvent)
+            }
+        } else {
+            HeaderRow {
+                Title(modifier = Modifier.weight(1f))
+                ThemeAction(onEvent = onEvent)
+            }
+            Search(uiState = uiState, onEvent = onEvent)
         }
     }
 }
