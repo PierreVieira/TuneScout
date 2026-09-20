@@ -28,6 +28,8 @@ import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
+import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 
 @Composable
 fun CollectionContent(
@@ -38,7 +40,8 @@ fun CollectionContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .safeDrawingPadding(),
+            .safeDrawingPadding()
+            .hidesBarsOnScroll(),
     ) {
         when (uiState) {
             CollectionUiState.Loading -> TopBar(title = "", onBackClick = { onEvent(CollectionUiEvent.OnBackClicked) })
@@ -54,6 +57,7 @@ private fun CollectionLoaded(
 ) {
     TopBar(
         title = collectionTitleText(uiState.title),
+        modifier = Modifier.hideableTopBar(),
         onBackClick = { onEvent(CollectionUiEvent.OnBackClicked) },
         actions = {
             val hasSongs = uiState.songs.isNotEmpty()

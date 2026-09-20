@@ -40,6 +40,8 @@ import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
+import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val artworkSize = 120.dp
@@ -58,11 +60,13 @@ fun AlbumContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .safeDrawingPadding(),
+            .safeDrawingPadding()
+            .hidesBarsOnScroll(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopBar(
             title = (uiState as? AlbumUiState.Loaded)?.album?.title.orEmpty(),
+            modifier = Modifier.hideableTopBar(),
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
             actions = {
                 if (uiState is AlbumUiState.Loaded) {
