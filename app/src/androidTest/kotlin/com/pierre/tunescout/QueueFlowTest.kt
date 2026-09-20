@@ -72,10 +72,12 @@ class QueueFlowTest {
         onAllNodesWithText("Get Lucky")[0].performClick()
         onNodeWithContentDescription("Open the queue").performClick()
 
-        // Both tiers are on screen: what plays, and what was queued by hand.
+        // Both tiers are on screen: what plays, and what was queued by hand. The results are still
+        // behind the sheet, so the queued song is taken by its row's reorder handle rather than by
+        // a title the list under it also carries.
         waitUntilAtLeastOneExists(hasText("Next in queue"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Queue").assertExists()
-        onNodeWithText("Instant Crush").assertExists()
+        onNodeWithContentDescription("Reorder Instant Crush").assertExists()
     }
 
     private companion object {
