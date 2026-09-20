@@ -7,6 +7,7 @@ data class SongsUiState(
     val recentlyPlayed: List<Song>,
     val nowPlayingId: Long?,
     val isPlaying: Boolean,
+    val songPendingRemoval: Song?,
 ) {
     val isSearching: Boolean
         get() = query.isNotBlank()

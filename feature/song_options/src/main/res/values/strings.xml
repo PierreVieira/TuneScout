@@ -8,4 +8,8 @@
     <string name="song_options_play_next">Play next</string>
     <string name="song_options_add_to_queue">Add to queue</string>
     <string name="song_options_remove_recent">Remove from recently played</string>
+    <string name="song_options_remove_recent_confirm_title">Remove from recently played?</string>
+    <string name="song_options_remove_recent_confirm_message">%1$s leaves your history. You can always search for it again.</string>
+    <string name="song_options_remove_recent_confirm_action">Remove</string>
+    <string name="song_options_remove_recent_confirm_cancel">Cancel</string>
 </resources>

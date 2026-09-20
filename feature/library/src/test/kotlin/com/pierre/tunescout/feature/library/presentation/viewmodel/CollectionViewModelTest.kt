@@ -176,21 +176,23 @@ class CollectionViewModelTest {
         }
 
     @Test
-    fun `GIVEN the favourites WHEN removing a song THEN unlikes it`() = runTest(mainDispatcher.dispatcher) {
-        // Given
-        prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
+    fun `GIVEN the favourites WHEN swiping a song away THEN unlikes it without asking`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
 
-        // When
-        viewModel.onEvent(CollectionUiEvent.OnSongRemoved(song(id = 1)))
-        runCurrent()
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 1)))
+            runCurrent()
 
-        // Then
-        assertThat(removedFavoriteIds).containsExactly(1L)
-        assertThat(removedFromPlaylist).isEmpty()
-    }
+            // Then
+            assertThat(removedFavoriteIds).containsExactly(1L)
+            assertThat(removedFromPlaylist).isEmpty()
+            assertThat(loadedState().songPendingRemoval).isNull()
+        }
 
     @Test
-    fun `GIVEN a playlist WHEN removing a song THEN takes it out of that playlist only`() =
+    fun `GIVEN a playlist WHEN swiping a song away THEN only asks for confirmation`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(
@@ -200,13 +202,73 @@ class CollectionViewModelTest {
             )
 
             // When
-            viewModel.onEvent(CollectionUiEvent.OnSongRemoved(song(id = 2)))
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 2)))
+            runCurrent()
+
+            // Then
+            assertThat(loadedState().songPendingRemoval).isEqualTo(song(id = 2))
+            assertThat(removedFromPlaylist).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN a pending removal WHEN confirming it THEN takes the song out of that playlist only`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+            )
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 2)))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnRemovalConfirmed)
             runCurrent()
 
             // Then
             assertThat(removedFromPlaylist).containsExactly(7L to 2L)
             assertThat(removedFavoriteIds).isEmpty()
+            assertThat(loadedState().songPendingRemoval).isNull()
         }
+
+    @Test
+    fun `GIVEN a pending removal WHEN dismissing it THEN the song stays in the playlist`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+            )
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 2)))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnRemovalDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(loadedState().songPendingRemoval).isNull()
+            assertThat(removedFromPlaylist).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN no pending removal WHEN confirming THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(
+            key = CollectionKey.Playlist(playlistId = 7),
+            playlist = playlist(id = 7),
+            playlistSongs = listOf(song(id = 2)),
+        )
+
+        // When
+        viewModel.onEvent(CollectionUiEvent.OnRemovalConfirmed)
+        runCurrent()
+
+        // Then
+        assertThat(removedFromPlaylist).isEmpty()
+    }
+
+    private fun loadedState(): CollectionUiState.Loaded = viewModel.uiState.value as CollectionUiState.Loaded
 
     private fun TestScope.prepareScenario(
         key: CollectionKey,

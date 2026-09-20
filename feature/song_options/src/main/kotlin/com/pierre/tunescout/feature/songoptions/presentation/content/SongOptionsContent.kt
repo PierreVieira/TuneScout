@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.pierre.tunescout.feature.songoptions.R
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
+import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -68,5 +69,16 @@ fun SongOptionsContent(
                 onClick = { onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked) },
             )
         }
+    }
+    val song = uiState.song
+    if (uiState.isConfirmingRemoval && song != null) {
+        ConfirmationDialog(
+            title = stringResource(R.string.song_options_remove_recent_confirm_title),
+            message = stringResource(R.string.song_options_remove_recent_confirm_message, song.title),
+            confirmLabel = stringResource(R.string.song_options_remove_recent_confirm_action),
+            cancelLabel = stringResource(R.string.song_options_remove_recent_confirm_cancel),
+            onConfirm = { onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedConfirmed) },
+            onCancel = { onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedDismissed) },
+        )
     }
 }

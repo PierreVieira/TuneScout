@@ -140,7 +140,7 @@ class SongOptionsViewModelTest {
         }
 
     @Test
-    fun `GIVEN a song in the history WHEN clicking remove THEN drops it and closes the sheet`() =
+    fun `GIVEN a song in the history WHEN clicking remove THEN only asks for confirmation`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(song = song(id = 1), isRecentlyPlayed = true)
@@ -150,9 +150,42 @@ class SongOptionsViewModelTest {
             runCurrent()
 
             // Then
-            assertThat(viewModel.uiState.value.isRecentlyPlayed).isTrue()
+            assertThat(viewModel.uiState.value.isConfirmingRemoval).isTrue()
+            assertThat(removedSongIds).isEmpty()
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN a pending removal WHEN confirming it THEN drops the song and closes the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isRecentlyPlayed = true)
+            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedConfirmed)
+            runCurrent()
+
+            // Then
             assertThat(removedSongIds).containsExactly(1L)
             verify { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN a pending removal WHEN dismissing it THEN keeps the song and the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isRecentlyPlayed = true)
+            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.isConfirmingRemoval).isFalse()
+            assertThat(removedSongIds).isEmpty()
+            verify(exactly = 0) { navigator.navigateBack() }
         }
 
     @Test
@@ -162,9 +195,11 @@ class SongOptionsViewModelTest {
 
         // When
         viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedClicked)
+        viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromRecentlyPlayedConfirmed)
         runCurrent()
 
         // Then
+        assertThat(viewModel.uiState.value.isConfirmingRemoval).isFalse()
         assertThat(removedSongIds).isEmpty()
         verify(exactly = 0) { navigator.navigateBack() }
     }

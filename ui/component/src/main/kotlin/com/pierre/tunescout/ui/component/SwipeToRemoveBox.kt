@@ -11,6 +11,7 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,20 +26,23 @@ private val removeIconSize = 20.dp
 fun SwipeToRemoveBox(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
+    isRemovalPending: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val state = rememberSwipeToDismissBoxState()
-    SwipeToDismissBox(
-        state = state,
-        backgroundContent = {
-            val direction = state.dismissDirection
-            if (direction != SwipeToDismissBoxValue.Settled) RemoveBackground(direction = direction)
-        },
-        modifier = modifier.clip(RoundedCornerShape(rowCornerRadius)),
-        onDismiss = { onRemove() },
-    ) {
-        Box(modifier = Modifier.background(TuneScoutColors.background)) {
-            content()
+    key(isRemovalPending) {
+        val state = rememberSwipeToDismissBoxState()
+        SwipeToDismissBox(
+            state = state,
+            backgroundContent = {
+                val direction = state.dismissDirection
+                if (direction != SwipeToDismissBoxValue.Settled) RemoveBackground(direction = direction)
+            },
+            modifier = modifier.clip(RoundedCornerShape(rowCornerRadius)),
+            onDismiss = { onRemove() },
+        ) {
+            Box(modifier = Modifier.background(TuneScoutColors.background)) {
+                content()
+            }
         }
     }
 }

@@ -22,4 +22,8 @@ sealed interface SongsUiEvent {
     data class OnRecentSongSwipedAway(
         val song: Song,
     ) : SongsUiEvent
+
+    data object OnRemoveRecentConfirmed : SongsUiEvent
+
+    data object OnRemoveRecentDismissed : SongsUiEvent
 }

@@ -27,6 +27,13 @@
     <string name="library_create_playlist_placeholder">My playlist</string>
     <string name="library_create_playlist_confirm">Create</string>
     <string name="library_create_playlist_cancel">Cancel</string>
+    <string name="library_confirm_cancel">Cancel</string>
+    <string name="library_delete_playlist_confirm_title">Delete this playlist?</string>
+    <string name="library_delete_playlist_confirm_message">%1$s goes for good. The songs stay in your library.</string>
+    <string name="library_delete_playlist_confirm_action">Delete</string>
+    <string name="library_remove_song_confirm_title">Remove this song?</string>
+    <string name="library_remove_song_confirm_message">%1$s leaves this playlist. It stays in your library.</string>
+    <string name="library_remove_song_confirm_action">Remove</string>
     <plurals name="library_song_count">
         <item quantity="one">%1$d song</item>
         <item quantity="other">%1$d songs</item>

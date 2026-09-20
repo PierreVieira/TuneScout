@@ -6,4 +6,5 @@ data class SongOptionsUiState(
     val song: Song?,
     val isRecentlyPlayed: Boolean,
     val isFavorite: Boolean,
+    val isConfirmingRemoval: Boolean,
 )

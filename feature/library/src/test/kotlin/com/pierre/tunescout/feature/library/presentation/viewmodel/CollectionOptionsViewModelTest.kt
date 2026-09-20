@@ -62,13 +62,29 @@ class CollectionOptionsViewModelTest {
     }
 
     @Test
-    fun `GIVEN a playlist WHEN deleting it THEN it goes and both the sheet and the playlist screen close`() =
+    fun `GIVEN a playlist WHEN clicking delete THEN only asks for confirmation`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+
+        // When
+        viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteClicked)
+        runCurrent()
+
+        // Then
+        assertThat(viewModel.uiState.value.isConfirmingDelete).isTrue()
+        assertThat(deletedPlaylistIds).isEmpty()
+        verify(exactly = 0) { navigator.navigateBack() }
+    }
+
+    @Test
+    fun `GIVEN a pending delete WHEN confirming THEN it goes and both the sheet and the playlist screen close`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+            viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteClicked)
 
             // When
-            viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteClicked)
+            viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteConfirmed)
             runCurrent()
 
             // Then
@@ -80,15 +96,34 @@ class CollectionOptionsViewModelTest {
         }
 
     @Test
+    fun `GIVEN a pending delete WHEN dismissing it THEN keeps the playlist and the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+            viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteClicked)
+
+            // When
+            viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.isConfirmingDelete).isFalse()
+            assertThat(deletedPlaylistIds).isEmpty()
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
     fun `GIVEN the favourites WHEN deleting THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(key = CollectionKey.Favorites)
 
         // When
         viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteClicked)
+        viewModel.onEvent(CollectionOptionsUiEvent.OnDeleteConfirmed)
         runCurrent()
 
         // Then
+        assertThat(viewModel.uiState.value.isConfirmingDelete).isFalse()
         assertThat(deletedPlaylistIds).isEmpty()
         verify(exactly = 0) { navigator.navigateBack() }
     }

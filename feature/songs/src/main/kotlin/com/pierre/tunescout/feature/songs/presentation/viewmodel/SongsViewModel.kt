@@ -46,17 +46,20 @@ class SongsViewModel(
         append = LoadState.NotLoading(endOfPaginationReached = true),
     )
     private val query = MutableStateFlow("")
+    private val songPendingRemoval = MutableStateFlow<Song?>(null)
 
     val uiState: StateFlow<SongsUiState> = combine(
         query,
         useCases.observeRecentlyPlayed(),
         observablePlayback.observePlaybackState(),
-    ) { query, recentlyPlayed, playback ->
+        songPendingRemoval,
+    ) { query, recentlyPlayed, playback, pendingRemoval ->
         SongsUiState(
             query = query,
             recentlyPlayed = recentlyPlayed,
             nowPlayingId = playback.nowPlayingSong?.id,
             isPlaying = playback.isPlaying,
+            songPendingRemoval = pendingRemoval,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -66,6 +69,7 @@ class SongsViewModel(
             recentlyPlayed = emptyList(),
             nowPlayingId = null,
             isPlaying = false,
+            songPendingRemoval = null,
         ),
     )
 
@@ -83,14 +87,18 @@ class SongsViewModel(
         SongsUiEvent.OnThemeClicked -> navigator.navigate(ThemeSelectionRoute)
         is SongsUiEvent.OnSongClicked -> play(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
-        is SongsUiEvent.OnRecentSongSwipedAway -> removeFromRecentlyPlayed(event.song)
+        is SongsUiEvent.OnRecentSongSwipedAway -> songPendingRemoval.value = event.song
+        SongsUiEvent.OnRemoveRecentConfirmed -> removeFromRecentlyPlayed()
+        SongsUiEvent.OnRemoveRecentDismissed -> songPendingRemoval.value = null
     }
 
     private fun play(song: Song) {
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
     }
 
-    private fun removeFromRecentlyPlayed(song: Song) {
+    private fun removeFromRecentlyPlayed() {
+        val song = songPendingRemoval.value ?: return
+        songPendingRemoval.value = null
         viewModelScope.launch { useCases.removeFromRecentlyPlayed(song.id) }
     }
 }
