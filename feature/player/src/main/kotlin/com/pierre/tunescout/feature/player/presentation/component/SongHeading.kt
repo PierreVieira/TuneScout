@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.player.presentation.component
 
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,10 +12,8 @@ import com.pierre.tunescout.ui.component.SongSharedElement
 import com.pierre.tunescout.ui.component.getSongSharedKey
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
-import com.pierre.tunescout.ui.utils.animation.isSharedTransitionActive
+import com.pierre.tunescout.ui.utils.animation.loopingMarquee
 import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
-
-private const val MARQUEE_STOPPED = 0
 
 @Composable
 internal fun SongHeading(
@@ -25,7 +22,6 @@ internal fun SongHeading(
     artistName: String,
     modifier: Modifier = Modifier,
 ) {
-    val marqueeIterations = if (isSharedTransitionActive()) MARQUEE_STOPPED else Int.MAX_VALUE
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
@@ -38,7 +34,7 @@ internal fun SongHeading(
             modifier = Modifier
                 .fillMaxWidth()
                 .sharedTextBounds(getSongSharedKey(songId, SongSharedElement.TITLE))
-                .basicMarquee(iterations = marqueeIterations),
+                .loopingMarquee(),
         )
         Text(
             text = artistName,
