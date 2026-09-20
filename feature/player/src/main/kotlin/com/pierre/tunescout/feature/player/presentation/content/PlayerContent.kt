@@ -198,6 +198,7 @@ private fun PlayerDetailsContent(
             artistName = uiState.song.artistName,
         )
         PlaybackTimelineComponent(
+            songId = uiState.song.id,
             progress = uiState.progress,
             position = uiState.position,
             duration = uiState.duration,

@@ -18,6 +18,7 @@ import kotlin.time.Duration
 
 @Composable
 internal fun PlaybackTimelineComponent(
+    songId: Long,
     progress: Float,
     position: Duration,
     duration: Duration,
@@ -30,6 +31,7 @@ internal fun PlaybackTimelineComponent(
     ) {
         SeekBar(
             progress = progress,
+            contentKey = songId,
             onSeekFinished = onSeekFinished,
         )
         Row(

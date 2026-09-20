@@ -12,6 +12,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,34 +30,44 @@ private val trackHeight = 8.dp
 private val trackCornerRadius = 20.dp
 private val handleSize = 24.dp
 
+/**
+ * The bar of how far the playing content has gone, which the user drags to seek within it.
+ *
+ * A drag belongs to the content it started on, so when [contentKey] changes the bar is rebuilt from
+ * scratch: a finger still on the handle loses its drag instead of holding the old position over the
+ * new content, which the bar draws at its own [progress] again.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SeekBar(
     progress: Float,
+    contentKey: Any,
     onSeekFinished: (Float) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var isDragging by remember { mutableStateOf(false) }
-    var dragProgress by remember { mutableFloatStateOf(progress) }
-    val shownProgress = if (isDragging) dragProgress else progress
-    val description = stringResource(R.string.ui_seek_bar)
-    Slider(
-        value = shownProgress,
-        onValueChange = { value ->
-            isDragging = true
-            dragProgress = value
-        },
-        onValueChangeFinished = {
-            isDragging = false
-            onSeekFinished(dragProgress)
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .height(seekHeight)
-            .semantics { contentDescription = description },
-        thumb = { Handle() },
-        track = { sliderState -> SeekBarTrackLine(sliderState) },
-    )
+    key(contentKey) {
+        var isDragging by remember { mutableStateOf(false) }
+        var dragProgress by remember { mutableFloatStateOf(progress) }
+        val shownProgress = if (isDragging) dragProgress else progress
+        val description = stringResource(R.string.ui_seek_bar)
+        Slider(
+            value = shownProgress,
+            onValueChange = { value ->
+                isDragging = true
+                dragProgress = value
+            },
+            onValueChangeFinished = {
+                isDragging = false
+                onSeekFinished(dragProgress)
+            },
+            modifier = modifier
+                .fillMaxWidth()
+                .height(seekHeight)
+                .semantics { contentDescription = description },
+            thumb = { Handle() },
+            track = { sliderState -> SeekBarTrackLine(sliderState) },
+        )
+    }
 }
 
 @Composable
