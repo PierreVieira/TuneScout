@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,9 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.presentation.content.MainContent
 import com.pierre.tunescout.presentation.model.MainUiState
 import com.pierre.tunescout.presentation.viewmodel.MainViewModel
-import com.pierre.tunescout.ui.theme.SystemBars
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
-import com.pierre.tunescout.ui.theme.isDark
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
@@ -28,6 +27,8 @@ class MainActivity : ComponentActivity() {
         }
         super.onCreate(savedInstanceState)
         setContent {
+            val isSystemInDarkTheme = isSystemInDarkTheme()
+            LaunchedEffect(isSystemInDarkTheme) { viewModel.onSystemDarkThemeChanged(isSystemInDarkTheme) }
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             when (val state = uiState) {
                 MainUiState.Loading -> Unit
@@ -38,12 +39,10 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun ThemedContent(state: MainUiState.Ready) {
-        val isDark = state.theme.isDark()
-        LaunchedEffect(isDark) {
-            val systemBars = SystemBars.of(isDark)
+        LaunchedEffect(state.systemBars) {
             enableEdgeToEdge(
-                statusBarStyle = systemBars.statusBar.style,
-                navigationBarStyle = systemBars.navigationBar.style,
+                statusBarStyle = state.systemBars.statusBar.style,
+                navigationBarStyle = state.systemBars.navigationBar.style,
             )
         }
         TuneScoutTheme(
