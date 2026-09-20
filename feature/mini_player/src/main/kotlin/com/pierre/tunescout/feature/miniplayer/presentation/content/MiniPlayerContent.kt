@@ -41,6 +41,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.animation.LocalSharedArtworkSurface
 import com.pierre.tunescout.ui.utils.animation.LocalTappedSharedArtworkSurface
 import com.pierre.tunescout.ui.utils.animation.SharedArtworkSurface
+import com.pierre.tunescout.ui.utils.animation.loopingMarquee
 import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
 
 private val cardCornerRadius = 12.dp
@@ -92,8 +93,9 @@ fun MiniPlayerContent(
                         style = MaterialTheme.typography.bodyLarge,
                         color = TuneScoutColors.textPrimary,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.sharedTextBounds(getSongSharedKey(song.id, SongSharedElement.TITLE)),
+                        modifier = Modifier
+                            .sharedTextBounds(getSongSharedKey(song.id, SongSharedElement.TITLE))
+                            .loopingMarquee(),
                     )
                     Text(
                         text = song.artistName,

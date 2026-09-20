@@ -21,6 +21,7 @@ class MiniPlayerContentTest {
     val compose = createComposeExtension()
 
     private val events = mutableListOf<MiniPlayerUiEvent>()
+    private val longTitle = "Don't Stop 'Til You Get Enough (Extended Immortal Megamix Version)"
 
     @Test
     fun givenAPlayingSongShowsItAndPausesOnClick() = compose.use {
@@ -90,6 +91,22 @@ class MiniPlayerContentTest {
         onNodeWithContentDescription("Open the queue").performClick()
 
         assertThat(events).containsExactly(MiniPlayerUiEvent.OnQueueClicked)
+    }
+
+    @Test
+    fun givenATitleWiderThanTheBarStillShowsItWhole() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                MiniPlayerContent(
+                    song = song(title = longTitle),
+                    playButtonState = PlayButtonState.Pause,
+                    progress = 0.5f,
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithText(longTitle).assertIsDisplayed()
     }
 
     @Test
