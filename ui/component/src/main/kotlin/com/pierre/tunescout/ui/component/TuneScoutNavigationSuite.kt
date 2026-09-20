@@ -81,20 +81,14 @@ fun TuneScoutNavigationSuite(
     )
 }
 
-/**
- * A bar leaves with the header that a list scroll takes away, and the content grows into its room —
- * which is what carries the mini player down with it instead of hiding it too.
- *
- * A rail does not follow: it is beside the content, so taking it away mid-scroll would reflow the
- * list under the finger that is scrolling it.
- */
 @Composable
 private fun FollowHideableBars(
     navigationSuiteType: NavigationSuiteType,
     scaffoldState: NavigationSuiteScaffoldState,
 ) {
     val areBarsVisible = LocalHideableBarsState.current.areBarsVisible
-    val isBarHidden = !areBarsVisible && navigationSuiteType == NavigationSuiteType.NavigationBar
+    val isBarRatherThanRail = navigationSuiteType == NavigationSuiteType.NavigationBar
+    val isBarHidden = !areBarsVisible && isBarRatherThanRail
     LaunchedEffect(isBarHidden) {
         if (isBarHidden) {
             scaffoldState.hide()
