@@ -15,4 +15,5 @@ internal data class SongEntity(
     val previewUrl: String,
     val durationMillis: Long,
     val trackNumber: Int,
+    val cachedAt: Long,
 )

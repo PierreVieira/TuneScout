@@ -141,12 +141,71 @@ class SearchSongsPagingSourceTest {
         assertThat((result as LoadResult.Error).throwable).isInstanceOf(RemoteException.RateLimited::class.java)
     }
 
+    @Test
+    fun `GIVEN the API is unreachable WHEN loading the first page THEN falls back to the cached songs`() = runTest {
+        // Given
+        prepareScenario(
+            failure = RemoteException.Unavailable(cause = null),
+            cached = listOf(song(id = 1), song(id = 2)),
+        )
+
+        // When
+        val page = pager.refresh() as LoadResult.Page
+
+        // Then
+        assertThat(page.data.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
+        assertThat(page.nextKey).isNull()
+        assertThat(songLocalDataSource.requestedTerms).containsExactly("daft punk")
+    }
+
+    @Test
+    fun `GIVEN the API is unreachable and nothing is cached WHEN loading THEN reports the failure`() = runTest {
+        // Given
+        prepareScenario(failure = RemoteException.Unavailable(cause = null))
+
+        // When
+        val result = pager.refresh()
+
+        // Then
+        assertThat(result).isInstanceOf(LoadResult.Error::class.java)
+        assertThat((result as LoadResult.Error).throwable).isInstanceOf(RemoteException.Unavailable::class.java)
+    }
+
+    @Test
+    fun `GIVEN the API is throttling WHEN loading THEN does not fall back to the cache`() = runTest {
+        // Given
+        prepareScenario(failure = RemoteException.RateLimited(cause = null), cached = listOf(song(id = 1)))
+
+        // When
+        val result = pager.refresh()
+
+        // Then
+        assertThat(result).isInstanceOf(LoadResult.Error::class.java)
+        assertThat(songLocalDataSource.requestedTerms).isEmpty()
+    }
+
+    @Test
+    fun `GIVEN a delivered page WHEN the API becomes unreachable THEN appending reports the failure`() = runTest {
+        // Given
+        prepareScenario(catalog = songs(count = 60), cached = listOf(song(id = 90)))
+        pager.refresh()
+        remoteDataSource.failure = RemoteException.Unavailable(cause = null)
+
+        // When
+        val result = pager.append()
+
+        // Then
+        assertThat(result).isInstanceOf(LoadResult.Error::class.java)
+        assertThat(songLocalDataSource.requestedTerms).isEmpty()
+    }
+
     private fun prepareScenario(
         catalog: List<Song> = emptyList(),
         failure: RemoteException? = null,
+        cached: List<Song> = emptyList(),
     ) {
         remoteDataSource = FakeRemoteDataSource(catalog = catalog, failure = failure)
-        songLocalDataSource = FakeSongLocalDataSource()
+        songLocalDataSource = FakeSongLocalDataSource(cached = cached)
         pagingSource = SearchSongsPagingSource(
             remoteDataSource = remoteDataSource,
             songLocalDataSource = songLocalDataSource,
@@ -171,7 +230,7 @@ class SearchSongsPagingSourceTest {
 
 private class FakeRemoteDataSource(
     private val catalog: List<Song>,
-    private val failure: RemoteException?,
+    var failure: RemoteException?,
 ) : ITunesRemoteDataSource {
     val requestedLimits = mutableListOf<Int>()
     val requestedForceRefresh = mutableListOf<Boolean>()
@@ -190,8 +249,11 @@ private class FakeRemoteDataSource(
     override suspend fun fetchAlbum(albumId: Long): Album? = error("unused")
 }
 
-private class FakeSongLocalDataSource : SongLocalDataSource {
+private class FakeSongLocalDataSource(
+    private val cached: List<Song>,
+) : SongLocalDataSource {
     val saved = mutableListOf<Song>()
+    val requestedTerms = mutableListOf<String>()
 
     override suspend fun save(songs: List<Song>) {
         saved += songs
@@ -200,4 +262,12 @@ private class FakeSongLocalDataSource : SongLocalDataSource {
     override fun observe(songId: Long): Flow<Song?> = error("unused")
 
     override suspend fun find(songId: Long): Song? = error("unused")
+
+    override suspend fun findByTerm(
+        term: String,
+        limit: Int,
+    ): List<Song> {
+        requestedTerms += term
+        return cached.take(limit)
+    }
 }

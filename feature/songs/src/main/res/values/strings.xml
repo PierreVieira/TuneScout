@@ -11,6 +11,8 @@
     <string name="songs_no_results_description">Try another artist, song or album name.</string>
     <string name="songs_error_title">Couldn\'t load songs</string>
     <string name="songs_error_offline">Check your connection and try again.</string>
+    <string name="songs_error_generic">Something went wrong on our side. Try again.</string>
+    <string name="songs_offline_notice">You\'re offline. Showing the songs saved on this device.</string>
     <string name="songs_error_rate_limited">The iTunes catalog is busy right now. Wait a moment and try again.</string>
     <string name="songs_confirm_cancel">Cancel</string>
     <string name="songs_remove_recent_confirm_title">Remove from recently played?</string>

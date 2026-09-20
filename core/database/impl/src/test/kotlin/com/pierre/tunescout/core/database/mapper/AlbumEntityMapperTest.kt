@@ -13,8 +13,8 @@ class AlbumEntityMapperTest {
         val relation = AlbumWithSongs(
             album = album().toEntity(cachedAt = 0),
             songs = listOf(
-                song(id = 2, trackNumber = 2).toEntity(),
-                song(id = 1, trackNumber = 1).toEntity(),
+                song(id = 2, trackNumber = 2).toEntity(cachedAt = 0),
+                song(id = 1, trackNumber = 1).toEntity(cachedAt = 0),
             ),
         )
 

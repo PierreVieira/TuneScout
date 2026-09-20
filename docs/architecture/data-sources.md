@@ -99,6 +99,12 @@ recently-played repository, which is shared and lives in core. They combine the 
   `ITunesApi` and write the result into Room; the observed `Flow` emits the update.
 - **Recently played comes from Room only.** The list is local state (`RecentlyPlayedEntity`), never
   refetched.
+- **A refresh that fails does not clear the screen.** The cached rows stay, and the state carries a
+  flag (`AlbumUiState.Loaded.isStale`) the screen turns into one line above them.
+- **A cached album is not refreshed while it is fresh.** `AlbumLocalDataSource.isFresherThan` reads
+  the row's `cachedAt`, and `refreshAlbum` returns early within the window `albumModule` configures
+  (one hour). An album's track list does not change, so the call would return the rows already on
+  screen.
 
 ```kotlin
 class AlbumRepositoryImpl(
@@ -150,5 +156,36 @@ class SearchSongsPagingSource(
 }
 ```
 
-Search results are not cached in Room; only the songs the user opens are persisted by the screens that
-show them.
+#### When the API cannot be reached
+
+Every result the search delivers is written to `songs`, so `SearchSongsPagingSource` can answer the
+**first page** from Room when the call fails with `RemoteException.Unavailable`
+(`SongLocalDataSource.findByTerm` matches title, artist and album, most recently cached first). The
+fallback ends the list there — the cache is a single page — and a throttled or unexpected response is
+still reported as an error, because the catalog is reachable and the user should know why it refused.
+
+The screen restarts the search when `NetworkMonitor` reports the connection is back, so those cached
+rows are replaced by the catalog's own without a pull to refresh.
+
+#### What the cache keeps
+
+`songs` would otherwise grow with every query ever typed, so each save trims it to the most recently
+cached `MAX_CACHED_SONGS` (500) **orphans** — rows no other table points at. A song in the history, in
+a playlist, liked, in the saved queue, or belonging to a cached album is never a candidate: those are
+exactly what the app can still show with no connection.
+
+### Connectivity
+
+`NetworkMonitor` (`core/network`) exposes `observeIsOnline(): Flow<Boolean>` over
+`ConnectivityManager.registerDefaultNetworkCallback`, with the state at subscription read from the
+active network's `NET_CAPABILITY_VALIDATED`. A screen uses it to say where its rows come from, to pick
+the right wording for a failure, and to retry by itself — never to decide whether to make a call.
+
+### What is cached where
+
+| Cache | Where | Size | Why |
+|---|---|---|---|
+| Songs, albums, the history, the library | Room (`tunescout.db`) | 500 orphan songs | The screens open with no connection |
+| Previews | `SimpleCache` in `cacheDir/media_cache` | 128 MB, least recently used | A song played once plays again offline |
+| Artwork | Coil's disk cache in `cacheDir/image_cache` | 2% of the free space, never under 64 MB | The lists look the same offline |
+| API responses | Ktor `HttpCache` over `FileStorage` in `cacheDir/http_cache` | unbounded, honours `Cache-Control` | A repeated search survives a restart |

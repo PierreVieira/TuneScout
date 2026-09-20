@@ -13,7 +13,7 @@ class SongEntityMapperTest {
         val original = song(id = 7, duration = 215.seconds, trackNumber = 3)
 
         // When
-        val roundTrip = original.toEntity().toSong()
+        val roundTrip = original.toEntity(cachedAt = 0).toSong()
 
         // Then
         assertThat(roundTrip).isEqualTo(original)
@@ -32,6 +32,7 @@ class SongEntityMapperTest {
             previewUrl = "preview",
             durationMillis = 369_000,
             trackNumber = 8,
+            cachedAt = 0,
         )
 
         // When

@@ -1,10 +1,10 @@
 package com.pierre.tunescout
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -51,7 +51,6 @@ class SearchToAlbumFlowTest {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
 
         searchFor("daft")
-        waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
         playFromTheListRow("Get Lucky")
 
         openThePlayerFromTheMiniPlayer("Get Lucky")
@@ -73,18 +72,25 @@ class SearchToAlbumFlowTest {
         onNode(hasSetTextAction()).performImeAction()
     }
 
-    /** Anything already loaded is also in the mini player, so this takes the list row. */
+    /**
+     * The same song can be drawn in the list and in the mini player — including one restored from
+     * a previous session — so the row is the one that carries the options action, never an index.
+     */
     private fun ComposeContext.playFromTheListRow(title: String) {
-        onAllNodesWithText(title)[0].performClick()
+        val listRow = hasText(title).and(hasAnyDescendant(hasContentDescription("More options")))
+        waitUntilAtLeastOneExists(listRow, SCREEN_TIMEOUT_MILLIS)
+        onAllNodes(listRow)[0].performClick()
     }
 
     /**
-     * The row only starts the song: the bar that rises under the results is what opens the player,
-     * and it is the second of the two places the song is now drawn.
+     * The row only starts the song: the bar that rises under the results is what opens the player.
+     * It is the one place the song is drawn beside the queue action, which is what tells it apart
+     * from the row it came from.
      */
     private fun ComposeContext.openThePlayerFromTheMiniPlayer(title: String) {
-        waitUntilAtLeastOneExists(hasContentDescription("Open the queue"), SCREEN_TIMEOUT_MILLIS)
-        onAllNodesWithText(title)[1].performClick()
+        val miniPlayer = hasText(title).and(hasAnyDescendant(hasContentDescription("Open the queue")))
+        waitUntilAtLeastOneExists(miniPlayer, SCREEN_TIMEOUT_MILLIS)
+        onAllNodes(miniPlayer)[0].performClick()
     }
 
     private companion object {

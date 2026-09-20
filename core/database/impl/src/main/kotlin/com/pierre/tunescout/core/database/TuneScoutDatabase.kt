@@ -34,7 +34,7 @@ import com.pierre.tunescout.core.database.entity.SongEntity
         FavoriteAlbumEntity::class,
         LibrarySearchEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 internal abstract class TuneScoutDatabase : RoomDatabase() {

@@ -30,6 +30,7 @@ private const val APPEND_SKELETON_ROWS = 2
 internal fun SearchResultsList(
     searchResults: LazyPagingItems<Song>,
     nowPlaying: NowPlaying?,
+    isOffline: Boolean,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -55,7 +56,11 @@ internal fun SearchResultsList(
                 }
 
                 refreshState is LoadState.Error -> item(key = "error") {
-                    ErrorMessage(error = refreshState.error, onRetry = searchResults::retry)
+                    ErrorMessage(
+                        error = refreshState.error,
+                        isOffline = isOffline,
+                        onRetry = searchResults::retry,
+                    )
                 }
 
                 refreshState is LoadState.NotLoading && searchResults.itemCount == 0 -> item(key = "empty") {
@@ -91,7 +96,11 @@ internal fun SearchResultsList(
                 }
 
                 is LoadState.Error -> item(key = "append-error") {
-                    ErrorMessage(error = appendState.error, onRetry = searchResults::retry)
+                    ErrorMessage(
+                        error = appendState.error,
+                        isOffline = isOffline,
+                        onRetry = searchResults::retry,
+                    )
                 }
 
                 is LoadState.NotLoading -> Unit
@@ -100,14 +109,20 @@ internal fun SearchResultsList(
     }
 }
 
+/**
+ * The device's own answer on whether it is [isOffline] decides the wording, instead of reading the
+ * failure as one: a timeout, a bad response and no connection at all used to say the same thing.
+ */
 @Composable
 private fun ErrorMessage(
     error: Throwable,
+    isOffline: Boolean,
     onRetry: () -> Unit,
 ) {
-    val description = when (error) {
-        is RemoteException.RateLimited -> stringResource(R.string.songs_error_rate_limited)
-        else -> stringResource(R.string.songs_error_offline)
+    val description = when {
+        error is RemoteException.RateLimited -> stringResource(R.string.songs_error_rate_limited)
+        isOffline -> stringResource(R.string.songs_error_offline)
+        else -> stringResource(R.string.songs_error_generic)
     }
     StateMessage(
         title = stringResource(R.string.songs_error_title),

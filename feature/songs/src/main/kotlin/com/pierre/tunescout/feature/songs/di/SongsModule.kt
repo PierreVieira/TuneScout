@@ -2,10 +2,12 @@ package com.pierre.tunescout.feature.songs.di
 
 import com.pierre.tunescout.feature.songs.data.repository.SongsRepositoryImpl
 import com.pierre.tunescout.feature.songs.domain.repository.SongsRepository
+import com.pierre.tunescout.feature.songs.domain.usecase.ObserveIsOnline
 import com.pierre.tunescout.feature.songs.domain.usecase.ObserveRecentlyPlayed
 import com.pierre.tunescout.feature.songs.domain.usecase.RemoveFromRecentlyPlayed
 import com.pierre.tunescout.feature.songs.domain.usecase.SearchSongs
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
+import com.pierre.tunescout.feature.songs.domain.usecase.impl.ObserveIsOnlineUseCase
 import com.pierre.tunescout.feature.songs.domain.usecase.impl.ObserveRecentlyPlayedUseCase
 import com.pierre.tunescout.feature.songs.domain.usecase.impl.RemoveFromRecentlyPlayedUseCase
 import com.pierre.tunescout.feature.songs.domain.usecase.impl.SearchSongsUseCase
@@ -21,6 +23,7 @@ val songsModule: Module = module {
     factoryOf(::SearchSongsUseCase).bind<SearchSongs>()
     factoryOf(::ObserveRecentlyPlayedUseCase).bind<ObserveRecentlyPlayed>()
     factoryOf(::RemoveFromRecentlyPlayedUseCase).bind<RemoveFromRecentlyPlayed>()
+    factoryOf(::ObserveIsOnlineUseCase).bind<ObserveIsOnline>()
     factoryOf(::SongsUseCases)
     viewModelOf(::SongsViewModel)
 }

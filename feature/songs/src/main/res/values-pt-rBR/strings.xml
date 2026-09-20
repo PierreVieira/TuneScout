@@ -11,6 +11,8 @@
     <string name="songs_no_results_description">Tente outro nome de artista, música ou álbum.</string>
     <string name="songs_error_title">Não foi possível carregar as músicas</string>
     <string name="songs_error_offline">Verifique sua conexão e tente de novo.</string>
+    <string name="songs_error_generic">Algo deu errado por aqui. Tente de novo.</string>
+    <string name="songs_offline_notice">Você está offline. Mostrando as músicas salvas neste aparelho.</string>
     <string name="songs_error_rate_limited">O catálogo do iTunes está ocupado agora. Espere um pouco e tente de novo.</string>
     <string name="songs_confirm_cancel">Cancelar</string>
     <string name="songs_remove_recent_confirm_title">Remover das tocadas recentemente?</string>

@@ -190,6 +190,20 @@ class SongsContentTest {
         onNodeWithText("No songs found").assertIsDisplayed()
     }
 
+    @Test
+    fun givenNoConnectionTheScreenSaysWhereTheSongsComeFrom() = compose.use {
+        setContent { Content(uiState = state(recentlyPlayed = listOf(song(id = 1)), isOffline = true)) }
+
+        onNodeWithContentDescription("You're offline. Showing the songs saved on this device.").assertIsDisplayed()
+    }
+
+    @Test
+    fun givenAConnectionTheScreenSaysNothingAboutIt() = compose.use {
+        setContent { Content(uiState = state(recentlyPlayed = listOf(song(id = 1)))) }
+
+        onNodeWithContentDescription("You're offline. Showing the songs saved on this device.").assertDoesNotExist()
+    }
+
     /** The row settles on the dismissed anchor first; the callback lands on the next frame. */
     private fun ComposeContext.waitForTheSwipeCallback() {
         waitForIdle()
@@ -216,11 +230,13 @@ class SongsContentTest {
         recentlyPlayed: List<Song> = emptyList(),
         nowPlaying: NowPlaying? = null,
         songPendingRemoval: Song? = null,
+        isOffline: Boolean = false,
     ): SongsUiState = SongsUiState(
         query = query,
         recentlyPlayed = recentlyPlayed,
         nowPlaying = nowPlaying,
         songPendingRemoval = songPendingRemoval,
+        isOffline = isOffline,
     )
 
     private val loadedStates = LoadStates(

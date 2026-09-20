@@ -22,6 +22,7 @@ import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.internal.MIGRATION_1_2
 import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
 import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
+import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import com.pierre.tunescout.core.database.internal.RoomAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteSongLocalDataSource
@@ -41,6 +42,7 @@ import org.koin.dsl.module
 private const val DATABASE_NAME = "tunescout.db"
 private const val MAX_RECENTLY_PLAYED = 20
 private const val MAX_RECENT_LIBRARY_SEARCHES = 10
+private const val MAX_CACHED_SONGS = 500
 
 val databaseModule: Module = module {
     single<TuneScoutDatabase> {
@@ -48,7 +50,7 @@ val databaseModule: Module = module {
             .databaseBuilder<TuneScoutDatabase>(androidContext(), DATABASE_NAME)
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
             .build()
     }
     single<SongDao> { get<TuneScoutDatabase>().songDao() }
@@ -60,7 +62,13 @@ val databaseModule: Module = module {
     single<FavoriteAlbumDao> { get<TuneScoutDatabase>().favoriteAlbumDao() }
     single<LibrarySearchDao> { get<TuneScoutDatabase>().librarySearchDao() }
     single<TimestampProvider> { TimestampProvider(System::currentTimeMillis) }
-    singleOf(::RoomSongLocalDataSource).bind<SongLocalDataSource>()
+    single<SongLocalDataSource> {
+        RoomSongLocalDataSource(
+            songDao = get(),
+            timestampProvider = get(),
+            maxCachedSongs = MAX_CACHED_SONGS,
+        )
+    }
     singleOf(::RoomAlbumLocalDataSource).bind<AlbumLocalDataSource>()
     singleOf(::RoomPlaybackSessionLocalDataSource).bind<PlaybackSessionLocalDataSource>()
     singleOf(::RoomPlaylistLocalDataSource).bind<PlaylistLocalDataSource>()

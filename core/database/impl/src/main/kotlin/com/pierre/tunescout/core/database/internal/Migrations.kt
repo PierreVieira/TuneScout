@@ -75,3 +75,9 @@ internal val MIGRATION_3_4 = object : Migration(3, 4) {
         connection.execSQL("ALTER TABLE `playback_session` ADD COLUMN `hasEnded` INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+internal val MIGRATION_4_5 = object : Migration(4, 5) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `songs` ADD COLUMN `cachedAt` INTEGER NOT NULL DEFAULT 0")
+    }
+}

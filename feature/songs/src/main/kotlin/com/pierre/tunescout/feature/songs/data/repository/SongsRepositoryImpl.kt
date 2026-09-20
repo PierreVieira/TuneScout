@@ -7,6 +7,7 @@ import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.SongLocalDataSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.network.ITunesRemoteDataSource
+import com.pierre.tunescout.core.network.NetworkMonitor
 import com.pierre.tunescout.feature.songs.data.paging.SearchSongsPagingSource
 import com.pierre.tunescout.feature.songs.domain.repository.SongsRepository
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +16,7 @@ internal class SongsRepositoryImpl(
     private val remoteDataSource: ITunesRemoteDataSource,
     private val songLocalDataSource: SongLocalDataSource,
     private val recentlyPlayedLocalDataSource: RecentlyPlayedLocalDataSource,
+    private val networkMonitor: NetworkMonitor,
 ) : SongsRepository {
     override fun searchSongs(term: String): Flow<PagingData<Song>> = Pager(
         config = PagingConfig(
@@ -33,6 +35,8 @@ internal class SongsRepositoryImpl(
 
     override fun observeRecentlyPlayed(): Flow<List<Song>> =
         recentlyPlayedLocalDataSource.observe(limit = RECENTLY_PLAYED_LIMIT)
+
+    override fun observeIsOnline(): Flow<Boolean> = networkMonitor.observeIsOnline()
 
     override suspend fun removeFromRecentlyPlayed(songId: Long) {
         recentlyPlayedLocalDataSource.remove(songId)

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration
 
 class RoomFavoriteAlbumLocalDataSourceTest {
     private var now = 0L
@@ -114,6 +115,11 @@ private class FakeAlbumLocalDataSource : AlbumLocalDataSource {
     }
 
     override fun observe(albumId: Long): Flow<Album?> = error("unused")
+
+    override suspend fun isFresherThan(
+        albumId: Long,
+        maxAge: Duration,
+    ): Boolean = error("unused")
 }
 
 private class FakeFavoriteAlbumDao(

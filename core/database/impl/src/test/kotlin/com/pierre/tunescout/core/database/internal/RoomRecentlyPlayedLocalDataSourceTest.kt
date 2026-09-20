@@ -131,6 +131,15 @@ private class FakeSongDao : SongDao {
     override fun observeById(songId: Long): Flow<SongEntity?> = error("unused")
 
     override suspend fun getById(songId: Long): SongEntity? = error("unused")
+
+    override suspend fun findByTerm(
+        term: String,
+        limit: Int,
+    ): List<SongEntity> = error("unused")
+
+    override suspend fun trimCacheTo(keep: Int) {
+        error("unused")
+    }
 }
 
 private class FakeRecentlyPlayedDao(

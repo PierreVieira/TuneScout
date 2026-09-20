@@ -2,6 +2,49 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-20 — Offline first, not only cached
+
+**The preview itself is cached, not only what describes it.** ExoPlayer reads through a
+`CacheDataSource` over a 128 MB least-recently-used `SimpleCache`
+([`MediaCacheDataSourceFactory`](../core/playback/impl/src/main/kotlin/com/pierre/tunescout/core/playback/internal/MediaCacheDataSourceFactory.kt)),
+so a 30-second preview that played once plays again with the device in airplane mode. Before this,
+the history opened offline and none of it could be heard, which is the half of the requirement that
+was missing. Cost: up to 128 MB of the app's cache directory, which the system may reclaim.
+
+**Search falls back to the songs already on the device.** Every result that ever appeared on screen
+is in `songs`, so when the API cannot be reached the first page is answered from Room with a `LIKE`
+over title, artist and album. Only `RemoteException.Unavailable` falls back: a throttled response
+means the catalog is reachable and saying so is more useful than showing a subset of it. The
+fallback is a single page and ends the list there, instead of asking again for a page that just
+failed.
+
+**The device answers whether it is offline; the last failure does not.** `NetworkMonitor` wraps
+`registerDefaultNetworkCallback`, and the songs screen reads it for three things: the banner that
+says where the rows come from, the wording of a failure (offline, throttled or unexpected — which
+used to be one message for all three), and a search that restarts by itself when the connection
+returns, so cached results are replaced without a pull to refresh. Cost: a restart resets the
+scroll position of a list loaded while offline.
+
+**The HTTP cache is a directory, not a process.** `install(HttpCache)` defaulted to memory, so the
+claim that a repeated search is served locally only held within one launch. It now writes to
+`cacheDir/http_cache` through Ktor's `FileStorage`.
+
+**A cached album is not refreshed for an hour.** An album's track list does not change, so
+`refreshAlbum` returns early while the cached row is younger than that, and the screen draws
+immediately instead of waiting on a call that would return the same rows — and that the throttling
+limit could refuse. When a refresh does run and fails, the cache stays on screen with a line saying
+it could not be updated, instead of the failure being swallowed.
+
+**The song cache is bounded, and artwork's is declared.** `songs` grew with every query ever typed.
+Saving now trims it to the 500 most recently cached songs *that nothing else points at* — the
+history, playlists, liked songs, the saved queue and the tracks of a cached album are never
+candidates, because they are what the user can still reach offline. Coil's disk cache stopped being
+an inherited default and became one the app declares in
+[`MainModule`](../app/src/main/kotlin/com/pierre/tunescout/di/MainModule.kt). It keeps Coil's own
+sizing — 2% of the free space — and raises its floor from 10 MB to 64 MB: on a full device, 10 MB
+is a few dozen of the 1000×1000 covers the player draws, and artwork is the first thing a list
+loses offline.
+
 ## 2026-09-20 — Conventions that are rules, not reviews
 
 **Eight more conventions moved into the ktlint ruleset.** Loose top-level functions, constructor

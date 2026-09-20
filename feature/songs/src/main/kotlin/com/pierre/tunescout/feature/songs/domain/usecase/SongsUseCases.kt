@@ -4,4 +4,5 @@ data class SongsUseCases(
     val searchSongs: SearchSongs,
     val observeRecentlyPlayed: ObserveRecentlyPlayed,
     val removeFromRecentlyPlayed: RemoveFromRecentlyPlayed,
+    val observeIsOnline: ObserveIsOnline,
 )

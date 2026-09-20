@@ -2,7 +2,15 @@ package com.pierre.tunescout.core.playback.di
 
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.database.DatabaseProvider
+import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -11,6 +19,7 @@ import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.playback.internal.AndroidMediaItemFactory
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.ForegroundPlaybackServiceLauncher
+import com.pierre.tunescout.core.playback.internal.MediaCacheDataSourceFactory
 import com.pierre.tunescout.core.playback.internal.MediaItemFactory
 import com.pierre.tunescout.core.playback.internal.PlaybackFavoriteController
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
@@ -27,17 +36,32 @@ import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import java.io.File
 import kotlin.time.Duration.Companion.seconds
 
 internal const val PLAYBACK_SCOPE = "playbackScope"
+private const val MEDIA_CACHE_DIR = "media_cache"
+private const val MEDIA_CACHE_MAX_BYTES = 128L * 1024 * 1024
 private val sessionSaveInterval = 5.seconds
 
 val playbackModule: Module = module {
     single(named(PLAYBACK_SCOPE)) { CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate) }
+    single<DatabaseProvider> { StandaloneDatabaseProvider(androidContext()) }
+    single<Cache> {
+        SimpleCache(
+            File(androidContext().cacheDir, MEDIA_CACHE_DIR),
+            LeastRecentlyUsedCacheEvictor(MEDIA_CACHE_MAX_BYTES),
+            get<DatabaseProvider>(),
+        )
+    }
+    single<DataSource.Factory> { DefaultDataSource.Factory(androidContext()) }
+    singleOf(::MediaCacheDataSourceFactory)
     single<ExoPlayer> {
         ExoPlayer
             .Builder(androidContext())
-            .setAudioAttributes(
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(get<MediaCacheDataSourceFactory>().createDataSourceFactory()),
+            ).setAudioAttributes(
                 AudioAttributes
                     .Builder()
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)

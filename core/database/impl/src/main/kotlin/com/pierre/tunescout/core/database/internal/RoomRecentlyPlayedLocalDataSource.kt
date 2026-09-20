@@ -22,7 +22,7 @@ internal class RoomRecentlyPlayedLocalDataSource(
     override fun observeIsRecentlyPlayed(songId: Long): Flow<Boolean> = recentlyPlayedDao.observeContains(songId)
 
     override suspend fun record(song: Song) {
-        songDao.upsertAll(listOf(song.toEntity()))
+        songDao.upsertAll(listOf(song.toEntity(cachedAt = timestampProvider.provide())))
         recentlyPlayedDao.record(
             entry = RecentlyPlayedEntity(songId = song.id, playedAt = timestampProvider.provide()),
             keep = maxEntries,

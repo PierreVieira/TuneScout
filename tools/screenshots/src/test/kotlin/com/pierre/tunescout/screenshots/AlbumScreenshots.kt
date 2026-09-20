@@ -9,6 +9,7 @@ internal class AlbumScreenshots : ReadmeScreenshotsTest() {
         album = randomAccessMemories,
         nowPlaying = null,
         isFavorite = true,
+        isStale = false,
     )
 
     @Test

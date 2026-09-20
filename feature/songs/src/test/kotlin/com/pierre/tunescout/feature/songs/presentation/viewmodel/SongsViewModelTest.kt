@@ -24,10 +24,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import kotlin.time.Duration.Companion.milliseconds
 
 class SongsViewModelTest {
     private lateinit var viewModel: SongsViewModel
@@ -35,6 +37,7 @@ class SongsViewModelTest {
     private lateinit var navigator: Navigator
     private lateinit var searchedTerms: MutableList<String>
     private lateinit var removedSongIds: MutableList<Long>
+    private lateinit var isOnline: MutableStateFlow<Boolean>
 
     @Test
     fun `GIVEN recently played songs WHEN observing THEN exposes them with the now playing id`() =
@@ -204,13 +207,78 @@ class SongsViewModelTest {
         assertThat(removedSongIds).isEmpty()
     }
 
+    @Test
+    fun `GIVEN a device with no connection WHEN observing THEN the screen knows it is offline`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(isOnline = false)
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.isOffline).isTrue()
+        }
+
+    @Test
+    fun `GIVEN an offline device WHEN the connection comes back THEN the screen stops saying it is offline`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(isOnline = false)
+
+            // When
+            isOnline.value = true
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.isOffline).isFalse()
+        }
+
+    @Test
+    fun `GIVEN a search made while offline WHEN the connection comes back THEN searches the term again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(catalog = listOf(song(id = 1)), isOnline = false)
+            viewModel.onEvent(SongsUiEvent.OnQueryChanged("daft punk"))
+            backgroundScope.launch { viewModel.searchResults.collect {} }
+            advanceTimeBy(searchDebounce)
+            runCurrent()
+
+            // When
+            isOnline.value = true
+            runCurrent()
+
+            // Then
+            assertThat(searchedTerms).containsExactly("daft punk", "daft punk").inOrder()
+        }
+
+    @Test
+    fun `GIVEN an online device WHEN the connection drops THEN does not search again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(catalog = listOf(song(id = 1)))
+            viewModel.onEvent(SongsUiEvent.OnQueryChanged("daft punk"))
+            backgroundScope.launch { viewModel.searchResults.collect {} }
+            advanceTimeBy(searchDebounce)
+            runCurrent()
+
+            // When
+            isOnline.value = false
+            runCurrent()
+
+            // Then
+            assertThat(searchedTerms).containsExactly("daft punk")
+        }
+
     private fun TestScope.prepareScenario(
         recentlyPlayed: List<Song> = emptyList(),
         catalog: List<Song> = emptyList(),
         playback: PlaybackState = PlaybackState.Idle,
+        isOnline: Boolean = true,
     ) {
         searchedTerms = mutableListOf()
         removedSongIds = mutableListOf()
+        this@SongsViewModelTest.isOnline = MutableStateFlow(isOnline)
         val playbackStateFlow = MutableStateFlow(playback)
         playbackStarter = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
@@ -222,6 +290,7 @@ class SongsViewModelTest {
                 },
                 observeRecentlyPlayed = { flowOf(recentlyPlayed) },
                 removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
+                observeIsOnline = { this@SongsViewModelTest.isOnline },
             ),
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
@@ -231,6 +300,7 @@ class SongsViewModelTest {
         runCurrent()
     }
 
+    private val searchDebounce = 300.milliseconds
     private val loadedStates = LoadStates(
         refresh = LoadState.NotLoading(endOfPaginationReached = true),
         prepend = LoadState.NotLoading(endOfPaginationReached = true),

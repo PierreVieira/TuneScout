@@ -71,6 +71,7 @@ class AlbumContentTest {
                         album = album,
                         nowPlaying = null,
                         isFavorite = false,
+                        isStale = false,
                     ),
                     onEvent = events::add,
                 )
@@ -98,6 +99,7 @@ class AlbumContentTest {
                         album = album,
                         nowPlaying = null,
                         isFavorite = false,
+                        isStale = false,
                     ),
                     onEvent = events::add,
                 )
@@ -139,13 +141,48 @@ class AlbumContentTest {
         assertThat(events).containsExactly(AlbumUiEvent.OnBackClicked)
     }
 
-    private companion object {
-        const val TITLE_IN_TOP_BAR_AND_HEADER = 2
+    @Test
+    fun givenARefreshThatFailedTheScreenSaysTheAlbumIsTheSavedOne() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(
+                    isHeaderInline = false,
+                    uiState = loaded(isFavorite = false, isStale = true),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription(STALE_NOTICE).assertIsDisplayed()
     }
 
-    private fun loaded(isFavorite: Boolean): AlbumUiState.Loaded = AlbumUiState.Loaded(
+    @Test
+    fun givenAnAlbumThatRefreshedTheScreenSaysNothingAboutIt() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(
+                    isHeaderInline = false,
+                    uiState = loaded(isFavorite = false),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription(STALE_NOTICE).assertDoesNotExist()
+    }
+
+    private fun loaded(
+        isFavorite: Boolean,
+        isStale: Boolean = false,
+    ): AlbumUiState.Loaded = AlbumUiState.Loaded(
         album = album(),
         nowPlaying = null,
         isFavorite = isFavorite,
+        isStale = isStale,
     )
+
+    private companion object {
+        const val TITLE_IN_TOP_BAR_AND_HEADER = 2
+        const val STALE_NOTICE = "Couldn't refresh this album. Showing the version saved on this device."
+    }
 }

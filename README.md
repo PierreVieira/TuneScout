@@ -52,19 +52,25 @@ composable. See [docs/screenshots.md](docs/screenshots.md).
   because liking is a state the bar should show and queueing is not.
 - **Recently played** is the first tab. It is stored locally, so it works offline and survives
   restarts. Playing a song records it once, wherever playback was started from.
+- **Offline**, the app is still the app: a preview that played once plays again from the media
+  cache, search answers from the songs already on the device, artwork comes off disk, and a line
+  above the list says where the rows come from. When the connection returns, the search runs again
+  by itself.
 - **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
   repeat and the queue. Dragging the timeline seeks on release without pausing.
 - **Mini player** above every screen while something is loaded, with its own play/pause and a tap
   to reopen the player.
 - **Album** screen reached from the song options sheet. Fetched once through the lookup endpoint
-  and cached, so it opens offline afterwards.
+  and cached, so it opens offline afterwards — and is not fetched again for an hour. A refresh that
+  fails keeps the cached tracks on screen and says it could not update them.
 - **Theme** picked from a sheet on the songs screen: light, dark, or whatever the system says.
   On Android 12+ the palette can follow the wallpaper instead, explained by a dialog behind the
   (i) next to the toggle. The choice is stored on the device with DataStore, and the splash holds
   until it is read, so the first frame is already in the chosen theme.
 - **Media controls** in the notification shade and on the lock screen, backed by a media session.
-- Loading, empty, error, offline and rate-limited states on every screen; pull to refresh on
-  search results; English and Brazilian Portuguese; content descriptions on every control.
+- Loading, empty, error, offline and rate-limited states on every screen — the device's own
+  connectivity decides which one, not the shape of the last failure; pull to refresh on search
+  results; English and Brazilian Portuguese; content descriptions on every control.
 
 ## Running it
 
@@ -98,10 +104,13 @@ app/                 composition root: Koin modules, MainActivity, NavDisplay, p
 core/
   model/             domain models, plain Kotlin
   utils/             coroutine helpers, dispatchers, duration formatting
-  network/           ITunesRemoteDataSource: the iTunes API behind an interface (Ktor)
-  database/          Room: songs, albums, the history, the saved session, playlists and likes
+  network/           ITunesRemoteDataSource: the iTunes API behind an interface (Ktor),
+                     and NetworkMonitor: whether the device can reach it
+  database/api/      the local data source interfaces every feature depends on, plain Kotlin
+  database/impl/     Room: songs, albums, the history, the saved session, playlists and likes
   playback/api/      the playback role interfaces every screen depends on, plain Kotlin
-  playback/impl/     ExoPlayer behind those interfaces, the media session service; only app sees it
+  playback/impl/     ExoPlayer behind those interfaces, the media session service and the
+                     preview cache that lets a song play again offline; only app sees it
   navigation/        routes (NavKey), the Navigator event bus, back stack controller
   datastore/         the Preferences DataStore the theme preference is written to
   testing/           fixtures and a JUnit extension for Dispatchers.Main
@@ -164,8 +173,9 @@ The reasoning behind these and other choices, with what each one costs, is in
 |---|---|---|
 | ViewModels, repositories, paging source, mappers, navigation | JUnit 6 + Truth + MockK, fakes as lambdas for `fun interface`s | `src/test` |
 | Playback | The queue controller against a fake ExoPlayer timeline, the ordering rules, the session keeper and the history recorder | `core/playback/impl/src/test` |
-| Database | The session round trip against a fake DAO, and the 1 → 2 migration against a real version 1 database | `core/database/impl/src/{test,androidTest}` |
+| Database | The session round trip against a fake DAO, and against a real database: the migrations, the offline search and what the song cache is allowed to drop | `core/database/impl/src/{test,androidTest}` |
 | Screens | Compose UI tests on device through the android-junit5 extension | `feature/*/src/androidTest` |
+| Caches | A preview written to the media cache and read back with the network gone, and the artwork cache the app installs | `core/playback/impl/src/androidTest`, `app/src/androidTest` |
 | End to end | Launches the real app, replaces the remote data source through Koin: search → player → options → album, and search → play → queue a song → the queue screen. Both pass in portrait and landscape. | `app/src/androidTest` |
 
 Tests follow Given / When / Then with a `prepareScenario` factory; see

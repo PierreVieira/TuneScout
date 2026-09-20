@@ -13,8 +13,13 @@ import io.ktor.http.headersOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 class KtorITunesRemoteDataSourceTest {
+    @TempDir
+    lateinit var cacheDir: File
+
     private val searchBody =
         """
         {
@@ -145,7 +150,15 @@ class KtorITunesRemoteDataSourceTest {
                 )
             }
             dataSource =
-                KtorITunesRemoteDataSource(client = HttpClientFactory().create(engine), countryProvider = { "US" })
+                KtorITunesRemoteDataSource(
+                    client = HttpClientFactory().create(
+                        engine = engine,
+                        cacheDir = cacheDir,
+                    ),
+                    countryProvider = {
+                        "US"
+                    },
+                )
 
             // When
             val firstSearch = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
@@ -173,7 +186,15 @@ class KtorITunesRemoteDataSourceTest {
                 )
             }
             dataSource =
-                KtorITunesRemoteDataSource(client = HttpClientFactory().create(engine), countryProvider = { "US" })
+                KtorITunesRemoteDataSource(
+                    client = HttpClientFactory().create(
+                        engine = engine,
+                        cacheDir = cacheDir,
+                    ),
+                    countryProvider = {
+                        "US"
+                    },
+                )
 
             // When
             val firstSearch = dataSource.searchSongs(term = "daft punk", limit = 25, forceRefresh = false)
@@ -275,7 +296,7 @@ class KtorITunesRemoteDataSourceTest {
             }
         }
         dataSource = KtorITunesRemoteDataSource(
-            client = HttpClientFactory().create(engine),
+            client = HttpClientFactory().create(engine = engine, cacheDir = cacheDir),
             countryProvider = { country },
         )
     }

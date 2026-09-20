@@ -14,8 +14,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 
 class AlbumRepositoryImplTest {
+    private val cacheMaxAge = 1.hours
     private lateinit var repository: AlbumRepositoryImpl
     private lateinit var remoteDataSource: ITunesRemoteDataSource
     private lateinit var albumLocalDataSource: AlbumLocalDataSource
@@ -69,20 +72,61 @@ class AlbumRepositoryImplTest {
         assertThat(result.exceptionOrNull()).isInstanceOf(RemoteException.RateLimited::class.java)
     }
 
+    @Test
+    fun `GIVEN an album cached moments ago WHEN refreshing THEN keeps it without calling the API`() = runTest {
+        // Given
+        prepareScenario(cached = album(id = 10), isFresh = true, remote = album(id = 10))
+
+        // When
+        val result = repository.refreshAlbum(albumId = 10)
+
+        // Then
+        assertThat(result.isSuccess).isTrue()
+        coVerify(exactly = 0) { remoteDataSource.fetchAlbum(any()) }
+        coVerify(exactly = 0) { albumLocalDataSource.save(any()) }
+    }
+
+    @Test
+    fun `GIVEN an album cached long ago WHEN refreshing THEN asks the API for it again`() = runTest {
+        // Given
+        prepareScenario(cached = album(id = 10), isFresh = false, remote = album(id = 10))
+
+        // When
+        repository.refreshAlbum(albumId = 10)
+
+        // Then
+        coVerify { remoteDataSource.fetchAlbum(10) }
+    }
+
+    @Test
+    fun `GIVEN a cached album WHEN refreshing THEN measures its age against the configured window`() = runTest {
+        // Given
+        prepareScenario(cached = album(id = 10), isFresh = true)
+
+        // When
+        repository.refreshAlbum(albumId = 10)
+
+        // Then
+        coVerify { albumLocalDataSource.isFresherThan(albumId = 10, maxAge = cacheMaxAge) }
+    }
+
     private fun prepareScenario(
         cached: Album? = null,
         remote: Album? = null,
         failure: RemoteException? = null,
+        isFresh: Boolean = false,
     ) {
         remoteDataSource = mockk {
             coEvery { fetchAlbum(any()) } answers { failure?.let { throw it } ?: remote }
         }
         albumLocalDataSource = mockk(relaxUnitFun = true) {
             every { observe(any()) } returns flowOf(cached)
+            coEvery { isFresherThan(any(), any<Duration>()) } returns isFresh
         }
         repository = AlbumRepositoryImpl(
             remoteDataSource = remoteDataSource,
             albumLocalDataSource = albumLocalDataSource,
+            cacheMaxAge = cacheMaxAge,
         )
     }
 }
