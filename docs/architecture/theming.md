@@ -56,6 +56,19 @@ follow the theme and does not try to.
 `colorPalette(isDark, isDynamicColorEnabled)` returns the palette a theme *would* render with,
 regardless of the one in force. The preview cards in the theme sheet are drawn with it.
 
+## The system bars follow the app's theme
+
+`MainActivity` calls `enableEdgeToEdge` from a `LaunchedEffect(isDark)`, passing a style for **both**
+bars. Neither may be left to `SystemBarStyle.auto`: `auto` reads the platform's night mode, so an app
+set to `Theme.DARK` on a phone whose system is light would keep the light bar — dark icons over a
+white scrim under a black app. The navigation bar used to be the default `auto` and showed exactly
+that.
+
+`SystemBarStyle.dark` also tells `enableEdgeToEdge` to stop enforcing navigation bar contrast, which
+is what leaves the bar transparent over the dark palette. The light style keeps the scrims, because
+API 26 has no `windowLightNavigationBar` flag and the bar's icons would otherwise be white on white.
+The status bar passes transparent scrims instead: its contrast is never enforced.
+
 ## Skeletons
 
 Placeholders use `TuneScoutColors.skeleton`, not `surfaceSubtle`. The two look alike in the light
