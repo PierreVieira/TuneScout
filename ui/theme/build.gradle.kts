@@ -5,3 +5,7 @@ plugins {
 android {
     namespace = "com.pierre.tunescout.ui.theme"
 }
+
+dependencies {
+    implementation(libs.androidx.activity)
+}

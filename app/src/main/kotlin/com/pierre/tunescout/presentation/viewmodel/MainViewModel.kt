@@ -23,9 +23,8 @@ class MainViewModel(
     val uiState: StateFlow<MainUiState> = combine(
         observeTheme(),
         observeDynamicColorEnabled(),
-    ) { theme, isDynamicColorEnabled ->
-        MainUiState.Ready(theme = theme, isDynamicColorEnabled = isDynamicColorEnabled)
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
+        MainUiState::Ready,
+    ).stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
 
     val requestNotificationPermissionsUiAction: SharedFlow<Unit>
         field = MutableSharedFlow<Unit>()
