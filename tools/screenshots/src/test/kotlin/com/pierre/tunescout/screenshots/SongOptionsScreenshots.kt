@@ -77,9 +77,7 @@ private fun BoxScope.OptionsSheet() {
             SongOptionsContent(
                 uiState = SongOptionsUiState(
                     song = getLucky,
-                    isRecentlyPlayed = true,
                     isFavorite = false,
-                    isConfirmingRemoval = false,
                 ),
                 onEvent = {},
             )

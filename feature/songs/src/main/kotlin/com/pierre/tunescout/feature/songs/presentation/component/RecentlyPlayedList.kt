@@ -16,9 +16,11 @@ import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
+import com.pierre.tunescout.ui.component.SongRowAction
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.SwipeToRemoveBox
+import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -71,7 +73,14 @@ internal fun RecentlyPlayedList(
                     ),
                     sharedSongId = song.id,
                     onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
-                    trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
+                    trailing = {
+                        SongRowAction(
+                            icon = TuneScoutIcons.removeFromQueue,
+                            contentDescription = stringResource(R.string.songs_remove_recent),
+                            onClick = { onEvent(SongsUiEvent.OnRecentSongSwipedAway(song)) },
+                        )
+                        SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) }
+                    },
                 )
             }
         }

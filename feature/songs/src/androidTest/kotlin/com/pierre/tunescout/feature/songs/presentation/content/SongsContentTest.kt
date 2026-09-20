@@ -68,6 +68,16 @@ class SongsContentTest {
     }
 
     @Test
+    fun givenRecentSongsClickingTheRemoveIconEmitsRemoveForThatSong() = compose.use {
+        val recents = listOf(song(id = 1, title = "One More Time"))
+        setContent { Content(uiState = state(recentlyPlayed = recents)) }
+
+        onAllNodesWithContentDescription("Remove from recently played")[0].performClick()
+
+        assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[0]))
+    }
+
+    @Test
     fun givenRecentSongsSwipingOneToTheRightEmitsRemoveForThatSong() = compose.use {
         val recents = listOf(song(id = 1, title = "One More Time"), song(id = 2, title = "Get Lucky"))
         setContent { Content(uiState = state(recentlyPlayed = recents)) }
