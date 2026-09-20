@@ -1,6 +1,8 @@
 package com.pierre.tunescout.feature.queue.presentation.model
 
 sealed interface QueueUiEvent {
+    data object OnNowPlayingClicked : QueueUiEvent
+
     data class OnEntryClicked(
         val entryId: String,
     ) : QueueUiEvent

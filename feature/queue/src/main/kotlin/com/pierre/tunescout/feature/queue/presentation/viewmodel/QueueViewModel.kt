@@ -6,6 +6,8 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueSource
+import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 class QueueViewModel(
     private val observablePlayback: ObservablePlayback,
     private val queueControls: QueueControls,
+    private val navigator: Navigator,
 ) : ViewModel() {
     private val emptyUiState = QueueUiState(
         contextTitle = null,
@@ -33,9 +36,17 @@ class QueueViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: QueueUiEvent) = when (event) {
+        QueueUiEvent.OnNowPlayingClicked -> openPlayer()
         is QueueUiEvent.OnEntryClicked -> queueControls.skipTo(event.entryId)
         is QueueUiEvent.OnRemoveClicked -> queueControls.removeFromQueue(event.entryId)
         is QueueUiEvent.OnEntryMoved -> move(from = event.fromEntryId, to = event.toEntryId)
+    }
+
+    private fun openPlayer() {
+        val songId = uiState.value.nowPlaying
+            ?.song
+            ?.id ?: return
+        navigator.navigate(PlayerRoute(songId = songId))
     }
 
     private fun move(

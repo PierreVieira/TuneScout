@@ -111,7 +111,7 @@ private fun QueueList(
                     title = entry.song.title,
                     subtitle = entry.song.artistName,
                     artworkUrl = entry.song.artwork.thumbnailUrl,
-                    onClick = {},
+                    onClick = { onEvent(QueueUiEvent.OnNowPlayingClicked) },
                     nowPlaying = NowPlayingState.of(
                         isCurrentSong = !uiState.hasEnded,
                         isPlaying = uiState.isPlaying,
