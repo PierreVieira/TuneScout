@@ -107,6 +107,23 @@ it's ready to open (new Claude Code session, or Android Studio via "Open" on tha
 
 In-place mode: confirm the branch name and that the current checkout is now on it, ready to work.
 
+### 6. Start implementing immediately
+
+If the user's request already described the task to do (bug to fix, feature to add, etc.) —
+not just which branch/mode to use — don't stop after step 5 and wait for a "go ahead"/"pode
+implementar". Continue straight into implementing that task in this same turn, right after the
+short status report from step 5.
+
+- Worktree mode: keep working in this same session — do not wait for a new session to be opened
+  in the worktree. Point every file tool (Read/Edit/Write/Bash/etc.) at paths inside the new
+  worktree directory (`.claude/worktrees/<short-description>/...`) instead of the main checkout,
+  since tools work with any path regardless of the session's current working directory.
+- In-place mode: the current checkout is already on the new branch, so just continue normally.
+
+Only stop and wait for the user if their request genuinely gave no task description (e.g. they
+only said "start a task in a worktree" with no further detail) — in that case, ask what to
+implement.
+
 ## Edge cases
 
 - If `git worktree add` fails because the branch or path already exists, stop — don't force or
