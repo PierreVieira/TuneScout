@@ -7,6 +7,6 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.database)
+    implementation(projects.core.database.api)
     implementation(projects.core.playback.api)
 }

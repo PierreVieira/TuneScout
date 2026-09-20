@@ -35,17 +35,17 @@ moduleGraphAssert {
     // Features never see each other: they talk through :core:navigation routes and shared
     // :core:* state. :ui:* is presentation-only and knows nothing about features or data.
     // :core:navigation is the one core module that may reach :ui (its command collector is a
-    // composable). Nothing depends on :app. Only :app wires :core:playback:impl; everyone else
-    // sees the role interfaces in :core:playback:api.
+    // composable). Nothing depends on :app. A :core:*:impl module is wired by :app alone;
+    // everyone else sees the interfaces in the matching :core:*:api.
     restricted = arrayOf(
         ":feature:.* -X> :feature:.*",
         ":core:.* -X> :feature:.*",
         ":ui:.* -X> :feature:.*",
         ":ui:.* -X> :core:.*",
         ":core:(?!navigation).* -X> :ui:.*",
-        ":feature:.* -X> :core:playback:impl",
-        ":core:.* -X> :core:playback:impl",
-        ":tools:.* -X> :core:playback:impl",
+        ":feature:.* -X> :core:.*:impl",
+        ":core:.* -X> :core:.*:impl",
+        ":tools:.* -X> :core:.*:impl",
         ".* -X> :app",
     )
 }

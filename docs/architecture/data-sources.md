@@ -61,8 +61,9 @@ returns — and a url whose file name carries no size is passed through untouche
 
 ### Local (Room 3)
 
-`core/database` owns the `RoomDatabase`, its DAOs and entities. DAOs expose `Flow<T>` for reactive
-queries and `suspend fun` for writes; repositories map with `.map(mapper::map)`.
+`core/database/api` declares the local data source interfaces a repository injects;
+`core/database/impl` owns the `RoomDatabase`, its DAOs and entities. DAOs expose `Flow<T>` for
+reactive queries and `suspend fun` for writes; repositories map with `.map(mapper::map)`.
 
 Entities are normalized:
 

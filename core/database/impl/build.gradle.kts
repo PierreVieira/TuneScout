@@ -19,7 +19,7 @@ ksp {
 }
 
 dependencies {
-    api(projects.core.model)
+    implementation(projects.core.database.api)
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.sqlite.bundled)
