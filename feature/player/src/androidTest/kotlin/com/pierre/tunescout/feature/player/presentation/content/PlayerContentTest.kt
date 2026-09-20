@@ -1,13 +1,18 @@
 package com.pierre.tunescout.feature.player.presentation.content
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
@@ -15,6 +20,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import de.mannodermaus.junit5.compose.createComposeExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalTestApi::class)
@@ -123,6 +129,28 @@ class PlayerContentTest {
     }
 
     @Test
+    fun givenADragOnTheTimelineWhenTheSongChangesReleasingSeeksNothing() = compose.use {
+        var uiState by mutableStateOf(loaded())
+        setContent {
+            TuneScoutTheme {
+                PlayerContent(isSideBySide = false, uiState = uiState, onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Playback position").performTouchInput {
+            down(centerLeft)
+            moveTo(center)
+        }
+        uiState = loaded(song = song(id = 2, title = "Instant Crush"), position = Duration.ZERO)
+        onNodeWithContentDescription("Playback position").performTouchInput {
+            moveTo(centerLeft)
+            up()
+        }
+
+        assertThat(events).isEmpty()
+    }
+
+    @Test
     fun givenNotFoundShowsTheMessage() = compose.use {
         setContent {
             TuneScoutTheme {
@@ -137,10 +165,12 @@ class PlayerContentTest {
         status: PlaybackStatus = PlaybackStatus.Playing,
         hasPrevious: Boolean = true,
         hasNext: Boolean = true,
+        song: Song = song(),
+        position: Duration = 5.seconds,
     ): PlayerUiState.Loaded = PlayerUiState.Loaded(
-        song = song(),
+        song = song,
         status = status,
-        position = 5.seconds,
+        position = position,
         duration = 30.seconds,
         isRepeatEnabled = false,
         hasPrevious = hasPrevious,
