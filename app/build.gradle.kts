@@ -25,6 +25,8 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.coil.singleton)
+    implementation(libs.coil.network.ktor)
 
     implementation(projects.core.model)
     implementation(projects.core.utils)

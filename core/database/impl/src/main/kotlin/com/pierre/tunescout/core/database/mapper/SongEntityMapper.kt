@@ -17,7 +17,7 @@ internal fun SongEntity.toSong(): Song = Song(
     trackNumber = trackNumber,
 )
 
-internal fun Song.toEntity(): SongEntity = SongEntity(
+internal fun Song.toEntity(cachedAt: Long): SongEntity = SongEntity(
     id = id,
     title = title,
     artistName = artistName,
@@ -27,4 +27,5 @@ internal fun Song.toEntity(): SongEntity = SongEntity(
     previewUrl = previewUrl,
     durationMillis = duration.inWholeMilliseconds,
     trackNumber = trackNumber,
+    cachedAt = cachedAt,
 )

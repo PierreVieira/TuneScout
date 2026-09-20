@@ -9,5 +9,7 @@ interface SongsRepository {
 
     fun observeRecentlyPlayed(): Flow<List<Song>>
 
+    fun observeIsOnline(): Flow<Boolean>
+
     suspend fun removeFromRecentlyPlayed(songId: Long)
 }

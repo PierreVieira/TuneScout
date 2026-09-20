@@ -26,6 +26,7 @@ import com.pierre.tunescout.feature.songs.presentation.component.SearchResultsLi
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.ConfirmationDialog
+import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.SearchField
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -62,10 +63,14 @@ fun SongsContent(
                 onEvent = onEvent,
                 modifier = Modifier.hideableTopBar(),
             )
+            if (uiState.isOffline) {
+                NoticeBar(text = stringResource(R.string.songs_offline_notice))
+            }
             if (uiState.isSearching) {
                 SearchResultsList(
                     searchResults = searchResults,
                     nowPlaying = uiState.nowPlaying,
+                    isOffline = uiState.isOffline,
                     onEvent = onEvent,
                 )
             } else {

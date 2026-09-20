@@ -32,6 +32,7 @@ import com.pierre.tunescout.feature.album.presentation.component.AlbumSkeleton
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.Artwork
+import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
@@ -101,13 +102,18 @@ fun AlbumContent(
                 onRetry = { onEvent(AlbumUiEvent.OnRetryClicked) },
             )
 
-            is AlbumUiState.Loaded -> Box(contentAlignment = Alignment.TopCenter) {
-                LoadedContent(
-                    album = uiState.album,
-                    nowPlaying = uiState.nowPlaying,
-                    isHeaderInline = isHeaderInline,
-                    onEvent = onEvent,
-                )
+            is AlbumUiState.Loaded -> {
+                if (uiState.isStale) {
+                    NoticeBar(text = stringResource(R.string.album_stale_notice))
+                }
+                Box(contentAlignment = Alignment.TopCenter) {
+                    LoadedContent(
+                        album = uiState.album,
+                        nowPlaying = uiState.nowPlaying,
+                        isHeaderInline = isHeaderInline,
+                        onEvent = onEvent,
+                    )
+                }
             }
         }
     }

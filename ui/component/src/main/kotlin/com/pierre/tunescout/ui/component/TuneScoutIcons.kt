@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DragHandle
@@ -71,6 +72,8 @@ object TuneScoutIcons {
     val check: ImageVector get() = Icons.Rounded.Check
 
     val info: ImageVector get() = Icons.Rounded.Info
+
+    val offline: ImageVector get() = Icons.Rounded.CloudOff
 
     val theme: ImageVector get() = Icons.Rounded.Palette
 

@@ -15,9 +15,11 @@ import kotlin.time.Duration.Companion.milliseconds
 
 internal class RoomPlaybackSessionLocalDataSource(
     private val playbackSessionDao: PlaybackSessionDao,
+    private val timestampProvider: TimestampProvider,
 ) : PlaybackSessionLocalDataSource {
     override suspend fun save(session: PlaybackSession) {
         val album = session.context as? PlaybackContext.Album
+        val cachedAt = timestampProvider.provide()
         playbackSessionDao.save(
             session = PlaybackSessionEntity(
                 id = PLAYBACK_SESSION_ID,
@@ -36,7 +38,7 @@ internal class RoomPlaybackSessionLocalDataSource(
                     source = entry.source.name,
                 )
             },
-            songs = session.entries.map { entry -> entry.song.toEntity() },
+            songs = session.entries.map { entry -> entry.song.toEntity(cachedAt = cachedAt) },
         )
     }
 

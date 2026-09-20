@@ -18,9 +18,18 @@ import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import kotlin.time.Duration.Companion.hours
+
+private val albumCacheMaxAge = 1.hours
 
 val albumModule: Module = module {
-    factoryOf(::AlbumRepositoryImpl).bind<AlbumRepository>()
+    factory<AlbumRepository> {
+        AlbumRepositoryImpl(
+            remoteDataSource = get(),
+            albumLocalDataSource = get(),
+            cacheMaxAge = albumCacheMaxAge,
+        )
+    }
     factoryOf(::ObserveAlbumUseCase).bind<ObserveAlbum>()
     factoryOf(::RefreshAlbumUseCase).bind<RefreshAlbum>()
     factoryOf(::IsAlbumFavoriteUseCase).bind<IsAlbumFavorite>()

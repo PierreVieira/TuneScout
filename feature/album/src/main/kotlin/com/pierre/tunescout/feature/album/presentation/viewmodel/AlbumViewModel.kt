@@ -93,6 +93,7 @@ class AlbumViewModel(
             album = album,
             nowPlaying = playback.nowPlaying,
             isFavorite = isFavorite,
+            isStale = refreshFailed,
         )
 
         refreshFailed -> AlbumUiState.Error

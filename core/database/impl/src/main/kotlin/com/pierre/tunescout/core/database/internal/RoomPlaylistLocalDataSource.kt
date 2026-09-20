@@ -49,7 +49,7 @@ internal class RoomPlaylistLocalDataSource(
         playlistId: Long,
         song: Song,
     ) {
-        songDao.upsertAll(listOf(song.toEntity()))
+        songDao.upsertAll(listOf(song.toEntity(cachedAt = timestampProvider.provide())))
         playlistDao.appendSong(playlistId = playlistId, songId = song.id)
     }
 

@@ -148,4 +148,9 @@ private class FakeSongLocalDataSource(
     override fun observe(songId: Long): Flow<Song?> = flowOf(song)
 
     override suspend fun find(songId: Long): Song? = error("unused")
+
+    override suspend fun findByTerm(
+        term: String,
+        limit: Int,
+    ): List<Song> = error("unused")
 }

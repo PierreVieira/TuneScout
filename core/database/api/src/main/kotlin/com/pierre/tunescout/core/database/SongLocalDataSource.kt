@@ -9,4 +9,15 @@ interface SongLocalDataSource {
     fun observe(songId: Long): Flow<Song?>
 
     suspend fun find(songId: Long): Song?
+
+    /**
+     * What a search can still answer with when the API cannot be reached.
+     *
+     * @return at most [limit] songs already on the device whose title, artist or album contains
+     * [term], most recently cached first.
+     */
+    suspend fun findByTerm(
+        term: String,
+        limit: Int,
+    ): List<Song>
 }

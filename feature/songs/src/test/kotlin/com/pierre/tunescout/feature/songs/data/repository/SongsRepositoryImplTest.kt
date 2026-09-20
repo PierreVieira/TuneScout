@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.database.SongLocalDataSource
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.network.ITunesRemoteDataSource
+import com.pierre.tunescout.core.network.NetworkMonitor
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -64,9 +65,25 @@ class SongsRepositoryImplTest {
         assertThat(recentlyPlayedLocalDataSource.removedSongIds).containsExactly(7L)
     }
 
+    @Test
+    fun `GIVEN a device with no connection WHEN observing the network THEN reports it as offline`() = runTest {
+        // Given
+        prepareScenario(isOnline = false)
+
+        // When
+        val observed = repository.observeIsOnline()
+
+        // Then
+        observed.test {
+            assertThat(awaitItem()).isFalse()
+            awaitComplete()
+        }
+    }
+
     private fun prepareScenario(
         catalog: List<Song> = emptyList(),
         recentlyPlayed: List<Song> = emptyList(),
+        isOnline: Boolean = true,
     ) {
         remoteDataSource = FakeRemoteDataSource(catalog = catalog)
         songLocalDataSource = FakeSongLocalDataSource()
@@ -75,6 +92,7 @@ class SongsRepositoryImplTest {
             remoteDataSource = remoteDataSource,
             songLocalDataSource = songLocalDataSource,
             recentlyPlayedLocalDataSource = recentlyPlayedLocalDataSource,
+            networkMonitor = NetworkMonitor { flowOf(isOnline) },
         )
     }
 
@@ -110,6 +128,11 @@ private class FakeSongLocalDataSource : SongLocalDataSource {
     override fun observe(songId: Long): Flow<Song?> = error("unused")
 
     override suspend fun find(songId: Long): Song? = error("unused")
+
+    override suspend fun findByTerm(
+        term: String,
+        limit: Int,
+    ): List<Song> = emptyList()
 }
 
 private class FakeRecentlyPlayedLocalDataSource(

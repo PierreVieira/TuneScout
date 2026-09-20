@@ -9,6 +9,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.internal.MIGRATION_1_2
 import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
 import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
+import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -152,6 +153,26 @@ class TuneScoutDatabaseMigrationTest {
         migrated.use { connection ->
             assertThat(connection.selectCount("SELECT COUNT(*) FROM playback_session")).isEqualTo(1)
             assertThat(connection.selectCount("SELECT hasEnded FROM playback_session")).isEqualTo(0)
+        }
+    }
+
+    @Test
+    fun givenAVersionFourDatabaseTheMigrationKeepsTheSongsAndTreatsThemAsTheOldestCached() = runBlocking {
+        // Given
+        helper.createDatabase(version = 4).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8)",
+            )
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 5, migrations = listOf(MIGRATION_4_5))
+
+        // Then
+        migrated.use { connection ->
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT cachedAt FROM songs WHERE id = 1")).isEqualTo(0)
         }
     }
 

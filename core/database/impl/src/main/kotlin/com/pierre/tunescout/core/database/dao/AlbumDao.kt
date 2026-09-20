@@ -16,4 +16,7 @@ internal interface AlbumDao {
     @Transaction
     @Query("SELECT * FROM albums WHERE id = :albumId")
     fun observeWithSongs(albumId: Long): Flow<AlbumWithSongs?>
+
+    @Query("SELECT cachedAt FROM albums WHERE id = :albumId")
+    suspend fun findCachedAt(albumId: Long): Long?
 }

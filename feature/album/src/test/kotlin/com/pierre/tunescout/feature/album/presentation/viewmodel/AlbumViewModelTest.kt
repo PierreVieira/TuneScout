@@ -36,6 +36,7 @@ class AlbumViewModelTest {
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var refreshCalls: MutableList<Long>
+    private var refreshResults: Result<Unit> = Result.success(Unit)
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
 
     @Test
@@ -83,7 +84,7 @@ class AlbumViewModelTest {
         }
 
     @Test
-    fun `GIVEN a cached album and a failed refresh WHEN observing THEN keeps showing the cache`() =
+    fun `GIVEN a cached album and a failed refresh WHEN observing THEN keeps the cache and marks it stale`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(cached = album(id = 10), refreshResult = Result.failure(IllegalStateException("offline")))
@@ -93,6 +94,34 @@ class AlbumViewModelTest {
 
             // Then
             assertThat(state).isInstanceOf(AlbumUiState.Loaded::class.java)
+            assertThat((state as AlbumUiState.Loaded).isStale).isTrue()
+        }
+
+    @Test
+    fun `GIVEN a cached album and a successful refresh WHEN observing THEN does not mark it stale`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+
+            // When
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+
+            // Then
+            assertThat(state.isStale).isFalse()
+        }
+
+    @Test
+    fun `GIVEN a stale album WHEN retrying successfully THEN stops marking it stale`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10), refreshResult = Result.failure(IllegalStateException("offline")))
+            refreshResults = Result.success(Unit)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnRetryClicked)
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).isStale).isFalse()
         }
 
     @Test
@@ -243,6 +272,7 @@ class AlbumViewModelTest {
         isFavorite: Boolean = false,
     ) {
         localAlbum = MutableStateFlow(cached)
+        refreshResults = refreshResult
         refreshCalls = mutableListOf()
         favoriteToggles = mutableListOf()
         val playbackStateFlow = MutableStateFlow(playback)
@@ -255,7 +285,7 @@ class AlbumViewModelTest {
                 observeAlbum = { localAlbum },
                 refreshAlbum = { albumId ->
                     refreshCalls += albumId
-                    refreshResult
+                    refreshResults
                 },
                 isAlbumFavorite = { flowOf(isFavorite) },
                 toggleAlbumFavorite = { album, wasFavorite -> favoriteToggles += album.id to wasFavorite },

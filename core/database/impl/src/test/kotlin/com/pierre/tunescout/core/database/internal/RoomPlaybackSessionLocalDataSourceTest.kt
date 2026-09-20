@@ -206,7 +206,7 @@ class RoomPlaybackSessionLocalDataSourceTest {
 
     private fun prepareScenario() {
         dao = FakePlaybackSessionDao()
-        localDataSource = RoomPlaybackSessionLocalDataSource(playbackSessionDao = dao)
+        localDataSource = RoomPlaybackSessionLocalDataSource(playbackSessionDao = dao, timestampProvider = { 0 })
     }
 }
 

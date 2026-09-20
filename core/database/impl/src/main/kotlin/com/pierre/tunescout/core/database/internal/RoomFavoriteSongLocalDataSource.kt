@@ -21,7 +21,7 @@ internal class RoomFavoriteSongLocalDataSource(
     override fun observeIsFavorite(songId: Long): Flow<Boolean> = favoriteSongDao.observeContains(songId)
 
     override suspend fun add(song: Song) {
-        songDao.upsertAll(listOf(song.toEntity()))
+        songDao.upsertAll(listOf(song.toEntity(cachedAt = timestampProvider.provide())))
         favoriteSongDao.upsert(
             FavoriteSongEntity(songId = song.id, favoritedAt = timestampProvider.provide()),
         )
