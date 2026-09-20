@@ -20,7 +20,11 @@ internal class SearchSongsPagingSource(
         val alreadyDelivered = params.key ?: 0
         val limit = minOf(alreadyDelivered + params.loadSize, MAX_SEARCH_RESULTS)
         return try {
-            val results = remoteDataSource.searchSongs(term = term, limit = limit)
+            val results = remoteDataSource.searchSongs(
+                term = term,
+                limit = limit,
+                forceRefresh = params is LoadParams.Refresh,
+            )
             val newSongs = results.drop(alreadyDelivered).filter { song -> deliveredIds.add(song.id) }
             songLocalDataSource.save(newSongs)
             val reachedEnd = results.size < limit || limit >= MAX_SEARCH_RESULTS

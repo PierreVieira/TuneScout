@@ -35,6 +35,31 @@ class SearchSongsPagingSourceTest {
     }
 
     @Test
+    fun `GIVEN a first page WHEN refreshing THEN forces a fresh network response`() = runTest {
+        // Given
+        prepareScenario(catalog = songs(count = 10))
+
+        // When
+        pager.refresh()
+
+        // Then
+        assertThat(remoteDataSource.requestedForceRefresh).containsExactly(true)
+    }
+
+    @Test
+    fun `GIVEN a delivered page WHEN appending THEN does not force a fresh network response`() = runTest {
+        // Given
+        prepareScenario(catalog = songs(count = 60))
+        pager.refresh()
+
+        // When
+        pager.append()
+
+        // Then
+        assertThat(remoteDataSource.requestedForceRefresh).containsExactly(true, false).inOrder()
+    }
+
+    @Test
     fun `GIVEN a delivered page WHEN appending THEN asks a bigger limit and keeps only the new tail`() = runTest {
         // Given
         prepareScenario(catalog = songs(count = 60))
@@ -149,12 +174,15 @@ private class FakeRemoteDataSource(
     private val failure: RemoteException?,
 ) : ITunesRemoteDataSource {
     val requestedLimits = mutableListOf<Int>()
+    val requestedForceRefresh = mutableListOf<Boolean>()
 
     override suspend fun searchSongs(
         term: String,
         limit: Int,
+        forceRefresh: Boolean,
     ): List<Song> {
         requestedLimits += limit
+        requestedForceRefresh += forceRefresh
         failure?.let { throw it }
         return catalog.take(limit)
     }

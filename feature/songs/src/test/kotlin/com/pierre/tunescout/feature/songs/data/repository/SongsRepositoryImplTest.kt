@@ -91,6 +91,7 @@ private class FakeRemoteDataSource(
     override suspend fun searchSongs(
         term: String,
         limit: Int,
+        forceRefresh: Boolean,
     ): List<Song> {
         requestedTerms += term
         return catalog.take(limit)
