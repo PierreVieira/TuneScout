@@ -43,14 +43,13 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
                     uiState = SongsUiState(
                         query = "",
                         recentlyPlayed = recentlyPlayed,
-                        nowPlayingId = null,
-                        isPlaying = false,
+                        nowPlaying = null,
                         songPendingRemoval = null,
                     ),
                     searchResults = emptyPagingItems(),
                     onEvent = {},
                 )
-                Scrim()
+                ScrimBox()
                 ThemeSheet()
             }
         }
@@ -58,7 +57,7 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun Scrim() {
+    private fun ScrimBox() {
         Box(
             modifier = Modifier
                 .fillMaxSize()

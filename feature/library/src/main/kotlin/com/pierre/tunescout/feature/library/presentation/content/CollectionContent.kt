@@ -14,12 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
 import com.pierre.tunescout.ui.component.ConfirmationDialog
+import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
@@ -27,7 +29,6 @@ import com.pierre.tunescout.ui.component.SwipeToRemoveBox
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
-import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
@@ -46,13 +47,13 @@ fun CollectionContent(
     ) {
         when (uiState) {
             CollectionUiState.Loading -> TopBar(title = "", onBackClick = { onEvent(CollectionUiEvent.OnBackClicked) })
-            is CollectionUiState.Loaded -> CollectionLoaded(uiState = uiState, onEvent = onEvent)
+            is CollectionUiState.Loaded -> CollectionLoadedContent(uiState = uiState, onEvent = onEvent)
         }
     }
 }
 
 @Composable
-private fun CollectionLoaded(
+private fun CollectionLoadedContent(
     uiState: CollectionUiState.Loaded,
     onEvent: (CollectionUiEvent) -> Unit,
 ) {
@@ -92,8 +93,7 @@ private fun CollectionLoaded(
         } else {
             SongList(
                 songs = uiState.songs,
-                nowPlayingId = uiState.nowPlayingId,
-                isPlaying = uiState.isPlaying,
+                nowPlaying = uiState.nowPlaying,
                 songPendingRemoval = uiState.songPendingRemoval,
                 onEvent = onEvent,
             )
@@ -122,8 +122,7 @@ private fun RemoveSongDialog(
 @Composable
 private fun SongList(
     songs: List<Song>,
-    nowPlayingId: Long?,
-    isPlaying: Boolean,
+    nowPlaying: NowPlaying?,
     songPendingRemoval: Song?,
     onEvent: (CollectionUiEvent) -> Unit,
 ) {
@@ -143,9 +142,9 @@ private fun SongList(
                     title = song.title,
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
-                    nowPlaying = getNowPlayingState(
-                        isCurrentSong = song.id == nowPlayingId,
-                        isPlaying = isPlaying,
+                    nowPlaying = NowPlayingState.of(
+                        isCurrentSong = song.id == nowPlaying?.songId,
+                        isPlaying = nowPlaying?.isPlaying == true,
                     ),
                     sharedSongId = song.id,
                     onClick = { onEvent(CollectionUiEvent.OnSongClicked(song)) },

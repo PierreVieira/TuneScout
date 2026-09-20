@@ -70,7 +70,7 @@ internal fun ThemeOptionCard(
             verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                ThemePreview(
+                ThemePreviewCard(
                     theme = model.theme,
                     isDynamicColorEnabled = isDynamicColorEnabled,
                     modifier = Modifier.fillMaxWidth(),

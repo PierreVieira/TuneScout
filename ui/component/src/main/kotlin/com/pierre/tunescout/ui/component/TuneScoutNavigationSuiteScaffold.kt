@@ -36,7 +36,7 @@ data class TuneScoutNavigationItem(
  * which is exactly the phone turned sideways this is meant to give a rail.
  */
 @Composable
-fun TuneScoutNavigationSuite(
+fun TuneScoutNavigationSuiteScaffold(
     items: List<TuneScoutNavigationItem>,
     isVisible: Boolean,
     windowSize: TuneScoutWindowSize,
@@ -45,7 +45,7 @@ fun TuneScoutNavigationSuite(
 ) {
     val navigationSuiteType = getNavigationSuiteType(isVisible = isVisible, windowSize = windowSize)
     val scaffoldState = rememberNavigationSuiteScaffoldState()
-    FollowHideableBars(navigationSuiteType = navigationSuiteType, scaffoldState = scaffoldState)
+    FollowHideableBarsEffect(navigationSuiteType = navigationSuiteType, scaffoldState = scaffoldState)
     NavigationSuiteScaffold(
         navigationItems = {
             items.forEach { navigationItem ->
@@ -82,7 +82,7 @@ fun TuneScoutNavigationSuite(
 }
 
 @Composable
-private fun FollowHideableBars(
+private fun FollowHideableBarsEffect(
     navigationSuiteType: NavigationSuiteType,
     scaffoldState: NavigationSuiteScaffoldState,
 ) {

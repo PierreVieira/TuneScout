@@ -168,9 +168,11 @@ internal class ExoPlayerPlaybackController(
         )
     }
 
+    /**
+     * The service is launched only now: it has five seconds to promote itself to the foreground,
+     * and Media3 can only do that once the player it wraps is actually playing.
+     */
     private fun handlePlaybackStarted() {
-        // Only now: the media service has five seconds to promote itself to the foreground,
-        // and Media3 can only do that once the player it wraps is actually playing.
         serviceLauncher.launch()
         startTicking()
     }

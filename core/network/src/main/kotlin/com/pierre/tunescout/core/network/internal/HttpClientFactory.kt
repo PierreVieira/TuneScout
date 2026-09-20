@@ -12,26 +12,31 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.seconds
 
-private const val BASE_URL = "https://itunes.apple.com/"
+internal class HttpClientFactory {
+    fun create(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
+        expectSuccess = true
+        defaultRequest {
+            url(BASE_URL)
+        }
+        install(ContentNegotiation) {
+            json(
+                json = Json {
+                    ignoreUnknownKeys = true
+                    explicitNulls = false
+                    isLenient = true
+                    coerceInputValues = true
+                },
+                contentType = ContentType.Any,
+            )
+        }
+        install(HttpCache)
+        install(HttpTimeout) {
+            requestTimeoutMillis = 15.seconds.inWholeMilliseconds
+            connectTimeoutMillis = 10.seconds.inWholeMilliseconds
+        }
+    }
 
-internal fun createHttpClient(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
-    expectSuccess = true
-    defaultRequest {
-        url(BASE_URL)
-    }
-    install(ContentNegotiation) {
-        json(
-            json = Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-                coerceInputValues = true
-            },
-            contentType = ContentType.Any,
-        )
-    }
-    install(HttpCache)
-    install(HttpTimeout) {
-        requestTimeoutMillis = 15.seconds.inWholeMilliseconds
-        connectTimeoutMillis = 10.seconds.inWholeMilliseconds
+    private companion object {
+        const val BASE_URL = "https://itunes.apple.com/"
     }
 }

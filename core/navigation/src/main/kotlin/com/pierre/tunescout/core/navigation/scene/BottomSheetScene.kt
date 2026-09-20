@@ -16,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -77,8 +78,7 @@ internal data class BottomSheetScene<T : Any>(
         } else {
             ModalBottomSheet(
                 onDismissRequest = onBack,
-                // A landscape window is short enough that the half-open state hides the last option.
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+                sheetState = rememberFullyExpandedSheetState(),
                 containerColor = containerColor(),
                 content = { entryContent() },
             )
@@ -86,6 +86,22 @@ internal data class BottomSheetScene<T : Any>(
     }
 }
 
+/** A landscape window is short enough that the half-open state hides the last option. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun rememberFullyExpandedSheetState(): SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+/**
+ * The dialog window is the whole screen, so the card caps itself: without the cap a long sheet runs
+ * off both edges instead of scrolling inside it, and tapping outside the card would stop dismissing
+ * it if the card filled the window.
+ *
+ * A centred dialog never touches the navigation bar, so the padding the contents take for it as
+ * sheets is consumed here instead of doubling their own bottom padding.
+ *
+ * A dialog has no drag handle, so it says how it closes: the close button is also the top padding
+ * the sheet used to get from that handle.
+ */
 @Composable
 private fun OverlayDialog(
     containerColor: Color,
@@ -96,9 +112,6 @@ private fun OverlayDialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        // The dialog window is the whole screen, so the card caps itself: without the cap a long
-        // sheet runs off both edges instead of scrolling inside it, and tapping outside the card
-        // would stop dismissing it if the card filled the window.
         val windowHeight = with(LocalDensity.current) {
             LocalWindowInfo.current.containerSize.height
                 .toDp()
@@ -111,11 +124,7 @@ private fun OverlayDialog(
             shape = RoundedCornerShape(dialogCornerRadius),
             color = containerColor,
         ) {
-            // A centred dialog never touches the navigation bar, so the padding the contents take
-            // for it as sheets is consumed here instead of doubling their own bottom padding.
             Column(modifier = Modifier.consumeWindowInsets(WindowInsets.navigationBars)) {
-                // A dialog has no drag handle, so it says how it closes: the button is also the top
-                // padding the sheet used to get from that handle.
                 CloseButton(onClick = onDismissRequest)
                 content()
             }

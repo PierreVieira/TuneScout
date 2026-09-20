@@ -2,11 +2,53 @@
 
 ## Comments
 
-Production code has no comments: no `//`, no `/* */`, no KDoc. A name or a small extracted function
-carries the intent instead. The `// Correct` / `// Wrong` markers in the examples below are annotations
-for this document, not something to copy into code. Test bodies are the one exception: their
-`// Given` / `// When` / `// Then` section markers are intentional structure — see
-[docs/testing/given-when-then.md](../testing/given-when-then.md).
+Documentation is written as **KDoc** (`/** ... */`) on a declaration, and nowhere else: no `//`, no
+`/* */`. A name or a small extracted function carries the intent first; when a *why* still needs saying —
+a platform quirk, a constraint the code cannot show — it goes in the KDoc of the declaration it explains,
+where the IDE shows it at every call site.
+
+```kotlin
+// Correct — the reason lives on the declaration it explains
+/**
+ * The song the bar draws, held at its last value once the bar starts leaving.
+ */
+@Composable
+internal fun rememberBarSong(song: Song?, isVisible: Boolean): Song? { ... }
+
+// Wrong — a line comment, invisible outside this file
+// Holds the last song while the bar leaves
+@Composable
+internal fun rememberBarSong(song: Song?, isVisible: Boolean): Song? { ... }
+```
+
+A comment in the middle of a function body has nothing to attach to. Either it describes the whole
+function — move it to the function's KDoc — or it describes one step, and that step is extracted into a
+function or a `val` whose KDoc carries the text:
+
+```kotlin
+// Wrong
+ModalBottomSheet(
+    // A landscape window is short enough that the half-open state hides the last option.
+    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+)
+
+// Correct
+ModalBottomSheet(sheetState = rememberFullyExpandedSheetState())
+
+/** A landscape window is short enough that the half-open state hides the last option. */
+@Composable
+private fun rememberFullyExpandedSheetState(): SheetState =
+    rememberModalBottomSheetState(skipPartiallyExpanded = true)
+```
+
+The `// Correct` / `// Wrong` markers in this document are annotations for the examples, not something to
+copy into code. Test bodies keep one exception: their `// Given` / `// When` / `// Then` section markers
+are intentional structure — see [docs/testing/given-when-then.md](../testing/given-when-then.md). Any
+other explanation in a test follows the same rule as production code.
+
+This is enforced by the custom ktlint rule `tunescout-style:kdoc-only-comments`, which reports every
+`//` and block comment that is not one of those test markers. Build scripts (`*.kts`) are exempt in
+`.editorconfig`: they are configuration, with no declaration for a KDoc to attach to.
 
 ## Return Types
 
@@ -193,18 +235,21 @@ for values that genuinely have no owner, not a default.
 
 ```kotlin
 // Correct — the empty state belongs to the ViewModel that falls back to it
-class MiniPlayerViewModel(...) : ViewModel() {
-    private val emptyUiState = MiniPlayerUiState(song = null, isPlaying = false, progress = 0f)
+class AddToPlaylistViewModel(...) : ViewModel() {
+    private val emptyUiState = AddToPlaylistUiState(song = null, playlists = emptyList(), newPlaylistName = null)
 
-    val uiState: StateFlow<MiniPlayerUiState> = playbackController.state
-        .map(::toUiState)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
+    val uiState: StateFlow<AddToPlaylistUiState> = combine(
+        useCases.observeSong(route.songId),
+        useCases.observePlaylists(),
+        newPlaylistName,
+        ::AddToPlaylistUiState,
+    ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 }
 
 // Wrong — file scope for something only this class ever reads
-private val emptyUiState = MiniPlayerUiState(song = null, isPlaying = false, progress = 0f)
+private val emptyUiState = AddToPlaylistUiState(song = null, playlists = emptyList(), newPlaylistName = null)
 
-class MiniPlayerViewModel(...) : ViewModel() { ... }
+class AddToPlaylistViewModel(...) : ViewModel() { ... }
 ```
 
 **Declare it before the property that reads it.** A class body initializes top to bottom, so a
@@ -500,3 +545,129 @@ not on `var`, `open`, delegated properties or properties with a custom getter. A
 
 Enforced by the custom ktlint rule `tunescout-style:explicit-backing-field`, which flags a private `_name`
 `val` whose only purpose is to be exposed as `name` (directly, or through `asStateFlow()`/`asSharedFlow()`).
+
+## Top-Level Functions Need an Owner
+
+A function declared at file scope has no owner: nothing says which class it serves, and nothing can
+replace it in a test. Logic belongs to a **class with a clear responsibility** — a factory, a mapper —
+that is registered in Koin and injected where it is used.
+
+```kotlin
+// Wrong — loose functions next to the type they build
+internal fun buildTimeline(songs: List<Song>, startSongId: Long, createEntryId: () -> String): QueueTimeline
+internal fun getCarriedEntries(entries: List<QueueEntry>, currentIndex: Int): List<QueueEntry>
+
+// Correct — one injected class owns them, and its own dependency replaces the lambda parameter
+internal class QueueTimelineFactory(
+    private val idGenerator: IdGenerator,
+) {
+    fun buildTimeline(songs: List<Song>, startSongId: Long, carriedEntries: List<QueueEntry>): QueueTimeline
+    fun getCarriedEntries(entries: List<QueueEntry>, currentIndex: Int): List<QueueEntry>
+}
+
+internal class PlaybackQueue(
+    private val timelineFactory: QueueTimelineFactory,
+)
+```
+
+A function that only forwards its arguments to a constructor is not needed at all: pass the constructor
+reference (`combine(a, b, c, ::AddToPlaylistUiState)`).
+
+File scope stays right in four cases:
+
+- **`@Composable` functions**, which are not class members by nature.
+- **Extension functions** — the receiver is the owner (`List<NavKey>.isMiniPlayerAllowed()`,
+  `Playlist.toUiModel()`). Prefer this to a function that takes its subject as the first parameter.
+- **`inline` functions**, which are control flow rather than a collaborator (`suspendRunCatching`).
+- **`private` helpers that top-level code calls** — the helper of a composable in the same file. A
+  `private` function that only one class of the file calls is that class's method.
+
+`:ui:*` cannot be injected into and cannot see `:core:*`, so a value type there builds itself from
+primitives through a factory on its companion object: `PlayButtonState.of(isPlaying, hasEnded)`,
+`SongSharedKey.createOrNull(songId, element)`.
+
+This is enforced by the custom ktlint rule `tunescout-style:top-level-function-ownership`. Test source
+sets and `core/testing` are exempt in `.editorconfig`: fixtures (`song()`, `playbackState()`) are
+top-level on purpose.
+
+## Constructor Properties That Could Be Parameters
+
+A primary-constructor `private val` that is only read while the instance is being built — by a property
+initializer, a delegate or an `init` block — never needed to be a property. Drop `private val`: a plain
+parameter reaches the same places and the class keeps one field less.
+
+```kotlin
+// Wrong — a field kept for a delegate that is resolved once
+internal class HomeTabsState(
+    private val selectedIndexState: MutableIntState,
+) {
+    private var selectedIndex by selectedIndexState
+}
+
+// Correct
+internal class HomeTabsState(
+    selectedIndexState: MutableIntState,
+) {
+    private var selectedIndex by selectedIndexState
+}
+```
+
+The same goes for a ViewModel dependency that only feeds the `uiState` initializer
+(`observablePlayback: ObservablePlayback`). A read from a method, a property getter or a nested class
+keeps the property.
+
+This is enforced by the custom ktlint rule `tunescout-style:redundant-private-constructor-property`.
+It has no type resolution, so it reports only what it can prove: any read from a method, an accessor, a
+nested class or through a qualifier (`this.x`) keeps the property.
+
+## Unused Parameters
+
+Every parameter of a function is read by it. One that is not is a promise the signature does not keep:
+each caller has to produce a value that changes nothing, and the next reader assumes it matters. Remove
+it, along with the argument at every call site.
+
+This is enforced by the custom ktlint rule `tunescout-style:unused-function-parameter`. Functions whose
+signature is dictated from outside are skipped — `override`, `open`, `abstract`, `operator`,
+`expect`/`actual`, `external` and interface members — as is anything annotated with
+`@Suppress("UNUSED_PARAMETER")`.
+
+## Composable Naming
+
+A `@Composable` that emits UI ends in a word that says **what kind of UI it is**, taken from a closed
+list, so the name alone tells a screen from a row from a side effect:
+
+| Suffix | Use for |
+|---|---|
+| `Screen` | the entry point of a route: collects the ViewModel state and hands it to a `Content` |
+| `Content` | the stateless body of a screen or of one of its states |
+| `Scaffold`, `Theme` | structural wrappers that take a `content` slot |
+| `Dialog`, `Sheet`, `Card`, `Box`, `Bar`, `Header`, `Row`, `List`, `Grid`, `Cell` | containers and layout pieces |
+| `Button`, `Action`, `Toggle`, `Field`, `Handle` | things the user operates |
+| `Text`, `Title`, `Heading`, `Label`, `Message`, `Icon`, `Image`, `Artwork`, `Cover`, `Badge`, `Line` | things the user reads or sees |
+| `Skeleton` | the loading placeholder of another composable |
+| `Effect`, `Collector` | composables that emit no UI and only run a side effect |
+| `Component` | anything none of the above describes |
+
+```kotlin
+// Correct
+@Composable fun NamePromptCard(...)
+@Composable fun FollowHideableBarsEffect(...)
+@Composable fun PlaybackControlsComponent(...)
+
+// Wrong — a noun that does not say what is drawn
+@Composable fun NamePrompt(...)
+@Composable fun FollowHideableBars(...)
+@Composable fun PlaybackControls(...)
+```
+
+The file is named after its main composable, so it carries the suffix too.
+
+Not held to the list:
+
+- **Composables that return a value** (`rememberBarSong`, `songCountText`). They are lowercase and follow
+  [Function Naming](#function-naming) and the Compose guidelines instead.
+- **`@Preview` functions**, named after what they preview.
+
+This is enforced by the custom ktlint rule `tunescout-style:composable-naming-suffix`. A genuinely new
+kind of UI gets a new suffix in `ALLOWED_SUFFIXES` in the rule and a row in the table above — not a
+one-off exception.

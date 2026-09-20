@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.pierre.tunescout.navigation.TuneScoutNavDisplay
+import com.pierre.tunescout.navigation.TuneScoutNavigationContent
 import com.pierre.tunescout.permission.rememberNotificationPermissionRequest
 import com.pierre.tunescout.ui.utils.ActionCollector
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +19,6 @@ fun MainContent(
         requestNotificationPermission()
     }
     Surface(modifier = modifier.fillMaxSize()) {
-        TuneScoutNavDisplay()
+        TuneScoutNavigationContent()
     }
 }

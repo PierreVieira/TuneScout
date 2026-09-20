@@ -7,15 +7,18 @@ enum class PlayButtonState {
     Play,
     Pause,
     Replay,
-}
+    ;
 
-fun getPlayButtonState(
-    isPlaying: Boolean,
-    hasEnded: Boolean,
-): PlayButtonState = when {
-    isPlaying -> PlayButtonState.Pause
-    hasEnded -> PlayButtonState.Replay
-    else -> PlayButtonState.Play
+    companion object {
+        fun of(
+            isPlaying: Boolean,
+            hasEnded: Boolean,
+        ): PlayButtonState = when {
+            isPlaying -> Pause
+            hasEnded -> Replay
+            else -> Play
+        }
+    }
 }
 
 val PlayButtonState.icon: ImageVector

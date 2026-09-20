@@ -39,7 +39,7 @@ private val fieldCornerRadius = 12.dp
  * dialog and the add-to-playlist sheet, which opens it over itself rather than navigating away.
  */
 @Composable
-fun NamePrompt(
+fun NamePromptCard(
     title: String,
     placeholder: String,
     confirmLabel: String,

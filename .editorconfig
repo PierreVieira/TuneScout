@@ -27,10 +27,16 @@ ktlint_function_signature_body_expression_wrapping = default
 # (song(), songDto(), album()), which is intentional and reads well in Given/When/Then.
 [**/src/{test,androidTest}/**]
 ktlint_tunescout-style_value-returning-function-naming = disabled
+ktlint_tunescout-style_top-level-function-ownership = disabled
 
 # core/testing ships fixtures to other modules' tests, so the same naming applies to its main sources
 [core/testing/src/**]
 ktlint_tunescout-style_value-returning-function-naming = disabled
+ktlint_tunescout-style_top-level-function-ownership = disabled
+
+# Build scripts are configuration, not declarations: there is nothing for a KDoc to attach to
+[*.kts]
+ktlint_tunescout-style_kdoc-only-comments = disabled
 
 # Markdown files
 [*.md]

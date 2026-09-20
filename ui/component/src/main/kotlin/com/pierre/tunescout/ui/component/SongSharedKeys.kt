@@ -9,9 +9,11 @@ enum class SongSharedElement {
 data class SongSharedKey(
     val songId: Long,
     val element: SongSharedElement,
-)
-
-fun getSongSharedKey(
-    songId: Long?,
-    element: SongSharedElement,
-): SongSharedKey? = songId?.let { id -> SongSharedKey(songId = id, element = element) }
+) {
+    companion object {
+        fun createOrNull(
+            songId: Long?,
+            element: SongSharedElement,
+        ): SongSharedKey? = songId?.let { id -> SongSharedKey(songId = id, element = element) }
+    }
+}

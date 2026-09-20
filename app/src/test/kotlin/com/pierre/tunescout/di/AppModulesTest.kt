@@ -1,5 +1,6 @@
 package com.pierre.tunescout.di
 
+import android.content.Context
 import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
@@ -23,6 +24,12 @@ import kotlin.time.Duration
 
 class AppModulesTest {
     /**
+     * Not resolved by type: [Flow] and [Duration] are passed as literals inside their definitions, and
+     * the [Context] is the one `androidContext()` hands over when the app starts.
+     */
+    private val literalParameterTypes = listOf(Flow::class, Duration::class, Context::class)
+
+    /**
      * Walks every constructor reachable from [appModules] and fails when a parameter has no
      * matching definition. The modules are merged into one, because verifying them one by one
      * would hide the cross-module edges (a feature reaching into `core:network`, for instance).
@@ -30,8 +37,7 @@ class AppModulesTest {
     @Test
     fun `WHEN verifying the graph THEN every constructor dependency has a definition`() {
         module { includes(appModules) }.verify(
-            // Passed as literals inside their definitions, not resolved by type.
-            extraTypes = listOf(Flow::class, Duration::class),
+            extraTypes = literalParameterTypes,
             injections = injectedParameters(
                 definition<AlbumViewModel>(AlbumRoute::class),
                 definition<AlbumOptionsViewModel>(AlbumOptionsRoute::class),

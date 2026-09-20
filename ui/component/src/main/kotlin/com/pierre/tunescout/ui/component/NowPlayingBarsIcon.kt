@@ -34,7 +34,7 @@ private const val BAR_AND_GAP_WIDTHS = 2
  * from the height it stopped at would leave that bar bouncing between there and the top forever.
  */
 @Composable
-fun NowPlayingBars(
+fun NowPlayingBarsIcon(
     state: NowPlayingState,
     modifier: Modifier = Modifier,
 ) {

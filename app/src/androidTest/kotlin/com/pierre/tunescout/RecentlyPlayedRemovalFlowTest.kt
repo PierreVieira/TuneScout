@@ -62,6 +62,10 @@ class RecentlyPlayedRemovalFlowTest {
         unloadKoinModules(fakeRemoteModule)
     }
 
+    /**
+     * Swiping a row only asks; confirming drops it, and the database keeps it dropped. The options
+     * sheet then drops the last one, leaving the empty state behind.
+     */
     @Test
     fun aRecentlyPlayedSongIsDroppedBySwipingItsRowAndByItsOptionsSheet() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
@@ -69,14 +73,12 @@ class RecentlyPlayedRemovalFlowTest {
         onNodeWithText("Around the World").assertExists()
         onNodeWithText("Digital Love").assertExists()
 
-        // Swiping a row only asks; confirming drops it, and the database keeps it dropped.
         onNodeWithText("Around the World").performTouchInput { swipeRight() }
         waitUntilAtLeastOneExists(hasText("Remove from recently played?"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Remove").performClick()
         waitUntilDoesNotExist(hasText("Around the World"), SCREEN_TIMEOUT_MILLIS)
         assertThat(storedIds()).containsExactly(102L)
 
-        // The options sheet drops the last one, leaving the empty state behind.
         onAllNodesWithContentDescription("More options")[0].performClick()
         waitUntilAtLeastOneExists(hasText("Remove from recently played"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Remove from recently played").performClick()

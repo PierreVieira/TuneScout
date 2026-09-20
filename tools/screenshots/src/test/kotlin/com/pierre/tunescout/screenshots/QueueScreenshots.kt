@@ -41,8 +41,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
     private val queue = QueueUiState(
         contextTitle = randomAccessMemories.title,
         nowPlaying = contextEntry(getLucky),
-        isPlaying = true,
-        hasEnded = false,
+        status = PlaybackStatus.Playing,
         queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),
         upNext = listOf(contextEntry(instantCrush), contextEntry(loseYourselfToDance)),
     )
@@ -56,7 +55,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 PlayerContent(isSideBySide = false, uiState = playerBehindSheet, onEvent = {})
-                Scrim()
+                ScrimBox()
                 QueueSheet()
             }
         }
@@ -64,7 +63,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun Scrim() {
+    private fun ScrimBox() {
         Box(
             modifier = Modifier
                 .fillMaxSize()

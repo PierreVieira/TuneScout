@@ -35,7 +35,7 @@ fun SwipeToRemoveBox(
             state = state,
             backgroundContent = {
                 val direction = state.dismissDirection
-                if (direction != SwipeToDismissBoxValue.Settled) RemoveBackground(direction = direction)
+                if (direction != SwipeToDismissBoxValue.Settled) RemoveBackgroundBox(direction = direction)
             },
             modifier = modifier.clip(RoundedCornerShape(rowCornerRadius)),
             onDismiss = { onRemove() },
@@ -48,7 +48,7 @@ fun SwipeToRemoveBox(
 }
 
 @Composable
-private fun RemoveBackground(direction: SwipeToDismissBoxValue) {
+private fun RemoveBackgroundBox(direction: SwipeToDismissBoxValue) {
     val alignment = when (direction) {
         SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
         else -> Alignment.CenterEnd

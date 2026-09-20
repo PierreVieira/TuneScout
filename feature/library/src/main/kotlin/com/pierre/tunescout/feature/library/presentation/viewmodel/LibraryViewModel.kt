@@ -8,7 +8,7 @@ import com.pierre.tunescout.core.navigation.route.LibrarySearchRoute
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.LibraryUseCases
-import com.pierre.tunescout.feature.library.presentation.mapper.buildLibraryItems
+import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
 import com.pierre.tunescout.feature.library.presentation.mapper.toRoute
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiEvent
@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 
 class LibraryViewModel(
     private val useCases: LibraryUseCases,
+    itemMapper: LibraryItemUiModelMapper,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val emptyUiState = LibraryUiState(items = emptyList(), viewMode = LibraryViewMode.LIST, filter = null)
@@ -31,7 +32,7 @@ class LibraryViewModel(
         useCases.observeFavorites(),
         useCases.observePlaylists(),
         useCases.observeFavoriteAlbums(),
-        ::buildLibraryItems,
+        itemMapper::buildLibraryItems,
     )
 
     val uiState: StateFlow<LibraryUiState> = combine(

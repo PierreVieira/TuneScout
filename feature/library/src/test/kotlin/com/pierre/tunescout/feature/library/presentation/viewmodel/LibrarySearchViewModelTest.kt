@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.navigation.route.PlaylistRoute
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.feature.library.domain.usecase.LibrarySearchUseCases
+import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibrarySearchUiEvent
 import io.mockk.mockk
@@ -139,6 +140,7 @@ class LibrarySearchViewModelTest {
                 },
                 removeSearch = { key -> recentSearches.value = recentSearches.value.filterNot { it == key } },
             ),
+            itemMapper = LibraryItemUiModelMapper(),
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }

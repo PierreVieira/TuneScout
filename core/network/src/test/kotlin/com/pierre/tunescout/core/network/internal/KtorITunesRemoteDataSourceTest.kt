@@ -157,7 +157,7 @@ class KtorITunesRemoteDataSourceTest {
             }
         }
         dataSource = KtorITunesRemoteDataSource(
-            client = createHttpClient(engine),
+            client = HttpClientFactory().create(engine),
             countryProvider = { country },
         )
     }

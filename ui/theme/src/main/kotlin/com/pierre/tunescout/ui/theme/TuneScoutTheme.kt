@@ -57,3 +57,6 @@ private fun dynamicColorSchemeOrNull(
 } else {
     null
 }
+
+private fun getStaticColorPalette(isDark: Boolean): TuneScoutColorPalette =
+    if (isDark) darkColorPalette else lightColorPalette

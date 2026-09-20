@@ -17,6 +17,7 @@ import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
+import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
@@ -51,7 +52,7 @@ class CollectionViewModelTest {
             // Then
             assertThat(state.title).isEqualTo(CollectionTitle.Favorites)
             assertThat(state.songs).hasSize(1)
-            assertThat(state.isPlaying).isTrue()
+            assertThat(state.nowPlaying?.isPlaying).isTrue()
             assertThat(state.isDeletable).isFalse()
         }
 
@@ -281,16 +282,18 @@ class CollectionViewModelTest {
         navigator = mockk(relaxUnitFun = true)
         playbackStarter = mockk(relaxUnitFun = true)
         enqueuer = mockk(relaxUnitFun = true)
+        val useCases = CollectionUseCases(
+            observePlaylist = { flowOf(playlist) },
+            observePlaylistSongs = { flowOf(playlistSongs) },
+            observeFavorites = { flowOf(favorites) },
+            removeSongFromPlaylist = { playlistId, songId -> removedFromPlaylist += playlistId to songId },
+            removeFavorite = { songId -> removedFavoriteIds += songId },
+            deletePlaylist = { },
+        )
         viewModel = CollectionViewModel(
             key = key,
-            useCases = CollectionUseCases(
-                observePlaylist = { flowOf(playlist) },
-                observePlaylistSongs = { flowOf(playlistSongs) },
-                observeFavorites = { flowOf(favorites) },
-                removeSongFromPlaylist = { playlistId, songId -> removedFromPlaylist += playlistId to songId },
-                removeFavorite = { songId -> removedFavoriteIds += songId },
-                deletePlaylist = { },
-            ),
+            useCases = useCases,
+            collectionStreams = CollectionStreams(useCases),
             observablePlayback = ObservablePlayback { MutableStateFlow(playbackState()) },
             playbackStarter = playbackStarter,
             enqueuer = enqueuer,

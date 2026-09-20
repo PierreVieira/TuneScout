@@ -55,6 +55,3 @@ val lightColorPalette = TuneScoutColorPalette(
     trackActive = Color(0x99000000),
     error = Color(0xFFD70015),
 )
-
-internal fun getStaticColorPalette(isDark: Boolean): TuneScoutColorPalette =
-    if (isDark) darkColorPalette else lightColorPalette

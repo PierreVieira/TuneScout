@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.feature.library.domain.usecase.LibrarySearchUseCases
-import com.pierre.tunescout.feature.library.presentation.mapper.buildLibraryItems
+import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
 import com.pierre.tunescout.feature.library.presentation.mapper.toRoute
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibrarySearchUiEvent
@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 
 class LibrarySearchViewModel(
     private val useCases: LibrarySearchUseCases,
+    itemMapper: LibraryItemUiModelMapper,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val emptyUiState = LibrarySearchUiState(query = "", items = emptyList(), recentSearches = emptyList())
@@ -28,7 +29,7 @@ class LibrarySearchViewModel(
         useCases.observeFavorites(),
         useCases.observePlaylists(),
         useCases.observeFavoriteAlbums(),
-        ::buildLibraryItems,
+        itemMapper::buildLibraryItems,
     )
 
     val uiState: StateFlow<LibrarySearchUiState> = combine(

@@ -15,6 +15,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.network.ITunesRemoteDataSource
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.song
+import de.mannodermaus.junit5.compose.ComposeContext
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -49,18 +50,11 @@ class SearchToAlbumFlowTest {
     fun searchingASongPlaysItAndTheMiniPlayerLeadsToThePlayerAndItsAlbum() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
 
-        onNode(hasSetTextAction()).performTextInput("daft")
-        // A landscape window leaves no room for results under the keyboard, so close it the way the
-        // search key does.
-        onNode(hasSetTextAction()).performImeAction()
+        searchFor("daft")
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
-        // Anything already loaded is also in the mini player, so this takes the list row.
-        onAllNodesWithText("Get Lucky")[0].performClick()
+        playFromTheListRow("Get Lucky")
 
-        // The row only starts the song: the bar that rises under the results is what opens the
-        // player, and it is the second of the two places the song is now drawn.
-        waitUntilAtLeastOneExists(hasContentDescription("Open the queue"), SCREEN_TIMEOUT_MILLIS)
-        onAllNodesWithText("Get Lucky")[1].performClick()
+        openThePlayerFromTheMiniPlayer("Get Lucky")
 
         waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("More options").performClick()
@@ -68,6 +62,29 @@ class SearchToAlbumFlowTest {
         onNodeWithText("View album").performClick()
 
         waitUntilAtLeastOneExists(hasText("Give Life Back to Music"), SCREEN_TIMEOUT_MILLIS)
+    }
+
+    /**
+     * A landscape window leaves no room for results under the keyboard, so once [term] is typed this
+     * closes it the way the search key does.
+     */
+    private fun ComposeContext.searchFor(term: String) {
+        onNode(hasSetTextAction()).performTextInput(term)
+        onNode(hasSetTextAction()).performImeAction()
+    }
+
+    /** Anything already loaded is also in the mini player, so this takes the list row. */
+    private fun ComposeContext.playFromTheListRow(title: String) {
+        onAllNodesWithText(title)[0].performClick()
+    }
+
+    /**
+     * The row only starts the song: the bar that rises under the results is what opens the player,
+     * and it is the second of the two places the song is now drawn.
+     */
+    private fun ComposeContext.openThePlayerFromTheMiniPlayer(title: String) {
+        waitUntilAtLeastOneExists(hasContentDescription("Open the queue"), SCREEN_TIMEOUT_MILLIS)
+        onAllNodesWithText(title)[1].performClick()
     }
 
     private companion object {

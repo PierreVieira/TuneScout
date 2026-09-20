@@ -55,7 +55,7 @@ fun SeekBar(
             .height(seekHeight)
             .semantics { contentDescription = description },
         thumb = { Handle() },
-        track = { sliderState -> Track(sliderState) },
+        track = { sliderState -> SeekBarTrackLine(sliderState) },
     )
 }
 
@@ -70,7 +70,7 @@ private fun Handle() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Track(sliderState: SliderState) {
+private fun SeekBarTrackLine(sliderState: SliderState) {
     val fraction = sliderState.value.coerceIn(0f, 1f)
     Box(
         modifier = Modifier

@@ -64,17 +64,14 @@ fun SongsContent(
             )
             if (uiState.isSearching) {
                 SearchResultsList(
-                    query = uiState.query,
                     searchResults = searchResults,
-                    nowPlayingId = uiState.nowPlayingId,
-                    isPlaying = uiState.isPlaying,
+                    nowPlaying = uiState.nowPlaying,
                     onEvent = onEvent,
                 )
             } else {
                 RecentlyPlayedList(
                     songs = uiState.recentlyPlayed,
-                    nowPlayingId = uiState.nowPlayingId,
-                    isPlaying = uiState.isPlaying,
+                    nowPlaying = uiState.nowPlaying,
                     songPendingRemoval = uiState.songPendingRemoval,
                     onEvent = onEvent,
                 )
@@ -112,7 +109,7 @@ private fun Header(
         if (isHeaderInline) {
             HeaderRow(horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small)) {
                 Title()
-                Search(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
+                SongsSearchField(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
                 ThemeAction(onEvent = onEvent)
             }
         } else {
@@ -120,7 +117,7 @@ private fun Header(
                 Title(modifier = Modifier.weight(1f))
                 ThemeAction(onEvent = onEvent)
             }
-            Search(uiState = uiState, onEvent = onEvent)
+            SongsSearchField(uiState = uiState, onEvent = onEvent)
         }
     }
 }
@@ -163,7 +160,7 @@ private fun ThemeAction(onEvent: (SongsUiEvent) -> Unit) {
 }
 
 @Composable
-private fun Search(
+private fun SongsSearchField(
     uiState: SongsUiState,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,

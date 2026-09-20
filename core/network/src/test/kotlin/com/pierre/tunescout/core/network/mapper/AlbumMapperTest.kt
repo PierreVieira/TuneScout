@@ -53,8 +53,14 @@ class AlbumMapperTest {
 
 internal fun collectionResult(): ResultDto = ResultDto(
     wrapperType = "collection",
+    kind = null,
+    trackId = null,
+    trackName = null,
+    artistName = "Daft Punk",
     collectionId = 10L,
     collectionName = "Random Access Memories",
-    artistName = "Daft Punk",
     artworkUrl100 = "https://example.com/album/100x100bb.jpg",
+    previewUrl = null,
+    trackTimeMillis = null,
+    trackNumber = null,
 )

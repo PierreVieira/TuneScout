@@ -51,7 +51,7 @@ fun Modifier.hidesBarsOnScroll(): Modifier {
     val connection = remember(state, toggleDistancePx) {
         HideableBarsNestedScrollConnection(state = state, toggleDistance = toggleDistancePx)
     }
-    ShowBarsOnEnterAndOnLeave(state = state)
+    ShowBarsOnEnterAndOnLeaveEffect(state = state)
     return nestedScroll(connection)
 }
 
@@ -68,7 +68,7 @@ fun Modifier.hideableTopBar(): Modifier {
 }
 
 @Composable
-private fun ShowBarsOnEnterAndOnLeave(state: HideableBarsState) {
+private fun ShowBarsOnEnterAndOnLeaveEffect(state: HideableBarsState) {
     DisposableEffect(state) {
         state.show()
         onDispose { state.show() }

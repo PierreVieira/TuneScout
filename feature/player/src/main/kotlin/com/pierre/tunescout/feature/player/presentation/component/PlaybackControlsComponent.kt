@@ -26,7 +26,7 @@ private val skipIconSize = 44.dp
 private val repeatIconSize = 24.dp
 
 @Composable
-internal fun PlaybackControls(
+internal fun PlaybackControlsComponent(
     playButtonState: PlayButtonState,
     hasPrevious: Boolean,
     hasNext: Boolean,

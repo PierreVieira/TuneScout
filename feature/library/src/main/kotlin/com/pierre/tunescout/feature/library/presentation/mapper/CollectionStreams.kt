@@ -9,24 +9,22 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
-fun observeCollectionSongs(
-    key: CollectionKey,
-    useCases: CollectionUseCases,
-): Flow<List<Song>> = when (key) {
-    CollectionKey.Favorites -> useCases.observeFavorites()
-    is CollectionKey.Playlist -> useCases.observePlaylistSongs(key.playlistId)
+class CollectionStreams(
+    private val useCases: CollectionUseCases,
+) {
+    fun observeSongs(key: CollectionKey): Flow<List<Song>> = when (key) {
+        CollectionKey.Favorites -> useCases.observeFavorites()
+        is CollectionKey.Playlist -> useCases.observePlaylistSongs(key.playlistId)
+    }
+
+    fun observeTitle(key: CollectionKey): Flow<CollectionTitle?> = when (key) {
+        CollectionKey.Favorites -> flowOf(CollectionTitle.Favorites)
+
+        is CollectionKey.Playlist ->
+            useCases
+                .observePlaylist(key.playlistId)
+                .map { playlist -> playlist?.let(::toCustomTitle) }
+    }
+
+    private fun toCustomTitle(playlist: Playlist): CollectionTitle = CollectionTitle.Custom(playlist.name)
 }
-
-fun observeCollectionTitle(
-    key: CollectionKey,
-    useCases: CollectionUseCases,
-): Flow<CollectionTitle?> = when (key) {
-    CollectionKey.Favorites -> flowOf(CollectionTitle.Favorites)
-
-    is CollectionKey.Playlist ->
-        useCases
-            .observePlaylist(key.playlistId)
-            .map { playlist -> playlist?.let(::toCustomTitle) }
-}
-
-private fun toCustomTitle(playlist: Playlist): CollectionTitle = CollectionTitle.Custom(playlist.name)

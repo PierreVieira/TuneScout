@@ -19,5 +19,11 @@ class TuneScoutRuleSetProvider : RuleSetProviderV3(RuleSetId(RULE_SET_ID)) {
         RuleProvider { PreferMethodReferenceRule() },
         RuleProvider { ExplicitBackingFieldRule() },
         RuleProvider { CompanionObjectConstantsRule() },
+        RuleProvider { TopLevelFunctionOwnershipRule() },
+        RuleProvider { RedundantPrivateConstructorPropertyRule() },
+        RuleProvider { DtoSerialNameRule() },
+        RuleProvider { UnusedFunctionParameterRule() },
+        RuleProvider { ComposableNamingSuffixRule() },
+        RuleProvider { KdocOnlyCommentsRule() },
     )
 }

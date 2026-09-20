@@ -3,6 +3,7 @@ package com.pierre.tunescout.core.playback
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
+import com.pierre.tunescout.core.playback.internal.QueueTimelineFactory
 import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import io.mockk.verify
@@ -20,7 +21,7 @@ internal class PlaybackQueueTest {
         queue = PlaybackQueue(
             player = fakeExoPlayer.player,
             mediaItemFactory = ::createTestMediaItem,
-            idGenerator = ::createEntryId,
+            timelineFactory = QueueTimelineFactory(idGenerator = ::createEntryId),
         )
     }
 

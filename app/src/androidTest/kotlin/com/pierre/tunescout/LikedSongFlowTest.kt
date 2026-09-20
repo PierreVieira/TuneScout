@@ -66,14 +66,12 @@ class LikedSongFlowTest {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
         waitUntilAtLeastOneExists(hasText("Digital Love"), SCREEN_TIMEOUT_MILLIS)
 
-        // Like it from the options sheet of the recently played row.
         onAllNodesWithContentDescription("More options")[0].performClick()
         waitUntilAtLeastOneExists(hasText("Like"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Like").performClick()
         waitUntilDoesNotExist(hasText("Like"), SCREEN_TIMEOUT_MILLIS)
         assertThat(storedFavoriteIds()).containsExactly(201L)
 
-        // The library tab lists it under the liked songs.
         onNodeWithText("Library").performClick()
         waitUntilAtLeastOneExists(hasText("Liked songs"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Liked songs").performClick()

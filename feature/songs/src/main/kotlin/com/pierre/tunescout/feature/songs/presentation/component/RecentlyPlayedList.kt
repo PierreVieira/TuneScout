@@ -10,22 +10,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
+import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.SwipeToRemoveBox
-import com.pierre.tunescout.ui.component.getNowPlayingState
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 @Composable
 internal fun RecentlyPlayedList(
     songs: List<Song>,
-    nowPlayingId: Long?,
-    isPlaying: Boolean,
+    nowPlaying: NowPlaying?,
     songPendingRemoval: Song?,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -65,9 +65,9 @@ internal fun RecentlyPlayedList(
                     title = song.title,
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
-                    nowPlaying = getNowPlayingState(
-                        isCurrentSong = song.id == nowPlayingId,
-                        isPlaying = isPlaying,
+                    nowPlaying = NowPlayingState.of(
+                        isCurrentSong = song.id == nowPlaying?.songId,
+                        isPlaying = nowPlaying?.isPlaying == true,
                     ),
                     sharedSongId = song.id,
                     onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },

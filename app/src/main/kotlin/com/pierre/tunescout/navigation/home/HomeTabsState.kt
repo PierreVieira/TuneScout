@@ -26,7 +26,7 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 @Stable
 internal class HomeTabsState(
     private val backStacks: Map<HomeTab, NavBackStack<NavKey>>,
-    private val selectedIndexState: MutableIntState,
+    selectedIndexState: MutableIntState,
 ) {
     private var selectedIndex by selectedIndexState
     private val startTab = HomeTab.entries.first()

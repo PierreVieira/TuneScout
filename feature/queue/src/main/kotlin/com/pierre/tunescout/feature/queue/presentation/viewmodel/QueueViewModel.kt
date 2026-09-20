@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.QueueControls
@@ -21,8 +22,7 @@ class QueueViewModel(
     private val emptyUiState = QueueUiState(
         contextTitle = null,
         nowPlaying = null,
-        isPlaying = false,
-        hasEnded = false,
+        status = PlaybackStatus.Idle,
         queuedByUser = emptyList(),
         upNext = emptyList(),
     )
@@ -55,8 +55,7 @@ class QueueViewModel(
         return QueueUiState(
             contextTitle = (playback.context as? PlaybackContext.Album)?.title,
             nowPlaying = playback.currentEntry,
-            isPlaying = playback.isPlaying,
-            hasEnded = playback.hasEnded,
+            status = playback.status,
             queuedByUser = queuedByUser,
             upNext = upcoming.drop(queuedByUser.size),
         )

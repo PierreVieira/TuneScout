@@ -19,7 +19,7 @@ class SearchFieldTest {
     fun theFieldAsksTheKeyboardToCapitalizeTheFirstLetter() = compose.use {
         var editorInfo: EditorInfo? = null
         setContent {
-            CapturingEditorInfo(onEditorInfo = { editorInfo = it }) {
+            CapturingEditorInfoBox(onEditorInfo = { editorInfo = it }) {
                 SearchField(
                     query = "",
                     placeholder = PLACEHOLDER,

@@ -69,8 +69,7 @@ class AlbumContentTest {
                     isHeaderInline = false,
                     uiState = AlbumUiState.Loaded(
                         album = album,
-                        nowPlayingId = null,
-                        isPlaying = false,
+                        nowPlaying = null,
                         isFavorite = false,
                     ),
                     onEvent = events::add,
@@ -97,8 +96,7 @@ class AlbumContentTest {
                     isHeaderInline = false,
                     uiState = AlbumUiState.Loaded(
                         album = album,
-                        nowPlayingId = null,
-                        isPlaying = false,
+                        nowPlaying = null,
                         isFavorite = false,
                     ),
                     onEvent = events::add,
@@ -147,8 +145,7 @@ class AlbumContentTest {
 
     private fun loaded(isFavorite: Boolean): AlbumUiState.Loaded = AlbumUiState.Loaded(
         album = album(),
-        nowPlayingId = null,
-        isPlaying = false,
+        nowPlaying = null,
         isFavorite = isFavorite,
     )
 }

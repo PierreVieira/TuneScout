@@ -20,7 +20,7 @@ class CollectionStreamsTest {
         val useCases = createUseCases(favorites = listOf(song(id = 1)))
 
         // When
-        val songs = observeCollectionSongs(key = CollectionKey.Favorites, useCases = useCases).first()
+        val songs = CollectionStreams(useCases).observeSongs(CollectionKey.Favorites).first()
 
         // Then
         assertThat(songs.map(Song::id)).containsExactly(1L)
@@ -32,10 +32,7 @@ class CollectionStreamsTest {
         val useCases = createUseCases(favorites = listOf(song(id = 1)), playlistSongs = listOf(song(id = 2)))
 
         // When
-        val songs = observeCollectionSongs(
-            key = CollectionKey.Playlist(playlistId = 7),
-            useCases = useCases,
-        ).first()
+        val songs = CollectionStreams(useCases).observeSongs(CollectionKey.Playlist(playlistId = 7)).first()
 
         // Then
         assertThat(songs.map(Song::id)).containsExactly(2L)
@@ -47,7 +44,7 @@ class CollectionStreamsTest {
         val useCases = createUseCases()
 
         // When
-        val title = observeCollectionTitle(key = CollectionKey.Favorites, useCases = useCases).first()
+        val title = CollectionStreams(useCases).observeTitle(CollectionKey.Favorites).first()
 
         // Then
         assertThat(title).isEqualTo(CollectionTitle.Favorites)
@@ -59,10 +56,7 @@ class CollectionStreamsTest {
         val useCases = createUseCases(playlist = playlist(id = 7, name = "Road trip"))
 
         // When
-        val title = observeCollectionTitle(
-            key = CollectionKey.Playlist(playlistId = 7),
-            useCases = useCases,
-        ).first()
+        val title = CollectionStreams(useCases).observeTitle(CollectionKey.Playlist(playlistId = 7)).first()
 
         // Then
         assertThat(title).isEqualTo(CollectionTitle.Custom(name = "Road trip"))
@@ -74,10 +68,7 @@ class CollectionStreamsTest {
         val useCases = createUseCases(playlist = null)
 
         // When
-        val title = observeCollectionTitle(
-            key = CollectionKey.Playlist(playlistId = 7),
-            useCases = useCases,
-        ).first()
+        val title = CollectionStreams(useCases).observeTitle(CollectionKey.Playlist(playlistId = 7)).first()
 
         // Then
         assertThat(title).isNull()

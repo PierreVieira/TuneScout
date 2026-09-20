@@ -46,6 +46,44 @@ data class SongsUiState(
 )
 ```
 
+**A UiState cannot describe a state that does not exist.** When two fields can contradict each other,
+they are one field of a richer type. Two booleans are the usual smell: `isPlaying` and `hasEnded` are
+never both true, so they are one `status`, and the booleans the UI reads become derived getters.
+
+```kotlin
+// Wrong — four combinations, one of them impossible; and no song leaves three fields meaningless
+data class MiniPlayerUiState(
+    val song: Song?,
+    val isPlaying: Boolean,
+    val hasEnded: Boolean,
+    val progress: Float,
+)
+
+// Correct — the absent case is its own state, and one status feeds both questions
+sealed interface MiniPlayerUiState {
+    data object Empty : MiniPlayerUiState
+
+    data class Loaded(
+        val song: Song,
+        val status: PlaybackStatus,
+        val progress: Float,
+    ) : MiniPlayerUiState {
+        val isPlaying: Boolean
+            get() = status == PlaybackStatus.Playing
+
+        val hasEnded: Boolean
+            get() = status == PlaybackStatus.Ended
+    }
+}
+```
+
+The same applies to a nullable field paired with a flag that only means something when it is present:
+`nowPlayingId: Long?` + `isPlaying: Boolean` is one `nowPlaying: NowPlaying?`, where `NowPlaying` holds
+both. Reach for, in this order: an existing enum or model from `core/model` (`PlaybackStatus`,
+`NowPlaying`), a small `data class` grouping the fields that travel together, a `sealed interface` when
+the screen really has distinct states. Independent flags (`isFavorite`, `isDeletable`) stay plain
+booleans. No lint rule can see this one; it is a review convention.
+
 ### UiEvent — user interactions sent to the ViewModel
 
 ```kotlin
