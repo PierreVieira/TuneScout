@@ -22,6 +22,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModel()
+    private val transparentScrim = Color.Transparent.toArgb()
+    private val navigationBarLightScrim = Color(color = 0xE6FFFFFF).toArgb()
+    private val navigationBarDarkScrim = Color(color = 0x801B1B1B).toArgb()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
@@ -42,7 +45,10 @@ class MainActivity : ComponentActivity() {
     private fun ThemedContent(state: MainUiState.Ready) {
         val isDark = state.theme.isDark()
         LaunchedEffect(isDark) {
-            enableEdgeToEdge(statusBarStyle = getSystemBarStyle(isDark))
+            enableEdgeToEdge(
+                statusBarStyle = getStatusBarStyle(isDark),
+                navigationBarStyle = getNavigationBarStyle(isDark),
+            )
         }
         TuneScoutTheme(
             theme = state.theme,
@@ -54,12 +60,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun getSystemBarStyle(isDark: Boolean): SystemBarStyle {
-        val transparent = Color.Transparent.toArgb()
-        return if (isDark) {
-            SystemBarStyle.dark(transparent)
-        } else {
-            SystemBarStyle.light(transparent, transparent)
-        }
+    private fun getStatusBarStyle(isDark: Boolean): SystemBarStyle = if (isDark) {
+        SystemBarStyle.dark(transparentScrim)
+    } else {
+        SystemBarStyle.light(transparentScrim, transparentScrim)
+    }
+
+    private fun getNavigationBarStyle(isDark: Boolean): SystemBarStyle = if (isDark) {
+        SystemBarStyle.dark(navigationBarDarkScrim)
+    } else {
+        SystemBarStyle.light(navigationBarLightScrim, navigationBarDarkScrim)
     }
 }
