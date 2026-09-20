@@ -20,8 +20,8 @@ import kotlinx.coroutines.launch
 
 class LibrarySearchViewModel(
     private val useCases: LibrarySearchUseCases,
-    itemMapper: LibraryItemUiModelMapper,
     private val navigator: Navigator,
+    itemMapper: LibraryItemUiModelMapper,
 ) : ViewModel() {
     private val emptyUiState = LibrarySearchUiState(query = "", items = emptyList(), recentSearches = emptyList())
     private val query = MutableStateFlow("")

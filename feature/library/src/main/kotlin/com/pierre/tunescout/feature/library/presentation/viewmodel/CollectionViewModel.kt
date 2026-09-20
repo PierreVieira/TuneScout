@@ -25,11 +25,11 @@ import kotlinx.coroutines.launch
 class CollectionViewModel(
     private val key: CollectionKey,
     private val useCases: CollectionUseCases,
-    collectionStreams: CollectionStreams,
-    observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    collectionStreams: CollectionStreams,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     private val songPendingRemoval = MutableStateFlow<Song?>(null)
 

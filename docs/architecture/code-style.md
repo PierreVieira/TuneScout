@@ -620,6 +620,36 @@ This is enforced by the custom ktlint rule `tunescout-style:redundant-private-co
 It has no type resolution, so it reports only what it can prove: any read from a method, an accessor, a
 nested class or through a qualifier (`this.x`) keeps the property.
 
+### Properties first, plain parameters last
+
+In a primary constructor every `val` / `var` comes before the plain parameters. What the instance keeps
+reads as one block, and what it only consumes while being built as another:
+
+```kotlin
+// Wrong — a plain parameter in the middle of the properties
+class AlbumViewModel(
+    private val route: AlbumRoute,
+    private val useCases: AlbumUseCases,
+    observablePlayback: ObservablePlayback,
+    private val navigator: Navigator,
+) : ViewModel()
+
+// Correct
+class AlbumViewModel(
+    private val route: AlbumRoute,
+    private val useCases: AlbumUseCases,
+    private val navigator: Navigator,
+    observablePlayback: ObservablePlayback,
+) : ViewModel()
+```
+
+So when the rule above turns a `private val` into a plain parameter, the parameter also moves to the end.
+Call the constructor with named arguments (or let Koin resolve it by type) and the order never reaches a
+call site.
+
+This is enforced by the custom ktlint rule `tunescout-style:constructor-property-order`. It is not
+autocorrected: moving a parameter changes the meaning of every positional call.
+
 ## Unused Parameters
 
 Every parameter of a function is read by it. One that is not is a promise the signature does not keep:

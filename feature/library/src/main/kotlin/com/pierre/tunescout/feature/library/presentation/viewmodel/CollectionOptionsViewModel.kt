@@ -20,9 +20,9 @@ import kotlinx.coroutines.launch
 class CollectionOptionsViewModel(
     private val key: CollectionKey,
     private val useCases: CollectionUseCases,
-    collectionStreams: CollectionStreams,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    collectionStreams: CollectionStreams,
 ) : ViewModel() {
     private val isDeletable = key is CollectionKey.Playlist
     private val emptyUiState = CollectionOptionsUiState(

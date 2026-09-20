@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class DynamicColorInfoViewModel(
-    observeDynamicColorEnabled: ObserveDynamicColorEnabled,
     private val setDynamicColorEnabled: SetDynamicColorEnabled,
     private val navigator: Navigator,
+    observeDynamicColorEnabled: ObserveDynamicColorEnabled,
 ) : ViewModel() {
     val uiState: StateFlow<DynamicColorInfoUiState> = observeDynamicColorEnabled()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)

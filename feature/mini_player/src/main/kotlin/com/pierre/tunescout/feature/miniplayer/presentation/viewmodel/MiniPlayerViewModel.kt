@@ -17,9 +17,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlin.time.Duration
 
 class MiniPlayerViewModel(
-    observablePlayback: ObservablePlayback,
     private val transportControls: TransportControls,
     private val navigator: Navigator,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     val uiState: StateFlow<MiniPlayerUiState> = observablePlayback
         .observePlaybackState()

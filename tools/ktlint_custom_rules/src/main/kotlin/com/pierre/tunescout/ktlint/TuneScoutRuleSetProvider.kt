@@ -25,5 +25,6 @@ class TuneScoutRuleSetProvider : RuleSetProviderV3(RuleSetId(RULE_SET_ID)) {
         RuleProvider { UnusedFunctionParameterRule() },
         RuleProvider { ComposableNamingSuffixRule() },
         RuleProvider { KdocOnlyCommentsRule() },
+        RuleProvider { ConstructorPropertyOrderRule() },
     )
 }

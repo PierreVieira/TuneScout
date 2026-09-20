@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AddToPlaylistViewModel(
-    route: AddToPlaylistRoute,
     private val useCases: AddToPlaylistUseCases,
     private val navigator: Navigator,
+    route: AddToPlaylistRoute,
 ) : ViewModel() {
     private val emptyUiState = AddToPlaylistUiState(song = null, playlists = emptyList(), newPlaylistName = null)
     private val newPlaylistName = MutableStateFlow<String?>(null)

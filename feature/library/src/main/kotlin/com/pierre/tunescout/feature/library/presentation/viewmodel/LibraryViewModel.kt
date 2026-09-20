@@ -23,8 +23,8 @@ import kotlinx.coroutines.launch
 
 class LibraryViewModel(
     private val useCases: LibraryUseCases,
-    itemMapper: LibraryItemUiModelMapper,
     private val navigator: Navigator,
+    itemMapper: LibraryItemUiModelMapper,
 ) : ViewModel() {
     private val emptyUiState = LibraryUiState(items = emptyList(), viewMode = LibraryViewMode.LIST, filter = null)
     private val filter = MutableStateFlow<LibraryFilter?>(null)

@@ -4,8 +4,8 @@ A running log, newest first. Each entry states the decision, why, and what it co
 
 ## 2026-09-20 — Conventions that are rules, not reviews
 
-**Six more conventions moved into the ktlint ruleset.** Loose top-level functions, constructor
-properties that could be plain parameters, DTO fields without `@SerialName` or with defaults, unused
+**Seven more conventions moved into the ktlint ruleset.** Loose top-level functions, constructor
+properties that could be plain parameters, plain parameters declared before the properties, DTO fields without `@SerialName` or with defaults, unused
 parameters, composables without a kind-of-UI suffix, and `//` comments were all things a review had
 let through more than once. Each is now a rule in `tools/ktlint_custom_rules`, documented in
 [code-style.md](architecture/code-style.md). Cost: ktlint has no type resolution, so every rule

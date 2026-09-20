@@ -22,11 +22,11 @@ import kotlinx.coroutines.flow.stateIn
 
 class PlayerViewModel(
     private val route: PlayerRoute,
-    observeSong: ObserveSong,
     private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val transportControls: TransportControls,
     private val navigator: Navigator,
+    observeSong: ObserveSong,
 ) : ViewModel() {
     private val currentSong: Song?
         get() = observablePlayback.observePlaybackState().value.currentSong

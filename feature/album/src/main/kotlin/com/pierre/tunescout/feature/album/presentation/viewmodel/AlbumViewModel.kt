@@ -26,10 +26,10 @@ import kotlinx.coroutines.launch
 class AlbumViewModel(
     private val route: AlbumRoute,
     private val useCases: AlbumUseCases,
-    observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     private val refreshFailed = MutableStateFlow(false)
 

@@ -16,10 +16,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class AlbumOptionsViewModel(
-    route: AlbumOptionsRoute,
-    observeAlbum: ObserveAlbum,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
+    route: AlbumOptionsRoute,
+    observeAlbum: ObserveAlbum,
 ) : ViewModel() {
     val uiState: StateFlow<AlbumOptionsUiState> = observeAlbum(route.albumId)
         .map(::AlbumOptionsUiState)

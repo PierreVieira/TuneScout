@@ -35,9 +35,9 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
     private val useCases: SongsUseCases,
-    observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val navigator: Navigator,
+    observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     private val searchDebounce = 300.milliseconds
     private val idleLoadStates = LoadStates(
