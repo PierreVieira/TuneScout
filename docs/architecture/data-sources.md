@@ -116,6 +116,11 @@ recently-played repository, which is shared and lives in core. They combine the 
   the row's `cachedAt`, and `refreshAlbum` returns early within the window `albumModule` configures
   (one hour). An album's track list does not change, so the call would return the rows already on
   screen.
+- **An album never looked up still opens offline.** `AlbumLocalDataSource.observe` falls back to the
+  album's tracks saved on their own (played, liked, queued, found in a search) and returns them as an
+  `Album` with `isComplete = false`. The screen shows it only once a refresh has failed, says the list
+  is partial, hides the heart (liking would store the partial album as if it were whole), and asks
+  again when `NetworkMonitor` reports the connection is back.
 
 ```kotlin
 class AlbumRepositoryImpl(
@@ -191,6 +196,11 @@ exactly what the app can still show with no connection.
 `ConnectivityManager.registerDefaultNetworkCallback`, with the state at subscription read from the
 active network's `NET_CAPABILITY_VALIDATED`. A screen uses it to say where its rows come from, to pick
 the right wording for a failure, and to retry by itself — never to decide whether to make a call.
+
+Offline, `PreviewCache` (`core/playback/api`, over the same `SimpleCache` the player writes) says
+whether a song's whole preview is on the device. The album screen asks it before handing a track to
+the player: a track that is not there shows a snackbar instead of failing in the player, and the queue
+behind one that is keeps only the saved tracks.
 
 ### What is cached where
 

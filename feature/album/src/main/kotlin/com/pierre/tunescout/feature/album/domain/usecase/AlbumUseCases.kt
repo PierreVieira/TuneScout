@@ -5,4 +5,5 @@ data class AlbumUseCases(
     val refreshAlbum: RefreshAlbum,
     val isAlbumFavorite: IsAlbumFavorite,
     val toggleAlbumFavorite: ToggleAlbumFavorite,
+    val observeIsOnline: ObserveIsOnline,
 )

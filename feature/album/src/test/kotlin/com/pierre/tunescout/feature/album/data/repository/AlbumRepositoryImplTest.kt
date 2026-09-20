@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.AlbumLocalDataSource
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.network.AlbumRemoteDataSource
+import com.pierre.tunescout.core.network.NetworkMonitor
 import com.pierre.tunescout.core.network.RemoteException
 import com.pierre.tunescout.core.testing.fixture.album
 import io.mockk.coEvery
@@ -110,11 +111,24 @@ class AlbumRepositoryImplTest {
         coVerify { albumLocalDataSource.isFresherThan(albumId = 10, maxAge = cacheMaxAge) }
     }
 
+    @Test
+    fun `GIVEN the network state WHEN observing whether it is online THEN relays the monitor`() = runTest {
+        // Given
+        prepareScenario(isOnline = false)
+
+        // When
+        val isOnline = repository.observeIsOnline().first()
+
+        // Then
+        assertThat(isOnline).isFalse()
+    }
+
     private fun prepareScenario(
         cached: Album? = null,
         remote: Album? = null,
         failure: RemoteException? = null,
         isFresh: Boolean = false,
+        isOnline: Boolean = true,
     ) {
         remoteDataSource = mockk {
             coEvery { fetchAlbum(any()) } answers { failure?.let { throw it } ?: remote }
@@ -126,6 +140,7 @@ class AlbumRepositoryImplTest {
         repository = AlbumRepositoryImpl(
             remoteDataSource = remoteDataSource,
             albumLocalDataSource = albumLocalDataSource,
+            networkMonitor = NetworkMonitor { flowOf(isOnline) },
             cacheMaxAge = cacheMaxAge,
         )
     }

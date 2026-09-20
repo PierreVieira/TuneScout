@@ -15,5 +15,6 @@ internal fun List<ResultDto>.toAlbumOrNull(): Album? {
         artistName = collection.artistName ?: return null,
         artwork = Artwork(collection.artworkUrl100.orEmpty()),
         songs = songs,
+        isComplete = true,
     )
 }

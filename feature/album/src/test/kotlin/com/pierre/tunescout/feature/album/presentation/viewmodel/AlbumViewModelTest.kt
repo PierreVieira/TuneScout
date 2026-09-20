@@ -11,15 +11,19 @@ import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.PreviewCache
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
+import com.pierre.tunescout.feature.album.presentation.model.AlbumUiAction
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -36,8 +40,12 @@ class AlbumViewModelTest {
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var refreshCalls: MutableList<Long>
-    private var refreshResults: Result<Unit> = Result.success(Unit)
+
+    /** What the next refresh returns, or null for one that never finishes. */
+    private var refreshResults: Result<Unit>? = Result.success(Unit)
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
+    private lateinit var isOnline: MutableStateFlow<Boolean>
+    private lateinit var actions: MutableList<AlbumUiAction>
 
     @Test
     fun `GIVEN no cached album WHEN starting THEN refreshes it and shows loading meanwhile`() =
@@ -125,6 +133,119 @@ class AlbumViewModelTest {
         }
 
     @Test
+    fun `GIVEN only the saved tracks of the album WHEN the refresh is still running THEN shows loading`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10, isComplete = false), refreshResult = null)
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state).isEqualTo(AlbumUiState.Loading)
+        }
+
+    @Test
+    fun `GIVEN only the saved tracks of the album and a failed refresh WHEN observing THEN shows them`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val partial = album(id = 10, songs = listOf(song(id = 1)), isComplete = false)
+            prepareScenario(cached = partial, refreshResult = Result.failure(IllegalStateException("offline")))
+
+            // When
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+
+            // Then
+            assertThat(state.album).isEqualTo(partial)
+        }
+
+    @Test
+    fun `GIVEN a partial album WHEN the connection comes back THEN refreshes it and keeps the tracks meanwhile`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                cached = album(id = 10, isComplete = false),
+                refreshResult = Result.failure(IllegalStateException("offline")),
+                isOnlineAtStart = false,
+            )
+            refreshResults = null
+
+            // When
+            isOnline.value = true
+            runCurrent()
+
+            // Then
+            assertThat(refreshCalls).containsExactly(10L, 10L)
+            assertThat(viewModel.uiState.value).isInstanceOf(AlbumUiState.Loaded::class.java)
+        }
+
+    @Test
+    fun `GIVEN a partial album WHEN the whole album arrives after reconnecting THEN shows the complete one`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                cached = album(id = 10, isComplete = false),
+                refreshResult = Result.failure(IllegalStateException("offline")),
+                isOnlineAtStart = false,
+            )
+            refreshResults = Result.success(Unit)
+
+            // When
+            isOnline.value = true
+            runCurrent()
+            localAlbum.value = album(id = 10)
+
+            // Then
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+            assertThat(state.album.isComplete).isTrue()
+            assertThat(state.isStale).isFalse()
+        }
+
+    @Test
+    fun `GIVEN a successful refresh WHEN the connection comes back THEN does not ask again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10), isOnlineAtStart = false)
+
+            // When
+            isOnline.value = true
+            runCurrent()
+
+            // Then
+            assertThat(refreshCalls).containsExactly(10L)
+        }
+
+    @Test
+    fun `GIVEN a failed refresh WHEN the monitor reports the state the screen opened on THEN does not ask again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = null, refreshResult = Result.failure(IllegalStateException("offline")))
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state).isEqualTo(AlbumUiState.Error)
+            assertThat(refreshCalls).containsExactly(10L)
+        }
+
+    @Test
+    fun `GIVEN a partial album WHEN clicking the heart THEN does not store it`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(
+            cached = album(id = 10, isComplete = false),
+            refreshResult = Result.failure(IllegalStateException("offline")),
+        )
+
+        // When
+        viewModel.onEvent(AlbumUiEvent.OnFavoriteClicked)
+        runCurrent()
+
+        // Then
+        assertThat(favoriteToggles).isEmpty()
+    }
+
+    @Test
     fun `GIVEN an error WHEN retrying THEN refreshes again`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(cached = null, refreshResult = Result.failure(IllegalStateException("offline")))
@@ -155,6 +276,60 @@ class AlbumViewModelTest {
         }
         verify(exactly = 0) { navigator.navigate(any()) }
     }
+
+    @Test
+    fun `GIVEN no connection and a track not on the device WHEN clicking it THEN shows a message instead of playing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, isOnlineAtStart = false, cachedPreviews = setOf(1L))
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
+            runCurrent()
+
+            // Then
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.album_song_unavailable_offline))
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
+    @Test
+    fun `GIVEN no connection and a saved track WHEN clicking it THEN plays it with only the saved tracks queued`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, isOnlineAtStart = false, cachedPreviews = setOf(1L))
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[0]))
+            runCurrent()
+
+            // Then
+            verify {
+                playbackStarter.play(
+                    song = album.songs[0],
+                    songs = listOf(album.songs[0]),
+                    context = PlaybackContext.Album(id = album.id, title = album.title),
+                )
+            }
+            assertThat(actions).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN a connection and a track not on the device WHEN clicking it THEN streams it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, cachedPreviews = emptySet())
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
+            runCurrent()
+
+            // Then
+            verify { playbackStarter.play(song = album.songs[1], songs = album.songs, context = any()) }
+            assertThat(actions).isEmpty()
+        }
 
     @Test
     fun `GIVEN an album that is not liked WHEN clicking the heart THEN stores it`() =
@@ -215,6 +390,35 @@ class AlbumViewModelTest {
         }
 
     @Test
+    fun `GIVEN no connection WHEN playing the album now THEN queues only the saved tracks`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, isOnlineAtStart = false, cachedPreviews = setOf(2L))
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnPlayNowClicked)
+
+            // Then
+            verify { enqueuer.playNow(listOf(album.songs[1])) }
+        }
+
+    @Test
+    fun `GIVEN no connection and no saved track WHEN playing the album now THEN shows a message instead`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10), isOnlineAtStart = false, cachedPreviews = emptySet())
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnPlayNowClicked)
+            runCurrent()
+
+            // Then
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.album_song_unavailable_offline))
+            verify(exactly = 0) { enqueuer.playNow(any()) }
+        }
+
+    @Test
     fun `GIVEN the album has not loaded WHEN playing it now THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(cached = null)
@@ -267,14 +471,18 @@ class AlbumViewModelTest {
 
     private fun TestScope.prepareScenario(
         cached: Album?,
-        refreshResult: Result<Unit> = Result.success(Unit),
+        refreshResult: Result<Unit>? = Result.success(Unit),
         playback: PlaybackState = PlaybackState.Idle,
         isFavorite: Boolean = false,
+        isOnlineAtStart: Boolean = true,
+        cachedPreviews: Set<Long> = emptySet(),
     ) {
         localAlbum = MutableStateFlow(cached)
         refreshResults = refreshResult
         refreshCalls = mutableListOf()
         favoriteToggles = mutableListOf()
+        isOnline = MutableStateFlow(isOnlineAtStart)
+        actions = mutableListOf()
         val playbackStateFlow = MutableStateFlow(playback)
         playbackStarter = mockk(relaxUnitFun = true)
         enqueuer = mockk(relaxUnitFun = true)
@@ -285,17 +493,20 @@ class AlbumViewModelTest {
                 observeAlbum = { localAlbum },
                 refreshAlbum = { albumId ->
                     refreshCalls += albumId
-                    refreshResults
+                    refreshResults ?: awaitCancellation()
                 },
                 isAlbumFavorite = { flowOf(isFavorite) },
                 toggleAlbumFavorite = { album, wasFavorite -> favoriteToggles += album.id to wasFavorite },
+                observeIsOnline = { isOnline },
             ),
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
             enqueuer = enqueuer,
+            previewCache = PreviewCache { song -> song.id in cachedPreviews },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
+        backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
 

@@ -7,4 +7,6 @@ interface AlbumRepository {
     fun observeAlbum(albumId: Long): Flow<Album?>
 
     suspend fun refreshAlbum(albumId: Long): Result<Unit>
+
+    fun observeIsOnline(): Flow<Boolean>
 }

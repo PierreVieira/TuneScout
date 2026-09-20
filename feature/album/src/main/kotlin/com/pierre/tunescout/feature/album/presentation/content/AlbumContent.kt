@@ -79,7 +79,9 @@ fun AlbumContent(
                             onClick = { onEvent(AlbumUiEvent.OnPlayNowClicked) },
                         )
                     }
-                    FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
+                    if (uiState.album.isComplete) {
+                        FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
+                    }
                     TopBarAction(
                         icon = TuneScoutIcons.moreMenu,
                         contentDescription = stringResource(R.string.album_more_options),
@@ -103,9 +105,7 @@ fun AlbumContent(
             )
 
             is AlbumUiState.Loaded -> {
-                if (uiState.isStale) {
-                    NoticeBar(text = stringResource(R.string.album_stale_notice))
-                }
+                LoadedNoticeBar(uiState = uiState)
                 Box(contentAlignment = Alignment.TopCenter) {
                     LoadedContent(
                         album = uiState.album,
@@ -120,8 +120,22 @@ fun AlbumContent(
 }
 
 /**
+ * An album put together from the saved tracks says so before anything else: the rows are real, but
+ * the list is not the whole album.
+ */
+@Composable
+private fun LoadedNoticeBar(uiState: AlbumUiState.Loaded) {
+    when {
+        !uiState.album.isComplete -> NoticeBar(text = stringResource(R.string.album_partial_notice))
+        uiState.isStale -> NoticeBar(text = stringResource(R.string.album_stale_notice))
+    }
+}
+
+/**
  * Liking is a state, so it stays on the bar where a filled heart can show it; the queue commands
- * have no state to show and move into the sheet behind the overflow.
+ * have no state to show and move into the sheet behind the overflow. It is left out for an album
+ * put together from the saved tracks: liking stores the album, and storing a partial one would keep
+ * the rest of its tracks from ever being fetched.
  */
 @Composable
 private fun FavoriteAction(
@@ -206,13 +220,18 @@ private fun AlbumHeader(
     }
 }
 
+/**
+ * An album put together from the saved tracks draws the thumbnail its rows already loaded: the
+ * larger cover was never downloaded, and with no connection it would stay a placeholder. The whole
+ * album brings the larger url back, which is also what makes the cover load once the device is online.
+ */
 @Composable
 private fun AlbumArtwork(
     album: Album,
     size: Dp,
 ) {
     Artwork(
-        url = album.artwork.mediumUrl,
+        url = if (album.isComplete) album.artwork.mediumUrl else album.artwork.thumbnailUrl,
         contentDescription = stringResource(ComponentR.string.ui_artwork_of, album.title),
         cornerPercent = ARTWORK_CORNER_PERCENT,
         modifier = Modifier
