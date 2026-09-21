@@ -38,8 +38,10 @@ import com.pierre.tunescout.navigation.home.homeNavigationItems
 import com.pierre.tunescout.navigation.home.rememberHomeTabsState
 import com.pierre.tunescout.ui.component.TuneScoutNavigationSuiteScaffold
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.animation.LocalSharedArtworkDestination
 import com.pierre.tunescout.ui.utils.animation.LocalSharedTransitionScope
 import com.pierre.tunescout.ui.utils.animation.LocalTappedSharedArtworkSurface
+import com.pierre.tunescout.ui.utils.animation.rememberSharedArtworkDestination
 import com.pierre.tunescout.ui.utils.animation.rememberTappedSharedArtworkSurface
 import com.pierre.tunescout.ui.utils.scroll.LocalHideableBarsState
 import com.pierre.tunescout.ui.utils.scroll.rememberHideableBarsState
@@ -63,6 +65,7 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
         CompositionLocalProvider(
             LocalSharedTransitionScope provides this,
             LocalTappedSharedArtworkSurface provides rememberTappedSharedArtworkSurface(),
+            LocalSharedArtworkDestination provides rememberSharedArtworkDestination(),
             LocalHideableBarsState provides rememberHideableBarsState(),
         ) {
             TuneScoutNavigationSuiteScaffold(

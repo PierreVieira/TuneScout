@@ -213,6 +213,21 @@ their keys so that the day something flies out of one, only the write is missing
 
 The pop reads the same state, so the artwork returns to whichever surface it came from.
 
+### The bar waits for the player to start leaving
+
+The back stack and the `NavDisplay` do not move together. The back stack changes at once, but the
+`NavDisplay` only turns its transition around a few frames later, from a `LaunchedEffect`. On the way
+in that gap is harmless: the player is not composed until the transition has turned. On the way home
+it is not: a bar that followed the back stack alone would come back while the player still counts as
+the *target* of its keys, the two would claim the same key as targets, and the flight would land on
+its first frame.
+
+So the player declares itself with `SharedArtworkDestinationEffect()` (`PlayerScreen`), which
+publishes its entry's transition as `LocalSharedArtworkDestination`, and `MiniPlayerScaffold` shows
+the bar only once `isStaying` is false — once the `NavDisplay` has started taking the player away. A
+predictive back gesture turns the transition before the back stack pops, so the bar comes back the
+moment the gesture commits.
+
 The bar also holds the song it was drawing once it starts leaving (`rememberBarSong`): opening the
 player changes what is playing a frame or two later, and a bar that swapped its song mid-fade would
 read as a glitch.

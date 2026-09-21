@@ -32,7 +32,9 @@ import com.pierre.tunescout.feature.miniplayer.presentation.viewmodel.MiniPlayer
 import com.pierre.tunescout.ui.component.PlayButtonState
 import com.pierre.tunescout.ui.component.SnackbarBox
 import com.pierre.tunescout.ui.utils.ActionCollector
+import com.pierre.tunescout.ui.utils.animation.LocalSharedArtworkDestination
 import com.pierre.tunescout.ui.utils.animation.LocalSharedElementScopes
+import com.pierre.tunescout.ui.utils.animation.SharedArtworkDestination
 import com.pierre.tunescout.ui.utils.animation.rememberSharedElementScopes
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -66,6 +68,9 @@ internal fun rememberBarSong(
  * The bar fades alone, with no expand or shrink: it keeps its bounds while it leaves, which is what
  * the artwork flying out of it animates from.
  *
+ * On the way back from the player it waits for the `NavDisplay` to start taking the player away, not
+ * only for the back stack to allow it: see [SharedArtworkDestination].
+ *
  * It is capped inside the navigation bar padding, not around it, so it centres on the same axis as
  * the content above rather than on the whole window.
  */
@@ -78,7 +83,7 @@ fun MiniPlayerScaffold(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val loaded = uiState as? MiniPlayerUiState.Loaded
-    val isVisible = isAllowed && loaded != null
+    val isVisible = isAllowed && loaded != null && !LocalSharedArtworkDestination.current.isStaying
     val song = rememberBarSong(song = loaded?.song, isVisible = isVisible)
     val snackbarHostState = remember { SnackbarHostState() }
     val resources = LocalResources.current
