@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_options_favorite">Aggiungi ai preferiti</string>
+    <string name="song_options_unfavorite">Rimuovi dai preferiti</string>
+    <string name="song_options_add_to_playlist">Aggiungi alla playlist</string>
+    <string name="song_options_view_album">Visualizza album</string>
+    <string name="song_options_play_now">Riproduci ora</string>
+    <string name="song_options_play_next">Riproduci come successivo</string>
+    <string name="song_options_add_to_queue">Aggiungi alla coda</string>
+    <string name="song_options_remove_from_playlist">Rimuovi da questa playlist</string>
+</resources>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_back">Indietro</string>
+    <string name="ui_more_options">Altre opzioni</string>
+    <string name="ui_play">Riproduci</string>
+    <string name="ui_pause">Pausa</string>
+    <string name="ui_replay">Ricomincia</string>
+    <string name="ui_skip_next">Brano successivo</string>
+    <string name="ui_skip_previous">Brano precedente</string>
+    <string name="ui_repeat">Ripeti</string>
+    <string name="ui_repeat_state_off">Disattivato</string>
+    <string name="ui_repeat_state_all">Tutta la coda</string>
+    <string name="ui_repeat_state_one">Questo brano</string>
+    <string name="ui_shuffle">Riproduzione casuale</string>
+    <string name="ui_clear_search">Cancella ricerca</string>
+    <string name="ui_artwork_of">Copertina di %1$s</string>
+    <string name="ui_seek_bar">Posizione di riproduzione</string>
+    <string name="ui_retry">Riprova</string>
+    <string name="ui_loading">Caricamento</string>
+    <string name="ui_close">Chiudi</string>
+    <string name="ui_now_playing">In riproduzione</string>
+    <string name="ui_song_unavailable_offline">Questo brano non è salvato su questo dispositivo. Connettiti a internet per riprodurlo.</string>
+    <string name="ui_song_state_unavailable">Non disponibile offline</string>
+    <string name="ui_song_state_paused">In pausa</string>
+    <string name="ui_artwork_unavailable_offline">Copertina non disponibile offline</string>
+    <string name="ui_add_to_queue">Aggiungi alla coda</string>
+    <string name="ui_favorite">Aggiungi ai preferiti</string>
+    <string name="ui_unfavorite">Rimuovi dai preferiti</string>
+    <string name="ui_added_to_queue">Aggiunto alla coda</string>
+    <string name="ui_added_to_favorites">Aggiunto ai preferiti</string>
+    <string name="ui_removed_from_favorites">Rimosso dai preferiti</string>
+    <string name="ui_move_up">Sposta su</string>
+    <string name="ui_move_down">Sposta giù</string>
+    <string name="ui_reorder_songs">Riordina brani</string>
+    <string name="ui_reorder_done">Riordino completato</string>
+</resources>
