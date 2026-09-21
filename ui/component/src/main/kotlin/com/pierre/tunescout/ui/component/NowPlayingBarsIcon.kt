@@ -23,9 +23,12 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 
 private val barsSize = 14.dp
 private val barDurationsMillis = listOf(420, 580, 500)
+private val barStartPhases = listOf(0.25f, 0.5f, 0.375f)
 private const val LOWEST_BAR_FRACTION = 0.2f
 private const val TALLEST_BAR_FRACTION = 1f
 private const val BAR_AND_GAP_WIDTHS = 2
+private const val HALF_CYCLE = 0.5f
+private const val CYCLES_PER_SWEEP = 2
 
 /**
  * The three bouncing bars beside the song that is playing. They only exist while it plays: a
@@ -46,21 +49,42 @@ fun NowPlayingBarsIcon(modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * Each bar sweeps a phase instead of a height, and starts partway into its cycle, so the very first
+ * frame already reads as an equalizer — 0.6, 1.0 and 0.8 of the height — instead of three bars at the
+ * floor, which look like an ellipsis. A frame is drawn before any animation has run (and a screenshot
+ * captures exactly that one), so the stagger has to live in the initial value, not in a start offset.
+ *
+ * @return the height of each bar, as a fraction of the icon, left to right.
+ */
 @Composable
 private fun barFractions(): List<Float> {
     val transition = rememberInfiniteTransition(label = "nowPlayingBars")
-    return barDurationsMillis.map { durationMillis ->
-        transition
+    return barDurationsMillis.zip(barStartPhases) { durationMillis, startPhase ->
+        val phase = transition
             .animateFloat(
-                initialValue = LOWEST_BAR_FRACTION,
-                targetValue = TALLEST_BAR_FRACTION,
+                initialValue = startPhase,
+                targetValue = startPhase + 1f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = durationMillis, easing = LinearEasing),
-                    repeatMode = RepeatMode.Reverse,
+                    animation = tween(durationMillis = durationMillis * CYCLES_PER_SWEEP, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart,
                 ),
                 label = "nowPlayingBar$durationMillis",
             ).value
+        phase.toBarFraction()
     }
+}
+
+/**
+ * The height of a bar at this phase: from the lowest to the tallest in the first half of a cycle and
+ * back down in the second, the same linear bounce a reversing animation between the two draws.
+ *
+ * @return the bar's height, as a fraction of the icon.
+ */
+private fun Float.toBarFraction(): Float {
+    val position = this % 1f
+    val rise = if (position < HALF_CYCLE) position / HALF_CYCLE else (1f - position) / HALF_CYCLE
+    return LOWEST_BAR_FRACTION + (TALLEST_BAR_FRACTION - LOWEST_BAR_FRACTION) * rise
 }
 
 private fun DrawScope.drawBars(

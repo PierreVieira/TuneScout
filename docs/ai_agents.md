@@ -2,6 +2,7 @@
 
 This document describes the architecture conventions of this project. Follow these patterns exactly when creating new features or modifying existing ones.
 
+- [@docs/architecture/overview.md](architecture/overview.md)
 - [@docs/architecture/stack.md](architecture/stack.md)
 - [@docs/architecture/module-structure.md](architecture/module-structure.md)
 - [@docs/architecture/state-management.md](architecture/state-management.md)

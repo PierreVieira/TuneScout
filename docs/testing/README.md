@@ -24,3 +24,15 @@ canned values or a record of the calls. Reach for MockK when the collaborator is
 final class you don't own (a Room DAO, an ExoPlayer) and faking it by hand would mean stubbing a dozen
 members with `error("unused")`, or when the assertion is about the interaction itself (`verify { ... }`)
 and a recording fake would just re-implement that.
+
+## What is covered where
+
+| Layer | How | Where |
+|---|---|---|
+| ViewModels, repositories, paging source, mappers, navigation | JUnit 6 + Truth + MockK, fakes as lambdas for `fun interface`s | `src/test` |
+| Playback | The queue controller against a fake ExoPlayer timeline, the ordering rules, the session keeper and the history recorder | `core/playback/impl/src/test` |
+| Database | The session round trip against a fake DAO, and against a real database: the migrations, the offline search and what the song cache is allowed to drop | `core/database/impl/src/{test,androidTest}` |
+| Screens | Compose UI tests on device through the android-junit5 extension | `feature/*/src/androidTest` |
+| Screenshots | Every screen compared against a committed image, under Robolectric | `tools/screenshot_tests` |
+| Caches | A preview written to the media cache and read back with the network gone, and the artwork cache the app installs | `core/playback/impl/src/androidTest`, `app/src/androidTest` |
+| End to end | Launches the real app, replaces the remote data source through Koin: search → player → options → album, and search → play → queue a song → the queue screen. Both pass in portrait and landscape. | `app/src/androidTest` |
