@@ -11,6 +11,7 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -81,6 +82,7 @@ val playbackModule: Module = module {
                     .build(),
                 true,
             ).setHandleAudioBecomingNoisy(true)
+            .setMaxSeekToPreviousPositionMs(PlaybackState.previousSongWindow.inWholeMilliseconds)
             .build()
     }
     single<PlaybackServiceLauncher> { ForegroundPlaybackServiceLauncher(context = androidContext()) }

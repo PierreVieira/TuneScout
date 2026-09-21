@@ -45,6 +45,10 @@ class PlayerViewModel(
     private val nextSong: Song?
         get() = playback.upcomingEntries.firstOrNull()?.song
 
+    /** The song the player would go back to, and nothing while it would start this one over. */
+    private val previousSong: Song?
+        get() = playback.previousEntry?.song
+
     val uiAction: SharedFlow<PlayerUiAction>
         field = MutableSharedFlow<PlayerUiAction>()
 
@@ -58,7 +62,7 @@ class PlayerViewModel(
         PlayerUiEvent.OnPlayPauseClicked -> togglePlayPause()
         is PlayerUiEvent.OnSeekFinished -> transportControls.seekTo(event.position)
         PlayerUiEvent.OnSkipNextClicked -> skipToNext()
-        PlayerUiEvent.OnSkipPreviousClicked -> transportControls.skipToPrevious()
+        PlayerUiEvent.OnSkipPreviousClicked -> skipToPrevious()
         PlayerUiEvent.OnRepeatClicked -> transportControls.toggleRepeat()
         PlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
         PlayerUiEvent.OnBackClicked -> navigator.navigateBack()
@@ -89,6 +93,16 @@ class PlayerViewModel(
         val next = nextSong ?: return transportControls.skipToNext()
         if (!playableSongs.isPlayable(next)) return showSongUnavailableOffline()
         transportControls.skipToNext()
+    }
+
+    /**
+     * Going back is refused on the same grounds as going on, and only when it would leave the
+     * current song: starting the song the player is already on over asks nothing of the network.
+     */
+    private fun skipToPrevious() {
+        val previous = previousSong ?: return transportControls.skipToPrevious()
+        if (!playableSongs.isPlayable(previous)) return showSongUnavailableOffline()
+        transportControls.skipToPrevious()
     }
 
     private fun showSongUnavailableOffline() {
