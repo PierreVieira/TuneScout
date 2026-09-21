@@ -31,6 +31,7 @@ import com.pierre.tunescout.feature.library.presentation.navigation.librarySearc
 import com.pierre.tunescout.feature.library.presentation.navigation.playlistEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.playlistOptionsEntry
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerScaffold
+import com.pierre.tunescout.feature.player.presentation.content.NowPlayingScreen
 import com.pierre.tunescout.feature.player.presentation.navigation.playerEntry
 import com.pierre.tunescout.feature.queue.presentation.navigation.queueEntry
 import com.pierre.tunescout.feature.songoptions.presentation.navigation.songOptionsEntry
@@ -54,6 +55,9 @@ import com.pierre.tunescout.ui.utils.window.rememberWindowSize
  * The shared transition layout covers the mini player bar as well as the NavDisplay: the artwork
  * flies between the two, so both halves have to sit in the same shared transition scope.
  *
+ * On a wide window the tab host always has a pane beside it: the player, which takes the place of the
+ * mini player there, or whatever detail was opened over it.
+ *
  * The list-detail strategy comes after the overlays: a sheet opened over the two panes is drawn over
  * both of them, which `NavDisplay` works out by asking the strategies again for what is under it.
  */
@@ -67,7 +71,9 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
     val tabsState = rememberHomeTabsState()
     val windowSize = rememberWindowSize()
     val isTwoPane = windowSize.isWidthExpanded
-    val listDetailStrategy = remember(isTwoPane) { ListDetailSceneStrategy<NavKey>(isTwoPane = isTwoPane) }
+    val listDetailStrategy = remember(isTwoPane) {
+        ListDetailSceneStrategy<NavKey>(isTwoPane = isTwoPane, emptyDetailPane = { NowPlayingScreen() })
+    }
 
     NavigationCommandCollector(backStackController = backStackController)
 
@@ -83,7 +89,7 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
                 isVisible = backStack.isHomeVisible(isTwoPane = isTwoPane),
                 windowSize = windowSize,
             ) {
-                MiniPlayerScaffold(isAllowed = backStack.isMiniPlayerAllowed()) {
+                MiniPlayerScaffold(isAllowed = backStack.isMiniPlayerAllowed(isTwoPane = isTwoPane)) {
                     NavDisplay(
                         backStack = backStack,
                         onBack = backStackController::navigateBack,

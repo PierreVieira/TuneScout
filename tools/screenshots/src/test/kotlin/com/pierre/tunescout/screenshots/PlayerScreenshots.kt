@@ -3,6 +3,7 @@ package com.pierre.tunescout.screenshots
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
+import com.pierre.tunescout.feature.player.presentation.model.PlayerLayout
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.screenshotfixtures.getLucky
 import org.junit.Test
@@ -27,7 +28,7 @@ internal class PlayerScreenshots : ReadmeScreenshotsTest() {
             title = "A player, and the queue behind it",
             description = "Scrub, repeat, skip, and open the queue from the button on the right",
         ) {
-            PlayerContent(isSideBySide = false, uiState = nowPlaying, onEvent = {})
+            PlayerContent(layout = PlayerLayout.Stacked, uiState = nowPlaying, onEvent = {})
         }
     }
 }

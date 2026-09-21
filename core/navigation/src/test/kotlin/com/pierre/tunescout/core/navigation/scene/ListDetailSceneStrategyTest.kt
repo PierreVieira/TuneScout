@@ -11,6 +11,7 @@ class ListDetailSceneStrategyTest {
     private val firstAlbum = entry(key = "album 10", metadata = ListDetailSceneStrategy.detailPane())
     private val secondAlbum = entry(key = "album 20", metadata = ListDetailSceneStrategy.detailPane())
     private val player = entry(key = "player")
+    private val splash = entry(key = "splash")
 
     private lateinit var strategy: ListDetailSceneStrategy<String>
 
@@ -67,12 +68,50 @@ class ListDetailSceneStrategyTest {
     }
 
     @Test
-    fun `GIVEN two panes and the list alone WHEN calculating THEN leaves it to a single pane`() {
+    fun `GIVEN two panes and the list alone WHEN calculating THEN lays it beside the empty detail pane`() {
         // Given
         prepareScenario(isTwoPane = true)
 
         // When
+        val scene = calculateScene(listOf(splash, home))
+
+        // Then
+        assertThat(scene?.entries).containsExactly(home)
+        assertThat(scene?.previousEntries).containsExactly(splash)
+    }
+
+    @Test
+    fun `GIVEN two panes WHEN a detail opens over the list alone THEN the scene changes`() {
+        // Given
+        prepareScenario(isTwoPane = true)
+
+        // When
+        val alone = calculateScene(listOf(home))
+        val withDetail = calculateScene(listOf(home, firstAlbum))
+
+        // Then
+        assertThat(withDetail?.key).isNotEqualTo(alone?.key)
+    }
+
+    @Test
+    fun `GIVEN one pane and the list alone WHEN calculating THEN leaves it to a single pane`() {
+        // Given
+        prepareScenario(isTwoPane = false)
+
+        // When
         val scene = calculateScene(listOf(home))
+
+        // Then
+        assertThat(scene).isNull()
+    }
+
+    @Test
+    fun `GIVEN two panes and a screen alone WHEN calculating THEN leaves it to a single pane`() {
+        // Given
+        prepareScenario(isTwoPane = true)
+
+        // When
+        val scene = calculateScene(listOf(splash))
 
         // Then
         assertThat(scene).isNull()
@@ -124,6 +163,6 @@ class ListDetailSceneStrategyTest {
     ): NavEntry<String> = NavEntry(key = key, metadata = metadata) {}
 
     private fun prepareScenario(isTwoPane: Boolean) {
-        strategy = ListDetailSceneStrategy(isTwoPane = isTwoPane)
+        strategy = ListDetailSceneStrategy(isTwoPane = isTwoPane, emptyDetailPane = {})
     }
 }

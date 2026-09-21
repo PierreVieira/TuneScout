@@ -3,6 +3,7 @@ package com.pierre.tunescout.screenshots
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
+import com.pierre.tunescout.feature.player.presentation.model.PlayerLayout
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.feature.queue.presentation.content.QueueContent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueContextTitle
@@ -47,7 +48,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
             description = "Songs you add play first, then the album carries on. Hold to reorder, tap to jump",
         ) {
             SheetOverScreen(
-                screen = { PlayerContent(isSideBySide = false, uiState = playerBehindSheet, onEvent = {}) },
+                screen = { PlayerContent(layout = PlayerLayout.Stacked, uiState = playerBehindSheet, onEvent = {}) },
                 sheet = { QueueContent(uiState = queue, onEvent = {}) },
             )
         }

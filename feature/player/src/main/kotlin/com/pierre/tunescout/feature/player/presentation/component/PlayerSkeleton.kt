@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.pierre.tunescout.feature.player.presentation.model.PlayerLayout
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.component.shimmer.ShimmerBox
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -36,7 +37,7 @@ private const val SUBTITLE_WIDTH_FRACTION = 0.45f
 
 @Composable
 internal fun PlayerSkeleton(
-    isSideBySide: Boolean,
+    layout: PlayerLayout,
     artworkSize: Dp,
     artworkTopSpacing: Dp,
     artworkCornerPercent: Int,
@@ -53,19 +54,8 @@ internal fun PlayerSkeleton(
                 },
         )
     }
-    if (isSideBySide) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
-            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.large),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            artwork()
-            DetailsSkeleton(modifier = Modifier.weight(1f))
-        }
-    } else {
-        Column(modifier = Modifier.fillMaxSize()) {
+    when (layout) {
+        PlayerLayout.Stacked -> Column(modifier = Modifier.fillMaxSize()) {
             Spacer(modifier = Modifier.height(artworkTopSpacing))
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -74,34 +64,75 @@ internal fun PlayerSkeleton(
                 artwork()
             }
             Spacer(modifier = Modifier.weight(1f))
-            DetailsSkeleton(
-                modifier = Modifier.padding(
-                    horizontal = TuneScoutSpacing.large,
-                    vertical = TuneScoutSpacing.medium,
-                ),
-            )
+            Column(
+                modifier = Modifier.padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.medium),
+                verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen),
+            ) {
+                HeadingSkeleton()
+                ControlsSkeleton()
+            }
+        }
+
+        PlayerLayout.SideBySide -> Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
+            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.large),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            artwork()
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen),
+            ) {
+                HeadingSkeleton()
+                ControlsSkeleton()
+            }
+        }
+
+        PlayerLayout.Compact -> Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.medium),
+            verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen, Alignment.CenterVertically),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                artwork()
+                HeadingSkeleton(modifier = Modifier.weight(1f))
+            }
+            ControlsSkeleton()
         }
     }
 }
 
 @Composable
-private fun DetailsSkeleton(modifier: Modifier = Modifier) {
+private fun HeadingSkeleton(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
+    ) {
+        ShimmerBox(
+            modifier = Modifier
+                .fillMaxWidth(TITLE_WIDTH_FRACTION)
+                .height(titleHeight),
+        )
+        ShimmerBox(
+            modifier = Modifier
+                .fillMaxWidth(SUBTITLE_WIDTH_FRACTION)
+                .height(subtitleHeight),
+        )
+    }
+}
+
+@Composable
+private fun ControlsSkeleton() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen),
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small)) {
-            ShimmerBox(
-                modifier = Modifier
-                    .fillMaxWidth(TITLE_WIDTH_FRACTION)
-                    .height(titleHeight),
-            )
-            ShimmerBox(
-                modifier = Modifier
-                    .fillMaxWidth(SUBTITLE_WIDTH_FRACTION)
-                    .height(subtitleHeight),
-            )
-        }
         ShimmerBox(
             shape = CircleShape,
             modifier = Modifier

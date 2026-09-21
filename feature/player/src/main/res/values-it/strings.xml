@@ -3,7 +3,8 @@
     <string name="player_now_playing">In riproduzione</string>
     <string name="player_not_found_title">Questo brano non è disponibile</string>
     <string name="player_not_found_description">Potrebbe essere stato rimosso dal catalogo. Torna indietro e scegline un altro.</string>
-    <string name="player_failed">Impossibile riprodurre questa anteprima. Controlla la connessione e riprova.</string>
+    <string name="player_nothing_playing_title">Ancora nessun brano in riproduzione</string>
+    <string name="player_nothing_playing_description">Riproduci un brano e comparirà qui.</string>
     <string name="player_remaining_time">-%1$s</string>
     <string name="player_position_description">%1$s di %2$s</string>
     <string name="player_elapsed_description">%1$s riprodotto</string>
