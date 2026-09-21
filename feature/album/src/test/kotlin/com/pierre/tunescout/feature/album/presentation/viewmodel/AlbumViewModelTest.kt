@@ -5,7 +5,6 @@ import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
-import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
@@ -13,8 +12,10 @@ import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
-import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
+import com.pierre.tunescout.core.testing.fake.SongPlayRequest
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
@@ -39,7 +40,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class AlbumViewModelTest {
     private lateinit var viewModel: AlbumViewModel
     private lateinit var localAlbum: MutableStateFlow<Album?>
-    private lateinit var playbackStarter: PlaybackStarter
+    private lateinit var songPlayback: FakeSongPlayback
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var refreshCalls: MutableList<Long>
@@ -261,82 +262,50 @@ class AlbumViewModelTest {
     }
 
     @Test
-    fun `GIVEN a loaded album WHEN clicking a song THEN plays it with the album as queue and stays on it`() = runTest {
-        // Given
-        val album = album(id = 10)
-        prepareScenario(cached = album)
-
-        // When
-        viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
-
-        // Then
-        verify {
-            playbackStarter.play(
-                song = album.songs[1],
-                songs = album.songs,
-                context = PlaybackContext.Album(id = album.id, title = album.title),
-            )
-        }
-        verify(exactly = 0) { navigator.navigate(any()) }
-    }
-
-    @Test
-    fun `GIVEN a playing track WHEN clicking its row THEN opens the player instead of starting it over`() =
+    fun `GIVEN a loaded album WHEN clicking a track THEN asks for it with the album behind it`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             val album = album(id = 10)
-            prepareScenario(cached = album, playback = playbackState(songs = listOf(album.songs[1])))
+            prepareScenario(cached = album, playback = playbackState(songs = listOf(album.songs[0])))
 
             // When
             viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
 
             // Then
-            verify { navigator.navigate(PlayerRoute(songId = album.songs[1].id)) }
-            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
-        }
-
-    @Test
-    fun `GIVEN a paused track WHEN clicking its row THEN opens the player instead of starting it over`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            val album = album(id = 10)
-            prepareScenario(
-                cached = album,
-                playback = playbackState(songs = listOf(album.songs[1]), status = PlaybackStatus.Paused),
+            assertThat(songPlayback.requests).containsExactly(
+                SongPlayRequest(
+                    song = album.songs[1],
+                    nowPlaying = NowPlaying(songId = album.songs[0].id, isPlaying = true),
+                    queue = album.songs,
+                    context = PlaybackContext.Album(id = album.id, title = album.title),
+                ),
             )
-
-            // When
-            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
-
-            // Then
-            verify { navigator.navigate(PlayerRoute(songId = album.songs[1].id)) }
-            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
-        }
-
-    @Test
-    fun `GIVEN a track that ended WHEN clicking its row THEN plays it again from the start`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            val album = album(id = 10)
-            prepareScenario(
-                cached = album,
-                playback = playbackState(songs = listOf(album.songs[1]), status = PlaybackStatus.Ended),
-            )
-
-            // When
-            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
-
-            // Then
-            verify { playbackStarter.play(song = album.songs[1], songs = album.songs, context = any()) }
             verify(exactly = 0) { navigator.navigate(any()) }
         }
 
     @Test
-    fun `GIVEN no connection and a track not on the device WHEN clicking it THEN shows a message instead of playing`() =
+    fun `GIVEN the track the player is already on WHEN clicking its row THEN opens the player`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             val album = album(id = 10)
-            prepareScenario(cached = album, isOnlineAtStart = false, cachedPreviews = setOf(1L))
+            prepareScenario(cached = album, playback = playbackState(songs = listOf(album.songs[1])))
+            songPlayback.outcome = SongPlayOutcome.AlreadyPlaying
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = album.songs[1].id)) }
+            assertThat(actions).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN a track the player cannot reach WHEN clicking it THEN shows a message instead of playing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album)
+            songPlayback.outcome = SongPlayOutcome.Unavailable
 
             // When
             viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
@@ -344,45 +313,7 @@ class AlbumViewModelTest {
 
             // Then
             assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
-        }
-
-    @Test
-    fun `GIVEN no connection and a saved track WHEN clicking it THEN plays it with only the saved tracks queued`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            val album = album(id = 10)
-            prepareScenario(cached = album, isOnlineAtStart = false, cachedPreviews = setOf(1L))
-
-            // When
-            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[0]))
-            runCurrent()
-
-            // Then
-            verify {
-                playbackStarter.play(
-                    song = album.songs[0],
-                    songs = listOf(album.songs[0]),
-                    context = PlaybackContext.Album(id = album.id, title = album.title),
-                )
-            }
-            assertThat(actions).isEmpty()
-        }
-
-    @Test
-    fun `GIVEN a connection and a track not on the device WHEN clicking it THEN streams it`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            val album = album(id = 10)
-            prepareScenario(cached = album, cachedPreviews = emptySet())
-
-            // When
-            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
-            runCurrent()
-
-            // Then
-            verify { playbackStarter.play(song = album.songs[1], songs = album.songs, context = any()) }
-            assertThat(actions).isEmpty()
+            verify(exactly = 0) { navigator.navigate(any()) }
         }
 
     @Test
@@ -553,7 +484,7 @@ class AlbumViewModelTest {
         isOnline = MutableStateFlow(isOnlineAtStart)
         actions = mutableListOf()
         val playbackStateFlow = MutableStateFlow(playback)
-        playbackStarter = mockk(relaxUnitFun = true)
+        songPlayback = FakeSongPlayback()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = AlbumViewModel(
@@ -569,7 +500,7 @@ class AlbumViewModelTest {
                 observeIsOnline = { isOnline },
             ),
             observablePlayback = { playbackStateFlow },
-            playbackStarter = playbackStarter,
+            songPlayback = songPlayback,
             enqueuer = enqueuer,
             playableSongs = PlayableSongs { song -> isOnline.value || song.id in cachedPreviews },
             navigator = navigator,

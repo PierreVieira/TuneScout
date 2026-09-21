@@ -9,7 +9,6 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
@@ -17,7 +16,8 @@ import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
-import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.SongPlayOutcome
+import com.pierre.tunescout.core.playback.SongPlayback
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
@@ -48,8 +48,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
     private val useCases: SongsUseCases,
-    private val playbackStarter: PlaybackStarter,
-    private val playableSongs: PlayableSongs,
+    private val songPlayback: SongPlayback,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
@@ -146,18 +145,18 @@ class SongsViewModel(
         SongsUiEvent.OnRemoveRecentDismissed -> songPendingRemoval.value = null
     }
 
-    /**
-     * The song the player is already on opens the player instead of starting over: a tap on the row
-     * marked as the one playing means "take me there", not "play it again from the beginning".
-     */
     private fun play(song: Song) {
-        if (uiState.value.nowPlaying.isOn(song.id)) return openPlayer(song.id)
-        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
-        playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
-    }
-
-    private fun openPlayer(songId: Long) {
-        navigator.navigate(PlayerRoute(songId = songId))
+        val outcome = songPlayback.request(
+            song = song,
+            nowPlaying = uiState.value.nowPlaying,
+            queue = listOf(song),
+            context = PlaybackContext.SingleSong,
+        )
+        when (outcome) {
+            SongPlayOutcome.AlreadyPlaying -> navigator.navigate(PlayerRoute(songId = song.id))
+            SongPlayOutcome.Unavailable -> showSongUnavailableOffline()
+            SongPlayOutcome.Started -> Unit
+        }
     }
 
     private fun showSongUnavailableOffline() {

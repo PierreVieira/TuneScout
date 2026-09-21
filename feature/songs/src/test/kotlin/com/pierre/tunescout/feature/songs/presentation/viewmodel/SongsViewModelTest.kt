@@ -14,8 +14,10 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlayableSongs
-import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
+import com.pierre.tunescout.core.testing.fake.SongPlayRequest
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
@@ -38,7 +40,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class SongsViewModelTest {
     private lateinit var viewModel: SongsViewModel
-    private lateinit var playbackStarter: PlaybackStarter
+    private lateinit var songPlayback: FakeSongPlayback
     private lateinit var navigator: Navigator
     private lateinit var actions: MutableList<SongsUiAction>
     private lateinit var searchedTerms: MutableList<String>
@@ -123,21 +125,22 @@ class SongsViewModelTest {
     }
 
     @Test
-    fun `WHEN clicking a song THEN plays it alone and stays on the list`() = runTest(mainDispatcher.dispatcher) {
+    fun `WHEN clicking a song THEN asks for it alone and stays on the list`() = runTest(mainDispatcher.dispatcher) {
         // Given
-        prepareScenario()
+        prepareScenario(playback = playbackState(songs = listOf(song(id = 9))))
 
         // When
         viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
 
         // Then
-        verify {
-            playbackStarter.play(
+        assertThat(songPlayback.requests).containsExactly(
+            SongPlayRequest(
                 song = song(id = 2),
-                songs = listOf(song(id = 2)),
+                nowPlaying = NowPlaying(songId = 9, isPlaying = true),
+                queue = listOf(song(id = 2)),
                 context = PlaybackContext.SingleSong,
-            )
-        }
+            ),
+        )
         verify(exactly = 0) { navigator.navigate(any()) }
     }
 
@@ -281,13 +284,14 @@ class SongsViewModelTest {
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(isOnline = false, playableSongIds = emptySet())
+            songPlayback.outcome = SongPlayOutcome.Unavailable
 
             // When
             viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
 
             // Then
             assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+            verify(exactly = 0) { navigator.navigate(any()) }
         }
 
     @Test
@@ -345,74 +349,18 @@ class SongsViewModelTest {
         }
 
     @Test
-    fun `GIVEN a playing song WHEN clicking its row THEN opens the player instead of starting it over`() =
+    fun `GIVEN the song the player is already on WHEN clicking its row THEN opens the player`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(playback = playbackState(songs = listOf(song(id = 2))))
+            songPlayback.outcome = SongPlayOutcome.AlreadyPlaying
 
             // When
             viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
 
             // Then
             verify { navigator.navigate(PlayerRoute(songId = 2L)) }
-            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
-        }
-
-    @Test
-    fun `GIVEN a paused song WHEN clicking its row THEN opens the player instead of starting it over`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(
-                playback = playbackState(songs = listOf(song(id = 2)), status = PlaybackStatus.Paused),
-            )
-
-            // When
-            viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
-
-            // Then
-            verify { navigator.navigate(PlayerRoute(songId = 2L)) }
-            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
-        }
-
-    @Test
-    fun `GIVEN a playing song WHEN clicking another row THEN plays that one`() = runTest(mainDispatcher.dispatcher) {
-        // Given
-        prepareScenario(playback = playbackState(songs = listOf(song(id = 2))))
-
-        // When
-        viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 3)))
-
-        // Then
-        verify {
-            playbackStarter.play(
-                song = song(id = 3),
-                songs = listOf(song(id = 3)),
-                context = PlaybackContext.SingleSong,
-            )
-        }
-        verify(exactly = 0) { navigator.navigate(any()) }
-    }
-
-    @Test
-    fun `GIVEN a song that ended WHEN clicking its row THEN plays it again from the start`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(
-                playback = playbackState(songs = listOf(song(id = 2)), status = PlaybackStatus.Ended),
-            )
-
-            // When
-            viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
-
-            // Then
-            verify {
-                playbackStarter.play(
-                    song = song(id = 2),
-                    songs = listOf(song(id = 2)),
-                    context = PlaybackContext.SingleSong,
-                )
-            }
-            verify(exactly = 0) { navigator.navigate(any()) }
+            assertThat(actions).isEmpty()
         }
 
     private fun TestScope.prepareScenario(
@@ -431,7 +379,7 @@ class SongsViewModelTest {
         val reach = { isOnline: Boolean ->
             PlayableSongs { song -> isOnline || playableSongIds?.contains(song.id) ?: true }
         }
-        playbackStarter = mockk(relaxUnitFun = true)
+        songPlayback = FakeSongPlayback()
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongsViewModel(
             useCases = SongsUseCases(
@@ -444,8 +392,7 @@ class SongsViewModelTest {
                 observeIsOnline = { this@SongsViewModelTest.isOnline },
             ),
             observablePlayback = { playbackStateFlow },
-            playbackStarter = playbackStarter,
-            playableSongs = PlayableSongs { song -> reach(onlineFlow.value).isPlayable(song) },
+            songPlayback = songPlayback,
             observablePlayableSongs = { onlineFlow.map(reach) },
             navigator = navigator,
         )
