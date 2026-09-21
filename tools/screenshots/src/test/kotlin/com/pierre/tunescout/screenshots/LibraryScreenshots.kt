@@ -4,6 +4,14 @@ import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.content.LibraryContent
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiState
+import com.pierre.tunescout.screenshotfixtures.getLucky
+import com.pierre.tunescout.screenshotfixtures.giorgioByMoroder
+import com.pierre.tunescout.screenshotfixtures.harderBetterFasterStronger
+import com.pierre.tunescout.screenshotfixtures.instantCrush
+import com.pierre.tunescout.screenshotfixtures.oneMoreTime
+import com.pierre.tunescout.screenshotfixtures.randomAccessMemories
+import com.pierre.tunescout.screenshotfixtures.recentlyPlayed
+import com.pierre.tunescout.screenshotfixtures.touch
 import org.junit.Test
 
 internal class LibraryScreenshots : ReadmeScreenshotsTest() {

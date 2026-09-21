@@ -3,19 +3,18 @@ package com.pierre.tunescout.screenshots
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.paging.PagingData
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.pierre.tunescout.core.model.NowPlaying
-import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerContent
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
 import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
+import com.pierre.tunescout.screenshotfixtures.emptyPagingItems
+import com.pierre.tunescout.screenshotfixtures.getLucky
+import com.pierre.tunescout.screenshotfixtures.pagingItems
+import com.pierre.tunescout.screenshotfixtures.recentlyPlayed
+import com.pierre.tunescout.screenshotfixtures.searchSongs
 import com.pierre.tunescout.ui.component.PlayButtonState
-import kotlinx.coroutines.flow.flowOf
 import org.junit.Test
 
 internal class SongsScreenshots : ReadmeScreenshotsTest() {
@@ -69,7 +68,11 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                     isOffline = false,
                     unplayableSongIds = emptySet(),
                 ),
-                searchResults = pagingItems(searchSongs),
+                searchResults = pagingItems(
+                    searchSongs.map { song ->
+                        SearchResultUiModel(song = song, isUnavailable = false)
+                    },
+                ),
                 onEvent = {},
             )
         }
@@ -80,12 +83,3 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
         const val RESTORED_PROGRESS = 0.62f
     }
 }
-
-@Composable
-internal fun pagingItems(songs: List<Song>): LazyPagingItems<SearchResultUiModel> {
-    val results = songs.map { song -> SearchResultUiModel(song = song, isUnavailable = false) }
-    return flowOf(PagingData.from(results)).collectAsLazyPagingItems()
-}
-
-@Composable
-internal fun emptyPagingItems(): LazyPagingItems<SearchResultUiModel> = pagingItems(emptyList())

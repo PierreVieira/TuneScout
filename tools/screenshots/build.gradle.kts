@@ -9,7 +9,6 @@ android {
 dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(projects.core.model)
-    testImplementation(projects.core.testing)
     testImplementation(projects.feature.album)
     testImplementation(projects.feature.library)
     testImplementation(projects.feature.miniPlayer)
@@ -19,13 +18,12 @@ dependencies {
     testImplementation(projects.feature.songs)
     testImplementation(projects.feature.splash)
     testImplementation(projects.feature.themeSelection)
+    testImplementation(projects.tools.screenshotFixtures)
     testImplementation(projects.ui.component)
     testImplementation(projects.ui.theme)
 
-    testImplementation(libs.androidx.paging.common)
     testImplementation(libs.androidx.paging.compose)
     testImplementation(libs.coil.compose)
-    testImplementation(libs.coil.test)
     testImplementation(libs.store.screenshots)
     testRuntimeOnly(libs.junit.vintage.engine)
 }

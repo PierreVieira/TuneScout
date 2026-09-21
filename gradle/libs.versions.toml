@@ -44,6 +44,8 @@ koin = "4.2.2"
 ktor = "3.6.0"
 mockk = "1.14.11"
 reorderable = "3.1.0"
+robolectric = "4.17"
+roborazzi = "1.74.0"
 store-screenshots = "1.6.0"
 turbine = "1.2.1"
 truth = "1.4.5"
@@ -139,10 +141,14 @@ android-junit5-test-core = { module = "de.mannodermaus.junit5:android-test-core"
 android-junit5-test-runner = { module = "de.mannodermaus.junit5:android-test-runner", version.ref = "android-junit5" }
 android-junit5-test-compose = { module = "de.mannodermaus.junit5:android-test-compose", version.ref = "android-junit5" }
 androidx-compose-ui-test-android = { module = "androidx.compose.ui:ui-test-android" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-compose = { module = "io.github.takahirom.roborazzi:roborazzi-compose", version.ref = "roborazzi" }
 store-screenshots = { module = "io.github.lucianosantosdev:storescreenshots-library", version.ref = "store-screenshots" }
 
 # Ktlint custom rule set
@@ -161,6 +167,7 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+roborazzi = { id = "io.github.takahirom.roborazzi", version.ref = "roborazzi" }
 ksp ={ id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
 

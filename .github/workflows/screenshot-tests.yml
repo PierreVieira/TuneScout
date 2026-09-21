@@ -1,0 +1,102 @@
+name: screenshot-tests
+
+# The reference images are rendered on Linux, so they are verified — and recorded — here and never
+# on a developer's machine: the same screen comes out a few pixels different on macOS.
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.claude/**'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - '.claude/**'
+
+permissions:
+  contents: read
+
+# Cancels in-progress runs if a new commit is pushed to the same PR or branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Rendering the screens is what a change to them is checked against, so this only runs when the
+  # pull request is not asking for new references.
+  verify:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'record-screenshots') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Setup Gradle
+        uses: ./.github/actions/gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Verify the screenshots
+        run: ./gradlew :tools:screenshot_tests:verifyRoborazziDebug
+
+      # Each failure writes <name>_compare.png: the reference, the render and the difference between
+      # them side by side.
+      - name: Upload the differences
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-differences
+          path: tools/screenshot_tests/build/outputs/roborazzi/
+
+  # A screen changed on purpose: label the pull request `record-screenshots` and the new references
+  # are rendered here and committed to its branch.
+  record:
+    if: >-
+      github.event_name == 'pull_request'
+      && contains(github.event.pull_request.labels.*.name, 'record-screenshots')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout the pull request's branch
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 1
+
+      - name: Setup Gradle
+        uses: ./.github/actions/gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Record the screenshots
+        run: ./gradlew :tools:screenshot_tests:recordRoborazziDebug
+
+      - name: Commit the new references
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add tools/screenshot_tests/src/test/screenshots
+          if git diff --cached --quiet; then
+            echo 'The references already match what this branch renders.'
+          else
+            git commit -m 'chore: record the screenshot references'
+            git push
+          fi
+          # Dropped so the next push verifies the references instead of recording them again
+          gh pr edit "$PR_NUMBER" --remove-label record-screenshots

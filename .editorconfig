@@ -29,6 +29,11 @@ ktlint_function_signature_body_expression_wrapping = default
 ktlint_tunescout-style_value-returning-function-naming = disabled
 ktlint_tunescout-style_top-level-function-ownership = disabled
 
+# The screenshot fixtures ship to both screenshot suites from main sources, for the same reason
+[tools/screenshot_fixtures/src/**]
+ktlint_tunescout-style_value-returning-function-naming = disabled
+ktlint_tunescout-style_top-level-function-ownership = disabled
+
 # core/testing ships fixtures to other modules' tests, so the same naming applies to its main sources
 [core/testing/src/**]
 ktlint_tunescout-style_value-returning-function-naming = disabled

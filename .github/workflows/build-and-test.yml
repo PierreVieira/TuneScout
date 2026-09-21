@@ -46,11 +46,14 @@ jobs:
 
       # The plain test tasks stay: :ui:* and :tools:* have tests but are left out of the coverage
       # report, so the Kover tasks alone would not run them. See docs/code-quality.md.
+      # :tools:screenshot_tests is excluded because the screenshot-tests workflow renders the same
+      # screens and compares them against the committed references; here they would only render.
       - name: Run unit tests and verify coverage
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
         run: >
           ./gradlew testDebugUnitTest test :koverVerifyCi :verifyNewFilesCoverage :koverHtmlReportCi
+          -x :tools:screenshot_tests:testDebugUnitTest
           -Pcoverage.baseRef="origin/$BASE_REF" --continue
 
       - name: Upload test reports
