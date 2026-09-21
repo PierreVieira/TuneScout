@@ -13,8 +13,8 @@ larger ones is in [Decisions and trade-offs](decisions.md).
   declared in resources, before the preference can be read.
 - The light palette is derived from the Figma dark one rather than designed: the file only
   specifies dark.
-- Larger windows only get the navigation rail. There is no list-detail or two-pane layout for
-  tablets or a phone on its side.
+- A wide window opens an album beside the tabs, and nothing else: a playlist, the liked songs and
+  the player still cover them, and the player does not put its queue beside it yet.
 
 ## Search and playback
 

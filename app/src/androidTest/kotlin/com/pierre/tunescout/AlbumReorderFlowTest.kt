@@ -1,8 +1,11 @@
 package com.pierre.tunescout
 
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -76,7 +79,7 @@ class AlbumReorderFlowTest {
         onNodeWithText("Reorder songs").performScrollTo().performClick()
         waitUntilAtLeastOneExists(hasContentDescription("Done reordering"), SCREEN_TIMEOUT_MILLIS)
 
-        onNodeWithText(giveLifeBack.title).performCustomAccessibilityActionWithLabel("Move down")
+        onNode(hasText(giveLifeBack.title) and inTheAlbum).performCustomAccessibilityActionWithLabel("Move down")
         waitUntil(SCREEN_TIMEOUT_MILLIS) { storedTrackIds() == listOf(802L, 801L, 803L) }
         onNodeWithContentDescription("Done reordering").performClick()
 
@@ -88,12 +91,12 @@ class AlbumReorderFlowTest {
     fun anAlbumStartsReorderingFromATracksOptionsSheet() = compose.use {
         openTheAlbum()
 
-        onAllNodesWithContentDescription("More options")[0].performClick()
+        onAllNodes(hasContentDescription("More options") and inTheAlbum)[0].performClick()
         waitUntilAtLeastOneExists(hasText("Reorder songs") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Reorder songs").performScrollTo().performClick()
 
         waitUntilAtLeastOneExists(hasContentDescription("Done reordering"), SCREEN_TIMEOUT_MILLIS)
-        assertThat(onAllNodesWithContentDescription("More options").fetchSemanticsNodes()).isEmpty()
+        assertThat(onAllNodes(hasContentDescription("More options") and inTheAlbum).fetchSemanticsNodes()).isEmpty()
     }
 
     /** A landscape window leaves no room for results under the keyboard, so the search key closes it. */
@@ -118,8 +121,16 @@ class AlbumReorderFlowTest {
             .map { song -> song.id }
     }
 
+    /**
+     * On a window wide enough for two panes the search results stay beside the album, so a track's
+     * title and its options button are drawn twice: in the list and in the album. Only the album's are
+     * the ones this flow means.
+     */
+    private val inTheAlbum: SemanticsMatcher = hasAnyAncestor(hasTestTag(ALBUM_TRACKS_TAG))
+
     private companion object {
         const val SCREEN_TIMEOUT_MILLIS = 10_000L
+        const val ALBUM_TRACKS_TAG = "album_tracks"
     }
 }
 

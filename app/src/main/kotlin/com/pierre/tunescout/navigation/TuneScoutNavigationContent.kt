@@ -19,6 +19,7 @@ import com.pierre.tunescout.core.navigation.animation.createSceneFadeTransform
 import com.pierre.tunescout.core.navigation.animation.rememberSharedElementNavEntryDecorator
 import com.pierre.tunescout.core.navigation.route.SplashRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
+import com.pierre.tunescout.core.navigation.scene.ListDetailSceneStrategy
 import com.pierre.tunescout.feature.addtoplaylist.presentation.navigation.addToPlaylistEntry
 import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
 import com.pierre.tunescout.feature.album.presentation.navigation.albumOptionsEntry
@@ -53,6 +54,9 @@ import com.pierre.tunescout.ui.utils.window.rememberWindowSize
 /**
  * The shared transition layout covers the mini player bar as well as the NavDisplay: the artwork
  * flies between the two, so both halves have to sit in the same shared transition scope.
+ *
+ * The list-detail strategy comes after the overlays: a sheet opened over the two panes is drawn over
+ * both of them, which `NavDisplay` works out by asking the strategies again for what is under it.
  */
 @Composable
 fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
@@ -62,6 +66,9 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
     val dialogStrategy = remember { DialogSceneStrategy<NavKey>() }
     val fadeStrategy = remember { FadeSceneDecoratorStrategy<NavKey>() }
     val tabsState = rememberHomeTabsState()
+    val windowSize = rememberWindowSize()
+    val isTwoPane = windowSize.isWidthExpanded
+    val listDetailStrategy = remember(isTwoPane) { ListDetailSceneStrategy<NavKey>(isTwoPane = isTwoPane) }
 
     NavigationCommandCollector(backStackController = backStackController)
 
@@ -74,8 +81,8 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
         ) {
             TuneScoutNavigationSuiteScaffold(
                 items = homeNavigationItems(tabsState = tabsState),
-                isVisible = backStack.isHomeVisible(),
-                windowSize = rememberWindowSize(),
+                isVisible = backStack.isHomeVisible(isTwoPane = isTwoPane),
+                windowSize = windowSize,
             ) {
                 MiniPlayerScaffold(isAllowed = backStack.isMiniPlayerAllowed()) {
                     NavDisplay(
@@ -86,7 +93,7 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
                             rememberViewModelStoreNavEntryDecorator(),
                             rememberSharedElementNavEntryDecorator(),
                         ),
-                        sceneStrategies = listOf(bottomSheetStrategy, dialogStrategy),
+                        sceneStrategies = listOf(bottomSheetStrategy, dialogStrategy, listDetailStrategy),
                         sceneDecoratorStrategies = listOf(fadeStrategy),
                         transitionSpec = { createSceneFadeTransform() },
                         popTransitionSpec = { createSceneFadeTransform() },

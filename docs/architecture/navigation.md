@@ -109,6 +109,34 @@ entryProvider = entryProvider<NavKey> {
 
 `app` is the only module that depends on every feature, which is why the registration lives there.
 
+## List and detail on a wide window
+
+On a window of expanded width, an album opens **beside** the tab host instead of covering it.
+`ListDetailSceneStrategy` (`core/navigation/scene/`) draws the two entries as one `ListDetailScene`:
+the list on the left, the detail on a raised card on the right (`ListDetailScaffold`, `:ui:component`).
+The strategy is created in `TuneScoutNavigationContent` from `rememberWindowSize().isWidthExpanded`,
+keyed on it, since `NavDisplay` only calculates its scenes again when its strategies or entries change.
+It comes after the sheet and dialog strategies, so a sheet opened over the two panes covers both.
+
+Two things make an entry take part, and a route that does needs both:
+
+| | For | Where |
+|---|---|---|
+| `ListDetailSceneStrategy.listPane()` / `detailPane()` | the scene, which only sees entries | the entry's `metadata` |
+| `DetailPaneRoute` | anything reading the back stack's keys | the route |
+
+The marker is what keeps the rail on screen: `isHomeVisible(isTwoPane)` counts the tab host as
+visible while a detail sits beside it. Both read the same rule, `findListPaneIndexOrNull`: the top
+of the stack is a detail, and the first entry under the details on top is a list.
+
+The back stack never depends on the width. `[HomeRoute, AlbumRoute]` is the same stack in portrait
+and in landscape; rotating only changes the scene, and Back pops the album either way. A detail
+pushed over a detail replaces it in the right pane, and Back walks through them there.
+
+A list that runs a navigation of its own wraps it in `DeferBackToDetailPaneScaffold`. The tab host does:
+its nested `NavDisplay` was registered with the back dispatcher before the album was pushed, and
+handlers are asked most recent first, so it would switch tabs where Back should close the album.
+
 ## Deep links
 
 The home screen widgets open the app on a screen of its own. The pieces follow the
@@ -170,7 +198,8 @@ list, so system back animates from the second tab to the first the way Android e
 
 Only the two tabs live in the nested display. **Everything a tab opens — the player, an album, a
 playlist, the queue, any sheet — is pushed onto the root back stack**, over the bar, through the
-same `Navigator`. That is what keeps the `Navigator` and the `BackStackController` free of any
+same `Navigator` — an album on a wide window included, which the root display then draws beside the
+tabs (see [List and detail on a wide window](#list-and-detail-on-a-wide-window)). That is what keeps the `Navigator` and the `BackStackController` free of any
 notion of tabs.
 
 The bar itself is drawn by `TuneScoutNavigationSuiteScaffold` (`:ui:component`) *outside* the root

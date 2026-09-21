@@ -24,7 +24,8 @@ screenshots.
   repeat mode it had.
 - **Two tabs**: Home, which is search and recently played, and Your Library. The bar at the bottom
   becomes a navigation rail as soon as the window has width to spare, so a phone turned sideways
-  gives the list its height back.
+  gives the list its height back. On a window wider still — a tablet, or most phones on their side —
+  an album opens beside the tabs instead of over them, and the next one picked replaces it there.
 - **Library** of your own: liked songs, the playlists you create and the albums you like, as a list
   or a grid, with the choice remembered on the device. Chips narrow it to playlists or albums, and
   its own search screen keeps the items you opened under "Recent searches" and lets you drop them

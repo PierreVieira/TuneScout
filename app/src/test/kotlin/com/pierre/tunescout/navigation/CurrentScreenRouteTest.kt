@@ -51,14 +51,35 @@ class CurrentScreenRouteTest {
 
     @Test
     fun `GIVEN the tab host WHEN asking THEN the navigation bar is visible`() {
-        assertThat(listOf(HomeRoute).isHomeVisible()).isTrue()
-        assertThat(listOf(HomeRoute, SongOptionsRoute(songId = 1)).isHomeVisible()).isTrue()
+        assertThat(listOf(HomeRoute).isHomeVisible(isTwoPane = false)).isTrue()
+        assertThat(listOf(HomeRoute, SongOptionsRoute(songId = 1)).isHomeVisible(isTwoPane = false)).isTrue()
     }
 
     @Test
     fun `GIVEN a screen pushed over the tab host WHEN asking THEN the navigation bar is hidden`() {
-        assertThat(listOf(HomeRoute, AlbumRoute(albumId = 10)).isHomeVisible()).isFalse()
-        assertThat(listOf(SplashRoute).isHomeVisible()).isFalse()
-        assertThat(emptyList<NavKey>().isHomeVisible()).isFalse()
+        assertThat(listOf(HomeRoute, AlbumRoute(albumId = 10)).isHomeVisible(isTwoPane = false)).isFalse()
+        assertThat(listOf(SplashRoute).isHomeVisible(isTwoPane = false)).isFalse()
+        assertThat(emptyList<NavKey>().isHomeVisible(isTwoPane = false)).isFalse()
+    }
+
+    @Test
+    fun `GIVEN two panes and albums over the tab host WHEN asking THEN the navigation rail stays beside the tabs`() {
+        assertThat(listOf(HomeRoute, AlbumRoute(albumId = 10)).isHomeVisible(isTwoPane = true)).isTrue()
+        assertThat(
+            listOf(HomeRoute, AlbumRoute(albumId = 10), AlbumRoute(albumId = 20)).isHomeVisible(isTwoPane = true),
+        ).isTrue()
+        assertThat(
+            listOf(HomeRoute, AlbumRoute(albumId = 10), SongOptionsRoute(songId = 1)).isHomeVisible(isTwoPane = true),
+        ).isTrue()
+    }
+
+    @Test
+    fun `GIVEN two panes and a full screen over the album WHEN asking THEN the navigation rail is hidden`() {
+        assertThat(
+            listOf(HomeRoute, AlbumRoute(albumId = 10), PlayerRoute(songId = 1)).isHomeVisible(isTwoPane = true),
+        ).isFalse()
+        assertThat(
+            listOf(HomeRoute, PlayerRoute(songId = 1), AlbumRoute(albumId = 10)).isHomeVisible(isTwoPane = true),
+        ).isFalse()
     }
 }
