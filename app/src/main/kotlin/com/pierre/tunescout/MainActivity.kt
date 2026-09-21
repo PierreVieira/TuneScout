@@ -1,6 +1,7 @@
 package com.pierre.tunescout
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
         }
         super.onCreate(savedInstanceState)
         navigateToDeepLink(intent)
+        reportSystemDarkTheme()
         setContent {
             val isSystemInDarkTheme = isSystemInDarkTheme()
             LaunchedEffect(isSystemInDarkTheme) { viewModel.onSystemDarkThemeChanged(isSystemInDarkTheme) }
@@ -44,6 +46,15 @@ class MainActivity : ComponentActivity() {
                 is MainUiState.Ready -> ThemedContent(state)
             }
         }
+    }
+
+    /**
+     * The splash holds the first frame until the state is ready, so a state that learned the
+     * device's dark mode only from the composition would wait for a frame that waits for it. The
+     * effect in `setContent` carries the changes that come after this one.
+     */
+    private fun reportSystemDarkTheme() {
+        viewModel.onSystemDarkThemeChanged(resources.configuration.isSystemInDarkTheme)
     }
 
     /**
@@ -88,3 +99,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+/** Whether the device is in dark mode, as the resources this activity was created with report it. */
+private val Configuration.isSystemInDarkTheme: Boolean
+    get() = uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
