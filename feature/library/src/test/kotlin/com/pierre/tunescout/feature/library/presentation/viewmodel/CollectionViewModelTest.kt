@@ -34,7 +34,6 @@ import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
 import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -51,6 +50,7 @@ class CollectionViewModelTest {
     private lateinit var actions: MutableList<CollectionUiAction>
     private lateinit var songPlayback: FakeSongPlayback
     private lateinit var enqueuer: Enqueuer
+    private lateinit var contextStarts: MutableList<Pair<List<Song>, PlaybackContext>>
     private lateinit var transportControls: TransportControls
     private lateinit var favoriteSongs: MutableStateFlow<List<Song>>
     private lateinit var reorderRequests: SharedFlowReorderRequests
@@ -109,28 +109,49 @@ class CollectionViewModelTest {
         }
 
     @Test
-    fun `GIVEN a song WHEN clicking it THEN asks for it alone and stays on the collection`() =
+    fun `GIVEN a liked song WHEN clicking it THEN asks for it with the liked songs behind it`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
+            val songs = listOf(song(id = 1), song(id = 2), song(id = 3))
             prepareScenario(
                 key = CollectionKey.Favorites,
-                favorites = listOf(song(id = 1)),
+                favorites = songs,
                 playback = playbackState(songs = listOf(song(id = 9))),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 2)))
+
+            // Then
+            assertThat(songPlayback.requests).containsExactly(
+                SongPlayRequest(
+                    song = song(id = 2),
+                    nowPlaying = NowPlaying(songId = 9, isPlaying = true),
+                    queue = songs,
+                    context = PlaybackContext.LikedSongs,
+                ),
+            )
+            verify(exactly = 0) { navigator.navigate(any()) }
+        }
+
+    @Test
+    fun `GIVEN a playlist song WHEN clicking it THEN asks for it with the playlist behind it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = listOf(song(id = 1), song(id = 2))
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7, name = "Road trip"),
+                playlistSongs = songs,
             )
 
             // When
             viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
 
             // Then
-            assertThat(songPlayback.requests).containsExactly(
-                SongPlayRequest(
-                    song = song(id = 1),
-                    nowPlaying = NowPlaying(songId = 9, isPlaying = true),
-                    queue = listOf(song(id = 1)),
-                    context = PlaybackContext.SingleSong,
-                ),
-            )
-            verify(exactly = 0) { navigator.navigate(any()) }
+            assertThat(songPlayback.requests.single().queue).isEqualTo(songs)
+            assertThat(songPlayback.requests.single().context)
+                .isEqualTo(PlaybackContext.Playlist(id = 7, title = "Road trip"))
         }
 
     @Test
@@ -146,7 +167,7 @@ class CollectionViewModelTest {
     }
 
     @Test
-    fun `GIVEN the favourites WHEN pressing play THEN the whole list takes over the current song`() =
+    fun `GIVEN the favourites WHEN pressing play THEN they start as the liked songs`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             val songs = listOf(song(id = 1), song(id = 2))
@@ -156,7 +177,93 @@ class CollectionViewModelTest {
             viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
             // Then
-            verify { enqueuer.playNow(songs) }
+            assertThat(contextStarts).containsExactly(songs to PlaybackContext.LikedSongs)
+            verify(exactly = 0) { enqueuer.playNow(any()) }
+        }
+
+    @Test
+    fun `GIVEN a playlist WHEN pressing play THEN it starts as its own context`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        val songs = listOf(song(id = 1), song(id = 2))
+        prepareScenario(
+            key = CollectionKey.Playlist(playlistId = 7),
+            playlist = playlist(id = 7, name = "Road trip"),
+            playlistSongs = songs,
+        )
+
+        // When
+        viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+        // Then
+        assertThat(contextStarts).containsExactly(songs to PlaybackContext.Playlist(id = 7, title = "Road trip"))
+    }
+
+    @Test
+    fun `GIVEN one of the favourites is playing from an album WHEN pressing play THEN starts the liked songs`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = listOf(song(id = 1), song(id = 2))
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = songs,
+                playback = playbackState(
+                    songs = listOf(song(id = 2)),
+                    context = PlaybackContext.Album(id = 10, title = "Discovery"),
+                ),
+            )
+
+            // When
+            val state = loadedState()
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(state.isPlaying).isFalse()
+            assertThat(contextStarts).containsExactly(songs to PlaybackContext.LikedSongs)
+            verify(exactly = 0) { transportControls.togglePlayPause() }
+        }
+
+    @Test
+    fun `GIVEN a playlist renamed since it started WHEN observing THEN it is still the one playing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7, name = "Road trip"),
+                playlistSongs = listOf(song(id = 1)),
+                playback = playbackState(
+                    songs = listOf(song(id = 1)),
+                    context = PlaybackContext.Playlist(id = 7, title = "Summer"),
+                ),
+            )
+
+            // When
+            val state = loadedState()
+
+            // Then
+            assertThat(state.isPlaying).isTrue()
+        }
+
+    @Test
+    fun `GIVEN the liked songs played to their end WHEN pressing play THEN they start over`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = listOf(song(id = 1), song(id = 2))
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = songs,
+                playback = playbackState(
+                    songs = listOf(song(id = 2)),
+                    status = PlaybackStatus.Ended,
+                    context = PlaybackContext.LikedSongs,
+                ),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(contextStarts).containsExactly(songs to PlaybackContext.LikedSongs)
+            verify(exactly = 0) { transportControls.togglePlayPause() }
         }
 
     @Test
@@ -168,7 +275,7 @@ class CollectionViewModelTest {
         viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
         // Then
-        verify(exactly = 0) { enqueuer.playNow(any()) }
+        assertThat(contextStarts).isEmpty()
     }
 
     @Test
@@ -179,7 +286,7 @@ class CollectionViewModelTest {
             prepareScenario(
                 key = CollectionKey.Favorites,
                 favorites = songs,
-                playback = playbackState(songs = listOf(song(id = 2))),
+                playback = playbackState(songs = listOf(song(id = 2)), context = PlaybackContext.LikedSongs),
             )
 
             // When
@@ -189,7 +296,7 @@ class CollectionViewModelTest {
             // Then
             assertThat(state.isPlaying).isTrue()
             verify { transportControls.togglePlayPause() }
-            verify(exactly = 0) { enqueuer.playNow(any()) }
+            assertThat(contextStarts).isEmpty()
         }
 
     @Test
@@ -199,7 +306,11 @@ class CollectionViewModelTest {
             prepareScenario(
                 key = CollectionKey.Favorites,
                 favorites = listOf(song(id = 1)),
-                playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Paused),
+                playback = playbackState(
+                    songs = listOf(song(id = 1)),
+                    status = PlaybackStatus.Paused,
+                    context = PlaybackContext.LikedSongs,
+                ),
             )
 
             // When
@@ -219,7 +330,11 @@ class CollectionViewModelTest {
                 key = CollectionKey.Favorites,
                 favorites = listOf(song(id = 1), song(id = 2)),
                 playableSongIds = setOf(2L),
-                playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Paused),
+                playback = playbackState(
+                    songs = listOf(song(id = 1)),
+                    status = PlaybackStatus.Paused,
+                    context = PlaybackContext.LikedSongs,
+                ),
             )
 
             // When
@@ -232,7 +347,7 @@ class CollectionViewModelTest {
         }
 
     @Test
-    fun `GIVEN shuffle is on WHEN pressing play THEN the collection is handed over shuffled`() =
+    fun `GIVEN shuffle is on WHEN pressing play THEN the collection is handed over in its own order`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             val songs = (1L..20L).map { id -> song(id = id) }
@@ -241,16 +356,13 @@ class CollectionViewModelTest {
                 favorites = songs,
                 playback = playbackState(songs = listOf(song(id = 99)), isShuffleEnabled = true),
             )
-            val handedOver = slot<List<Song>>()
 
             // When
             viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
             // Then
             assertThat(loadedState().isShuffleEnabled).isTrue()
-            verify { enqueuer.playNow(capture(handedOver)) }
-            assertThat(handedOver.captured).containsExactlyElementsIn(songs)
-            assertThat(handedOver.captured).isNotEqualTo(songs)
+            assertThat(contextStarts).containsExactly(songs to PlaybackContext.LikedSongs)
         }
 
     @Test
@@ -427,7 +539,7 @@ class CollectionViewModelTest {
             viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
             // Then
-            verify { enqueuer.playNow(listOf(song(id = 2))) }
+            assertThat(contextStarts).containsExactly(listOf(song(id = 2)) to PlaybackContext.LikedSongs)
         }
 
     @Test
@@ -445,7 +557,7 @@ class CollectionViewModelTest {
 
             // Then
             assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-            verify(exactly = 0) { enqueuer.playNow(any()) }
+            assertThat(contextStarts).isEmpty()
         }
 
     @Test
@@ -610,6 +722,7 @@ class CollectionViewModelTest {
         navigator = mockk(relaxUnitFun = true)
         songPlayback = FakeSongPlayback()
         enqueuer = mockk(relaxUnitFun = true)
+        contextStarts = mutableListOf()
         transportControls = mockk(relaxUnitFun = true)
         val useCases = CollectionUseCases(
             observePlaylist = { flowOf(playlist) },
@@ -632,6 +745,7 @@ class CollectionViewModelTest {
             collectionStreams = CollectionStreams(useCases),
             observablePlayback = ObservablePlayback { MutableStateFlow(playback) },
             songPlayback = songPlayback,
+            contextStarter = { songs, context -> contextStarts += songs to context },
             enqueuer = enqueuer,
             transportControls = transportControls,
             playableSongs = playableSongs,

@@ -9,6 +9,7 @@ import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.ContextStarter
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
@@ -20,6 +21,7 @@ import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
 import com.pierre.tunescout.feature.library.presentation.mapper.toOptionsRoute
+import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiAction
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
@@ -37,6 +39,7 @@ class CollectionViewModel(
     private val key: CollectionKey,
     private val useCases: CollectionUseCases,
     private val songPlayback: SongPlayback,
+    private val contextStarter: ContextStarter,
     private val playableSongs: PlayableSongs,
     private val enqueuer: Enqueuer,
     private val transportControls: TransportControls,
@@ -84,7 +87,7 @@ class CollectionViewModel(
                 isDeletable = key is CollectionKey.Playlist,
                 favoriteSongIds = favoriteSongIds,
                 unplayableSongIds = playable.findUnplayableIds(songs),
-                isPlaying = playback.isPlaying && playback.isOnOneOf(songs),
+                isPlaying = playback.isPlaying && playback.isOnCollection(),
                 isShuffleEnabled = playback.isShuffleEnabled,
                 isReorderable = reorderTarget != null,
                 isReordering = arranged.isReordering,
@@ -141,12 +144,14 @@ class CollectionViewModel(
         }
     }
 
+    /** The rest of the collection plays on after [song], in the collection's order. */
     private fun play(song: Song) {
+        val loaded = uiState.value as? CollectionUiState.Loaded ?: return
         val outcome = songPlayback.request(
             song = song,
-            nowPlaying = (uiState.value as? CollectionUiState.Loaded)?.nowPlaying,
-            queue = listOf(song),
-            context = PlaybackContext.SingleSong,
+            nowPlaying = loaded.nowPlaying,
+            queue = loaded.songs,
+            context = loaded.toPlaybackContext(),
         )
         when (outcome) {
             SongPlayOutcome.AlreadyPlaying -> navigator.navigate(PlayerRoute(songId = song.id))
@@ -156,17 +161,17 @@ class CollectionViewModel(
     }
 
     /**
-     * The player already on one of the collection's songs is paused and resumed; otherwise the
-     * collection is played now, ahead of the rest of the queue. It is not a context the player can
-     * shuffle later, so with shuffle on it is handed over already shuffled.
+     * The collection the player is already on is paused and resumed, like the player's own button;
+     * otherwise — or once it has played to its end — it starts over from its first song, or from any
+     * of them while shuffle is on. Songs queued by hand stay queued either way.
      */
     private fun togglePlayback() {
-        val songs = (uiState.value as? CollectionUiState.Loaded)?.songs.orEmpty()
-        if (songs.isEmpty()) return
+        val loaded = uiState.value as? CollectionUiState.Loaded ?: return
+        if (loaded.songs.isEmpty()) return
         val playback = observablePlayback.observePlaybackState().value
-        if (playback.isOnOneOf(songs) && !playback.hasEnded) return resume(playback)
-        val playable = playableSongs.findPlayableOrNull(songs) ?: return showSongUnavailableOffline()
-        enqueuer.playNow(if (playback.isShuffleEnabled) playable.shuffled() else playable)
+        if (playback.isOnCollection() && !playback.hasEnded) return resume(playback)
+        val songs = playableSongs.findPlayableOrNull(loaded.songs) ?: return showSongUnavailableOffline()
+        contextStarter.playFromStart(songs = songs, context = loaded.toPlaybackContext())
     }
 
     /** Pausing is always honoured; resuming a song the player cannot reach is refused. */
@@ -178,7 +183,23 @@ class CollectionViewModel(
         transportControls.togglePlayPause()
     }
 
-    private fun PlaybackState.isOnOneOf(songs: List<Song>): Boolean = songs.any { song -> song.id == currentSong?.id }
+    /**
+     * @return whether the queue was built on this collection. A playlist is told apart by its id
+     * alone, so one renamed since it started is still the one playing.
+     */
+    private fun PlaybackState.isOnCollection(): Boolean = when (key) {
+        CollectionKey.Favorites -> context == PlaybackContext.LikedSongs
+        is CollectionKey.Playlist -> (context as? PlaybackContext.Playlist)?.id == key.playlistId
+    }
+
+    private fun CollectionUiState.Loaded.toPlaybackContext(): PlaybackContext = when (key) {
+        CollectionKey.Favorites -> PlaybackContext.LikedSongs
+
+        is CollectionKey.Playlist -> PlaybackContext.Playlist(
+            id = key.playlistId,
+            title = (title as? CollectionTitle.Custom)?.name.orEmpty(),
+        )
+    }
 
     private fun showSongUnavailableOffline() {
         emitAction(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))

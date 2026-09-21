@@ -3,6 +3,7 @@ package com.pierre.tunescout.screenshottests
 import androidx.compose.runtime.Composable
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.feature.queue.presentation.content.QueueContent
+import com.pierre.tunescout.feature.queue.presentation.model.QueueContextTitle
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.screenshotfixtures.SheetOverScreen
 import com.pierre.tunescout.screenshotfixtures.aroundTheWorld
@@ -17,7 +18,7 @@ import org.junit.Test
 
 internal class QueueScreenshotTest : ScreenshotTest() {
     private val playing = QueueUiState(
-        contextTitle = randomAccessMemories.title,
+        contextTitle = QueueContextTitle.Custom(randomAccessMemories.title),
         nowPlaying = contextEntry(getLucky),
         status = PlaybackStatus.Playing,
         queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),

@@ -5,6 +5,7 @@ import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.feature.queue.presentation.content.QueueContent
+import com.pierre.tunescout.feature.queue.presentation.model.QueueContextTitle
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.screenshotfixtures.SheetOverScreen
 import com.pierre.tunescout.screenshotfixtures.aroundTheWorld
@@ -30,7 +31,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
         hasNext = true,
     )
     private val queue = QueueUiState(
-        contextTitle = randomAccessMemories.title,
+        contextTitle = QueueContextTitle.Custom(randomAccessMemories.title),
         nowPlaying = contextEntry(getLucky),
         status = PlaybackStatus.Playing,
         queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),

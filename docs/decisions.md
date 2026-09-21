@@ -20,7 +20,7 @@ order that replaced it — and arranges what the database emits by it. A drag mo
 before it is let go; drawing from the database would make the row jump back under the finger while
 a write is on its way. There is no save step to forget, so leaving the mode by Back loses nothing.
 
-**An album's order is a table of its own.** `album_track_order` (migration 6→7) keeps where the user
+**An album's order is a table of its own.** `album_track_order` (migration 7→8) keeps where the user
 put each track, apart from the tracks: they come from the API and are rewritten on every refresh, the
 order is not. A track the album gains after it was reordered goes after the ordered ones, in the
 album's own order. The table has no key to `albums`, because a partial album — put together from the
@@ -37,6 +37,30 @@ opened later must not start reordering over a request it was never on screen for
 carries a `ReorderTarget` — an album or a playlist — so the sheet only offers the option where there
 is a list to reorder. Cost: the drag handle and the move actions moved to `:ui:component`, which now
 exposes the reorderable library as `api`; the queue uses the same handle and the same actions.
+
+## 2026-09-21 — Playlists and liked songs as the queue's context
+
+**Any ordered collection is a context, not only an album.** `PlaybackContext` gained `Playlist`,
+`LikedSongs` and `RecentlyPlayed`, and the collection screen now starts its songs the way the album
+screen does: a tapped song plays with the rest of the collection behind it, and the play button
+starts the collection from its first song — or a random one while shuffle is on — through
+`ContextStarter`. The queue itself needed no change, since `QueueTimelineFactory` already only knew
+ordered songs: songs queued by hand still play before the rest of the collection, and shuffle can
+now reorder a playlist after it starts and put it back when turned off. The play button shows pause
+only while the queue is on that collection, not while one of its songs plays from somewhere else,
+like the album's; a playlist is told apart by its id, so renaming it does not lose track of it.
+
+**The widget's shortcuts play from "recently played".** They already handed the player the five
+songs played last as the queue, only labelled as a single song; they are now a context of their own,
+so the queue says where the songs came from.
+
+**The saved context is a kind, an id and a title.** The session used to keep an album id and title,
+which could not say "a playlist" or "the liked songs". The migration rebuilds `playback_session`
+with `contextType`, `contextId` and `contextTitle`, keeping an album session's album; a kind this
+version does not know reads back as a single song rather than failing the restore. The playlist's
+name is saved as it was when it started, so the queue shows it after a restart without reading the
+playlist back. Cost: a playlist renamed while it plays keeps its old name in the queue until it is
+played again.
 
 ## 2026-09-21 — Swiping a song to queue or like it
 
@@ -157,9 +181,9 @@ ship, and a session that repeated its song keeps repeating it.
 **Albums and playlists get Spotify's play button.** The play icon left the top bar for a round
 accent button under the header, with shuffle beside it. On an album it starts the album as the
 context — not "play now" ahead of the queue, as the icon did — which is what lets it turn into
-pause while that album plays, and what gives shuffle something to reorder. A playlist is still not a
-context ([not done](not-done.md)), so its button keeps playing it now, shuffled first while shuffle
-is on, and shows pause while one of its songs is playing.
+pause while that album plays, and what gives shuffle something to reorder. A playlist was not a
+context yet, so its button played it now, shuffled first while shuffle was on, until playlists
+became contexts too.
 
 ## 2026-09-20 — Offline first, not only cached
 

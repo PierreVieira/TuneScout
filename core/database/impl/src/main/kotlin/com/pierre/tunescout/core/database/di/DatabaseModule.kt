@@ -25,6 +25,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
 import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
 import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
+import com.pierre.tunescout.core.database.internal.MIGRATION_7_8
 import com.pierre.tunescout.core.database.internal.RoomAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteSongLocalDataSource
@@ -52,8 +53,15 @@ val databaseModule: Module = module {
             .databaseBuilder<TuneScoutDatabase>(androidContext(), DATABASE_NAME)
             .setDriver(BundledSQLiteDriver())
             .setQueryCoroutineContext(Dispatchers.IO)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
-            .build()
+            .addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+                MIGRATION_6_7,
+                MIGRATION_7_8,
+            ).build()
     }
     single<SongDao> { get<TuneScoutDatabase>().songDao() }
     single<AlbumDao> { get<TuneScoutDatabase>().albumDao() }

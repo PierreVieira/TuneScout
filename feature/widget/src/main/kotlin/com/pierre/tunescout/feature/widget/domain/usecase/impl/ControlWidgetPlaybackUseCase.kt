@@ -37,7 +37,7 @@ class ControlWidgetPlaybackUseCase(
         val songs = recentlyPlayedLocalDataSource.observe(WidgetState.SHORTCUT_COUNT).first()
         val song = songs.firstOrNull { recent -> recent.id == songId } ?: return
         withContext(dispatcherProvider.main) {
-            playbackStarter.play(song = song, songs = songs, context = PlaybackContext.SingleSong)
+            playbackStarter.play(song = song, songs = songs, context = PlaybackContext.RecentlyPlayed)
         }
     }
 

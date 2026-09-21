@@ -38,10 +38,10 @@ and a small recorder turns "first time a song plays" into a row in the history t
 screen widgets in `feature/widget` read the same state and send their taps through the same
 controller.
 
-**The queue has two tiers.** `PlaybackState` carries `QueueEntry` items tagged `Context` (the album
-playing) or `UserQueue` (added by hand), and the play order is the context up to the current song,
-then everything queued by hand, then the rest of the context. Starting another album keeps what you
-queued. Adding, removing and reordering mutate the ExoPlayer timeline in place, so touching the
+**The queue has two tiers.** `PlaybackState` carries `QueueEntry` items tagged `Context` (the album,
+playlist or liked songs playing) or `UserQueue` (added by hand), and the play order is the context
+up to the current song, then everything queued by hand, then the rest of the context. Starting
+another album keeps what you queued. Adding, removing and reordering mutate the ExoPlayer timeline in place, so touching the
 queue never interrupts the song that is playing. A keeper writes the queue, the current entry and
 the position to Room — on every change and at most every five seconds while playing — and restores
 them, paused and prepared, when the app starts.

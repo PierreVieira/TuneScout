@@ -5,9 +5,10 @@ import com.pierre.tunescout.core.database.dao.PlaybackSessionDao
 import com.pierre.tunescout.core.database.entity.PLAYBACK_SESSION_ID
 import com.pierre.tunescout.core.database.entity.PlaybackQueueEntity
 import com.pierre.tunescout.core.database.entity.PlaybackSessionEntity
+import com.pierre.tunescout.core.database.mapper.toColumns
 import com.pierre.tunescout.core.database.mapper.toEntity
+import com.pierre.tunescout.core.database.mapper.toPlaybackContext
 import com.pierre.tunescout.core.database.mapper.toSong
-import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
@@ -19,7 +20,7 @@ internal class RoomPlaybackSessionLocalDataSource(
     private val timestampProvider: TimestampProvider,
 ) : PlaybackSessionLocalDataSource {
     override suspend fun save(session: PlaybackSession) {
-        val album = session.context as? PlaybackContext.Album
+        val context = session.context.toColumns()
         val cachedAt = timestampProvider.provide()
         val unshuffledPositions = session.unshuffledOrder.withIndex().associate { (position, id) -> id to position }
         playbackSessionDao.save(
@@ -29,8 +30,9 @@ internal class RoomPlaybackSessionLocalDataSource(
                 positionMillis = session.position.inWholeMilliseconds,
                 repeatMode = session.repeatMode.name,
                 isShuffleEnabled = session.isShuffleEnabled,
-                contextAlbumId = album?.id,
-                contextAlbumTitle = album?.title,
+                contextType = context.type,
+                contextId = context.id,
+                contextTitle = context.title,
                 hasEnded = session.hasEnded,
             ),
             entries = session.entries.mapIndexed { position, entry ->
@@ -65,9 +67,7 @@ internal class RoomPlaybackSessionLocalDataSource(
         return PlaybackSession(
             entries = entries,
             currentEntryId = session.currentEntryId,
-            context = session.contextAlbumId?.let { albumId ->
-                PlaybackContext.Album(id = albumId, title = session.contextAlbumTitle.orEmpty())
-            } ?: PlaybackContext.SingleSong,
+            context = session.toPlaybackContext(),
             position = session.positionMillis.milliseconds,
             repeatMode = RepeatMode.entries.firstOrNull { mode -> mode.name == session.repeatMode } ?: RepeatMode.Off,
             isShuffleEnabled = session.isShuffleEnabled,
