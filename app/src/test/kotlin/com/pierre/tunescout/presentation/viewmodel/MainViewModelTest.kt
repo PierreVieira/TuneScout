@@ -21,15 +21,18 @@ class MainViewModelTest {
     private lateinit var viewModel: MainViewModel
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var themeFlow: MutableStateFlow<Theme>
+    private lateinit var isOnlineFlow: MutableStateFlow<Boolean>
 
     @BeforeEach
     fun setUp() {
         playbackStateFlow = MutableStateFlow(PlaybackState.Idle)
         themeFlow = MutableStateFlow(Theme.SYSTEM)
+        isOnlineFlow = MutableStateFlow(true)
         viewModel = MainViewModel(
             observablePlayback = { playbackStateFlow },
             observeTheme = { themeFlow },
             observeDynamicColorEnabled = { flowOf(false) },
+            networkMonitor = { isOnlineFlow },
         )
     }
 
@@ -56,8 +59,22 @@ class MainViewModelTest {
                     theme = Theme.LIGHT,
                     isDynamicColorEnabled = false,
                     systemBars = SystemBars.of(isDark = false),
+                    isOffline = false,
                 ),
             )
+        }
+
+    @Test
+    fun `WHEN the connection goes away THEN says so, so the artwork that cannot load explains itself`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            viewModel.onSystemDarkThemeChanged(isSystemInDarkTheme = false)
+
+            // When
+            isOnlineFlow.value = false
+
+            // Then
+            assertThat((viewModel.uiState.value as MainUiState.Ready).isOffline).isTrue()
         }
 
     @Test

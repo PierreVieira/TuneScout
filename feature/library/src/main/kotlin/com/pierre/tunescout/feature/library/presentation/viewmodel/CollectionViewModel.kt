@@ -8,14 +8,19 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
 import com.pierre.tunescout.feature.library.presentation.mapper.toOptionsRoute
+import com.pierre.tunescout.feature.library.presentation.model.CollectionUiAction
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
+import com.pierre.tunescout.ui.component.R
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -26,12 +31,16 @@ class CollectionViewModel(
     private val key: CollectionKey,
     private val useCases: CollectionUseCases,
     private val playbackStarter: PlaybackStarter,
+    private val playableSongs: PlayableSongs,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
     collectionStreams: CollectionStreams,
     observablePlayback: ObservablePlayback,
 ) : ViewModel() {
     private val songPendingRemoval = MutableStateFlow<Song?>(null)
+
+    val uiAction: SharedFlow<CollectionUiAction>
+        field = MutableSharedFlow<CollectionUiAction>()
 
     val uiState: StateFlow<CollectionUiState> = combine(
         collectionStreams.observeTitle(key),
@@ -67,14 +76,29 @@ class CollectionViewModel(
         CollectionUiEvent.OnBackClicked -> navigator.navigateBack()
     }
 
+    /**
+     * A song the player cannot reach is refused with a message before it gets there, and playing the
+     * whole collection keeps only the songs it can reach.
+     */
     private fun play(song: Song) {
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
     }
 
     private fun playNow() {
         val songs = (uiState.value as? CollectionUiState.Loaded)?.songs.orEmpty()
         if (songs.isEmpty()) return
-        enqueuer.playNow(songs)
+        val playable = playableSongs.filterPlayable(songs)
+        if (playable.isEmpty()) return showSongUnavailableOffline()
+        enqueuer.playNow(playable)
+    }
+
+    private fun showSongUnavailableOffline() {
+        emitAction(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+    }
+
+    private fun emitAction(action: CollectionUiAction) {
+        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun requestRemoval(song: Song) {

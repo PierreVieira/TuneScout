@@ -3,6 +3,7 @@ package com.pierre.tunescout.core.model
 import com.google.common.truth.Truth.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class PlaybackStateTest {
     @Test
@@ -72,15 +73,44 @@ class PlaybackStateTest {
         assertThat(state.hasNext).isFalse()
     }
 
+    @Test
+    fun `GIVEN a song that just started WHEN asking what is before it THEN it is the entry behind it`() {
+        // Given
+        val state = stateOf(currentIndex = 1)
+
+        // When / Then
+        assertThat(state.previousEntry?.song?.id).isEqualTo(1L)
+    }
+
+    @Test
+    fun `GIVEN a song played past the window WHEN asking what is before it THEN there is nothing to go back to`() {
+        // Given
+        val state = stateOf(currentIndex = 1, position = PlaybackState.previousSongWindow + 1.seconds)
+
+        // When / Then
+        assertThat(state.previousEntry).isNull()
+    }
+
+    @Test
+    fun `GIVEN the first entry is playing WHEN asking what is before it THEN there is nothing to go back to`() {
+        // Given
+        val state = stateOf(currentIndex = 0)
+
+        // When / Then
+        assertThat(state.previousEntry).isNull()
+    }
+
     private fun stateOf(
         currentIndex: Int,
         status: PlaybackStatus = PlaybackStatus.Playing,
+        position: Duration = Duration.ZERO,
     ): PlaybackState = PlaybackState.Idle.copy(
         entries = listOf(1L, 2L, 3L).map { id ->
             QueueEntry(id = "entry-$id", song = songOf(id), source = QueueSource.Context)
         },
         currentIndex = currentIndex,
         status = status,
+        position = position,
     )
 
     private fun songOf(id: Long): Song = Song(

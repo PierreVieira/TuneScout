@@ -8,9 +8,14 @@ import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.feature.songoptions.domain.usecase.SongOptionsUseCases
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiAction
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
+import com.pierre.tunescout.ui.component.R
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -20,6 +25,7 @@ import kotlinx.coroutines.launch
 class SongOptionsViewModel(
     private val useCases: SongOptionsUseCases,
     private val enqueuer: Enqueuer,
+    private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     route: SongOptionsRoute,
 ) : ViewModel() {
@@ -27,6 +33,9 @@ class SongOptionsViewModel(
         song = null,
         isFavorite = false,
     )
+
+    val uiAction: SharedFlow<SongOptionsUiAction>
+        field = MutableSharedFlow<SongOptionsUiAction>()
 
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
@@ -44,10 +53,23 @@ class SongOptionsViewModel(
         SongOptionsUiEvent.OnDismissed -> navigator.navigateBack()
     }
 
+    /**
+     * A song the player cannot reach never enters the queue, so it does not stall on it. The sheet
+     * stays open instead, with the message saying why.
+     */
     private fun queue(enqueue: (List<Song>) -> Unit) {
         val song = uiState.value.song ?: return
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
         enqueue(listOf(song))
         navigator.navigateBack()
+    }
+
+    private fun showSongUnavailableOffline() {
+        emitAction(SongOptionsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+    }
+
+    private fun emitAction(action: SongOptionsUiAction) {
+        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun toggleFavorite() {

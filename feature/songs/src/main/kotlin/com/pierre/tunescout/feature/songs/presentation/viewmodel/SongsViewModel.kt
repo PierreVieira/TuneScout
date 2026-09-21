@@ -12,14 +12,19 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
+import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
+import com.pierre.tunescout.ui.component.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -39,6 +44,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class SongsViewModel(
     private val useCases: SongsUseCases,
     private val playbackStarter: PlaybackStarter,
+    private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
 ) : ViewModel() {
@@ -86,6 +92,9 @@ class SongsViewModel(
         ),
     )
 
+    val uiAction: SharedFlow<SongsUiAction>
+        field = MutableSharedFlow<SongsUiAction>()
+
     /** Emits every time the connection comes back, and never for the state the screen opened on. */
     private val reconnections: Flow<Unit>
         get() = isOnline.drop(1).filter { isOnline -> isOnline }.map { }
@@ -115,7 +124,16 @@ class SongsViewModel(
     }
 
     private fun play(song: Song) {
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
+    }
+
+    private fun showSongUnavailableOffline() {
+        emitAction(SongsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+    }
+
+    private fun emitAction(action: SongsUiAction) {
+        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun removeFromRecentlyPlayed() {

@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
+import com.pierre.tunescout.ui.component.ArtworkPlaceholderIcon
+import com.pierre.tunescout.ui.component.ArtworkState
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 
@@ -120,18 +126,33 @@ private fun QuadrantGrid(
     }
 }
 
+/**
+ * A cover that did not arrive leaves the tile to the placeholder, which says whether the image is
+ * simply missing or one connection away.
+ */
 @Composable
 private fun CoverImage(
     artwork: Artwork,
     size: LibraryArtworkSize,
     modifier: Modifier = Modifier,
 ) {
-    AsyncImage(
-        model = size.getUrl(artwork),
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = modifier.fillMaxSize(),
-    )
+    val url = size.getUrl(artwork)
+    var state by remember(url) { mutableStateOf(ArtworkState.of(url)) }
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        AsyncImage(
+            model = url,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            onState = { newState -> state = ArtworkState.of(painterState = newState, url = url) },
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (state == ArtworkState.FAILED || state == ArtworkState.EMPTY) {
+            ArtworkPlaceholderIcon(
+                hasFailed = state == ArtworkState.FAILED,
+                modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
+            )
+        }
+    }
 }
 
 @Composable
@@ -146,10 +167,8 @@ private fun FavoritesIcon() {
 
 @Composable
 private fun PlaceholderIcon() {
-    Icon(
-        imageVector = TuneScoutIcons.musicList,
-        contentDescription = null,
-        tint = TuneScoutColors.elementPlaceholder,
+    ArtworkPlaceholderIcon(
+        hasFailed = false,
         modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
     )
 }

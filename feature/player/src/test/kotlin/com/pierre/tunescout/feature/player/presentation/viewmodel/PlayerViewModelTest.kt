@@ -7,13 +7,16 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.player.presentation.model.PlayerUiAction
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
+import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +27,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class PlayerViewModelTest {
@@ -32,6 +36,7 @@ class PlayerViewModelTest {
     private lateinit var playbackStarter: PlaybackStarter
     private lateinit var transportControls: TransportControls
     private lateinit var navigator: Navigator
+    private lateinit var actions: MutableList<PlayerUiAction>
 
     @Test
     fun `GIVEN a cached song and idle playback WHEN observing THEN shows the route song paused at zero`() =
@@ -154,33 +159,152 @@ class PlayerViewModelTest {
             assertThat(state).isEqualTo(PlayerUiState.NotFound)
         }
 
+    @Test
+    fun `GIVEN the shown song is one the player cannot reach WHEN clicking play pause THEN says so instead`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(routeSong = song(id = 1), playableSongIds = emptySet())
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(actions).containsExactly(PlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+            verify(exactly = 0) { transportControls.togglePlayPause() }
+        }
+
+    @Test
+    fun `GIVEN a song the player cannot reach is playing WHEN clicking play pause THEN still pauses it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 1),
+                playback = playing(song(id = 1)),
+                playableSongIds = emptySet(),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnPlayPauseClicked)
+
+            // Then
+            verify { transportControls.togglePlayPause() }
+        }
+
+    @Test
+    fun `GIVEN the next song is one the player cannot reach WHEN skipping to it THEN says so instead`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 1),
+                playback = playing(song = song(id = 1), songs = listOf(song(id = 1), song(id = 2))),
+                playableSongIds = setOf(1),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnSkipNextClicked)
+
+            // Then
+            assertThat(actions).containsExactly(PlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { transportControls.skipToNext() }
+        }
+
+    @Test
+    fun `GIVEN the song before this one cannot be reached WHEN going back THEN says so instead`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 2),
+                playback = playing(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 1), song(id = 2)),
+                    position = Duration.ZERO,
+                ),
+                playableSongIds = setOf(2),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnSkipPreviousClicked)
+
+            // Then
+            assertThat(actions).containsExactly(PlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { transportControls.skipToPrevious() }
+        }
+
+    @Test
+    fun `GIVEN the song is past the window WHEN going back THEN starts it over, whatever came before it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 2),
+                playback = playing(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 1), song(id = 2)),
+                    position = PlaybackState.previousSongWindow + 1.seconds,
+                ),
+                playableSongIds = setOf(2),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnSkipPreviousClicked)
+
+            // Then
+            assertThat(actions).isEmpty()
+            verify { transportControls.skipToPrevious() }
+        }
+
+    @Test
+    fun `GIVEN the song before this one can be reached WHEN going back THEN goes back to it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 2),
+                playback = playing(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 1), song(id = 2)),
+                    position = Duration.ZERO,
+                ),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnSkipPreviousClicked)
+
+            // Then
+            verify { transportControls.skipToPrevious() }
+        }
+
     private fun TestScope.prepareScenario(
         routeSong: Song?,
         playback: PlaybackState = PlaybackState.Idle,
+        playableSongIds: Set<Long>? = null,
     ) {
         playbackStateFlow = MutableStateFlow(playback)
         playbackStarter = mockk(relaxUnitFun = true)
         transportControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
+        actions = mutableListOf()
         viewModel = PlayerViewModel(
             route = PlayerRoute(songId = 1),
             observeSong = { flowOf(routeSong) },
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
+            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             transportControls = transportControls,
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
+        backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
 
     private fun playing(
         song: Song,
         songs: List<Song> = listOf(song),
+        position: Duration = 5.seconds,
     ): PlaybackState = playbackState(
         songs = songs,
         currentIndex = songs.indexOfFirst { queued -> queued.id == song.id },
-        position = 5.seconds,
+        position = position,
         duration = 30.seconds,
     )
 

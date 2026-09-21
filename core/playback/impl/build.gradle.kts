@@ -9,6 +9,7 @@ android {
 dependencies {
     implementation(projects.core.playback.api)
     implementation(projects.core.database.api)
+    implementation(projects.core.network.api)
     implementation(projects.core.utils)
 
     implementation(libs.androidx.core.ktx)

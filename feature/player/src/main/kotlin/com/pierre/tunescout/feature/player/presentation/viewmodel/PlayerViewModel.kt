@@ -10,26 +10,47 @@ import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.player.domain.usecase.ObserveSong
+import com.pierre.tunescout.feature.player.presentation.model.PlayerUiAction
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
+import com.pierre.tunescout.ui.component.R
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class PlayerViewModel(
     private val route: PlayerRoute,
     private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
+    private val playableSongs: PlayableSongs,
     private val transportControls: TransportControls,
     private val navigator: Navigator,
     observeSong: ObserveSong,
 ) : ViewModel() {
+    private val playback: PlaybackState
+        get() = observablePlayback.observePlaybackState().value
+
     private val currentSong: Song?
-        get() = observablePlayback.observePlaybackState().value.currentSong
+        get() = playback.currentSong
+
+    /** The song the player would move on to, and nothing while the queue ends on the current one. */
+    private val nextSong: Song?
+        get() = playback.upcomingEntries.firstOrNull()?.song
+
+    /** The song the player would go back to, and nothing while it would start this one over. */
+    private val previousSong: Song?
+        get() = playback.previousEntry?.song
+
+    val uiAction: SharedFlow<PlayerUiAction>
+        field = MutableSharedFlow<PlayerUiAction>()
 
     val uiState: StateFlow<PlayerUiState> = combine(
         observeSong(route.songId),
@@ -40,16 +61,22 @@ class PlayerViewModel(
     fun onEvent(event: PlayerUiEvent) = when (event) {
         PlayerUiEvent.OnPlayPauseClicked -> togglePlayPause()
         is PlayerUiEvent.OnSeekFinished -> transportControls.seekTo(event.position)
-        PlayerUiEvent.OnSkipNextClicked -> transportControls.skipToNext()
-        PlayerUiEvent.OnSkipPreviousClicked -> transportControls.skipToPrevious()
+        PlayerUiEvent.OnSkipNextClicked -> skipToNext()
+        PlayerUiEvent.OnSkipPreviousClicked -> skipToPrevious()
         PlayerUiEvent.OnRepeatClicked -> transportControls.toggleRepeat()
         PlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
         PlayerUiEvent.OnBackClicked -> navigator.navigateBack()
         PlayerUiEvent.OnMoreClicked -> navigateToOptions()
     }
 
+    /**
+     * Pausing is always honoured; starting is not. A song the player cannot reach is refused with a
+     * message, whether it would be started from the beginning or resumed where it stopped.
+     */
     private fun togglePlayPause() {
         val shownSong = (uiState.value as? PlayerUiState.Loaded)?.song ?: return
+        if (playback.isPlaying) return transportControls.togglePlayPause()
+        if (!playableSongs.isPlayable(shownSong)) return showSongUnavailableOffline()
         if (currentSong?.id == shownSong.id) {
             transportControls.togglePlayPause()
         } else {
@@ -59,6 +86,31 @@ class PlayerViewModel(
                 context = PlaybackContext.SingleSong,
             )
         }
+    }
+
+    /** The next song was queued while the player could reach it, which it may no longer be able to. */
+    private fun skipToNext() {
+        val next = nextSong ?: return transportControls.skipToNext()
+        if (!playableSongs.isPlayable(next)) return showSongUnavailableOffline()
+        transportControls.skipToNext()
+    }
+
+    /**
+     * Going back is refused on the same grounds as going on, and only when it would leave the
+     * current song: starting the song the player is already on over asks nothing of the network.
+     */
+    private fun skipToPrevious() {
+        val previous = previousSong ?: return transportControls.skipToPrevious()
+        if (!playableSongs.isPlayable(previous)) return showSongUnavailableOffline()
+        transportControls.skipToPrevious()
+    }
+
+    private fun showSongUnavailableOffline() {
+        emitAction(PlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+    }
+
+    private fun emitAction(action: PlayerUiAction) {
+        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun navigateToOptions() {

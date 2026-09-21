@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.Theme
@@ -36,6 +37,7 @@ private const val SECOND_LINE_WIDTH_FRACTION = 0.85f
 private const val THIRD_LINE_WIDTH_FRACTION = 0.7f
 private const val OTHER_LINES_ALPHA = 0.7f
 private const val SPLIT_STOP = 0.5f
+private const val STATIC_ACCENT_ALPHA = 0.6f
 
 @Composable
 internal fun ThemePreviewCard(
@@ -46,6 +48,7 @@ internal fun ThemePreviewCard(
     val colors = theme.toPreviewColors(
         light = colorPalette(isDark = false, isDynamicColorEnabled = isDynamicColorEnabled),
         dark = colorPalette(isDark = true, isDynamicColorEnabled = isDynamicColorEnabled),
+        accentAlpha = if (isDynamicColorEnabled) 1f else STATIC_ACCENT_ALPHA,
     )
     Column(
         modifier = modifier
@@ -98,10 +101,11 @@ private fun PreviewLine(
 private fun Theme.toPreviewColors(
     light: TuneScoutColorPalette,
     dark: TuneScoutColorPalette,
+    accentAlpha: Float,
 ): ThemePreviewColors = when (this) {
-    Theme.LIGHT -> light.toPreviewColors()
+    Theme.LIGHT -> light.toPreviewColors(accentAlpha)
 
-    Theme.DARK -> dark.toPreviewColors()
+    Theme.DARK -> dark.toPreviewColors(accentAlpha)
 
     Theme.SYSTEM -> ThemePreviewColors(
         background = Brush.linearGradient(
@@ -110,13 +114,22 @@ private fun Theme.toPreviewColors(
         ),
         firstLine = light.textSecondary,
         otherLines = light.textSecondary.copy(alpha = OTHER_LINES_ALPHA),
-        accent = light.trackActive,
+        accent = light.toPreviewAccent(accentAlpha),
     )
 }
 
-private fun TuneScoutColorPalette.toPreviewColors(): ThemePreviewColors = ThemePreviewColors(
+private fun TuneScoutColorPalette.toPreviewColors(accentAlpha: Float): ThemePreviewColors = ThemePreviewColors(
     background = SolidColor(background),
     firstLine = textSecondary,
     otherLines = textSecondary.copy(alpha = OTHER_LINES_ALPHA),
-    accent = trackActive,
+    accent = toPreviewAccent(accentAlpha),
 )
+
+/**
+ * The static accent is loud at this size, so it is mixed into the background to calm it down. The
+ * dynamic one keeps [alpha] at 1: the wallpaper already picked how loud it is.
+ *
+ * @return the accent at [alpha], made opaque over this palette's background.
+ */
+private fun TuneScoutColorPalette.toPreviewAccent(alpha: Float): Color =
+    accent.copy(alpha = alpha).compositeOver(background)

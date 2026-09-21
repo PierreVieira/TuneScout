@@ -10,17 +10,17 @@ import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
-import com.pierre.tunescout.core.playback.PreviewCache
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
-import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiAction
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
+import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.awaitCancellation
@@ -289,7 +289,7 @@ class AlbumViewModelTest {
             runCurrent()
 
             // Then
-            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.album_song_unavailable_offline))
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
             verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
         }
 
@@ -414,7 +414,7 @@ class AlbumViewModelTest {
             runCurrent()
 
             // Then
-            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.album_song_unavailable_offline))
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
             verify(exactly = 0) { enqueuer.playNow(any()) }
         }
 
@@ -502,7 +502,7 @@ class AlbumViewModelTest {
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
             enqueuer = enqueuer,
-            previewCache = PreviewCache { song -> song.id in cachedPreviews },
+            playableSongs = PlayableSongs { song -> isOnline.value || song.id in cachedPreviews },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
