@@ -1,5 +1,8 @@
 package com.pierre.tunescout.feature.library.presentation.content
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -95,7 +98,7 @@ class LibraryContentTest {
     }
 
     @Test
-    fun theHeaderOpensSearchAndPlaylistCreation() = compose.use {
+    fun theHeaderOpensSearch() = compose.use {
         setContent {
             TuneScoutTheme {
                 LibraryContent(uiState = state(), onEvent = events::add)
@@ -103,13 +106,28 @@ class LibraryContentTest {
         }
 
         onNodeWithContentDescription("Search your library").performClick()
+
+        assertThat(events).containsExactly(LibraryUiEvent.OnSearchClicked)
+    }
+
+    @Test
+    fun theFloatingButtonCreatesAPlaylistInBothModes() = compose.use {
+        var viewMode by mutableStateOf(LibraryViewMode.LIST)
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(uiState = state(viewMode = viewMode), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Create playlist").performClick()
+        viewMode = LibraryViewMode.GRID
         onNodeWithContentDescription("Create playlist").performClick()
 
         assertThat(events)
             .containsExactly(
-                LibraryUiEvent.OnSearchClicked,
                 LibraryUiEvent.OnCreatePlaylistClicked,
-            ).inOrder()
+                LibraryUiEvent.OnCreatePlaylistClicked,
+            )
     }
 
     private fun state(

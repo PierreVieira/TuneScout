@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.songs.presentation.component
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ private const val SEARCH_RESULTS_TAG = "search_results"
 @Composable
 internal fun SearchResultsList(
     searchResults: LazyPagingItems<SearchResultUiModel>,
+    listState: LazyListState,
     nowPlaying: NowPlaying?,
     favoriteSongIds: Set<Long>,
     isOffline: Boolean,
@@ -50,6 +52,7 @@ internal fun SearchResultsList(
             modifier = Modifier
                 .fillMaxSize()
                 .testTag(SEARCH_RESULTS_TAG),
+            state = listState,
             contentPadding = PaddingValues(
                 start = TuneScoutSpacing.large,
                 end = TuneScoutSpacing.medium,
