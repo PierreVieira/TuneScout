@@ -31,6 +31,7 @@ androidx-room = "3.0.3"
 androidx-sqlite = "2.7.1"
 androidx-test-core = "1.7.0"
 androidx-test-espresso = "3.7.0"
+androidx-test-orchestrator = "1.6.1"
 
 # KotlinX
 kotlinx-coroutines = "1.11.0"
@@ -93,6 +94,7 @@ androidx-room-testing = { module = "androidx.room3:room3-testing", version.ref =
 androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidx-sqlite" }
 androidx-test-core-ktx = { module = "androidx.test:core-ktx", version.ref = "androidx-test-core" }
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-test-espresso" }
+androidx-test-orchestrator = { module = "androidx.test:orchestrator", version.ref = "androidx-test-orchestrator" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-core" }
 
 # KotlinX
