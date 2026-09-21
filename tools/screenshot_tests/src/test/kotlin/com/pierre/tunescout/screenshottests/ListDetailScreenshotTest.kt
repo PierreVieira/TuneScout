@@ -40,6 +40,7 @@ internal class ListDetailScreenshotTest : ScreenshotTest() {
         unplayableSongIds = emptySet(),
         isPlaying = true,
         isShuffleEnabled = false,
+        isReordering = false,
     )
 
     @Test
