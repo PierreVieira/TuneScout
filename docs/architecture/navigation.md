@@ -31,8 +31,8 @@ from the root. Inject `Navigator` (`core/navigation`) into the ViewModel and cal
 - `navigateBack()` — pop the top entry
 - `navigateReplacingTop(route: NavKey)` — pop the current entry and push a route (the old
   `popUpTo(current) { inclusive = true }` pattern)
-- `navigateResettingTo(routes: List<NavKey>)` — replace the whole back stack, root first (see
-  [Deep links](#deep-links))
+- `navigateToDeepLink(route: NavKey)` — replace the whole back stack with the route and its synthetic
+  parents, root first (see [Deep links](#deep-links))
 
 ```kotlin
 internal class SongsViewModel(
@@ -126,9 +126,14 @@ or serializer decoding is needed.
 | `TuneScoutDeepLinkMatcher` | a URL back into a route, or `null` when it names none |
 | `SyntheticBackStackFactory` | the route plus its ancestors, root first |
 
-`MainActivity` parses the intent in `onCreate` and in `onNewIntent` — it is `singleTop`, so a widget
-tapped while the app is open lands on the running instance — and sends one `navigateResettingTo` with
-the synthetic back stack. The command is emitted *before* composition starts; the navigator's
+`MainActivity` hands the intent's URL to `MainViewModel.onDeepLinkReceived` in `onCreate` and in
+`onNewIntent` — it is `singleTop`, so a widget tapped while the app is open lands on the running
+instance. The ViewModel matches it and calls `navigateToDeepLink` with the route; `ChannelNavigator`
+builds the synthetic back stack through `SyntheticBackStackFactory` and emits one `ResetTo`. The
+activity knows nothing of the matcher or the navigator, so the whole path is unit-tested there.
+`onCreate` only does this on a fresh launch: a recreated activity (rotation, process death) still
+carries its launch intent, but the restored back stack already holds the deep link and whatever the
+user opened after it. The command is emitted *before* composition starts; the navigator's
 unlimited channel holds it until the collector attaches, so the first back stack the app draws is
 already the deep link's and the splash is never shown on top of a screen the user asked for.
 

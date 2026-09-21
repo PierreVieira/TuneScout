@@ -41,6 +41,34 @@ private fun rememberFullyExpandedSheetState(): SheetState =
     rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ```
 
+### When to comment
+
+Most declarations need no comment at all. Add a KDoc only when one of these is true:
+
+- **The code is not clear enough on its own.** A better name or an extracted function has already been
+  tried, and the reader still cannot tell what the declaration does or why it is shaped this way.
+- **There is a gotcha.** Something the code cannot show would surprise the next person to touch it, and
+  getting it wrong breaks something: a platform quirk, an ordering the code depends on, a case that looks
+  redundant but is not.
+
+A comment that repeats what the name and the body already say is noise. Leave it out.
+
+```kotlin
+// Wrong — the name and the body already say all of this
+/** Opens the route the URL names, if it names one. */
+fun onDeepLinkReceived(url: String?) {
+    val route = deepLinkMatcher.findRouteOrNull(url) ?: return
+    navigator.navigateToDeepLink(route)
+}
+
+// Correct — nothing in the body says why the call has to happen before composition
+/**
+ * The splash holds the first frame until the state is ready, so a state that learned the device's
+ * dark mode only from the composition would wait for a frame that waits for it.
+ */
+private fun reportSystemDarkTheme() { ... }
+```
+
 ### KDoc tags
 
 A KDoc follows the shape of the [official Kotlin documentation](https://kotlinlang.org/docs/kotlin-doc.html).
