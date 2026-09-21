@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_favorite">Aggiungi questo album ai preferiti</string>
+    <string name="album_unfavorite">Rimuovi questo album dalla libreria</string>
+    <string name="album_error_title">Impossibile caricare questo album</string>
+    <string name="album_error_description">Controlla la connessione e riprova.</string>
+    <string name="album_stale_notice">Impossibile aggiornare questo album. Viene mostrata la versione salvata su questo dispositivo.</string>
+    <string name="album_partial_notice">Impossibile caricare l\'intero album. Vengono mostrate solo le tracce salvate su questo dispositivo.</string>
+    <string name="album_play">Riproduci l\'album</string>
+    <string name="album_play_next">Riproduci l\'album come successivo</string>
+    <string name="album_add_to_queue">Aggiungi l\'album alla coda</string>
+    <string name="album_more_options">Altre opzioni per questo album</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_now_playing">In riproduzione</string>
+    <string name="player_not_found_title">Questo brano non è disponibile</string>
+    <string name="player_not_found_description">Potrebbe essere stato rimosso dal catalogo. Torna indietro e scegline un altro.</string>
+    <string name="player_failed">Impossibile riprodurre questa anteprima. Controlla la connessione e riprova.</string>
+    <string name="player_remaining_time">-%1$s</string>
+    <string name="player_position_description">%1$s di %2$s</string>
+    <string name="player_elapsed_description">%1$s riprodotto</string>
+    <string name="player_remaining_description">%1$s rimanente</string>
+    <string name="player_minutes_and_seconds">%1$s %2$s</string>
+    <string name="player_open_queue">Apri la coda</string>
+    <plurals name="player_minutes">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="other">%1$d minuti</item>
+    </plurals>
+    <plurals name="player_seconds">
+        <item quantity="one">%1$d secondo</item>
+        <item quantity="other">%1$d secondi</item>
+    </plurals>
+</resources>

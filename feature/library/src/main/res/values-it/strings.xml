@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_album">Album</string>
+    <string name="library_filter_playlists">Playlist</string>
+    <string name="library_filter_albums">Album</string>
+    <string name="library_title">La tua libreria</string>
+    <string name="library_favorites">Brani preferiti</string>
+    <string name="library_playlist">Playlist</string>
+    <string name="library_recents">Recenti</string>
+    <string name="library_open_search">Cerca nella tua libreria</string>
+    <string name="library_create_playlist">Crea playlist</string>
+    <string name="library_view_as_grid">Mostra come griglia</string>
+    <string name="library_view_as_list">Mostra come elenco</string>
+    <string name="library_open_item">Apri</string>
+    <string name="library_search_placeholder">Cerca nella tua libreria</string>
+    <string name="library_recent_searches">Ricerche recenti</string>
+    <string name="library_remove_recent_search">Rimuovi dalle ricerche recenti</string>
+    <string name="library_search_empty_title">Nessun risultato</string>
+    <string name="library_search_empty_description">Prova un altro nome di playlist.</string>
+    <string name="library_collection_empty_title">Ancora nessun brano</string>
+    <string name="library_collection_empty_description">I brani che aggiungi appaiono qui.</string>
+    <string name="library_delete_playlist">Elimina playlist</string>
+    <string name="library_collection_play_now">Riproduci ora</string>
+    <string name="library_collection_more_options">Altre opzioni per questa raccolta</string>
+    <string name="library_collection_play_next">Riproduci come successivo</string>
+    <string name="library_collection_add_to_queue">Aggiungi alla coda</string>
+    <string name="library_create_playlist_title">Dai un nome alla tua playlist</string>
+    <string name="library_create_playlist_placeholder">La mia playlist</string>
+    <string name="library_create_playlist_confirm">Crea</string>
+    <string name="library_create_playlist_cancel">Annulla</string>
+    <string name="library_confirm_cancel">Annulla</string>
+    <string name="library_delete_playlist_confirm_title">Eliminare questa playlist?</string>
+    <string name="library_delete_playlist_confirm_message">%1$s verrà eliminata definitivamente. I brani restano nella tua libreria.</string>
+    <string name="library_delete_playlist_confirm_action">Elimina</string>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d brano</item>
+        <item quantity="other">%1$d brani</item>
+    </plurals>
+</resources>
