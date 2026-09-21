@@ -77,9 +77,11 @@ root `build.gradle.kts`.
 
 To recapture one, play something on a device with a few songs in its history, take the screenshot
 with `adb exec-out screencap -p > shot.png`, and scale it down in halving steps like the generated
-ones. The two lock screen images are the whole screen at 520px wide, and `notification.png` is the media card cropped out of the quick panel, at the same width; each widget is cropped out of
-the same home screen capture at 600px wide. A new manual image also needs its name added to
-`manualScreenshots`, or the next regeneration deletes it.
+ones. The two lock screen images are the whole screen at 520px wide, and `notification.png` is the
+media card cropped out of the quick panel at the same width — cropped so no other notification and
+no network name ends up in the README. Each widget is cropped out of the same home screen capture
+at 600px wide. A new manual image also needs its name added to `manualScreenshots`, or the next
+regeneration deletes it.
 
 ## Where to edit
 
