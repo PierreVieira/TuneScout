@@ -6,6 +6,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.widget.R
 import com.pierre.tunescout.feature.widget.domain.model.WidgetState
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * The sample the widget picker is shown.
@@ -18,6 +19,13 @@ import kotlin.time.Duration
  */
 internal class WidgetPreviewContentFactory {
     /**
+     * A song caught part of the way through, so the picker shows a bar rather than an empty
+     * track. The length is the length of the previews the app plays.
+     */
+    private val sampleTotal: Duration = 30.seconds
+    private val sampleElapsed: Duration = 10.seconds
+
+    /**
      * @return a widget with a song on it, both skips live, and a full shortcut row. No artwork is
      * supplied: the covers are what the widget fills in from the listener's own library, and the
      * placeholder is what says so.
@@ -28,6 +36,8 @@ internal class WidgetPreviewContentFactory {
             isPlaying = false,
             hasPrevious = true,
             hasNext = true,
+            elapsed = sampleElapsed,
+            total = sampleTotal,
             shortcuts = createSampleShortcuts(context),
         ),
         songArtwork = null,
@@ -52,7 +62,7 @@ internal class WidgetPreviewContentFactory {
         albumTitle = "",
         artwork = Artwork(""),
         previewUrl = "",
-        duration = Duration.ZERO,
+        duration = sampleTotal,
         trackNumber = 0,
     )
 

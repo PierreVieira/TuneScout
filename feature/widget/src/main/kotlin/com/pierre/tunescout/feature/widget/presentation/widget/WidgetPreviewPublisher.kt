@@ -52,7 +52,26 @@ internal class WidgetPreviewPublisher(
      */
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private suspend fun publishPreview(receiver: KClass<out GlanceAppWidgetReceiver>) {
+        Log.w(TAG, "TEMPDBG calling setWidgetPreviews for ${receiver.simpleName}")
         val result = GlanceAppWidgetManager(context).setWidgetPreviews(receiver)
+        Log.w(TAG, "TEMPDBG result=$result for ${receiver.simpleName}")
+        try {
+            val am = android.appwidget.AppWidgetManager.getInstance(context)
+            val cn = android.content.ComponentName(context, receiver.java)
+            for (cat in intArrayOf(1, 2, 4, 7)) {
+                val rv = am.getWidgetPreview(cn, null, cat)
+                Log.w(TAG, "TEMPDBG stored cat=$cat -> ${rv != null} for ${receiver.simpleName}")
+            }
+            am.getInstalledProvidersForPackage(context.packageName, null).forEach { info ->
+                Log.w(
+                    TAG,
+                    "TEMPDBG info ${info.provider.shortClassName} genCats=${info.generatedPreviewCategories} " +
+                        "previewLayout=${info.previewLayout} previewImage=${info.previewImage}",
+                )
+            }
+        } catch (t: Throwable) {
+            Log.w(TAG, "TEMPDBG getWidgetPreview threw: $t")
+        }
         if (result == GlanceAppWidgetManager.SET_WIDGET_PREVIEWS_RESULT_RATE_LIMITED) {
             Log.i(TAG, "Rate limited; ${receiver.simpleName} keeps the preview it has.")
         }

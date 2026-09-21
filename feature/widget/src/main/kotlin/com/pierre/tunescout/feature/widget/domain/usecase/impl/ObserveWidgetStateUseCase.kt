@@ -9,6 +9,7 @@ import com.pierre.tunescout.feature.widget.domain.usecase.ObserveWidgetState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlin.time.Duration.Companion.seconds
 
 class ObserveWidgetStateUseCase(
     private val observablePlayback: ObservablePlayback,
@@ -16,8 +17,8 @@ class ObserveWidgetStateUseCase(
 ) : ObserveWidgetState {
     /**
      * @return the widget state, without the repeats the position ticker would otherwise cause:
-     * the state is mapped first and compared after, so only a change the widget can show reaches
-     * the launcher.
+     * the state is mapped first — which rounds the position down to its second — and compared
+     * after, so only a change the widget can show reaches the launcher.
      */
     override fun invoke(): Flow<WidgetState> = combine(
         observablePlayback.observePlaybackState(),
@@ -33,6 +34,8 @@ class ObserveWidgetStateUseCase(
         isPlaying = playback.isPlaying,
         hasPrevious = playback.hasPrevious,
         hasNext = playback.hasNext,
+        elapsed = playback.position.inWholeSeconds.seconds,
+        total = playback.totalDuration,
         shortcuts = shortcuts,
     )
 }

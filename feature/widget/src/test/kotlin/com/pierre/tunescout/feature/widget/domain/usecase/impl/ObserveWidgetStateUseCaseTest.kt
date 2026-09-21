@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class ObserveWidgetStateUseCaseTest {
@@ -46,6 +48,8 @@ class ObserveWidgetStateUseCaseTest {
                 isPlaying = true,
                 hasPrevious = false,
                 hasNext = true,
+                elapsed = Duration.ZERO,
+                total = firstSong.duration,
                 shortcuts = listOf(secondSong),
             ),
         )
@@ -72,6 +76,8 @@ class ObserveWidgetStateUseCaseTest {
                 isPlaying = false,
                 hasPrevious = true,
                 hasNext = false,
+                elapsed = Duration.ZERO,
+                total = secondSong.duration,
                 shortcuts = emptyList(),
             ),
         )
@@ -90,18 +96,65 @@ class ObserveWidgetStateUseCaseTest {
     }
 
     @Test
-    fun `GIVEN only the position moves WHEN observing THEN emits the state once`() = runTest {
+    fun `GIVEN the position moves within a second WHEN observing THEN emits the state once`() = runTest {
         // Given
         val playing = playbackState(songs = listOf(firstSong), status = PlaybackStatus.Playing)
         prepareScenario(playbackState = playing)
 
         // When / Then
         useCase().test {
-            assertThat(awaitItem().song).isEqualTo(firstSong)
-            playbackStates.value = playing.copy(position = 3.seconds)
-            playbackStates.value = playing.copy(position = 6.seconds)
+            assertThat(awaitItem().elapsed).isEqualTo(Duration.ZERO)
+            playbackStates.value = playing.copy(position = 250.milliseconds)
+            playbackStates.value = playing.copy(position = 750.milliseconds)
             expectNoEvents()
         }
+    }
+
+    @Test
+    fun `GIVEN the position crosses a second WHEN observing THEN emits it rounded down`() = runTest {
+        // Given
+        val playing = playbackState(songs = listOf(firstSong), status = PlaybackStatus.Playing)
+        prepareScenario(playbackState = playing)
+
+        // When / Then
+        useCase().test {
+            awaitItem()
+            playbackStates.value = playing.copy(position = 1_800.milliseconds)
+            assertThat(awaitItem().elapsed).isEqualTo(1.seconds)
+        }
+    }
+
+    @Test
+    fun `GIVEN a song the player has not measured WHEN observing THEN falls back to its own length`() = runTest {
+        // Given
+        prepareScenario(
+            playbackState = playbackState(songs = listOf(firstSong), duration = Duration.ZERO),
+        )
+
+        // When
+        val state = useCase().first()
+
+        // Then
+        assertThat(state.total).isEqualTo(firstSong.duration)
+        assertThat(state.progress).isEqualTo(0f)
+    }
+
+    @Test
+    fun `GIVEN a song halfway through WHEN observing THEN reports half the progress`() = runTest {
+        // Given
+        prepareScenario(
+            playbackState = playbackState(
+                songs = listOf(firstSong),
+                position = 15.seconds,
+                duration = 30.seconds,
+            ),
+        )
+
+        // When
+        val state = useCase().first()
+
+        // Then
+        assertThat(state.progress).isEqualTo(0.5f)
     }
 
     @Test
