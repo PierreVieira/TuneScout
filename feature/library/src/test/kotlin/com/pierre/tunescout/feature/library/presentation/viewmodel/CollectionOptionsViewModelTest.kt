@@ -5,14 +5,17 @@ import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
+import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiAction
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
+import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -29,6 +32,7 @@ class CollectionOptionsViewModelTest {
     private lateinit var viewModel: CollectionOptionsViewModel
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
+    private lateinit var actions: MutableList<CollectionOptionsUiAction>
     private lateinit var deletedPlaylistIds: MutableList<Long>
 
     @Test
@@ -176,13 +180,52 @@ class CollectionOptionsViewModelTest {
         verify(exactly = 0) { navigator.navigateBack() }
     }
 
+    @Test
+    fun `GIVEN only one song the player can reach WHEN queueing the collection THEN queues that one alone`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1), song(id = 2)),
+                playableSongIds = setOf(2),
+            )
+
+            // When
+            viewModel.onEvent(CollectionOptionsUiEvent.OnAddToQueueClicked)
+
+            // Then
+            verify { enqueuer.addToQueue(listOf(song(id = 2))) }
+        }
+
+    @Test
+    fun `GIVEN no song the player can reach WHEN queueing the collection THEN says so and keeps the sheet open`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playableSongIds = emptySet(),
+            )
+
+            // When
+            viewModel.onEvent(CollectionOptionsUiEvent.OnAddToQueueClicked)
+
+            // Then
+            assertThat(actions)
+                .containsExactly(CollectionOptionsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
     private fun TestScope.prepareScenario(
         key: CollectionKey,
         favorites: List<Song> = emptyList(),
         playlist: Playlist? = null,
         playlistSongs: List<Song> = emptyList(),
+        playableSongIds: Set<Long>? = null,
     ) {
         deletedPlaylistIds = mutableListOf()
+        actions = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         val useCases = CollectionUseCases(
@@ -198,9 +241,11 @@ class CollectionOptionsViewModelTest {
             useCases = useCases,
             collectionStreams = CollectionStreams(useCases),
             enqueuer = enqueuer,
+            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
+        backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
 

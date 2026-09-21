@@ -12,13 +12,13 @@ import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
-import com.pierre.tunescout.core.playback.PreviewCache
-import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiAction
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
+import com.pierre.tunescout.ui.component.R
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +37,7 @@ class AlbumViewModel(
     private val useCases: AlbumUseCases,
     private val playbackStarter: PlaybackStarter,
     private val enqueuer: Enqueuer,
-    private val previewCache: PreviewCache,
+    private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
 ) : ViewModel() {
@@ -116,7 +116,7 @@ class AlbumViewModel(
 
     private fun playNow() {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        val songs = findPlayableSongs(album.songs)
+        val songs = playableSongs.filterPlayable(album.songs)
         if (songs.isEmpty()) return showSongUnavailableOffline()
         enqueuer.playNow(songs)
     }
@@ -130,28 +130,22 @@ class AlbumViewModel(
     }
 
     /**
-     * With no connection only the previews on the device can play: a track whose preview is not
-     * there is refused with a message before it reaches the player, and the queue behind a track that
-     * is there keeps only the ones that are too, so it does not stall on the next. Playing the whole
-     * album follows the same rule.
+     * A track the player cannot reach is refused with a message before it gets there, and the queue
+     * behind one it can reach keeps only the tracks it can reach too. Playing the whole album follows
+     * the same rule.
      */
     private fun play(song: Song) {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        if (!isOnline.value && !previewCache.isCached(song)) return showSongUnavailableOffline()
-        val songs = findPlayableSongs(album.songs)
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
         playbackStarter.play(
             song = song,
-            songs = songs,
+            songs = playableSongs.filterPlayable(album.songs),
             context = PlaybackContext.Album(id = album.id, title = album.title),
         )
     }
 
-    /** @return every track of [songs] online, and only those whose preview is on the device offline. */
-    private fun findPlayableSongs(songs: List<Song>): List<Song> =
-        if (isOnline.value) songs else songs.filter(previewCache::isCached)
-
     private fun showSongUnavailableOffline() {
-        emitAction(AlbumUiAction.ShowSnackBar(R.string.album_song_unavailable_offline))
+        emitAction(AlbumUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
     }
 
     private fun emitAction(action: AlbumUiAction) {

@@ -4,7 +4,6 @@ import androidx.media3.common.C
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.ContentMetadata
 import com.pierre.tunescout.core.model.Song
-import com.pierre.tunescout.core.playback.PreviewCache
 
 /**
  * Reads [cache] the way the player writes it: [MediaCacheDataSourceFactory] keys each preview by its

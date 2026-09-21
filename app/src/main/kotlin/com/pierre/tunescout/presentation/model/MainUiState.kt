@@ -15,5 +15,6 @@ sealed interface MainUiState {
         val theme: Theme,
         val isDynamicColorEnabled: Boolean,
         val systemBars: SystemBars,
+        val isOffline: Boolean,
     ) : MainUiState
 }

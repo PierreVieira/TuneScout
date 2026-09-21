@@ -9,17 +9,24 @@ import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.QueueControls
+import com.pierre.tunescout.feature.queue.presentation.model.QueueUiAction
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
+import com.pierre.tunescout.ui.component.R
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class QueueViewModel(
     private val observablePlayback: ObservablePlayback,
     private val queueControls: QueueControls,
+    private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
 ) : ViewModel() {
     private val emptyUiState = QueueUiState(
@@ -30,6 +37,9 @@ class QueueViewModel(
         upNext = emptyList(),
     )
 
+    val uiAction: SharedFlow<QueueUiAction>
+        field = MutableSharedFlow<QueueUiAction>()
+
     val uiState: StateFlow<QueueUiState> = observablePlayback
         .observePlaybackState()
         .map(::toUiState)
@@ -37,9 +47,31 @@ class QueueViewModel(
 
     fun onEvent(event: QueueUiEvent) = when (event) {
         QueueUiEvent.OnNowPlayingClicked -> openPlayer()
-        is QueueUiEvent.OnEntryClicked -> queueControls.skipTo(event.entryId)
+        is QueueUiEvent.OnEntryClicked -> skipTo(event.entryId)
         is QueueUiEvent.OnRemoveClicked -> queueControls.removeFromQueue(event.entryId)
         is QueueUiEvent.OnEntryMoved -> move(from = event.fromEntryId, to = event.toEntryId)
+    }
+
+    /**
+     * An entry was queued while the player could reach its song, which it may no longer be able to:
+     * jumping to it then would leave the player stuck on it instead of playing.
+     */
+    private fun skipTo(entryId: String) {
+        val song = observablePlayback
+            .observePlaybackState()
+            .value.entries
+            .firstOrNull { entry -> entry.id == entryId }
+            ?.song ?: return
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        queueControls.skipTo(entryId)
+    }
+
+    private fun showSongUnavailableOffline() {
+        emitAction(QueueUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+    }
+
+    private fun emitAction(action: QueueUiAction) {
+        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun openPlayer() {

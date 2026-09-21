@@ -6,12 +6,15 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiAction
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
+import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +31,7 @@ class MiniPlayerViewModelTest {
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var transportControls: TransportControls
     private lateinit var navigator: Navigator
+    private lateinit var actions: MutableList<MiniPlayerUiAction>
 
     @Test
     fun `GIVEN a song is playing WHEN observing THEN exposes it with its progress`() =
@@ -160,16 +164,55 @@ class MiniPlayerViewModelTest {
         verify { transportControls.togglePlayPause() }
     }
 
-    private fun TestScope.prepareScenario(playback: PlaybackState) {
+    @Test
+    fun `GIVEN the bar is paused on a song the player cannot reach WHEN clicking play THEN says so instead`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Paused),
+                playableSongIds = emptySet(),
+            )
+
+            // When
+            viewModel.onEvent(MiniPlayerUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(actions).containsExactly(MiniPlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { transportControls.togglePlayPause() }
+        }
+
+    @Test
+    fun `GIVEN a song the player cannot reach is playing WHEN clicking pause THEN still pauses it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playback = playbackState(songs = listOf(song(id = 1))),
+                playableSongIds = emptySet(),
+            )
+
+            // When
+            viewModel.onEvent(MiniPlayerUiEvent.OnPlayPauseClicked)
+
+            // Then
+            verify { transportControls.togglePlayPause() }
+        }
+
+    private fun TestScope.prepareScenario(
+        playback: PlaybackState,
+        playableSongIds: Set<Long>? = null,
+    ) {
         playbackStateFlow = MutableStateFlow(playback)
         transportControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
+        actions = mutableListOf()
         viewModel = MiniPlayerViewModel(
             observablePlayback = { playbackStateFlow },
             transportControls = transportControls,
+            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
+        backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
 

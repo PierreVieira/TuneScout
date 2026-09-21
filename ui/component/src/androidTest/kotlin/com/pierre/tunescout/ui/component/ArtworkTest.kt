@@ -14,9 +14,12 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
+import androidx.test.platform.app.InstrumentationRegistry
 import coil3.ColorImage
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImagePainter
@@ -27,6 +30,7 @@ import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.network.LocalIsOffline
 import de.mannodermaus.junit5.compose.createComposeExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -39,6 +43,10 @@ class ArtworkTest {
 
     private val artworkSize = 64.dp
     private val artworkCornerPercent = 15
+    private val offlineDescription: String = InstrumentationRegistry
+        .getInstrumentation()
+        .targetContext
+        .getString(R.string.ui_artwork_unavailable_offline)
 
     @Test
     fun whileTheImageLoadsTheBoxShimmersWithoutThePlaceholderIcon() = compose.use {
@@ -104,14 +112,50 @@ class ArtworkTest {
         assertThat(pixels[pixels.width / 2, pixels.height / 2]).isEqualTo(Color.Magenta)
     }
 
+    @Test
+    fun whenTheImageFailsWhileOfflineTheBoxSaysTheArtworkIsOneConnectionAway() = compose.use {
+        setContent {
+            Content(
+                isOffline = true,
+                state = { request -> AsyncImagePainter.State.Error(null, errorResult(request)) },
+            )
+        }
+
+        onNodeWithContentDescription(offlineDescription).assertIsDisplayed()
+    }
+
+    @Test
+    fun whenTheImageFailsWhileOnlineTheBoxKeepsThePlaceholderIconSilent() = compose.use {
+        setContent {
+            Content(state = { request -> AsyncImagePainter.State.Error(null, errorResult(request)) })
+        }
+
+        onNodeWithContentDescription(offlineDescription).assertDoesNotExist()
+    }
+
+    @Test
+    fun givenNoUrlWhileOfflineTheBoxKeepsThePlaceholderIconSilent() = compose.use {
+        setContent {
+            Content(
+                url = "",
+                isOffline = true,
+                state = { request -> AsyncImagePainter.State.Error(null, errorResult(request)) },
+            )
+        }
+
+        onNodeWithContentDescription(offlineDescription).assertDoesNotExist()
+    }
+
     @Composable
     private fun Content(
         url: String = ARTWORK_URL,
         sharedKey: SongSharedKey? = null,
+        isOffline: Boolean = false,
         state: (ImageRequest) -> AsyncImagePainter.State,
     ) {
         CompositionLocalProvider(
             LocalInspectionMode provides true,
+            LocalIsOffline provides isOffline,
             LocalAsyncImagePreviewHandler provides AsyncImagePreviewHandler { _, request -> state(request) },
         ) {
             Box(modifier = Modifier.background(TuneScoutColors.background)) {
