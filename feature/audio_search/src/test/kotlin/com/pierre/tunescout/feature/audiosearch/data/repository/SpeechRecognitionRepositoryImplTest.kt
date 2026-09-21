@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.audiosearch.data.repository
 
 import android.content.Intent
+import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.SpeechRecognizer
 import app.cash.turbine.test
@@ -15,6 +16,9 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import io.mockk.verifyOrder
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -89,5 +93,31 @@ class SpeechRecognitionRepositoryImplTest {
 
         // Then
         verify(exactly = 1) { recognizer.destroy() }
+    }
+
+    @Test
+    fun `GIVEN a collector that has not caught up WHEN the session ends THEN the final result is not dropped`() =
+        runTest {
+            // Given
+            val events = mutableListOf<SpeechRecognitionEvent>()
+            val collection = launch { repository.observeSpeech().toList(events) }
+            runCurrent()
+
+            // When
+            repeat(LEVELS_BEYOND_THE_DEFAULT_BUFFER) { listener.captured.onRmsChanged(10f) }
+            listener.captured.onResults(results("daft punk"))
+            collection.join()
+
+            // Then
+            assertThat(events).hasSize(LEVELS_BEYOND_THE_DEFAULT_BUFFER + 1)
+            assertThat(events.last()).isEqualTo(SpeechRecognitionEvent.Recognized("daft punk"))
+        }
+
+    private fun results(vararg candidates: String): Bundle = mockk {
+        every { getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION) } returns ArrayList(candidates.toList())
+    }
+
+    private companion object {
+        const val LEVELS_BEYOND_THE_DEFAULT_BUFFER = 200
     }
 }

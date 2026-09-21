@@ -5,8 +5,10 @@ import com.pierre.tunescout.feature.audiosearch.data.datasource.SpeechEventListe
 import com.pierre.tunescout.feature.audiosearch.data.datasource.SpeechRecognizerFactory
 import com.pierre.tunescout.feature.audiosearch.domain.model.SpeechRecognitionEvent
 import com.pierre.tunescout.feature.audiosearch.domain.repository.SpeechRecognitionRepository
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 
 internal class SpeechRecognitionRepositoryImpl(
@@ -17,6 +19,12 @@ internal class SpeechRecognitionRepositoryImpl(
      * The platform only lets a `SpeechRecognizer` be created, started and destroyed on the main
      * thread, and all three happen in the collector's context: collect this from the main
      * dispatcher, which is where `viewModelScope` already runs.
+     *
+     * The listener is a plain callback, so it can only `trySend`, which drops the event when the
+     * buffer is full. The buffer is unlimited so that never happens: a dropped level would not
+     * matter, but the event that ends the session is followed by `close()`, and losing it would
+     * complete the flow with no result and leave the sheet listening forever. A session lasts
+     * seconds, so the buffer never holds more than a handful of levels.
      *
      * @return one listening session, which completes after the event that ends it.
      */
@@ -29,7 +37,7 @@ internal class SpeechRecognitionRepositoryImpl(
         recognizer.setRecognitionListener(listener)
         recognizer.startListening(listeningIntentFactory.create())
         awaitClose { recognizer.destroy() }
-    }
+    }.buffer(Channel.UNLIMITED)
 
     private val SpeechRecognitionEvent.endsSession: Boolean
         get() = this is SpeechRecognitionEvent.Recognized || this is SpeechRecognitionEvent.Failed
