@@ -92,6 +92,7 @@ playlist, backup, and a few more — is listed in [Not done](docs/not-done.md).
 | [Decisions and trade-offs](docs/decisions.md) | Why each larger choice was made, and what it costs. |
 | [Not done](docs/not-done.md) | What is left out, and why. |
 | [Code quality](docs/code-quality.md) | ktlint, the custom ruleset, coverage, and what CI runs. |
+| [Continuous integration](docs/ci.md) | Every workflow, when it runs, the Gradle cache, and how to add one. |
 | [Testing](docs/testing/README.md) | How the suites are organised and what each layer covers. |
 | [README screenshots](docs/screenshots.md) | How the images above are generated, and which ones are captured by hand. |
 
