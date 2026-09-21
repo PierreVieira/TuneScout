@@ -45,7 +45,7 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `widgets.png` | — | — | **Manual capture**: both home screen widgets on a device, cropped to them. |
 | `lock_screen.png` | — | — | **Manual capture**: the media controls on the locked screen. |
 | `lock_screen_expanded.png` | — | — | **Manual capture**: the same controls after a tap on them, expanded to the cover, the timeline and the like button. |
-| `notification.png` | — | — | **Manual capture**: the media controls in the notification shade. |
+| `notification.png` | — | — | **Manual capture**: the media controls in the notification shade, like button included. |
 
 Every generator renders under `Theme.DARK` rather than the default `Theme.SYSTEM`: Robolectric
 reports a light system theme, so leaving it to the default would silently flip every image the
