@@ -17,4 +17,12 @@ fun interface PlayableSongs {
      * @return the songs of [songs] that [isPlayable], in the same order.
      */
     fun filterPlayable(songs: List<Song>): List<Song> = songs.filter(::isPlayable)
+
+    /**
+     * A list draws the songs it cannot play dimmer, so the ones a tap would refuse are told apart
+     * before the tap.
+     *
+     * @return the ids of the songs of [songs] that are not [isPlayable].
+     */
+    fun findUnplayableIds(songs: List<Song>): Set<Long> = songs.filterNot(::isPlayable).mapTo(mutableSetOf(), Song::id)
 }

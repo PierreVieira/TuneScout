@@ -72,6 +72,7 @@ class AlbumContentTest {
                         nowPlaying = null,
                         isFavorite = false,
                         isStale = false,
+                        unplayableSongIds = emptySet(),
                     ),
                     onEvent = events::add,
                 )
@@ -100,6 +101,7 @@ class AlbumContentTest {
                         nowPlaying = null,
                         isFavorite = false,
                         isStale = false,
+                        unplayableSongIds = emptySet(),
                     ),
                     onEvent = events::add,
                 )
@@ -179,6 +181,7 @@ class AlbumContentTest {
         nowPlaying = null,
         isFavorite = isFavorite,
         isStale = isStale,
+        unplayableSongIds = emptySet(),
     )
 
     private companion object {

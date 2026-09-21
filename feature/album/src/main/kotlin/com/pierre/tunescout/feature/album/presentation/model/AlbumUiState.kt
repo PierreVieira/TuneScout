@@ -15,11 +15,15 @@ sealed interface AlbumUiState {
      * @property isStale the album is the one on the device and the call meant to confirm it
      * failed. The rows stay on screen — they are what the user came for — and the screen says so
      * instead of pretending they are fresh.
+     * @property unplayableSongIds which of the tracks the player cannot reach right now — offline,
+     * the ones whose preview never reached the device. Their rows are drawn dimmer, so a tap that
+     * is refused is seen coming.
      */
     data class Loaded(
         val album: Album,
         val nowPlaying: NowPlaying?,
         val isFavorite: Boolean,
         val isStale: Boolean,
+        val unplayableSongIds: Set<Long>,
     ) : AlbumUiState
 }

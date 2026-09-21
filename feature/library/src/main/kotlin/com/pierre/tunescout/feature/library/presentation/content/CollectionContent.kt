@@ -95,6 +95,7 @@ private fun CollectionLoadedContent(
                 songs = uiState.songs,
                 nowPlaying = uiState.nowPlaying,
                 songPendingRemoval = uiState.songPendingRemoval,
+                unplayableSongIds = uiState.unplayableSongIds,
                 onEvent = onEvent,
             )
         }
@@ -124,6 +125,7 @@ private fun SongList(
     songs: List<Song>,
     nowPlaying: NowPlaying?,
     songPendingRemoval: Song?,
+    unplayableSongIds: Set<Long>,
     onEvent: (CollectionUiEvent) -> Unit,
 ) {
     LazyColumn(
@@ -146,6 +148,7 @@ private fun SongList(
                         isCurrentSong = song.id == nowPlaying?.songId,
                         isPlaying = nowPlaying?.isPlaying == true,
                     ),
+                    isUnavailable = song.id in unplayableSongIds,
                     sharedSongId = song.id,
                     onClick = { onEvent(CollectionUiEvent.OnSongClicked(song)) },
                     trailing = { SongRowMoreAction { onEvent(CollectionUiEvent.OnSongOptionsClicked(song)) } },

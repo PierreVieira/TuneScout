@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -34,7 +35,15 @@ private val rowCornerRadius = 8.dp
 private const val ARTWORK_CORNER_PERCENT = 15
 private val actionButtonSize = 36.dp
 private val actionIconSize = 20.dp
+private const val UNAVAILABLE_ALPHA = 0.38f
 
+/**
+ * A row for one song: its artwork, its title and its artist, and whatever a screen puts at its end.
+ *
+ * A song the player cannot reach — offline, one whose preview never reached the device — has that
+ * part of the row drawn faded, so a tap that is refused is seen coming. Only the song itself fades:
+ * the row still answers taps, and the actions at its end work as they always do.
+ */
 @Composable
 fun SongRow(
     title: String,
@@ -44,6 +53,7 @@ fun SongRow(
     modifier: Modifier = Modifier,
     artworkSize: Dp = 52.dp,
     nowPlaying: NowPlayingState = NowPlayingState.None,
+    isUnavailable: Boolean = false,
     sharedSongId: Long? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
@@ -59,7 +69,9 @@ fun SongRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .alpha(if (isUnavailable) UNAVAILABLE_ALPHA else 1f),
                 horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

@@ -6,15 +6,18 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.paging.map
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
+import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
+import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
@@ -47,6 +50,7 @@ class SongsViewModel(
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
+    observablePlayableSongs: ObservablePlayableSongs,
 ) : ViewModel() {
     private val searchDebounce = 300.milliseconds
     private val idleLoadStates = LoadStates(
@@ -66,19 +70,32 @@ class SongsViewModel(
         .distinctUntilChanged()
         .stateIn(scope = viewModelScope, started = SharingStarted.WhileSubscribed(), initialValue = true)
 
+    /**
+     * The player's reach, re-answered every time the connection comes or goes, so a list on screen
+     * redraws instead of keeping the answer it was built with.
+     */
+    private val playableSongsNow: Flow<PlayableSongs> = observablePlayableSongs.observePlayableSongs()
+
+    /**
+     * The connection and the reach it gives the player change at the same moment, and the state
+     * reads one for the banner and the other for the rows, so they arrive as one.
+     */
+    private val connection: Flow<Connection> = combine(isOnline, playableSongsNow, ::Connection)
+
     val uiState: StateFlow<SongsUiState> = combine(
         query,
         useCases.observeRecentlyPlayed(),
         observablePlayback.observePlaybackState(),
         songPendingRemoval,
-        isOnline,
-    ) { query, recentlyPlayed, playback, pendingRemoval, isOnline ->
+        connection,
+    ) { query, recentlyPlayed, playback, pendingRemoval, connection ->
         SongsUiState(
             query = query,
             recentlyPlayed = recentlyPlayed,
             nowPlaying = playback.nowPlaying,
             songPendingRemoval = pendingRemoval,
-            isOffline = !isOnline,
+            isOffline = !connection.isOnline,
+            unplayableSongIds = connection.playableSongs.findUnplayableIds(recentlyPlayed),
         )
     }.stateIn(
         scope = viewModelScope,
@@ -89,6 +106,7 @@ class SongsViewModel(
             nowPlaying = null,
             songPendingRemoval = null,
             isOffline = false,
+            unplayableSongIds = emptySet(),
         ),
     )
 
@@ -104,13 +122,16 @@ class SongsViewModel(
      * results the cache answered with while the device was offline are replaced by the catalog's
      * own without anyone having to pull to refresh.
      */
-    val searchResults: Flow<PagingData<Song>> = combine(
+    val searchResults: Flow<PagingData<SearchResultUiModel>> = combine(
         query.debounce(searchDebounce).map { query -> query.trim() }.distinctUntilChanged(),
         reconnections.onStart { emit(Unit) },
     ) { term, _ -> term }
         .flatMapLatest { term ->
             if (term.isBlank()) flowOf(PagingData.empty(idleLoadStates)) else useCases.searchSongs(term)
         }.cachedIn(viewModelScope)
+        .combine(playableSongsNow) { results, playable ->
+            results.map { song -> SearchResultUiModel(song = song, isUnavailable = !playable.isPlayable(song)) }
+        }
 
     fun onEvent(event: SongsUiEvent) = when (event) {
         is SongsUiEvent.OnQueryChanged -> query.value = event.query
@@ -141,4 +162,13 @@ class SongsViewModel(
         songPendingRemoval.value = null
         viewModelScope.launch { useCases.removeFromRecentlyPlayed(song.id) }
     }
+
+    /**
+     * @property isOnline whether the device has a connection right now.
+     * @property playableSongs what the player can reach with that connection.
+     */
+    private data class Connection(
+        val isOnline: Boolean,
+        val playableSongs: PlayableSongs,
+    )
 }

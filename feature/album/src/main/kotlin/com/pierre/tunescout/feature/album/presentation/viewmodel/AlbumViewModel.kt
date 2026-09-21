@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -40,6 +41,7 @@ class AlbumViewModel(
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
+    observablePlayableSongs: ObservablePlayableSongs,
 ) : ViewModel() {
     private val refreshFailed = MutableStateFlow(false)
 
@@ -51,8 +53,18 @@ class AlbumViewModel(
      */
     private val showsPartialAlbum = MutableStateFlow(false)
 
-    val uiState: StateFlow<AlbumUiState> = combine(
+    /**
+     * The album and the reach the player has over its tracks arrive as one, so the rows are never
+     * drawn against the reach of a connection the monitor has already replaced.
+     */
+    private val albumReach: Flow<AlbumReach> = combine(
         useCases.observeAlbum(route.albumId),
+        observablePlayableSongs.observePlayableSongs(),
+        ::AlbumReach,
+    )
+
+    val uiState: StateFlow<AlbumUiState> = combine(
+        albumReach,
         observablePlayback.observePlaybackState(),
         refreshFailed,
         showsPartialAlbum,
@@ -153,21 +165,34 @@ class AlbumViewModel(
     }
 
     private fun toUiState(
-        album: Album?,
+        reach: AlbumReach,
         playback: PlaybackState,
         refreshFailed: Boolean,
         showsPartialAlbum: Boolean,
         isFavorite: Boolean,
-    ): AlbumUiState = when {
-        album != null && (album.isComplete || showsPartialAlbum) -> AlbumUiState.Loaded(
-            album = album,
-            nowPlaying = playback.nowPlaying,
-            isFavorite = isFavorite,
-            isStale = refreshFailed,
-        )
+    ): AlbumUiState {
+        val album = reach.album
+        return when {
+            album != null && (album.isComplete || showsPartialAlbum) -> AlbumUiState.Loaded(
+                album = album,
+                nowPlaying = playback.nowPlaying,
+                isFavorite = isFavorite,
+                isStale = refreshFailed,
+                unplayableSongIds = reach.playableSongs.findUnplayableIds(album.songs),
+            )
 
-        refreshFailed -> AlbumUiState.Error
+            refreshFailed -> AlbumUiState.Error
 
-        else -> AlbumUiState.Loading
+            else -> AlbumUiState.Loading
+        }
     }
+
+    /**
+     * @property album the album as the device has it, or null before it has one.
+     * @property playableSongs which of its tracks the player can reach with the connection it has.
+     */
+    private data class AlbumReach(
+        val album: Album?,
+        val playableSongs: PlayableSongs,
+    )
 }

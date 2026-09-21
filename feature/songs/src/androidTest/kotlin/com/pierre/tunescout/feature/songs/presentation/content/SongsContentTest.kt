@@ -22,6 +22,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
@@ -212,7 +213,10 @@ class SongsContentTest {
         uiState: SongsUiState,
         results: List<Song> = emptyList(),
     ) {
-        val pagingFlow = remember { flowOf(PagingData.from(results, sourceLoadStates = loadedStates)) }
+        val pagingFlow = remember {
+            val searchResults = results.map { song -> SearchResultUiModel(song = song, isUnavailable = false) }
+            flowOf(PagingData.from(searchResults, sourceLoadStates = loadedStates))
+        }
         TuneScoutTheme {
             SongsContent(
                 isHeaderInline = false,
@@ -229,12 +233,14 @@ class SongsContentTest {
         nowPlaying: NowPlaying? = null,
         songPendingRemoval: Song? = null,
         isOffline: Boolean = false,
+        unplayableSongIds: Set<Long> = emptySet(),
     ): SongsUiState = SongsUiState(
         query = query,
         recentlyPlayed = recentlyPlayed,
         nowPlaying = nowPlaying,
         songPendingRemoval = songPendingRemoval,
         isOffline = isOffline,
+        unplayableSongIds = unplayableSongIds,
     )
 
     private val loadedStates = LoadStates(
