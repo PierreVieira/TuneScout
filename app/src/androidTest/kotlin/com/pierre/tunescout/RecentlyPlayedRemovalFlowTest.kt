@@ -8,8 +8,6 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeRight
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.model.Song
@@ -61,28 +59,29 @@ class RecentlyPlayedRemovalFlowTest {
     }
 
     /**
-     * Swiping a row only asks; confirming drops it, and the database keeps it dropped. The X icon
-     * on the row then drops the last one, leaving the empty state behind.
+     * The list is newest first, so the first X belongs to the song recorded last. It only asks; confirming drops it, and the database keeps it dropped. Doing it
+     * again for the last one leaves the empty state behind. A swipe no longer removes a row: it
+     * queues or likes the song instead.
      */
     @Test
-    fun aRecentlyPlayedSongIsDroppedBySwipingItsRowAndByItsRemoveIcon() = compose.use {
+    fun aRecentlyPlayedSongIsDroppedByItsRemoveIcon() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
         waitUntilAtLeastOneExists(hasText("Recently played"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Around the World").assertExists()
         onNodeWithText("Digital Love").assertExists()
 
-        onNodeWithText("Around the World").performTouchInput { swipeRight() }
+        onAllNodesWithContentDescription("Remove from recently played")[0].performClick()
         waitUntilAtLeastOneExists(hasText("Remove from recently played?"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Remove").performClick()
-        waitUntilDoesNotExist(hasText("Around the World"), SCREEN_TIMEOUT_MILLIS)
-        assertThat(storedIds()).containsExactly(102L)
+        waitUntilDoesNotExist(hasText("Digital Love"), SCREEN_TIMEOUT_MILLIS)
+        assertThat(storedIds()).containsExactly(101L)
 
         onAllNodesWithContentDescription("Remove from recently played")[0].performClick()
         waitUntilAtLeastOneExists(hasText("Remove from recently played?"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Remove").performClick()
 
         waitUntilAtLeastOneExists(hasText("Nothing played yet"), SCREEN_TIMEOUT_MILLIS)
-        onAllNodesWithText("Digital Love").assertCountEquals(0)
+        onAllNodesWithText("Around the World").assertCountEquals(0)
         assertThat(storedIds()).isEmpty()
     }
 
