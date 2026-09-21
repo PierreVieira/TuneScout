@@ -7,6 +7,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import com.pierre.tunescout.ui.component.SongSharedElement
 import com.pierre.tunescout.ui.component.SongSharedKey
@@ -31,10 +33,12 @@ internal fun SongHeading(
             style = MaterialTheme.typography.displayMedium,
             color = TuneScoutColors.textPrimary,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .fillMaxWidth()
                 .sharedTextBounds(SongSharedKey.createOrNull(songId, SongSharedElement.TITLE))
-                .loopingMarquee(),
+                .loopingMarquee()
+                .semantics { heading() },
         )
         Text(
             text = artistName,

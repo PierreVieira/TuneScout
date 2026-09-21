@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,7 +63,10 @@ internal fun ThemeOptionCard(
             width = if (isSelected) selectedBorderWidth else borderWidth,
             color = if (isSelected) accent else TuneScoutColors.elementSubtle,
         ),
-        modifier = modifier.semantics { selected = isSelected },
+        modifier = modifier.semantics {
+            selected = isSelected
+            role = Role.RadioButton
+        },
     ) {
         Column(
             modifier = Modifier

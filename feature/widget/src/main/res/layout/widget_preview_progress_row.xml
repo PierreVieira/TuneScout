@@ -12,7 +12,7 @@
         android:maxLines="1"
         android:text="@string/widget_preview_elapsed"
         android:textColor="@color/widget_preview_text_secondary"
-        android:textSize="10sp" />
+        android:textSize="12sp" />
 
     <ProgressBar
         style="@android:style/Widget.ProgressBar.Horizontal"
@@ -31,5 +31,5 @@
         android:maxLines="1"
         android:text="@string/widget_preview_total"
         android:textColor="@color/widget_preview_text_secondary"
-        android:textSize="10sp" />
+        android:textSize="12sp" />
 </LinearLayout>

@@ -9,6 +9,7 @@
     <string name="add_to_playlist_prompt_cancel">Cancelar</string>
     <plurals name="add_to_playlist_song_count">
         <item quantity="one">%1$d música</item>
+        <item quantity="many">%1$d músicas</item>
         <item quantity="other">%1$d músicas</item>
     </plurals>
 </resources>

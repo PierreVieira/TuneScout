@@ -24,6 +24,10 @@ The tokens are named for the role they play, not for the value they happen to ha
 — `surfaceSubtle`, not `white10`. A token whose name only makes sense in the dark palette is a
 token that will be wrong in the light one.
 
+The role also decides how much contrast a token owes: text reads at 4.5:1 on every surface, an icon
+the user can tap at 3:1, and `elementMuted` is for disabled controls only. The table, and the test
+that holds the text tokens to it, are in [accessibility.md](accessibility.md#colour).
+
 ### Outside a composable
 
 A `@Composable` getter cannot be read from a `drawBehind`/`drawWithCache` lambda, a `remember`

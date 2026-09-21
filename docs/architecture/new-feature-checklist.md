@@ -10,6 +10,7 @@
 - [ ] Group use cases in a `FeatureUseCases` data class if there are more than 2
 - [ ] Implement `FeatureViewModel` extending `ViewModel`, with `StateFlow<UiState>`, `SharedFlow<UiAction>` and a single `onEvent`
 - [ ] Create `FeatureContent` composable with Loading/Loaded split
+- [ ] Name the screen, its headings and its controls for a screen reader, with 48dp targets and `heightIn` rows — see [accessibility.md](accessibility.md)
 - [ ] Define a `@Serializable` route implementing `NavKey` in `core/navigation/.../route/` (one per file)
 - [ ] Create `EntryProviderScope<NavKey>.feature()` extension (Root composable)
 - [ ] Register the entry in `TuneScoutNavigationContent`'s `entryProvider` (`app`)

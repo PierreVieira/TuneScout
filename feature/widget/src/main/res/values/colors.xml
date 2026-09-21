@@ -12,5 +12,5 @@
     <color name="widget_preview_text_secondary">#B3000000</color>
     <color name="widget_preview_element">#FF000000</color>
     <color name="widget_preview_element_disabled">#FFABABAB</color>
-    <color name="widget_preview_accent">#FF008060</color>
+    <color name="widget_preview_accent">#FF007558</color>
 </resources>

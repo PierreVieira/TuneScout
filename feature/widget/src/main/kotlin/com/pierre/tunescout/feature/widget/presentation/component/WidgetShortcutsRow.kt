@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionRunCallback
@@ -12,6 +13,7 @@ import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.width
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.feature.widget.R
 import com.pierre.tunescout.feature.widget.presentation.widget.PlayShortcutAction
 
 private val shortcutSize = 54.dp
@@ -47,7 +49,7 @@ private fun WidgetShortcutCell(
     WidgetArtworkImage(
         artwork = artwork,
         size = shortcutSize,
-        contentDescription = song.title,
+        contentDescription = LocalContext.current.getString(R.string.widget_play_song, song.title),
         modifier = GlanceModifier.clickable(
             actionRunCallback<PlayShortcutAction>(actionParametersOf(PlayShortcutAction.SONG_ID to song.id)),
         ),

@@ -14,7 +14,7 @@ they share in [`.github/actions`](../.github/actions).
 | `build-and-test` | `unit-tests`: the JVM tests and the coverage rules. `build`: `:app:assembleDebug` and `:app:assembleRelease`. | Any change outside Markdown, `docs/` and `.claude/` |
 | `instrumented-tests` | Compose screen tests and end-to-end flows on an API 35 emulator, split into two shards | Same as `build-and-test` |
 | `screenshot-tests` | `verify` compares every screen with its committed reference; `record` renders new ones | Same as `build-and-test`, and when a label is added |
-| `static-analysis` | ktlint with the project's custom rules, through `scripts/ktlint.sh` | `.kt`/`.kts` files, `.editorconfig`, the version catalog, the ktlint script or action |
+| `static-analysis` | `ktlint`: the project's custom rules, through `scripts/ktlint.sh`. `lint`: Android lint over every module, `:app:lintDebug` | `.kt`/`.kts` files, resources and manifests, `.editorconfig`, the version catalog, the ktlint script or action |
 | `module-graph` | `assertModuleGraph` | Build scripts, `build-logic`, the version catalog or the Gradle wrapper |
 | `translations` | `scripts/check_translations.py`: every string in `values` has a `values-pt-rBR`, a `values-es` and a `values-fr` twin | A `strings.xml` or the script |
 | `cleanup-pr-caches` | Cancels a closed pull request's pending runs and deletes its Gradle caches | A pull request is closed |
@@ -23,6 +23,10 @@ Each check can be run locally with the same command:
 
 ```bash
 ./scripts/ktlint.sh
+```
+
+```bash
+./gradlew :app:lintDebug
 ```
 
 ```bash
@@ -107,7 +111,8 @@ repository's 10 GB cache budget:
   critical path set it: `build` and the two `instrumented-tests` shards. `unit-tests` stays
   read-only, since even a cold run of it finishes before those.
 - **`GRADLE_CACHE_READ_ONLY=true`** never writes, even on `main`. It is for jobs that barely use
-  Gradle (`static-analysis`, `module-graph`). Their small entries would take up the budget. Also,
+  Gradle (`ktlint`, `module-graph`), and for `lint`, which compiles what `build` compiles and reads
+  that job's entry rather than saving the same outputs twice. Their small entries would take up the budget. Also,
   setup-gradle restores the most recent entry of any job, so a job with no entry of its own could
   pick up one of theirs instead of a useful one.
 

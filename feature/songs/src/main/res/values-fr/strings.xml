@@ -22,4 +22,9 @@
     <string name="songs_remove_recent_confirm_title">Retirer des titres écoutés récemment&#160;?</string>
     <string name="songs_remove_recent_confirm_message">%1$s sera retiré de ton historique. Tu pourras toujours le rechercher à nouveau.</string>
     <string name="songs_remove_recent_confirm_action">Retirer</string>
+    <plurals name="songs_results_loaded">
+        <item quantity="one">%1$d résultat chargé</item>
+        <item quantity="many">%1$d résultats chargés</item>
+        <item quantity="other">%1$d résultats chargés</item>
+    </plurals>
 </resources>

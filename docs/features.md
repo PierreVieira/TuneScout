@@ -42,8 +42,8 @@ screenshots.
 - **Offline**, the app is still the app: a preview that played once plays again from the media
   cache, search answers from the songs already on the device, artwork comes off disk, and a line
   above the list says where the rows come from. When the connection returns, the search runs again
-  by itself. Songs the player cannot reach offline are faded, and tapping one says why instead of
-  failing silently.
+  by itself. Songs the player cannot reach offline are faded and marked with an offline glyph, and
+  tapping one says why instead of failing silently.
 - **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
   shuffle, repeat and the queue. Dragging the timeline seeks on release without pausing.
 - **Mini player** above every screen while something is loaded, with its own play/pause and a tap
@@ -56,7 +56,8 @@ screenshots.
   (i) next to the toggle. The choice is stored on the device with DataStore, and the splash holds
   until it is read, so the first frame is already in the chosen theme.
 - **Media controls** in the notification shade and on the lock screen, backed by a media session,
-  with a like button beside the transport controls.
+  with like, shuffle and repeat buttons beside the transport controls wherever the surface has room
+  for them — a car or a watch included.
 - **Two home screen widgets**, built with Glance and resizable:
   - *Now playing* (4×1): the cover, title and artist, previous / play-pause / next, and the
     timeline with elapsed and total time.
@@ -68,5 +69,10 @@ screenshots.
   and next are dimmed when there is no song that way. With nothing to play, the widget says so.
 - Loading, empty, error, offline and rate-limited states on every screen — the device's own
   connectivity decides which one, not the shape of the last failure; pull to refresh on search
-  results; English, Brazilian Portuguese, Spanish and French; content descriptions on every
-  control.
+  results; English, Brazilian Portuguese, Spanish and French.
+- **Accessible** with TalkBack and Switch Access: every screen and heading is named, toggles say
+  their state through their role, a search announces how it ended, the timeline is read as time
+  rather than as a percentage and every swipe has an action that does the same. Targets are 48dp,
+  text holds 4.5:1 in both palettes, the player still fits at a 200% font, and endless animations
+  stop when the system is told to remove them. The conventions, and the checks that keep them, are
+  in [Accessibility](architecture/accessibility.md).

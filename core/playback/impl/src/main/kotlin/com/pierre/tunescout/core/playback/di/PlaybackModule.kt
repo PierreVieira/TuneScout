@@ -1,3 +1,5 @@
+@file:OptIn(UnstableApi::class)
+
 package com.pierre.tunescout.core.playback.di
 
 import androidx.annotation.OptIn
@@ -28,6 +30,7 @@ import com.pierre.tunescout.core.playback.internal.AndroidMediaItemFactory
 import com.pierre.tunescout.core.playback.internal.ConnectivityPlayableSongs
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.ForegroundPlaybackServiceLauncher
+import com.pierre.tunescout.core.playback.internal.MediaButtonSpecFactory
 import com.pierre.tunescout.core.playback.internal.MediaCacheDataSourceFactory
 import com.pierre.tunescout.core.playback.internal.MediaCachePreviewCache
 import com.pierre.tunescout.core.playback.internal.MediaItemFactory
@@ -130,6 +133,7 @@ val playbackModule: Module = module {
             recentlyPlayedLocalDataSource = get(),
         ).also { recorder -> recorder.start(get(named(PLAYBACK_SCOPE))) }
     }
+    single { MediaButtonSpecFactory() }
     single {
         PlaybackFavoriteController(
             playbackState = get<ObservablePlayback>().observePlaybackState(),
@@ -144,7 +148,6 @@ val playbackModule: Module = module {
  * notification and the lock screen — but with an order that leaves the queue's as it is instead of
  * shuffling it a second time.
  */
-@OptIn(UnstableApi::class)
 private fun ExoPlayer.keepQueueOrderWhenShuffled() {
     setShuffleOrder(ShuffleOrder.UnshuffledShuffleOrder(0))
 }

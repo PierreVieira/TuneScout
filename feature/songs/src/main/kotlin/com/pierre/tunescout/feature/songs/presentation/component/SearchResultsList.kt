@@ -1,15 +1,24 @@
 package com.pierre.tunescout.feature.songs.presentation.component
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
@@ -29,6 +38,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 private const val APPEND_SKELETON_ROWS = 2
 private const val SEARCH_RESULTS_TAG = "search_results"
+private val resultsCountLabelSize = 1.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +53,7 @@ internal fun SearchResultsList(
 ) {
     val refreshState = searchResults.loadState.refresh
     val appendState = searchResults.loadState.append
+    val loadedCount = remember(refreshState) { searchResults.itemCount }
     PullToRefreshBox(
         isRefreshing = refreshState is LoadState.Loading && searchResults.itemCount > 0,
         onRefresh = searchResults::refresh,
@@ -77,6 +88,7 @@ internal fun SearchResultsList(
                     StateMessage(
                         title = stringResource(R.string.songs_no_results_title),
                         description = stringResource(R.string.songs_no_results_description),
+                        isAnnounced = true,
                     )
                 }
             }
@@ -124,7 +136,30 @@ internal fun SearchResultsList(
                 is LoadState.NotLoading -> Unit
             }
         }
+        if (refreshState is LoadState.NotLoading && loadedCount > 0) {
+            ResultsCountLabel(count = loadedCount)
+        }
     }
+}
+
+/**
+ * A search that brings results changes the list and says nothing, so a screen reader user is left
+ * to go and look. This says it for them, once per search: the count is the one the search came back
+ * with, not the running total, or every page scrolled into view would be announced too.
+ *
+ * It draws nothing. A node needs a size to be part of the accessibility tree at all.
+ */
+@Composable
+private fun ResultsCountLabel(count: Int) {
+    val text = pluralStringResource(R.plurals.songs_results_loaded, count, count)
+    Box(
+        modifier = Modifier
+            .size(resultsCountLabelSize)
+            .semantics {
+                contentDescription = text
+                liveRegion = LiveRegionMode.Polite
+            },
+    )
 }
 
 /**
@@ -145,6 +180,7 @@ private fun ErrorMessage(
     StateMessage(
         title = stringResource(R.string.songs_error_title),
         description = description,
+        isAnnounced = true,
         onRetry = onRetry,
     )
 }

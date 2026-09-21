@@ -11,8 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -30,7 +32,7 @@ internal fun LibraryItemCell(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(cellCornerRadius))
-            .clickable(onClick = onClick)
+            .clickable(onClickLabel = stringResource(R.string.library_open_item), onClick = onClick)
             .padding(bottom = TuneScoutSpacing.small),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
     ) {

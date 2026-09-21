@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyListState
@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.DefaultShadowColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.paging.compose.LazyPagingItems
@@ -49,8 +51,9 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
+import com.pierre.tunescout.ui.utils.semantics.screenPane
 
-private val titleHeight = 48.dp
+private val titleMinHeight = 48.dp
 private val headerShadowHeight = 8.dp
 private const val HEADER_SHADOW_ALPHA = 0.16f
 private const val HEADER_SHADOW_LABEL = "songs_header_shadow"
@@ -71,6 +74,7 @@ fun SongsContent(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .screenPane(stringResource(R.string.songs_title))
             .safeDrawingPadding()
             .hidesBarsOnScroll(),
         contentAlignment = Alignment.TopCenter,
@@ -219,8 +223,9 @@ private fun Title(modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.headlineMedium,
         color = TuneScoutColors.textPrimary,
         modifier = modifier
-            .height(titleHeight)
-            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
+            .heightIn(min = titleMinHeight)
+            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small)
+            .semantics { heading() },
     )
 }
 

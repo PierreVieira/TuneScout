@@ -11,6 +11,7 @@
     <string name="library_create_playlist">Crear playlist</string>
     <string name="library_view_as_grid">Ver en cuadrícula</string>
     <string name="library_view_as_list">Ver en lista</string>
+    <string name="library_open_item">Abrir</string>
     <string name="library_search_placeholder">Buscar en tu biblioteca</string>
     <string name="library_recent_searches">Búsquedas recientes</string>
     <string name="library_remove_recent_search">Quitar de búsquedas recientes</string>
@@ -33,6 +34,7 @@
     <string name="library_delete_playlist_confirm_action">Eliminar</string>
     <plurals name="library_song_count">
         <item quantity="one">%1$d canción</item>
+        <item quantity="many">%1$d canciones</item>
         <item quantity="other">%1$d canciones</item>
     </plurals>
 </resources>

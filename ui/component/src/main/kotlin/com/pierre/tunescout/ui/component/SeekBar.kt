@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 
@@ -36,6 +37,9 @@ private val handleSize = 24.dp
  * A drag belongs to the content it started on, so when [contentKey] changes the bar is rebuilt from
  * scratch: a finger still on the handle loses its drag instead of holding the old position over the
  * new content, which the bar draws at its own [progress] again.
+ *
+ * @param positionDescription where the content is, in words a screen reader reads in place of the
+ * slider's own "42 percent" — a fraction says little about a song.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +48,7 @@ fun SeekBar(
     contentKey: Any,
     onSeekFinished: (Float) -> Unit,
     modifier: Modifier = Modifier,
+    positionDescription: String? = null,
 ) {
     key(contentKey) {
         var isDragging by remember { mutableStateOf(false) }
@@ -63,7 +68,10 @@ fun SeekBar(
             modifier = modifier
                 .fillMaxWidth()
                 .height(seekHeight)
-                .semantics { contentDescription = description },
+                .semantics {
+                    contentDescription = description
+                    if (positionDescription != null) stateDescription = positionDescription
+                },
             thumb = { Handle() },
             track = { sliderState -> SeekBarTrackLine(sliderState) },
         )

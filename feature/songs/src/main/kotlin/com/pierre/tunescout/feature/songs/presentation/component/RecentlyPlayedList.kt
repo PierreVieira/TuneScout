@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.isOn
@@ -59,7 +61,9 @@ internal fun RecentlyPlayedList(
                 text = stringResource(R.string.songs_recently_played),
                 style = MaterialTheme.typography.bodySmall,
                 color = TuneScoutColors.textSecondary,
-                modifier = Modifier.padding(vertical = TuneScoutSpacing.small),
+                modifier = Modifier
+                    .padding(vertical = TuneScoutSpacing.small)
+                    .semantics { heading() },
             )
         }
         items(items = songs, key = { song -> song.id }) { song ->

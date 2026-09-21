@@ -18,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemRow
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
@@ -32,6 +34,7 @@ import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.semantics.screenPane
 import com.pierre.tunescout.ui.component.R as ComponentR
 
 @Composable
@@ -47,6 +50,7 @@ fun LibrarySearchContent(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .screenPane(stringResource(R.string.library_open_search))
             .safeDrawingPadding(),
         contentAlignment = Alignment.TopCenter,
     ) {
@@ -107,6 +111,7 @@ private fun LibrarySearchResultsList(
         StateMessage(
             title = stringResource(R.string.library_search_empty_title),
             description = stringResource(R.string.library_search_empty_description),
+            isAnnounced = true,
         )
         return
     }
@@ -125,7 +130,9 @@ private fun RecentSearchesList(
             text = stringResource(R.string.library_recent_searches),
             style = MaterialTheme.typography.titleMedium,
             color = TuneScoutColors.textPrimary,
-            modifier = Modifier.padding(vertical = TuneScoutSpacing.small),
+            modifier = Modifier
+                .padding(vertical = TuneScoutSpacing.small)
+                .semantics { heading() },
         )
         ItemList(items = items, favoritesName = favoritesName, onEvent = onEvent, isRemovable = true)
     }

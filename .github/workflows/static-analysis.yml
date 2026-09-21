@@ -9,6 +9,8 @@ on:
       - 'scripts/ktlint.sh'
       - '**/*.kt'
       - '**/*.kts'
+      - '**/src/main/res/**'
+      - '**/AndroidManifest.xml'
       - '.editorconfig'
       - 'gradle/libs.versions.toml'
   push:
@@ -21,6 +23,8 @@ on:
       - 'scripts/ktlint.sh'
       - '**/*.kt'
       - '**/*.kts'
+      - '**/src/main/res/**'
+      - '**/AndroidManifest.xml'
       - '.editorconfig'
       - 'gradle/libs.versions.toml'
 
@@ -55,3 +59,33 @@ jobs:
         uses: ./.github/actions/ktlint
         with:
           cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+  lint:
+    runs-on: ubuntu-latest
+    # Android lint compiles the debug variant of every module, which is what `build` in
+    # build-and-test already does: it borrows that job's cache entry instead of saving a second copy
+    # of the same outputs out of the 10 GB budget. See .github/actions/gradle.
+    env:
+      GRADLE_CACHE_READ_ONLY: true
+      GRADLE_BUILD_ACTION_CACHE_KEY_JOB: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Setup Gradle
+        uses: ./.github/actions/gradle
+        with:
+          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      # :app lints its dependencies, so this one task covers every module.
+      - name: Run Android lint
+        run: ./gradlew :app:lintDebug
+
+      - name: Upload lint report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.html

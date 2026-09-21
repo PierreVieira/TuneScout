@@ -4,8 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -45,7 +49,9 @@ class PlayerContentTest {
         onNodeWithText("Daft Punk").assertIsDisplayed()
         onNodeWithText("0:05").assertIsDisplayed()
         onNodeWithText("-0:25").assertIsDisplayed()
-        onNodeWithContentDescription("Playback position").assertIsDisplayed()
+        onNodeWithContentDescription("Playback position")
+            .assertIsDisplayed()
+            .assert(hasStateDescription("5 seconds of 30 seconds"))
     }
 
     @Test
@@ -159,8 +165,8 @@ class PlayerContentTest {
             }
         }
 
-        onNodeWithContentDescription("Shuffle is off").performClick()
-        onNodeWithContentDescription("Repeat is off").performClick()
+        onNodeWithContentDescription("Shuffle").assertIsOff().performClick()
+        onNodeWithContentDescription("Repeat").assert(hasStateDescription("Off")).performClick()
 
         assertThat(events)
             .containsExactly(PlayerUiEvent.OnShuffleClicked, PlayerUiEvent.OnRepeatClicked)
@@ -180,10 +186,10 @@ class PlayerContentTest {
             }
         }
 
-        onNodeWithContentDescription("Shuffle is on").assertIsDisplayed()
-        onNodeWithContentDescription("Repeating the queue").assertIsDisplayed()
+        onNodeWithContentDescription("Shuffle").assertIsOn()
+        onNodeWithContentDescription("Repeat").assert(hasStateDescription("Whole queue"))
         repeatMode = RepeatMode.One
-        onNodeWithContentDescription("Repeating this song").assertIsDisplayed()
+        onNodeWithContentDescription("Repeat").assert(hasStateDescription("This song"))
     }
 
     @Test

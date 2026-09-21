@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,6 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.themeselection.R
 import com.pierre.tunescout.feature.themeselection.presentation.component.ThemeOptionCard
@@ -28,7 +33,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 private val optionSpacing = 10.dp
 private val bottomPadding = 32.dp
-private val infoButtonSize = 32.dp
+private val infoButtonSize = 48.dp
 private val infoIconSize = 20.dp
 
 @Composable
@@ -49,8 +54,12 @@ fun ThemeSelectionContent(
             text = stringResource(R.string.theme_selection_title),
             style = MaterialTheme.typography.titleMedium,
             color = TuneScoutColors.textPrimary,
+            modifier = Modifier.semantics { heading() },
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(optionSpacing)) {
+        Row(
+            modifier = Modifier.selectableGroup(),
+            horizontalArrangement = Arrangement.spacedBy(optionSpacing),
+        ) {
             uiState.options.forEach { option ->
                 ThemeOptionCard(
                     model = option,
@@ -80,7 +89,7 @@ private fun DynamicColorRow(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier,
+        modifier = modifier.toggleable(value = isEnabled, role = Role.Switch, onValueChange = onToggle),
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -109,7 +118,7 @@ private fun DynamicColorRow(
         }
         Switch(
             checked = isEnabled,
-            onCheckedChange = onToggle,
+            onCheckedChange = null,
         )
     }
 }

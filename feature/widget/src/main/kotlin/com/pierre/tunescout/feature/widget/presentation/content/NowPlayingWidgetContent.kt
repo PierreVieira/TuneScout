@@ -39,7 +39,7 @@ internal fun NowPlayingWidgetContent(content: WidgetContent) {
                 WidgetArtworkImage(
                     artwork = content.songArtwork,
                     size = artworkSize,
-                    contentDescription = state.song?.title,
+                    contentDescription = null,
                 )
                 Spacer(modifier = GlanceModifier.width(artworkSpacing))
                 WidgetSongLabelsComponent(

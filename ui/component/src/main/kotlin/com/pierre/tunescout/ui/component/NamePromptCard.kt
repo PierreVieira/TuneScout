@@ -3,7 +3,7 @@ package com.pierre.tunescout.ui.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -71,7 +71,7 @@ private fun NameField(
         onValueChange = onNameChange,
         modifier = Modifier
             .fillMaxWidth()
-            .height(fieldHeight)
+            .heightIn(min = fieldHeight)
             .background(TuneScoutColors.surfaceSubtle, RoundedCornerShape(fieldCornerRadius))
             .padding(horizontal = TuneScoutSpacing.medium),
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = TuneScoutColors.textPrimary),

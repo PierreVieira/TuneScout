@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,7 +57,9 @@ fun AddToPlaylistContent(
             style = MaterialTheme.typography.titleMedium,
             color = TuneScoutColors.textPrimary,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = TuneScoutSpacing.large),
+            modifier = Modifier
+                .padding(horizontal = TuneScoutSpacing.large)
+                .semantics { heading() },
         )
         OptionRow(
             label = stringResource(R.string.add_to_playlist_new),
@@ -121,7 +125,7 @@ private fun OptionRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(rowHeight)
+            .heightIn(min = rowHeight)
             .clickable(enabled = isEnabled, onClick = onClick)
             .padding(horizontal = TuneScoutSpacing.large + TuneScoutSpacing.small),
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
