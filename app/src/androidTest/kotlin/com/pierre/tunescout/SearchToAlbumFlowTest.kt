@@ -1,12 +1,14 @@
 package com.pierre.tunescout
 
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
@@ -51,16 +53,16 @@ class SearchToAlbumFlowTest {
     }
 
     @Test
-    fun searchingASongPlaysItAndTheMiniPlayerLeadsToThePlayerAndItsAlbum() = compose.use {
+    fun searchingASongPlaysItAndThePlayerLeadsToItsAlbum() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
 
         searchFor("daft")
         playFromTheListRow("Get Lucky")
 
-        openThePlayerFromTheMiniPlayer("Get Lucky")
+        openThePlayer("Get Lucky")
 
-        waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
-        onNodeWithContentDescription("More options").performClick()
+        waitUntilAtLeastOneExists(hasText("Get Lucky") and hasAnyAncestor(isPlayer), SCREEN_TIMEOUT_MILLIS)
+        onNode(hasContentDescription("More options") and hasAnyAncestor(isPlayer)).performClick()
         waitUntilAtLeastOneExists(hasText("View album") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("View album").performScrollTo().performClick()
 
@@ -89,13 +91,16 @@ class SearchToAlbumFlowTest {
     /**
      * The row only starts the song: the bar that rises under the results is what opens the player.
      * It is the one place the song is drawn beside the queue action, which is what tells it apart
-     * from the row it came from.
+     * from the row it came from. A wide window has no bar: the player is already beside the results.
      */
-    private fun ComposeContext.openThePlayerFromTheMiniPlayer(title: String) {
+    private fun ComposeContext.openThePlayer(title: String) {
+        if (isTwoPaneWindow) return
         val miniPlayer = hasText(title).and(hasAnyDescendant(hasContentDescription("Open the queue")))
         waitUntilAtLeastOneExists(miniPlayer, SCREEN_TIMEOUT_MILLIS)
         onAllNodes(miniPlayer)[0].performClick()
     }
+
+    private val isPlayer: SemanticsMatcher = SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, "Now playing")
 
     private companion object {
         const val SCREEN_TIMEOUT_MILLIS = 10_000L

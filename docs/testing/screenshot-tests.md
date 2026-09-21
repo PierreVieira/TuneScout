@@ -80,7 +80,7 @@ the repository. `isLandscape = true` covers the layouts that switch on width (`i
 
 | Test | States |
 | --- | --- |
-| `PlayerScreenshotTest` | loading, not found, loaded, ended repeating the song, shuffled repeating the queue, side by side |
+| `PlayerScreenshotTest` | loading, not found, loaded, ended repeating the song, shuffled repeating the queue, side by side, compact (loaded and loading) |
 | `AlbumScreenshotTest` | loading, error, loaded, playing, unplayable tracks, stale, inline header |
 | `SongsScreenshotTest` | recently played, empty, searching, searching scrolled under the header's shadow, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header, no audio search |
 | `LibraryScreenshotTest` | list, grid, filtered, empty, search: recent, results and no results |
@@ -89,7 +89,7 @@ the repository. `isLandscape = true` covers the layouts that switch on width (`i
 | `MiniPlayerScreenshotTest` | playing, paused, ended |
 | `AudioSearchScreenshotTest` | waiting for speech, hearing with a transcript, failed |
 | `ThemeSelectionScreenshotTest` | the three themes, dynamic colour on, dynamic colour unsupported, its info dialog |
-| `ListDetailScreenshotTest` | the songs beside an album: recently played, and search results in every variant |
+| `ListDetailScreenshotTest` | the songs beside the player in every variant, beside nothing playing, and beside an album: recently played, and search results in every variant |
 | `ComponentScreenshotTest` | the `:ui:component` pieces on their own: rows and skeletons, bars and inputs, play button, state messages, name prompt, confirmation dialog |
 
 The components have a test of their own on purpose: a change to `SongRow` shows up as one diff

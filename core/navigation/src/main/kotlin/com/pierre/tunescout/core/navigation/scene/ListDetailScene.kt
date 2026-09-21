@@ -10,39 +10,46 @@ import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.pierre.tunescout.ui.component.ListDetailScaffold
 import com.pierre.tunescout.ui.component.createCrossFadeTransition
 import com.pierre.tunescout.ui.utils.navigation.LocalIsBesideDetailPane
+import com.pierre.tunescout.ui.utils.navigation.LocalIsInDetailPane
 
 /**
- * [listEntry] and, beside it, [detailEntry].
+ * [listEntry] and, beside it, [detailEntry], or [emptyDetailPane] while no detail is open.
  *
- * The key is the list's, so a detail swapped for another one keeps the scene: the list stays where it
- * is, not faded out and back in, and only the detail pane crossfades. Opening the first detail or
- * closing the last one does change the scene, from or to the list alone.
+ * With a detail, the key is the list's, so a detail swapped for another one keeps the scene: the list
+ * stays where it is, not faded out and back in, and only the detail pane crossfades. The list alone
+ * beside the [emptyDetailPane] has a key of its own, so the first detail opened and the last one
+ * closed change the scene.
  *
  * @param T the type of the back stack keys.
- * @property key the list's content key, which identifies the scene.
- * @property previousEntries the entries to go back to, every one but the detail on top.
+ * @property key what identifies the scene: the list's content key while a detail is open.
+ * @property previousEntries the entries to go back to, every one but the entry on top.
  * @property listEntry the entry drawn in the list pane.
- * @property detailEntry the entry drawn in the detail pane.
+ * @property detailEntry the entry drawn in the detail pane, or null while the list is alone.
+ * @property emptyDetailPane what the detail pane shows while no entry is open in it.
  */
 internal data class ListDetailScene<T : Any>(
     override val key: Any,
     override val previousEntries: List<NavEntry<T>>,
     private val listEntry: NavEntry<T>,
-    private val detailEntry: NavEntry<T>,
+    private val detailEntry: NavEntry<T>?,
+    private val emptyDetailPane: @Composable () -> Unit,
 ) : Scene<T> {
-    override val entries: List<NavEntry<T>> = listOf(listEntry, detailEntry)
+    override val entries: List<NavEntry<T>> = listOfNotNull(listEntry, detailEntry)
 
-    override val content: @Composable () -> Unit = { ListDetailSceneContent(listEntry, detailEntry) }
+    override val content: @Composable () -> Unit = {
+        ListDetailSceneContent(listEntry, detailEntry, emptyDetailPane)
+    }
 }
 
 @Composable
 private fun <T : Any> ListDetailSceneContent(
     listEntry: NavEntry<T>,
-    detailEntry: NavEntry<T>,
+    detailEntry: NavEntry<T>?,
+    emptyDetailPane: @Composable () -> Unit,
 ) {
     ListDetailScaffold(
         listPane = {
-            CompositionLocalProvider(LocalIsBesideDetailPane provides true) {
+            CompositionLocalProvider(LocalIsBesideDetailPane provides (detailEntry != null)) {
                 listEntry.Content()
             }
         },
@@ -50,9 +57,11 @@ private fun <T : Any> ListDetailSceneContent(
             AnimatedContent(
                 targetState = detailEntry,
                 transitionSpec = { createCrossFadeTransition() },
-                contentKey = { entry -> entry.contentKey },
+                contentKey = { entry -> entry?.contentKey },
             ) { entry ->
-                entry.Content()
+                CompositionLocalProvider(LocalIsInDetailPane provides true) {
+                    if (entry != null) entry.Content() else emptyDetailPane()
+                }
             }
         },
     )

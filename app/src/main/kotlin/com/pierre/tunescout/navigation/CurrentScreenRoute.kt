@@ -18,14 +18,15 @@ internal fun List<NavKey>.findCurrentScreenRouteOrNull(): NavKey? = lastOrNull {
 
 /**
  * The mini player is a shortcut back to the player, so it is hidden on the player itself and on the
- * splash.
+ * splash, and wherever the tabs have the player pane beside them on a wide window.
  *
+ * @param isTwoPane whether the window lays a pane beside the tabs.
  * @return whether the current screen may show the mini player.
  */
-internal fun List<NavKey>.isMiniPlayerAllowed(): Boolean = when (findCurrentScreenRouteOrNull()) {
+internal fun List<NavKey>.isMiniPlayerAllowed(isTwoPane: Boolean): Boolean = when (findCurrentScreenRouteOrNull()) {
     null, SplashRoute -> false
     is PlayerRoute -> false
-    else -> true
+    else -> !(isTwoPane && isHomeVisible(isTwoPane = true))
 }
 
 /**

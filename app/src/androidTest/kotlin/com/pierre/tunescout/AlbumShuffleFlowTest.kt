@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.test.espresso.Espresso.pressBack
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -81,12 +82,21 @@ class AlbumShuffleFlowTest {
         onNodeWithContentDescription("Shuffle").performClick()
         waitUntilAtLeastOneExists(hasContentDescription("Shuffle") and isOn(), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("Play the album").performClick()
+        closeTheAlbumCoveringThePlayer()
 
         waitUntilAtLeastOneExists(hasContentDescription("Open the queue"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("Open the queue").performClick()
 
         waitUntilAtLeastOneExists(hasTestTag(QUEUE_ENTRY_TAG), SCREEN_TIMEOUT_MILLIS)
         assertThat(countQueuedTracks()).isEqualTo(albumTracks.size - 1)
+    }
+
+    /**
+     * The queue is reached from the player. A phone upright has the mini player under the album, but a
+     * wide window has the player itself beside the tabs, and the album is open over it.
+     */
+    private fun closeTheAlbumCoveringThePlayer() {
+        if (isTwoPaneWindow) pressBack()
     }
 
     /**

@@ -6,7 +6,6 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -158,6 +157,44 @@ class PlayerViewModelTest {
 
             // Then
             assertThat(state).isEqualTo(PlayerUiState.NotFound)
+        }
+
+    @Test
+    fun `GIVEN the pane beside the tabs and nothing plays WHEN observing THEN reports nothing playing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(routeSong = null, songId = null)
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state).isEqualTo(PlayerUiState.NothingPlaying)
+        }
+
+    @Test
+    fun `GIVEN the pane beside the tabs WHEN a song plays THEN shows it`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(routeSong = null, songId = null, playback = playing(song(id = 3)))
+
+        // When
+        val state = viewModel.uiState.value
+
+        // Then
+        assertThat((state as PlayerUiState.Loaded).song.id).isEqualTo(3)
+    }
+
+    @Test
+    fun `GIVEN the pane beside the tabs and nothing plays WHEN clicking more THEN opens nothing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(routeSong = null, songId = null)
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnMoreClicked)
+
+            // Then
+            verify(exactly = 0) { navigator.navigate(any()) }
         }
 
     @Test
@@ -319,6 +356,7 @@ class PlayerViewModelTest {
         routeSong: Song?,
         playback: PlaybackState = PlaybackState.Idle,
         playableSongIds: Set<Long>? = null,
+        songId: Long? = 1,
     ) {
         playbackStateFlow = MutableStateFlow(playback)
         playbackStarter = mockk(relaxUnitFun = true)
@@ -326,7 +364,7 @@ class PlayerViewModelTest {
         navigator = mockk(relaxUnitFun = true)
         actions = mutableListOf()
         viewModel = PlayerViewModel(
-            route = PlayerRoute(songId = 1),
+            songId = songId,
             observeSong = { flowOf(routeSong) },
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,

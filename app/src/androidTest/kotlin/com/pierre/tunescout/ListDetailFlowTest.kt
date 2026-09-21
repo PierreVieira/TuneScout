@@ -1,18 +1,23 @@
 package com.pierre.tunescout
 
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.espresso.Espresso.pressBack
-import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -47,12 +52,6 @@ class ListDetailFlowTest {
         single<AlbumRemoteDataSource> { ListDetailAlbumRemoteDataSource() }
     }
 
-    /** The width Material starts calling expanded, which is where the app lays out two panes. */
-    private val isTwoPane: Boolean
-        get() = InstrumentationRegistry
-            .getInstrumentation()
-            .targetContext.resources.configuration.screenWidthDp >= EXPANDED_WIDTH_DP
-
     @BeforeEach
     fun setUp() {
         loadKoinModules(fakeRemoteModule)
@@ -69,7 +68,7 @@ class ListDetailFlowTest {
         searchFor("daft")
         openTheAlbumOfTheFirstResult()
 
-        if (isTwoPane) {
+        if (isTwoPaneWindow) {
             onNode(hasSetTextAction()).assertIsDisplayed()
         } else {
             assertThat(onAllNodes(hasSetTextAction()).fetchSemanticsNodes()).isEmpty()
@@ -87,7 +86,7 @@ class ListDetailFlowTest {
      */
     @Test
     fun backClosesTheAlbumBesideTheLibraryBeforeLeavingTheTab() = compose.use {
-        if (!isTwoPane) return@use
+        if (!isTwoPaneWindow) return@use
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
         searchFor("daft")
         openTheAlbumOfTheFirstResult()
@@ -102,6 +101,30 @@ class ListDetailFlowTest {
         pressBack()
 
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
+    }
+
+    /**
+     * On a wide window the player takes the mini player's place beside the songs, and an album opened
+     * covers it until Back closes the album.
+     */
+    @Test
+    fun thePlayerSitsBesideTheSongsOnAWideWindowAndAnAlbumCoversIt() = compose.use {
+        if (!isTwoPaneWindow) return@use
+        waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
+        searchFor("daft")
+        waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
+        onAllNodesWithText("Get Lucky")[0].performClick()
+
+        waitUntilAtLeastOneExists(hasText("Get Lucky") and hasAnyAncestor(isPlayerPane), SCREEN_TIMEOUT_MILLIS)
+        assertThat(onAllNodes(isMiniPlayer).fetchSemanticsNodes()).isEmpty()
+
+        openTheAlbumOfTheFirstResult()
+        waitUntilDoesNotExist(isPlayerPane, SCREEN_TIMEOUT_MILLIS)
+
+        pressBack()
+
+        waitUntilAtLeastOneExists(isPlayerPane, SCREEN_TIMEOUT_MILLIS)
+        onNode(hasSetTextAction()).assertIsDisplayed()
     }
 
     /**
@@ -122,9 +145,18 @@ class ListDetailFlowTest {
         waitUntilAtLeastOneExists(hasText(ALBUM_ONLY_TRACK), SCREEN_TIMEOUT_MILLIS)
     }
 
+    private val isPlayerPane: SemanticsMatcher = SemanticsMatcher.expectValue(
+        SemanticsProperties.PaneTitle,
+        "Now playing",
+    )
+
+    /** The bar is the one place a song is drawn with the queue action and no pane around it. */
+    private val isMiniPlayer: SemanticsMatcher =
+        hasText("Get Lucky") and hasAnyDescendant(hasContentDescription("Open the queue")) and
+            !hasAnyAncestor(isPlayerPane)
+
     private companion object {
         const val SCREEN_TIMEOUT_MILLIS = 10_000L
-        const val EXPANDED_WIDTH_DP = 840
         const val ALBUM_ONLY_TRACK = "Give Life Back to Music"
     }
 }

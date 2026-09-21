@@ -3,6 +3,7 @@ package com.pierre.tunescout.screenshots
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
+import com.pierre.tunescout.feature.player.presentation.model.PlayerLayout
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.feature.songoptions.presentation.content.SongOptionsContent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
@@ -31,7 +32,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
             description = "The same sheet from every list and from the player",
         ) {
             SheetOverScreen(
-                screen = { PlayerContent(uiState = playerBehindSheet, isSideBySide = false, onEvent = {}) },
+                screen = { PlayerContent(uiState = playerBehindSheet, layout = PlayerLayout.Stacked, onEvent = {}) },
                 sheet = {
                     SongOptionsContent(
                         uiState = SongOptionsUiState(

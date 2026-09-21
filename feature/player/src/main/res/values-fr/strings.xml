@@ -3,6 +3,8 @@
     <string name="player_now_playing">En cours de lecture</string>
     <string name="player_not_found_title">Ce titre n\'est pas disponible</string>
     <string name="player_not_found_description">Il a peut-être été retiré du catalogue. Reviens en arrière et choisis-en un autre.</string>
+    <string name="player_nothing_playing_title">Rien en lecture pour l\'instant</string>
+    <string name="player_nothing_playing_description">Lance un titre et il s\'affichera ici.</string>
     <string name="player_failed">Impossible de lire cet extrait. Vérifie ta connexion et réessaie.</string>
     <string name="player_remaining_time">-%1$s</string>
     <string name="player_position_description">%1$s sur %2$s</string>

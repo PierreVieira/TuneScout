@@ -10,6 +10,9 @@ sealed interface PlayerUiState {
 
     data object NotFound : PlayerUiState
 
+    /** The pane beside the tabs, before anything has been played. */
+    data object NothingPlaying : PlayerUiState
+
     data class Loaded(
         val song: Song,
         val status: PlaybackStatus,

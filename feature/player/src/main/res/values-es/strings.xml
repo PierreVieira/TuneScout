@@ -3,6 +3,8 @@
     <string name="player_now_playing">Reproduciendo ahora</string>
     <string name="player_not_found_title">Esta canción no está disponible</string>
     <string name="player_not_found_description">Puede que la hayan quitado del catálogo. Vuelve atrás y elige otra.</string>
+    <string name="player_nothing_playing_title">Todavía no suena nada</string>
+    <string name="player_nothing_playing_description">Reproduce una canción y aparecerá aquí.</string>
     <string name="player_failed">No se pudo reproducir esta vista previa. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="player_remaining_time">-%1$s</string>
     <string name="player_position_description">%1$s de %2$s</string>

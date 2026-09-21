@@ -133,6 +133,23 @@ The back stack never depends on the width. `[HomeRoute, AlbumRoute]` is the same
 and in landscape; rotating only changes the scene, and Back pops the album either way. A detail
 pushed over a detail replaces it in the right pane, and Back walks through them there.
 
+The tab host alone keeps the two panes too: the strategy lays it beside `emptyDetailPane`, which
+`TuneScoutNavigationContent` fills with `NowPlayingScreen` (`:feature:player`) — the player of
+whatever is playing, or an empty state until something is. It is not an entry of the back stack, so
+it has no back arrow, and the mini player is hidden while it is on screen
+(`isMiniPlayerAllowed(isTwoPane)`). An album opened from the tabs replaces it in the right pane, and
+Back brings it back. The list alone has a scene key of its own, so opening the first detail and
+closing the last one change the scene, as they did when the list alone was a single pane; only a
+detail swapped for another crossfades inside the right pane. An entry leaving a scene that stays
+kept Compose from ever going idle under the test clock, and Back then timed out in the flow tests.
+`PlayerRoute` is a detail too: a song tapped while it is already playing opens the player in the
+right pane — over an album, if one is open — rather than over the tabs.
+
+The detail pane provides `LocalIsInDetailPane`, which a screen reads to lay itself out for the pane
+rather than the window: the player stacks its artwork over the controls there, and when the window is
+as short as a phone on its side it takes `PlayerLayout.Compact`, a thumbnail beside the title with the
+timeline and the controls at full width under them (`PlayerLayout.of`).
+
 A list that runs a navigation of its own wraps it in `DeferBackToDetailPaneScaffold`. The tab host does:
 its nested `NavDisplay` was registered with the back dispatcher before the album was pushed, and
 handlers are asked most recent first, so it would switch tabs where Back should close the album.

@@ -19,6 +19,7 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.player.presentation.model.PlayerLayout
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
@@ -40,7 +41,7 @@ class PlayerContentTest {
     fun givenLoadedSongShowsTitleArtistAndTimeline() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(isSideBySide = false, uiState = loaded(), onEvent = events::add)
+                PlayerContent(layout = PlayerLayout.Stacked, uiState = loaded(), onEvent = events::add)
             }
         }
 
@@ -59,7 +60,7 @@ class PlayerContentTest {
         setContent {
             TuneScoutTheme {
                 PlayerContent(
-                    isSideBySide = false,
+                    layout = PlayerLayout.Stacked,
                     uiState = loaded(status = PlaybackStatus.Playing),
                     onEvent = events::add,
                 )
@@ -76,7 +77,7 @@ class PlayerContentTest {
         setContent {
             TuneScoutTheme {
                 PlayerContent(
-                    isSideBySide = false,
+                    layout = PlayerLayout.Stacked,
                     uiState = loaded(status = PlaybackStatus.Paused),
                     onEvent = events::add,
                 )
@@ -91,7 +92,7 @@ class PlayerContentTest {
         setContent {
             TuneScoutTheme {
                 PlayerContent(
-                    isSideBySide = false,
+                    layout = PlayerLayout.Stacked,
                     uiState = loaded(hasPrevious = false, hasNext = true),
                     onEvent = events::add,
                 )
@@ -108,7 +109,7 @@ class PlayerContentTest {
     fun clickingBackAndMoreEmitTheirEvents() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(isSideBySide = false, uiState = loaded(), onEvent = events::add)
+                PlayerContent(layout = PlayerLayout.Stacked, uiState = loaded(), onEvent = events::add)
             }
         }
 
@@ -123,7 +124,7 @@ class PlayerContentTest {
         setContent {
             TuneScoutTheme {
                 PlayerContent(
-                    isSideBySide = false,
+                    layout = PlayerLayout.Stacked,
                     uiState = loaded(status = PlaybackStatus.Ended),
                     onEvent = events::add,
                 )
@@ -140,7 +141,7 @@ class PlayerContentTest {
         var uiState by mutableStateOf(loaded())
         setContent {
             TuneScoutTheme {
-                PlayerContent(isSideBySide = false, uiState = uiState, onEvent = events::add)
+                PlayerContent(layout = PlayerLayout.Stacked, uiState = uiState, onEvent = events::add)
             }
         }
 
@@ -161,7 +162,7 @@ class PlayerContentTest {
     fun givenShuffleAndRepeatAreOffTheirButtonsSaySoAndEmitTheirEvents() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(isSideBySide = false, uiState = loaded(), onEvent = events::add)
+                PlayerContent(layout = PlayerLayout.Stacked, uiState = loaded(), onEvent = events::add)
             }
         }
 
@@ -179,7 +180,7 @@ class PlayerContentTest {
         setContent {
             TuneScoutTheme {
                 PlayerContent(
-                    isSideBySide = false,
+                    layout = PlayerLayout.Stacked,
                     uiState = loaded(repeatMode = repeatMode, isShuffleEnabled = true),
                     onEvent = events::add,
                 )
@@ -196,7 +197,7 @@ class PlayerContentTest {
     fun givenNotFoundShowsTheMessage() = compose.use {
         setContent {
             TuneScoutTheme {
-                PlayerContent(isSideBySide = false, uiState = PlayerUiState.NotFound, onEvent = events::add)
+                PlayerContent(layout = PlayerLayout.Stacked, uiState = PlayerUiState.NotFound, onEvent = events::add)
             }
         }
 

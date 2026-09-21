@@ -25,7 +25,8 @@ screenshots.
 - **Two tabs**: Home, which is search and recently played, and Your Library. The bar at the bottom
   becomes a navigation rail as soon as the window has width to spare, so a phone turned sideways
   gives the list its height back. On a window wider still — a tablet, or most phones on their side —
-  an album opens beside the tabs instead of over them, and the next one picked replaces it there.
+  the player sits beside the tabs in place of the mini player, with an empty state until something
+  plays. An album opens in that pane, over the player, and Back brings the player back.
 - **Library** of your own: liked songs, the playlists you create and the albums you like, as a list
   or a grid, with the choice remembered on the device. Chips narrow it to playlists or albums, and
   its own search screen keeps the items you opened under "Recent searches" and lets you drop them
@@ -52,7 +53,8 @@ screenshots.
   tapping one says why instead of failing silently.
 - **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
   shuffle, repeat and the queue. Dragging the timeline seeks on release without pausing.
-- **Mini player** above every screen while something is loaded, with its own play/pause and a tap
+- **Mini player** above every screen while something is loaded — except the tabs on a wide window,
+  where the player itself sits beside them — with its own play/pause and a tap
   to reopen the player. The artwork flies between the two.
 - **Album** screen reached from the song options sheet. Fetched once through the lookup endpoint
   and cached, so it opens offline afterwards — and is not fetched again for an hour. A refresh that

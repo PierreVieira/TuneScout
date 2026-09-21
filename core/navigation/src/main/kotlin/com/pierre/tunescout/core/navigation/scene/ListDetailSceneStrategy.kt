@@ -1,5 +1,6 @@
 package com.pierre.tunescout.core.navigation.scene
 
+import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavMetadataKey
 import androidx.navigation3.runtime.get
@@ -17,17 +18,34 @@ import androidx.navigation3.scene.SceneStrategyScope
  * A detail pushed over another detail replaces it in the right pane rather than covering the list, and
  * Back walks through them in the same pane.
  *
+ * The list alone keeps the two panes too, with [emptyDetailPane] beside it. That scene has a key of
+ * its own, so opening the first detail and closing the last one still change the scene, as they did
+ * when the list alone was a single pane: an entry leaving a scene that stays is only ever a detail
+ * swapped for another one.
+ *
  * The strategy is recreated when [isTwoPane] changes, which is what makes `NavDisplay` calculate its
  * scenes again: it only does that when the strategies or the entries change.
  *
  * @param T the type of the back stack keys.
  * @property isTwoPane whether the window is wide enough to lay the panes side by side.
+ * @property emptyDetailPane what the right pane shows while no detail is open in it.
  */
 class ListDetailSceneStrategy<T : Any>(
     private val isTwoPane: Boolean,
+    private val emptyDetailPane: @Composable () -> Unit,
 ) : SceneStrategy<T> {
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         if (!isTwoPane) return null
+        val topEntry = entries.lastOrNull() ?: return null
+        if (topEntry.metadata[ListPaneKey] == true) {
+            return ListDetailScene(
+                key = EmptyDetailSceneKey(listKey = topEntry.contentKey),
+                previousEntries = entries.dropLast(1),
+                listEntry = topEntry,
+                detailEntry = null,
+                emptyDetailPane = emptyDetailPane,
+            )
+        }
         val listIndex = entries.findListPaneIndexOrNull(
             isListPane = { entry -> entry.metadata[ListPaneKey] == true },
             isDetailPane = { entry -> entry.metadata[DetailPaneKey] == true },
@@ -37,7 +55,8 @@ class ListDetailSceneStrategy<T : Any>(
             key = listEntry.contentKey,
             previousEntries = entries.dropLast(1),
             listEntry = listEntry,
-            detailEntry = entries.last(),
+            detailEntry = topEntry,
+            emptyDetailPane = emptyDetailPane,
         )
     }
 
@@ -57,6 +76,15 @@ class ListDetailSceneStrategy<T : Any>(
         private object DetailPaneKey : NavMetadataKey<Boolean>
     }
 }
+
+/**
+ * The key of the list alone beside the empty detail pane, told apart from the list with a detail.
+ *
+ * @property listKey the list's content key.
+ */
+private data class EmptyDetailSceneKey(
+    val listKey: Any,
+)
 
 /**
  * The rule of the two panes, shared by the scene strategy, which reads it off the entries' metadata,

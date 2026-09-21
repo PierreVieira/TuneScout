@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PlayerRoute(
     val songId: Long,
-) : DeepLinkKey {
+) : DeepLinkKey,
+    DetailPaneRoute {
     override val parent: NavKey
         get() = HomeRoute
 }

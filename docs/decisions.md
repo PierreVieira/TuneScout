@@ -2,6 +2,32 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — The player beside the tabs on a wide window
+
+**On an expanded width the player replaces the mini player, in the right pane.** The tabs always have
+a pane beside them there: the player of whatever is playing, an empty state until something is, or
+the album opened over it. `ListDetailSceneStrategy` now lays the tab host alone beside
+`emptyDetailPane` instead of leaving it to a single pane, so opening an album only swaps what the
+right pane shows — though opening the first album and closing it still change the scene, which
+kept the flow tests idle where swapping the pane in place did not. Nothing is pushed for the player: it is not a screen the user went to, so it has no
+back arrow and Back from the tabs does what it did before.
+
+**An album covers the player; Back brings it back.** The right pane holds one thing at a time, and
+the album is what the user just asked for. `PlayerRoute` became a detail as well, so the player
+opened on a song that is already playing — or from a widget — lands in the right pane and not over
+the tabs.
+
+**The mini player only leaves where the pane replaces it.** A playlist or the liked songs still cover
+the tabs on a wide window, and they keep the mini player: without it there would be no way back to
+the player from them. Cost: a phone on its side shows the bar on those screens and not on the tabs.
+
+**In the pane the player stacks, unless the window is short.** Half of a tablet is tall and narrow,
+where the artwork over the controls reads best. Half of a phone on its side is about 400dp by 330dp,
+where the stacked layout pushed the controls below the fold, and a large artwork beside them left the
+controls a cramped column. There the artwork shrinks to an 80dp thumbnail beside the title, and the
+timeline and the controls take the full width under them: the controls come first in a pane that
+short.
+
 ## 2026-09-21 — An album beside the songs on a wide window
 
 **On an expanded width, an album opens beside the tabs instead of over them.**
@@ -28,6 +54,7 @@ open. The root `NavDisplay` keeps Back, and with it the predictive back animatio
 **Only the album is a detail.** A playlist or the liked songs still cover the tabs on every width,
 and so does the player, even when it is opened from the album pane: it is a screen of its own, and
 the queue beside it is its own layout ([#67](https://github.com/PierreVieira/TuneScout/issues/67)).
+*Superseded for the player by the entry above.*
 
 ## 2026-09-21 — Reordering an album or a playlist
 

@@ -3,6 +3,8 @@
     <string name="player_now_playing">Tocando agora</string>
     <string name="player_not_found_title">Esta música não está disponível</string>
     <string name="player_not_found_description">Ela pode ter sido removida do catálogo. Volte e escolha outra.</string>
+    <string name="player_nothing_playing_title">Nada tocando ainda</string>
+    <string name="player_nothing_playing_description">Toque uma música e ela aparece aqui.</string>
     <string name="player_failed">Não foi possível tocar esta prévia. Verifique sua conexão e tente de novo.</string>
     <string name="player_remaining_time">-%1$s</string>
     <string name="player_position_description">%1$s de %2$s</string>

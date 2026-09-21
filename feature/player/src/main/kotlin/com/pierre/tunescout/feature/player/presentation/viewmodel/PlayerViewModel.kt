@@ -5,7 +5,6 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.ObservablePlayback
@@ -21,10 +20,23 @@ import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 
+/**
+ * The player of one song, or of whatever is playing.
+ *
+ * @property songId the song the player was opened on, which it shows until another one plays; null
+ * for the pane beside the tabs, which only follows what is playing and is empty while nothing is.
+ * @property observablePlayback what is playing, and where.
+ * @property playbackStarter starts the shown song when it is not the one playing.
+ * @property playableSongs whether a song can be reached right now.
+ * @property transportControls the controls of what is playing.
+ * @property navigator opens the queue and the song's options, and closes the player.
+ * @param observeSong the song the player was opened on, as the library knows it.
+ */
 class PlayerViewModel(
-    private val route: PlayerRoute,
+    private val songId: Long?,
     private val observablePlayback: ObservablePlayback,
     private val playbackStarter: PlaybackStarter,
     private val playableSongs: PlayableSongs,
@@ -47,7 +59,7 @@ class PlayerViewModel(
         get() = playback.previousEntry?.song
 
     val uiState: StateFlow<PlayerUiState> = combine(
-        observeSong(route.songId),
+        songId?.let(observeSong::invoke) ?: flowOf(null),
         observablePlayback.observePlaybackState(),
         ::toUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlayerUiState.Loading)
@@ -105,7 +117,7 @@ class PlayerViewModel(
     }
 
     private fun navigateToOptions() {
-        val shownSongId = (uiState.value as? PlayerUiState.Loaded)?.song?.id ?: route.songId
+        val shownSongId = (uiState.value as? PlayerUiState.Loaded)?.song?.id ?: songId ?: return
         navigator.navigate(SongOptionsRoute(songId = shownSongId))
     }
 
@@ -113,7 +125,10 @@ class PlayerViewModel(
         routeSong: Song?,
         playback: PlaybackState,
     ): PlayerUiState {
-        val song = playback.currentSong ?: routeSong ?: return PlayerUiState.NotFound
+        val song = playback.currentSong ?: routeSong ?: return when (songId) {
+            null -> PlayerUiState.NothingPlaying
+            else -> PlayerUiState.NotFound
+        }
         val isCurrent = playback.currentSong?.id == song.id
         return PlayerUiState.Loaded(
             song = song,

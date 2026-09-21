@@ -27,6 +27,7 @@ import com.pierre.tunescout.feature.player.presentation.component.PlaybackContro
 import com.pierre.tunescout.feature.player.presentation.component.PlaybackTimelineComponent
 import com.pierre.tunescout.feature.player.presentation.component.PlayerSkeleton
 import com.pierre.tunescout.feature.player.presentation.component.SongHeading
+import com.pierre.tunescout.feature.player.presentation.model.PlayerLayout
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.ui.component.Artwork
@@ -43,6 +44,7 @@ import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val maxArtworkSize = 264.dp
 private val minArtworkSize = 120.dp
+private val compactArtworkSize = 80.dp
 private val maxArtworkTopSpacing = 100.dp
 private const val ARTWORK_CORNER_PERCENT = 12
 private val detailsControlsHeight = 170.dp
@@ -51,9 +53,10 @@ private val detailsTextHeight = 90.dp
 @Composable
 fun PlayerContent(
     uiState: PlayerUiState,
-    isSideBySide: Boolean,
+    layout: PlayerLayout,
     onEvent: (PlayerUiEvent) -> Unit,
     modifier: Modifier = Modifier,
+    hasBack: Boolean = true,
 ) {
     Column(
         modifier = modifier
@@ -63,7 +66,11 @@ fun PlayerContent(
     ) {
         TopBar(
             title = stringResource(R.string.player_now_playing),
-            onBackClick = { onEvent(PlayerUiEvent.OnBackClicked) },
+            onBackClick = if (hasBack) {
+                { onEvent(PlayerUiEvent.OnBackClicked) }
+            } else {
+                null
+            },
             actions = {
                 if (uiState is PlayerUiState.Loaded) {
                     TopBarAction(
@@ -80,7 +87,7 @@ fun PlayerContent(
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
                 detailsHeight = detailsHeight,
-                isSideBySide = isSideBySide,
+                layout = layout,
             )
             val artworkTopSpacing = getArtworkTopSpacing(
                 maxHeight = maxHeight,
@@ -89,7 +96,7 @@ fun PlayerContent(
             )
             when (uiState) {
                 PlayerUiState.Loading -> PlayerSkeleton(
-                    isSideBySide = isSideBySide,
+                    layout = layout,
                     artworkSize = artworkSize,
                     artworkTopSpacing = artworkTopSpacing,
                     artworkCornerPercent = ARTWORK_CORNER_PERCENT,
@@ -100,18 +107,30 @@ fun PlayerContent(
                     description = stringResource(R.string.player_not_found_description),
                 )
 
-                is PlayerUiState.Loaded -> if (isSideBySide) {
-                    SideBySideContent(
-                        uiState = uiState,
-                        onEvent = onEvent,
-                        artworkSize = artworkSize,
-                    )
-                } else {
-                    StackedContent(
+                PlayerUiState.NothingPlaying -> StateMessage(
+                    title = stringResource(R.string.player_nothing_playing_title),
+                    description = stringResource(R.string.player_nothing_playing_description),
+                )
+
+                is PlayerUiState.Loaded -> when (layout) {
+                    PlayerLayout.Stacked -> StackedContent(
                         uiState = uiState,
                         onEvent = onEvent,
                         artworkSize = artworkSize,
                         artworkTopSpacing = artworkTopSpacing,
+                        viewportHeight = maxHeight,
+                    )
+
+                    PlayerLayout.SideBySide -> SideBySideContent(
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        artworkSize = artworkSize,
+                    )
+
+                    PlayerLayout.Compact -> CompactContent(
+                        uiState = uiState,
+                        onEvent = onEvent,
+                        artworkSize = artworkSize,
                         viewportHeight = maxHeight,
                     )
                 }
@@ -134,11 +153,16 @@ private fun getArtworkSize(
     maxWidth: Dp,
     maxHeight: Dp,
     detailsHeight: Dp,
-    isSideBySide: Boolean,
-): Dp = when {
-    isSideBySide -> minOf(maxHeight - TuneScoutSpacing.medium, maxWidth / 2)
-    else -> minOf(maxWidth - TuneScoutSpacing.large * 2, maxHeight - detailsHeight)
-}.coerceIn(minArtworkSize, maxArtworkSize)
+    layout: PlayerLayout,
+): Dp = when (layout) {
+    PlayerLayout.Stacked -> minOf(maxWidth - TuneScoutSpacing.large * 2, maxHeight - detailsHeight)
+        .coerceIn(minArtworkSize, maxArtworkSize)
+
+    PlayerLayout.SideBySide -> minOf(maxHeight - TuneScoutSpacing.medium, maxWidth / 2)
+        .coerceIn(minArtworkSize, maxArtworkSize)
+
+    PlayerLayout.Compact -> compactArtworkSize
+}
 
 private fun getArtworkTopSpacing(
     maxHeight: Dp,
@@ -208,6 +232,29 @@ private fun SideBySideContent(
     }
 }
 
+/**
+ * The artwork shrinks to a thumbnail beside the title, so the timeline and the controls under them
+ * fit a pane as short as half a phone on its side. The column is centred in the [viewportHeight], and
+ * scrolls when even that does not fit — the largest font.
+ */
+@Composable
+private fun CompactContent(
+    uiState: PlayerUiState.Loaded,
+    onEvent: (PlayerUiEvent) -> Unit,
+    artworkSize: Dp,
+    viewportHeight: Dp,
+) {
+    PlayerDetailsContent(
+        uiState = uiState,
+        onEvent = onEvent,
+        headingArtworkSize = artworkSize,
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .heightIn(min = viewportHeight)
+            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.medium),
+    )
+}
+
 @Composable
 private fun SongArtwork(
     uiState: PlayerUiState.Loaded,
@@ -222,21 +269,35 @@ private fun SongArtwork(
     )
 }
 
+/**
+ * @param headingArtworkSize the size of the artwork drawn beside the heading, or null when the
+ * artwork is drawn elsewhere.
+ */
 @Composable
 private fun PlayerDetailsContent(
     uiState: PlayerUiState.Loaded,
     onEvent: (PlayerUiEvent) -> Unit,
     modifier: Modifier = Modifier,
+    headingArtworkSize: Dp? = null,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen),
+        verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen, Alignment.CenterVertically),
     ) {
-        SongHeading(
-            songId = uiState.song.id,
-            title = uiState.song.title,
-            artistName = uiState.song.artistName,
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (headingArtworkSize != null) {
+                SongArtwork(uiState = uiState, size = headingArtworkSize)
+            }
+            SongHeading(
+                songId = uiState.song.id,
+                title = uiState.song.title,
+                artistName = uiState.song.artistName,
+                modifier = Modifier.weight(1f),
+            )
+        }
         PlaybackTimelineComponent(
             songId = uiState.song.id,
             progress = uiState.progress,
