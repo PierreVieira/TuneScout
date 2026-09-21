@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="playback_favorite">Aggiungi ai preferiti</string>
+    <string name="playback_unfavorite">Rimuovi dai preferiti</string>
+    <string name="playback_shuffle_turn_on">Attiva riproduzione casuale</string>
+    <string name="playback_shuffle_turn_off">Disattiva riproduzione casuale</string>
+    <string name="playback_repeat_queue">Ripeti la coda</string>
+    <string name="playback_repeat_song">Ripeti questo brano</string>
+    <string name="playback_repeat_turn_off">Disattiva la ripetizione</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_selection_title">Tema</string>
+    <string name="theme_selection_open">Cambia tema</string>
+    <string name="theme_selection_light">Chiaro</string>
+    <string name="theme_selection_dark">Scuro</string>
+    <string name="theme_selection_system">Sistema</string>
+    <string name="theme_selection_dynamic_color">Colori dinamici</string>
+    <string name="theme_selection_dynamic_color_description">Segui i colori dello sfondo.</string>
+    <string name="theme_selection_dynamic_color_info">Informazioni sui colori dinamici</string>
+    <string name="theme_selection_dynamic_color_toggle">Usa colori dinamici</string>
+    <string name="theme_selection_dynamic_color_explanation">I colori dinamici prendono la tavolozza dell\'app dal tuo sfondo. Sfondi, pannelli e la barra di avanzamento della riproduzione assumono i colori estratti da esso, e la scelta tra chiaro e scuro qui sopra continua a valere.</string>
+    <string name="theme_selection_dynamic_color_availability">Disponibile da Android 12 in poi. Le versioni precedenti usano sempre la tavolozza dell\'app.</string>
+    <string name="theme_selection_got_it">Capito</string>
+</resources>

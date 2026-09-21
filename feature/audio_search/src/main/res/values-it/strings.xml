@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="audio_search_listening_title">In ascolto…</string>
+    <string name="audio_search_listening_hint">Pronuncia il nome di un brano, di un artista o di un album.</string>
+    <string name="audio_search_failed_title">Non siamo riusciti a capire</string>
+    <string name="audio_search_failed_nothing_heard">Non abbiamo sentito nulla. Prova a parlare un po\' più vicino al microfono.</string>
+    <string name="audio_search_failed_no_connection">La ricerca vocale richiede una connessione in questo momento. Controlla la tua connessione internet e riprova.</string>
+    <string name="audio_search_failed_unknown">Qualcosa è andato storto durante l\'ascolto. Riprova.</string>
+    <string name="audio_search_retry">Riprova</string>
+</resources>

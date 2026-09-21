@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="songs_title">Brani</string>
+    <string name="songs_search_placeholder">Cerca</string>
+    <string name="songs_open_theme">Cambia tema</string>
+    <string name="songs_audio_search">Cerca con la voce</string>
+    <string name="songs_microphone_denied">La ricerca vocale richiede il microfono.</string>
+    <string name="songs_microphone_denied_permanently">Consenti il microfono nelle Impostazioni per cercare con la voce.</string>
+    <string name="songs_open_settings">Impostazioni</string>
+    <string name="songs_recently_played">Riprodotti di recente</string>
+    <string name="songs_remove_recent">Rimuovi dai riprodotti di recente</string>
+    <string name="songs_empty_title">Ancora nessun ascolto</string>
+    <string name="songs_empty_description">Cerca un brano e toccalo per iniziare ad ascoltare. Apparirà qui.</string>
+    <string name="songs_no_results_title">Nessun brano trovato</string>
+    <string name="songs_no_results_description">Prova un altro nome di artista, brano o album.</string>
+    <string name="songs_error_title">Impossibile caricare i brani</string>
+    <string name="songs_error_offline">Controlla la connessione e riprova.</string>
+    <string name="songs_error_generic">Qualcosa è andato storto da parte nostra. Riprova.</string>
+    <string name="songs_offline_notice">Sei offline. Vengono mostrati i brani salvati su questo dispositivo.</string>
+    <string name="songs_error_rate_limited">Il catalogo iTunes è occupato in questo momento. Aspetta un attimo e riprova.</string>
+    <string name="songs_confirm_cancel">Annulla</string>
+    <string name="songs_remove_recent_confirm_title">Rimuovere dai riprodotti di recente?</string>
+    <string name="songs_remove_recent_confirm_message">%1$s uscirà dalla cronologia. Puoi sempre cercarlo di nuovo.</string>
+    <string name="songs_remove_recent_confirm_action">Rimuovi</string>
+    <plurals name="songs_results_loaded">
+        <item quantity="one">%1$d risultato caricato</item>
+        <item quantity="other">%1$d risultati caricati</item>
+    </plurals>
+</resources>
