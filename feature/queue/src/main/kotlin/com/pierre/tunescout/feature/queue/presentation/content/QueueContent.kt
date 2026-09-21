@@ -116,16 +116,17 @@ private fun QueueList(
                         isCurrentSong = !uiState.hasEnded,
                         isPlaying = uiState.isPlaying,
                     ),
+                    isUnavailable = entry.song.id in uiState.unplayableSongIds,
                 )
             }
         }
         if (uiState.queuedByUser.isNotEmpty()) {
             sectionLabel(key = "queued-label", text = queuedLabel)
-            reorderableEntries(uiState.queuedByUser, reorderable, reorderableState, onEvent)
+            reorderableEntries(uiState.queuedByUser, uiState.unplayableSongIds, reorderable, reorderableState, onEvent)
         }
         if (uiState.upNext.isNotEmpty()) {
             sectionLabel(key = "up-next-label", text = upNextLabel)
-            reorderableEntries(uiState.upNext, reorderable, reorderableState, onEvent)
+            reorderableEntries(uiState.upNext, uiState.unplayableSongIds, reorderable, reorderableState, onEvent)
         }
     }
 }
@@ -146,6 +147,7 @@ private fun LazyListScope.sectionLabel(
 
 private fun LazyListScope.reorderableEntries(
     entries: List<QueueEntry>,
+    unplayableSongIds: Set<Long>,
     reorderable: List<QueueEntry>,
     reorderableState: ReorderableLazyListState,
     onEvent: (QueueUiEvent) -> Unit,
@@ -157,6 +159,7 @@ private fun LazyListScope.reorderableEntries(
                 entry = entry,
                 previousEntryId = reorderable.getOrNull(position - 1)?.id,
                 nextEntryId = reorderable.getOrNull(position + 1)?.id,
+                isUnavailable = entry.song.id in unplayableSongIds,
                 onEvent = onEvent,
             )
         }

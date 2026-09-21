@@ -12,9 +12,9 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import com.pierre.tunescout.core.model.NowPlaying
-import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.network.RemoteException
 import com.pierre.tunescout.feature.songs.R
+import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongListSkeleton
@@ -28,7 +28,7 @@ private const val APPEND_SKELETON_ROWS = 2
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun SearchResultsList(
-    searchResults: LazyPagingItems<Song>,
+    searchResults: LazyPagingItems<SearchResultUiModel>,
     nowPlaying: NowPlaying?,
     isOffline: Boolean,
     onEvent: (SongsUiEvent) -> Unit,
@@ -72,9 +72,10 @@ internal fun SearchResultsList(
             }
             items(
                 count = searchResults.itemCount,
-                key = searchResults.itemKey { song -> song.id },
+                key = searchResults.itemKey { result -> result.song.id },
             ) { index ->
-                val song = searchResults[index] ?: return@items
+                val result = searchResults[index] ?: return@items
+                val song = result.song
                 SongRow(
                     title = song.title,
                     subtitle = song.artistName,
@@ -83,6 +84,7 @@ internal fun SearchResultsList(
                         isCurrentSong = song.id == nowPlaying?.songId,
                         isPlaying = nowPlaying?.isPlaying == true,
                     ),
+                    isUnavailable = result.isUnavailable,
                     sharedSongId = song.id,
                     onClick = {
                         onEvent(SongsUiEvent.OnSongClicked(song))

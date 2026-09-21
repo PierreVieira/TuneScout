@@ -12,6 +12,7 @@ import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerContent
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
+import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.PlayButtonState
 import kotlinx.coroutines.flow.flowOf
@@ -35,6 +36,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                             nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = false),
                             songPendingRemoval = null,
                             isOffline = false,
+                            unplayableSongIds = emptySet(),
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},
@@ -65,6 +67,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                     nowPlaying = null,
                     songPendingRemoval = null,
                     isOffline = false,
+                    unplayableSongIds = emptySet(),
                 ),
                 searchResults = pagingItems(searchSongs),
                 onEvent = {},
@@ -79,8 +82,10 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
 }
 
 @Composable
-internal fun pagingItems(songs: List<Song>): LazyPagingItems<Song> =
-    flowOf(PagingData.from(songs)).collectAsLazyPagingItems()
+internal fun pagingItems(songs: List<Song>): LazyPagingItems<SearchResultUiModel> {
+    val results = songs.map { song -> SearchResultUiModel(song = song, isUnavailable = false) }
+    return flowOf(PagingData.from(results)).collectAsLazyPagingItems()
+}
 
 @Composable
-internal fun emptyPagingItems(): LazyPagingItems<Song> = pagingItems(emptyList())
+internal fun emptyPagingItems(): LazyPagingItems<SearchResultUiModel> = pagingItems(emptyList())

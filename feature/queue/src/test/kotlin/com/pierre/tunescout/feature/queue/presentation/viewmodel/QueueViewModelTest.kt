@@ -19,6 +19,7 @@ import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -184,6 +185,19 @@ class QueueViewModelTest {
         context = PlaybackContext.Album(id = 10, title = "Random Access Memories"),
     )
 
+    @Test
+    fun `GIVEN queued songs the player cannot reach WHEN observing THEN marks their rows`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playback = queuedOverAlbum(), playableSongIds = setOf(1L, 9L))
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.unplayableSongIds).containsExactly(2L, 3L)
+        }
+
     private fun TestScope.prepareScenario(
         playback: PlaybackState,
         playableSongIds: Set<Long>? = null,
@@ -192,11 +206,13 @@ class QueueViewModelTest {
         queueControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         actions = mutableListOf()
+        val playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true }
         viewModel = QueueViewModel(
             observablePlayback = { playbackStateFlow },
             queueControls = queueControls,
-            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
+            playableSongs = playableSongs,
             navigator = navigator,
+            observablePlayableSongs = { flowOf(playableSongs) },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

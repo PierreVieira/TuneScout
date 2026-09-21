@@ -110,6 +110,7 @@ fun AlbumContent(
                     LoadedContent(
                         album = uiState.album,
                         nowPlaying = uiState.nowPlaying,
+                        unplayableSongIds = uiState.unplayableSongIds,
                         isHeaderInline = isHeaderInline,
                         onEvent = onEvent,
                     )
@@ -156,6 +157,7 @@ private fun FavoriteAction(
 private fun LoadedContent(
     album: Album,
     nowPlaying: NowPlaying?,
+    unplayableSongIds: Set<Long>,
     isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
 ) {
@@ -182,6 +184,7 @@ private fun LoadedContent(
                     isCurrentSong = song.id == nowPlaying?.songId,
                     isPlaying = nowPlaying?.isPlaying == true,
                 ),
+                isUnavailable = song.id in unplayableSongIds,
                 sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
                 trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },

@@ -5,9 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.QueueControls
@@ -19,7 +21,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -28,6 +30,7 @@ class QueueViewModel(
     private val queueControls: QueueControls,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
+    observablePlayableSongs: ObservablePlayableSongs,
 ) : ViewModel() {
     private val emptyUiState = QueueUiState(
         contextTitle = null,
@@ -35,15 +38,17 @@ class QueueViewModel(
         status = PlaybackStatus.Idle,
         queuedByUser = emptyList(),
         upNext = emptyList(),
+        unplayableSongIds = emptySet(),
     )
 
     val uiAction: SharedFlow<QueueUiAction>
         field = MutableSharedFlow<QueueUiAction>()
 
-    val uiState: StateFlow<QueueUiState> = observablePlayback
-        .observePlaybackState()
-        .map(::toUiState)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
+    val uiState: StateFlow<QueueUiState> = combine(
+        observablePlayback.observePlaybackState(),
+        observablePlayableSongs.observePlayableSongs(),
+        ::toUiState,
+    ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: QueueUiEvent) = when (event) {
         QueueUiEvent.OnNowPlayingClicked -> openPlayer()
@@ -92,7 +97,10 @@ class QueueViewModel(
         queueControls.moveInQueue(fromIndex = fromIndex, toIndex = toIndex)
     }
 
-    private fun toUiState(playback: PlaybackState): QueueUiState {
+    private fun toUiState(
+        playback: PlaybackState,
+        playable: PlayableSongs,
+    ): QueueUiState {
         val upcoming = playback.upcomingEntries
         val queuedByUser = upcoming.takeWhile { entry -> entry.source == QueueSource.UserQueue }
         return QueueUiState(
@@ -101,6 +109,7 @@ class QueueViewModel(
             status = playback.status,
             queuedByUser = queuedByUser,
             upNext = upcoming.drop(queuedByUser.size),
+            unplayableSongIds = playable.findUnplayableIds(playback.entries.map(QueueEntry::song)),
         )
     }
 }

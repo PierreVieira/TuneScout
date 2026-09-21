@@ -23,6 +23,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.component.RecentlyPlayedList
 import com.pierre.tunescout.feature.songs.presentation.component.SearchResultsList
+import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.ConfirmationDialog
@@ -40,7 +41,7 @@ private val titleHeight = 48.dp
 @Composable
 fun SongsContent(
     uiState: SongsUiState,
-    searchResults: LazyPagingItems<Song>,
+    searchResults: LazyPagingItems<SearchResultUiModel>,
     isHeaderInline: Boolean,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -78,6 +79,7 @@ fun SongsContent(
                     songs = uiState.recentlyPlayed,
                     nowPlaying = uiState.nowPlaying,
                     songPendingRemoval = uiState.songPendingRemoval,
+                    unplayableSongIds = uiState.unplayableSongIds,
                     onEvent = onEvent,
                 )
             }

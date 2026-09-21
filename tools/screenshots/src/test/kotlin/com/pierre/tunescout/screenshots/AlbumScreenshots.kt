@@ -10,6 +10,7 @@ internal class AlbumScreenshots : ReadmeScreenshotsTest() {
         nowPlaying = null,
         isFavorite = true,
         isStale = false,
+        unplayableSongIds = emptySet(),
     )
 
     @Test

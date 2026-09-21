@@ -12,6 +12,7 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -61,13 +62,15 @@ val playbackModule: Module = module {
     single<DataSource.Factory> { DefaultDataSource.Factory(androidContext()) }
     singleOf(::MediaCacheDataSourceFactory)
     single<PreviewCache> { MediaCachePreviewCache(cache = get()) }
-    single<PlayableSongs> {
+    single {
         ConnectivityPlayableSongs(
             previewCache = get(),
             networkMonitor = get(),
             scope = get(named(PLAYBACK_SCOPE)),
         )
     }
+    single<PlayableSongs> { get<ConnectivityPlayableSongs>() }
+    single<ObservablePlayableSongs> { get<ConnectivityPlayableSongs>() }
     single<ExoPlayer> {
         ExoPlayer
             .Builder(androidContext())

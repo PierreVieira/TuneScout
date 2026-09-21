@@ -25,6 +25,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
@@ -89,7 +90,7 @@ class SongsViewModelTest {
 
             // Then
             assertThat(searchedTerms).containsExactly("daft punk")
-            assertThat(results.map { song -> song.id }).containsExactly(1L)
+            assertThat(results.map { result -> result.song.id }).containsExactly(1L)
             assertThat(viewModel.uiState.value.isSearching).isTrue()
         }
 
@@ -288,6 +289,60 @@ class SongsViewModelTest {
             verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
         }
 
+    @Test
+    fun `GIVEN recently played songs the player cannot reach WHEN going offline THEN marks their rows`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                recentlyPlayed = listOf(song(id = 1), song(id = 2)),
+                playableSongIds = setOf(1L),
+            )
+
+            // When
+            isOnline.value = false
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.unplayableSongIds).containsExactly(2L)
+        }
+
+    @Test
+    fun `GIVEN an offline device WHEN the connection comes back THEN every row is reachable again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                recentlyPlayed = listOf(song(id = 1), song(id = 2)),
+                isOnline = false,
+                playableSongIds = emptySet(),
+            )
+
+            // When
+            isOnline.value = true
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.unplayableSongIds).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN results the player cannot reach WHEN searching offline THEN marks them`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                catalog = listOf(song(id = 1), song(id = 2)),
+                isOnline = false,
+                playableSongIds = setOf(1L),
+            )
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnQueryChanged("daft punk"))
+            val results = viewModel.searchResults.asSnapshot()
+
+            // Then
+            assertThat(results.filter { result -> result.isUnavailable }.map { result -> result.song.id })
+                .containsExactly(2L)
+        }
+
     private fun TestScope.prepareScenario(
         recentlyPlayed: List<Song> = emptyList(),
         catalog: List<Song> = emptyList(),
@@ -298,8 +353,12 @@ class SongsViewModelTest {
         searchedTerms = mutableListOf()
         actions = mutableListOf()
         removedSongIds = mutableListOf()
-        this@SongsViewModelTest.isOnline = MutableStateFlow(isOnline)
+        val onlineFlow = MutableStateFlow(isOnline)
+        this@SongsViewModelTest.isOnline = onlineFlow
         val playbackStateFlow = MutableStateFlow(playback)
+        val reach = { isOnline: Boolean ->
+            PlayableSongs { song -> isOnline || playableSongIds?.contains(song.id) ?: true }
+        }
         playbackStarter = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongsViewModel(
@@ -314,7 +373,8 @@ class SongsViewModelTest {
             ),
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
-            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
+            playableSongs = PlayableSongs { song -> reach(onlineFlow.value).isPlayable(song) },
+            observablePlayableSongs = { onlineFlow.map(reach) },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
