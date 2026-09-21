@@ -13,6 +13,7 @@ import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.queueEntries
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.queue.presentation.model.QueueContextTitle
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiAction
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.ui.component.R
@@ -74,7 +75,55 @@ class QueueViewModelTest {
         val state = viewModel.uiState.value
 
         // Then
-        assertThat(state.contextTitle).isEqualTo("Random Access Memories")
+        assertThat(state.contextTitle).isEqualTo(QueueContextTitle.Custom("Random Access Memories"))
+    }
+
+    @Test
+    fun `GIVEN a playlist is playing WHEN observing THEN exposes its name`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = queuedOver(PlaybackContext.Playlist(id = 3, title = "Road trip")))
+
+        // When
+        val state = viewModel.uiState.value
+
+        // Then
+        assertThat(state.contextTitle).isEqualTo(QueueContextTitle.Custom("Road trip"))
+    }
+
+    @Test
+    fun `GIVEN the liked songs are playing WHEN observing THEN says so`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = queuedOver(PlaybackContext.LikedSongs))
+
+        // When
+        val state = viewModel.uiState.value
+
+        // Then
+        assertThat(state.contextTitle).isEqualTo(QueueContextTitle.LikedSongs)
+    }
+
+    @Test
+    fun `GIVEN the recently played are playing WHEN observing THEN says so`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = queuedOver(PlaybackContext.RecentlyPlayed))
+
+        // When
+        val state = viewModel.uiState.value
+
+        // Then
+        assertThat(state.contextTitle).isEqualTo(QueueContextTitle.RecentlyPlayed)
+    }
+
+    @Test
+    fun `GIVEN a single song is playing WHEN observing THEN there is no title`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = queuedOver(PlaybackContext.SingleSong))
+
+        // When
+        val state = viewModel.uiState.value
+
+        // Then
+        assertThat(state.contextTitle).isNull()
     }
 
     @Test
@@ -177,12 +226,15 @@ class QueueViewModelTest {
             verify(exactly = 0) { queueControls.skipTo(any()) }
         }
 
-    private fun queuedOverAlbum(): PlaybackState = playbackState(
+    private fun queuedOverAlbum(): PlaybackState =
+        queuedOver(PlaybackContext.Album(id = 10, title = "Random Access Memories"))
+
+    private fun queuedOver(context: PlaybackContext): PlaybackState = playbackState(
         entries = queueEntries(listOf(song(id = 1))) +
             queueEntries(listOf(song(id = 9)), source = QueueSource.UserQueue) +
             queueEntries(listOf(song(id = 2), song(id = 3))),
         currentIndex = 0,
-        context = PlaybackContext.Album(id = 10, title = "Random Access Memories"),
+        context = context,
     )
 
     @Test

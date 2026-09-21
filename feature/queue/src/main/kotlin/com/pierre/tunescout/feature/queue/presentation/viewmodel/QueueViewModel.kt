@@ -1,7 +1,6 @@
 package com.pierre.tunescout.feature.queue.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
-import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueEntry
@@ -12,6 +11,7 @@ import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.QueueControls
+import com.pierre.tunescout.feature.queue.presentation.mapper.toQueueContextTitle
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiAction
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
@@ -94,7 +94,7 @@ class QueueViewModel(
         val upcoming = playback.upcomingEntries
         val queuedByUser = upcoming.takeWhile { entry -> entry.source == QueueSource.UserQueue }
         return QueueUiState(
-            contextTitle = (playback.context as? PlaybackContext.Album)?.title,
+            contextTitle = playback.context.toQueueContextTitle(),
             nowPlaying = playback.currentEntry,
             status = playback.status,
             queuedByUser = queuedByUser,

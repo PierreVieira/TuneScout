@@ -13,6 +13,7 @@ import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.queue.presentation.model.QueueContextTitle
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
@@ -158,7 +159,7 @@ class QueueContentTest {
     }
 
     private fun loaded(status: PlaybackStatus = PlaybackStatus.Playing): QueueUiState = QueueUiState(
-        contextTitle = "Random Access Memories",
+        contextTitle = QueueContextTitle.Custom("Random Access Memories"),
         nowPlaying = queueEntry(song = song(id = 1, title = "Get Lucky")),
         status = status,
         queuedByUser = listOf(userEntry(id = 9, title = "One More Time")),

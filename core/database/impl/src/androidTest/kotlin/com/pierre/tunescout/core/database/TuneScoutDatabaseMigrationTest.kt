@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
 import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
 import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
+import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -219,6 +220,73 @@ class TuneScoutDatabaseMigrationTest {
             assertThat(
                 connection.selectCount("SELECT COUNT(*) FROM playback_queue WHERE unshuffledPosition IS NULL"),
             ).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun givenAVersionSixSessionOnAnAlbumTheMigrationKeepsTheAlbumAsItsContext() = runBlocking {
+        // Given
+        helper.createDatabase(version = 6).use { connection ->
+            connection.execSQL(
+                "INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 'All', 1, 10, 'Discovery', 1)",
+            )
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 7, migrations = listOf(MIGRATION_6_7))
+
+        // Then
+        migrated.use { connection ->
+            assertThat(connection.selectText("SELECT contextType FROM playback_session")).isEqualTo("Album")
+            assertThat(connection.selectCount("SELECT contextId FROM playback_session")).isEqualTo(10)
+            assertThat(connection.selectText("SELECT contextTitle FROM playback_session")).isEqualTo("Discovery")
+            assertThat(connection.selectText("SELECT repeatMode FROM playback_session")).isEqualTo("All")
+            assertThat(connection.selectCount("SELECT isShuffleEnabled FROM playback_session")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT positionMillis FROM playback_session")).isEqualTo(5000)
+            assertThat(connection.selectCount("SELECT hasEnded FROM playback_session")).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun givenAVersionSixSessionWithoutAnAlbumTheMigrationMakesItASingleSongAndKeepsTheQueue() = runBlocking {
+        // Given
+        helper.createDatabase(version = 6).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8, 0)",
+            )
+            connection.execSQL("INSERT INTO playback_queue VALUES ('entry-1', 0, 1, 'Context', NULL)")
+            connection.execSQL("INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 'Off', 0, NULL, NULL, 0)")
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 7, migrations = listOf(MIGRATION_6_7))
+
+        // Then
+        migrated.use { connection ->
+            assertThat(connection.selectText("SELECT contextType FROM playback_session")).isEqualTo("SingleSong")
+            assertThat(
+                connection.selectCount("SELECT COUNT(*) FROM playback_session WHERE contextId IS NULL"),
+            ).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM playback_queue")).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun givenAVersionSixDatabaseTheSessionAcceptsAPlaylistContextAfterTheMigration() = runBlocking {
+        // Given
+        helper.createDatabase(version = 6).close()
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 7, migrations = listOf(MIGRATION_6_7))
+
+        // Then
+        migrated.use { connection ->
+            connection.execSQL(
+                "INSERT INTO playback_session VALUES (0, 'entry-1', 0, 'Off', 0, 'Playlist', 3, 'Road trip', 0)",
+            )
+            assertThat(connection.selectText("SELECT contextType FROM playback_session")).isEqualTo("Playlist")
+            assertThat(connection.selectText("SELECT contextTitle FROM playback_session")).isEqualTo("Road trip")
         }
     }
 
