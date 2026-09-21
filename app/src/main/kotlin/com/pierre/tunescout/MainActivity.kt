@@ -2,6 +2,8 @@ package com.pierre.tunescout
 
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.TransitionDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +20,7 @@ import com.pierre.tunescout.presentation.model.MainUiState
 import com.pierre.tunescout.presentation.viewmodel.MainViewModel
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import com.pierre.tunescout.ui.theme.R as ThemeR
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModel()
@@ -25,7 +28,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
             setKeepOnScreenCondition { viewModel.uiState.value is MainUiState.Loading }
-            setOnExitAnimationListener(SplashScreenViewProvider::remove)
+            setOnExitAnimationListener(::dissolveSplashIntoContent)
         }
         super.onCreate(savedInstanceState)
         reportLaunchDeepLink(savedInstanceState)
@@ -55,6 +58,29 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
+     * The system splash window only takes a flat colour, so the gradient of the design arrives on
+     * the way out: it fades in over that colour, under the note the system already drew, and then
+     * the whole splash dissolves into the screen composed behind it. Nothing waits on either fade —
+     * the app is ready and drawn before the first one starts.
+     */
+    private fun dissolveSplashIntoContent(splash: SplashScreenViewProvider) {
+        val background = TransitionDrawable(
+            arrayOf(
+                ColorDrawable(getColor(ThemeR.color.splash_background)),
+                checkNotNull(getDrawable(ThemeR.drawable.splash_gradient)),
+            ),
+        )
+        splash.view.background = background
+        background.startTransition(GRADIENT_FADE_IN_MILLIS)
+        splash.view
+            .animate()
+            .alpha(0f)
+            .setStartDelay(GRADIENT_FADE_IN_MILLIS.toLong())
+            .setDuration(SPLASH_FADE_OUT_MILLIS)
+            .withEndAction(splash::remove)
+    }
+
+    /**
      * The activity is `singleTop`, so a widget tapped while the app is already open lands here
      * instead of on a second instance.
      */
@@ -81,6 +107,11 @@ class MainActivity : ComponentActivity() {
                 isOffline = state.isOffline,
             )
         }
+    }
+
+    private companion object {
+        const val GRADIENT_FADE_IN_MILLIS = 200
+        const val SPLASH_FADE_OUT_MILLIS = 200L
     }
 }
 

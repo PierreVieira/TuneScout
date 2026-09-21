@@ -17,7 +17,7 @@ import com.pierre.tunescout.core.navigation.NavigationCommandCollector
 import com.pierre.tunescout.core.navigation.animation.FadeSceneDecoratorStrategy
 import com.pierre.tunescout.core.navigation.animation.createSceneFadeTransform
 import com.pierre.tunescout.core.navigation.animation.rememberSharedElementNavEntryDecorator
-import com.pierre.tunescout.core.navigation.route.SplashRoute
+import com.pierre.tunescout.core.navigation.route.HomeRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
 import com.pierre.tunescout.core.navigation.scene.ListDetailSceneStrategy
 import com.pierre.tunescout.feature.addtoplaylist.presentation.navigation.addToPlaylistEntry
@@ -35,7 +35,6 @@ import com.pierre.tunescout.feature.player.presentation.content.NowPlayingScreen
 import com.pierre.tunescout.feature.player.presentation.navigation.playerEntry
 import com.pierre.tunescout.feature.queue.presentation.navigation.queueEntry
 import com.pierre.tunescout.feature.songoptions.presentation.navigation.songOptionsEntry
-import com.pierre.tunescout.feature.splash.presentation.navigation.splashEntry
 import com.pierre.tunescout.feature.themeselection.presentation.navigation.dynamicColorInfoEntry
 import com.pierre.tunescout.feature.themeselection.presentation.navigation.themeSelectionEntry
 import com.pierre.tunescout.navigation.home.homeEntry
@@ -64,7 +63,7 @@ import com.pierre.tunescout.ui.utils.window.rememberWindowSize
  */
 @Composable
 fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
-    val backStack = rememberNavBackStack(SplashRoute)
+    val backStack = rememberNavBackStack(HomeRoute)
     val backStackController = remember { BackStackController(backStack = backStack) }
     val bottomSheetStrategy = remember { BottomSheetSceneStrategy<NavKey>(containerColor = { TuneScoutColors.sheet }) }
     val dialogStrategy = remember { DialogSceneStrategy<NavKey>() }
@@ -105,7 +104,6 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
                         popTransitionSpec = { createSceneFadeTransform() },
                         predictivePopTransitionSpec = { createSceneFadeTransform() },
                         entryProvider = entryProvider {
-                            splashEntry()
                             homeEntry(tabsState = tabsState)
                             audioSearchEntry()
                             librarySearchEntry()

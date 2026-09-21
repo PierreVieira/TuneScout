@@ -339,7 +339,7 @@ File scope stays right in four cases:
   the composable they size. A `@Composable` function is not a class, and one instance per file is the
   point. This is the convention the next two sections describe.
 - **A value the instance cannot see yet** — a default for a constructor parameter
-  (`holdDuration: Duration = defaultHoldDuration`) or an argument to a superclass constructor call is
+  (`debounce: Duration = defaultDebounce`) or an argument to a superclass constructor call is
   evaluated before the class body exists, so it cannot read a class-body property.
 - **Files with no class** — a Koin module, a fixture file, a theme.
 - **`value class` bodies**, which cannot declare properties at all (`Artwork`'s `sizeSegment` regex).
@@ -360,9 +360,9 @@ class KtorSongSearchRemoteDataSource(...) {
 }
 
 // Wrong — a private val hidden in a companion
-class SplashViewModel(...) {
+class SearchViewModel(...) {
     private companion object {
-        val defaultHoldDuration = 700.milliseconds
+        val defaultDebounce = 300.milliseconds
     }
 }
 ```
@@ -383,7 +383,7 @@ exceptions above without any type resolution:
   top-level `@Composable` sizes itself with is left alone, and so is a constant two top-level
   declarations share;
 - a reference from the primary constructor or the superclass constructor call does not count as
-  ownership, which covers the `holdDuration: Duration = defaultHoldDuration` case;
+  ownership, which covers the `debounce: Duration = defaultDebounce` case;
 - a file with no class has no owner to move anything into;
 - interfaces, annotation classes and `value class` bodies are skipped, since they cannot hold the
   property anyway.

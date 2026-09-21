@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="splash_background">#FF000E11</color>
+    <color name="splash_gradient_start">#FF000000</color>
+    <color name="splash_gradient_end">#FF00343E</color>
 </resources>

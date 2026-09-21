@@ -8,7 +8,6 @@ import com.pierre.tunescout.core.navigation.route.HomeRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.navigation.route.SplashRoute
 import org.junit.jupiter.api.Test
 
 class CurrentScreenRouteTest {
@@ -44,8 +43,7 @@ class CurrentScreenRouteTest {
     }
 
     @Test
-    fun `GIVEN the splash or an empty back stack WHEN asking THEN the mini player is hidden`() {
-        assertThat(listOf(SplashRoute).isMiniPlayerAllowed(isTwoPane = false)).isFalse()
+    fun `GIVEN an empty back stack WHEN asking THEN the mini player is hidden`() {
         assertThat(emptyList<NavKey>().isMiniPlayerAllowed(isTwoPane = false)).isFalse()
     }
 
@@ -80,7 +78,6 @@ class CurrentScreenRouteTest {
     @Test
     fun `GIVEN a screen pushed over the tab host WHEN asking THEN the navigation bar is hidden`() {
         assertThat(listOf(HomeRoute, AlbumRoute(albumId = 10)).isHomeVisible(isTwoPane = false)).isFalse()
-        assertThat(listOf(SplashRoute).isHomeVisible(isTwoPane = false)).isFalse()
         assertThat(emptyList<NavKey>().isHomeVisible(isTwoPane = false)).isFalse()
     }
 

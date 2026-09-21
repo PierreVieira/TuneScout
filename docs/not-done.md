@@ -8,9 +8,10 @@ larger ones is in [Decisions and trade-offs](decisions.md).
 - The design uses the Articulat CF typeface, which is commercial; the app ships the system
   sans-serif with the same sizes and weights.
 - The splash window Android draws before the app's first frame only accepts a flat colour, so it
-  shows the same note over a dark teal close to the gradient's average; the gradient itself starts
-  with the first frame the app draws. The splash is always dark, whatever the theme: its window is
-  declared in resources, before the preference can be read.
+  shows the note over a dark teal close to the gradient's average; the designed gradient only
+  appears as that splash leaves, fading in before it dissolves into the home screen. The splash is
+  always dark, whatever the theme: its window is declared in resources, before the preference can
+  be read.
 - The light palette is derived from the Figma dark one rather than designed: the file only
   specifies dark.
 - A wide window puts the player, or an album, beside the tabs, and nothing else: a playlist and the

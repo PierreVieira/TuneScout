@@ -100,7 +100,6 @@ A screen does not read `LocalNavAnimatedContentScope` itself — see [Shared ele
 ```kotlin
 // app/src/main/kotlin/com/pierre/tunescout/navigation/TuneScoutNavigationContent.kt
 entryProvider = entryProvider<NavKey> {
-    splash()
     home(tabsState)
     player()
     album()
@@ -180,7 +179,7 @@ activity knows nothing of the matcher or the navigator, so the whole path is uni
 carries its launch intent, but the restored back stack already holds the deep link and whatever the
 user opened after it. The command is emitted *before* composition starts; the navigator's
 unlimited channel holds it until the collector attaches, so the first back stack the app draws is
-already the deep link's and the splash is never shown on top of a screen the user asked for.
+already the deep link's, not the home screen's.
 
 The synthetic back stack is what the guide's first principle asks for: a deep link into
 `PlayerRoute` lands on `[HomeRoute, PlayerRoute]`, so Back leads where it would have led had the

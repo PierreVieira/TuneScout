@@ -5,7 +5,6 @@
     <string name="player_not_found_description">It may have been removed from the catalog. Go back and pick another one.</string>
     <string name="player_nothing_playing_title">Nothing playing yet</string>
     <string name="player_nothing_playing_description">Play a song and it shows up here.</string>
-    <string name="player_failed">Couldn\'t play this preview. Check your connection and try again.</string>
     <string name="player_remaining_time">-%1$s</string>
     <string name="player_position_description">%1$s of %2$s</string>
     <string name="player_elapsed_description">%1$s played</string>
