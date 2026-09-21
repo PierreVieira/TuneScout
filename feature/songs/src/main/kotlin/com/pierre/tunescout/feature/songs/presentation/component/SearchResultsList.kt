@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -43,6 +44,7 @@ private val resultsCountLabelSize = 1.dp
 @Composable
 internal fun SearchResultsList(
     searchResults: LazyPagingItems<SearchResultUiModel>,
+    listState: LazyListState,
     nowPlaying: NowPlaying?,
     favoriteSongIds: Set<Long>,
     isOffline: Boolean,
@@ -61,6 +63,7 @@ internal fun SearchResultsList(
             modifier = Modifier
                 .fillMaxSize()
                 .testTag(SEARCH_RESULTS_TAG),
+            state = listState,
             contentPadding = PaddingValues(
                 start = TuneScoutSpacing.large,
                 end = TuneScoutSpacing.medium,

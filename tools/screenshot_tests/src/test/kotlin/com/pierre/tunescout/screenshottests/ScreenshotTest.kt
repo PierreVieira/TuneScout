@@ -62,11 +62,14 @@ internal abstract class ScreenshotTest {
      * @param name what the images are named after, unique within the test class.
      * @param variants the themes, languages and font scales to render [content] in.
      * @param isLandscape renders on the phone turned sideways, for the layouts that switch on width.
+     * @param beforeCapture drives the rendered screen into a state no `UiState` holds, like a list
+     * scrolled away from its top, before the image is taken.
      */
     protected fun snapshot(
         name: String,
         variants: List<ScreenshotVariant> = ScreenshotVariant.themes,
         isLandscape: Boolean = false,
+        beforeCapture: ComposeContentTestRule.() -> Unit = {},
         content: @Composable () -> Unit,
     ) {
         val directory = "$SCREENSHOT_DIRECTORY/${javaClass.simpleName}"
@@ -75,6 +78,7 @@ internal abstract class ScreenshotTest {
                 filePath = "$directory/${name}_${variant.fileSuffix}$SCREENSHOT_EXTENSION",
                 variant = variant,
                 isLandscape = isLandscape,
+                beforeCapture = beforeCapture,
                 content = content,
             )
         }
@@ -89,6 +93,7 @@ internal abstract class ScreenshotTest {
         filePath: String,
         variant: ScreenshotVariant,
         isLandscape: Boolean,
+        beforeCapture: ComposeContentTestRule.() -> Unit,
         content: @Composable () -> Unit,
     ) {
         applyConfiguration(variant = variant, isLandscape = isLandscape)
@@ -106,6 +111,8 @@ internal abstract class ScreenshotTest {
                         }
                     }
                 }
+                composeRule.waitForIdle()
+                composeRule.beforeCapture()
                 composeRule.waitForIdle()
                 composeRule.onRoot().captureRoboImage(filePath = filePath)
                 composeRule.checkAccessibility()

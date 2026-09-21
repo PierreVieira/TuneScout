@@ -1,5 +1,7 @@
 package com.pierre.tunescout.screenshottests
 
+import androidx.compose.ui.test.hasScrollToIndexAction
+import androidx.compose.ui.test.performScrollToIndex
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
@@ -8,6 +10,7 @@ import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.screenshotfixtures.emptyPagingItems
 import com.pierre.tunescout.screenshotfixtures.getLucky
 import com.pierre.tunescout.screenshotfixtures.pagingItems
+import com.pierre.tunescout.screenshotfixtures.randomAccessMemories
 import com.pierre.tunescout.screenshotfixtures.recentlyPlayed
 import com.pierre.tunescout.screenshotfixtures.searchSongs
 import org.junit.Test
@@ -62,6 +65,25 @@ internal class SongsScreenshotTest : ScreenshotTest() {
             SongsContent(
                 uiState = recent.copy(query = "daft punk"),
                 searchResults = pagingItems(searchResults(searchSongs)),
+                isHeaderInline = false,
+                onEvent = {},
+            )
+        }
+    }
+
+    /** The ten search songs fit on the screen, which leaves nothing to scroll. */
+    private val longerThanTheScreen = (searchSongs + randomAccessMemories.songs).distinctBy { song -> song.id }
+
+    /** Scrolled away from the top, the header casts a shadow over the rows passing under it. */
+    @Test
+    fun searchingScrolled() {
+        snapshot(
+            name = "searching_scrolled",
+            beforeCapture = { onNode(hasScrollToIndexAction()).performScrollToIndex(SCROLLED_INDEX) },
+        ) {
+            SongsContent(
+                uiState = recent.copy(query = "daft punk"),
+                searchResults = pagingItems(searchResults(longerThanTheScreen)),
                 isHeaderInline = false,
                 onEvent = {},
             )
@@ -133,5 +155,9 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         snapshot(name = "inline_header", isLandscape = true) {
             SongsContent(uiState = recent, searchResults = emptyPagingItems(), isHeaderInline = true, onEvent = {})
         }
+    }
+
+    private companion object {
+        const val SCROLLED_INDEX = 3
     }
 }

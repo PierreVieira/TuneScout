@@ -82,7 +82,7 @@ the repository. `isLandscape = true` covers the layouts that switch on width (`i
 | --- | --- |
 | `PlayerScreenshotTest` | loading, not found, loaded, ended repeating the song, shuffled repeating the queue, side by side |
 | `AlbumScreenshotTest` | loading, error, loaded, playing, unplayable tracks, stale, inline header |
-| `SongsScreenshotTest` | recently played, empty, searching, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header, no audio search |
+| `SongsScreenshotTest` | recently played, empty, searching, searching scrolled under the header's shadow, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header, no audio search |
 | `LibraryScreenshotTest` | list, grid, filtered, empty, search: recent, results and no results |
 | `CollectionScreenshotTest` | loading, loaded, favourites, empty, remove confirmation |
 | `QueueScreenshotTest` | playing, paused, context only, empty |

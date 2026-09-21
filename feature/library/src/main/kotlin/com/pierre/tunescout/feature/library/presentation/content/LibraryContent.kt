@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,8 +44,9 @@ import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.utils.semantics.screenPane
 
-private val titleHeight = 48.dp
 private val minCellWidth = 160.dp
+private val fabSize = 56.dp
+private val listBottomPadding = fabSize + TuneScoutSpacing.screen * 2
 
 @Composable
 fun LibraryContent(
@@ -76,6 +79,30 @@ fun LibraryContent(
                 }
             }
         }
+        CreatePlaylistButton(
+            onClick = { onEvent(LibraryUiEvent.OnCreatePlaylistClicked) },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(TuneScoutSpacing.screen),
+        )
+    }
+}
+
+@Composable
+private fun CreatePlaylistButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FloatingActionButton(
+        onClick = onClick,
+        containerColor = TuneScoutColors.accentContainer,
+        contentColor = TuneScoutColors.textPrimary,
+        modifier = modifier,
+    ) {
+        Icon(
+            imageVector = TuneScoutIcons.add,
+            contentDescription = stringResource(R.string.library_create_playlist),
+        )
     }
 }
 
@@ -120,11 +147,6 @@ private fun TitleRow(onEvent: (LibraryUiEvent) -> Unit) {
             contentDescription = stringResource(R.string.library_open_search),
             onClick = { onEvent(LibraryUiEvent.OnSearchClicked) },
         )
-        TopBarAction(
-            icon = TuneScoutIcons.add,
-            contentDescription = stringResource(R.string.library_create_playlist),
-            onClick = { onEvent(LibraryUiEvent.OnCreatePlaylistClicked) },
-        )
     }
 }
 
@@ -163,7 +185,7 @@ private fun LibraryList(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(),
-        contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = TuneScoutSpacing.extraLarge),
+        contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = listBottomPadding),
     ) {
         items(items = items, key = { item -> item.key.toString() }) { item ->
             LibraryItemRow(
@@ -184,7 +206,7 @@ private fun LibraryGrid(
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = minCellWidth),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = TuneScoutSpacing.extraLarge),
+        contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = listBottomPadding),
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
     ) {

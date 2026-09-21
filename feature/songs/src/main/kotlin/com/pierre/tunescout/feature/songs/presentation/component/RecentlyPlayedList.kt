@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,6 +31,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 @Composable
 internal fun RecentlyPlayedList(
     songs: List<Song>,
+    listState: LazyListState,
     nowPlaying: NowPlaying?,
     favoriteSongIds: Set<Long>,
     unplayableSongIds: Set<Long>,
@@ -46,6 +48,7 @@ internal fun RecentlyPlayedList(
     }
     LazyColumn(
         modifier = modifier.fillMaxSize(),
+        state = listState,
         contentPadding = PaddingValues(
             start = TuneScoutSpacing.large,
             end = TuneScoutSpacing.medium,

@@ -1,5 +1,6 @@
 package com.pierre.tunescout.feature.songs.presentation.content
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,15 +12,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.DefaultShadowColor
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.paging.compose.LazyPagingItems
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.songs.R
@@ -40,6 +54,9 @@ import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.utils.semantics.screenPane
 
 private val titleMinHeight = 48.dp
+private val headerShadowHeight = 8.dp
+private const val HEADER_SHADOW_ALPHA = 0.16f
+private const val HEADER_SHADOW_LABEL = "songs_header_shadow"
 
 @Composable
 fun SongsContent(
@@ -49,6 +66,11 @@ fun SongsContent(
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val recentlyPlayedListState = rememberLazyListState()
+    val searchResultsListState = rememberLazyListState()
+    val headerShadowFraction = rememberHeaderShadowFraction(
+        listState = if (uiState.isSearching) searchResultsListState else recentlyPlayedListState,
+    )
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -66,7 +88,10 @@ fun SongsContent(
                 uiState = uiState,
                 isHeaderInline = isHeaderInline,
                 onEvent = onEvent,
-                modifier = Modifier.hideableTopBar(),
+                modifier = Modifier
+                    .zIndex(1f)
+                    .shadowBelow(fraction = headerShadowFraction)
+                    .hideableTopBar(),
             )
             if (uiState.isOffline) {
                 NoticeBar(text = stringResource(R.string.songs_offline_notice))
@@ -74,6 +99,7 @@ fun SongsContent(
             if (uiState.isSearching) {
                 SearchResultsList(
                     searchResults = searchResults,
+                    listState = searchResultsListState,
                     nowPlaying = uiState.nowPlaying,
                     favoriteSongIds = uiState.favoriteSongIds,
                     isOffline = uiState.isOffline,
@@ -82,6 +108,7 @@ fun SongsContent(
             } else {
                 RecentlyPlayedList(
                     songs = uiState.recentlyPlayed,
+                    listState = recentlyPlayedListState,
                     nowPlaying = uiState.nowPlaying,
                     favoriteSongIds = uiState.favoriteSongIds,
                     unplayableSongIds = uiState.unplayableSongIds,
@@ -92,6 +119,46 @@ fun SongsContent(
         uiState.songPendingRemoval?.let { song ->
             RemoveRecentDialog(song = song, onEvent = onEvent)
         }
+    }
+}
+
+/**
+ * The header casts a shadow once [listState] has scrolled away from the top, so the rows passing
+ * under it read as going beneath the search bar instead of being cut by it.
+ *
+ * @return how much of the shadow shows, animated between 0 (at the top) and 1 (scrolled).
+ */
+@Composable
+private fun rememberHeaderShadowFraction(listState: LazyListState): State<Float> {
+    val isScrolled by remember(listState) { derivedStateOf { listState.canScrollBackward } }
+    return animateFloatAsState(
+        targetValue = if (isScrolled) 1f else 0f,
+        label = HEADER_SHADOW_LABEL,
+    )
+}
+
+/**
+ * A gradient under the bottom edge only: an elevation shadow would also spill over the status bar
+ * above the header and over the navigation rail beside it. [fraction] is read at draw time, so
+ * the animation never recomposes the header.
+ *
+ * @return this modifier, drawing the shadow after the content.
+ */
+private fun Modifier.shadowBelow(fraction: State<Float>): Modifier = drawWithCache {
+    val height = headerShadowHeight.toPx()
+    val brush = Brush.verticalGradient(
+        colors = listOf(DefaultShadowColor.copy(alpha = HEADER_SHADOW_ALPHA), Color.Transparent),
+        startY = size.height,
+        endY = size.height + height,
+    )
+    onDrawWithContent {
+        drawContent()
+        drawRect(
+            brush = brush,
+            topLeft = Offset(x = 0f, y = size.height),
+            size = Size(width = size.width, height = height),
+            alpha = fraction.value,
+        )
     }
 }
 
