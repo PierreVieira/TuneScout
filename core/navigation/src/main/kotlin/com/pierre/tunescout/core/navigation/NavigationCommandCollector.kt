@@ -13,6 +13,7 @@ fun NavigationCommandCollector(
         when (command) {
             is NavigationCommand.Navigate -> backStackController.navigate(command.route)
             is NavigationCommand.ReplaceTop -> backStackController.navigateReplacingTop(command.route)
+            is NavigationCommand.ResetTo -> backStackController.resetTo(command.routes)
             NavigationCommand.Back -> backStackController.navigateBack()
         }
     }

@@ -52,6 +52,7 @@ dependencies {
     implementation(projects.feature.album)
     implementation(projects.feature.themeSelection)
     implementation(projects.feature.addToPlaylist)
+    implementation(projects.feature.widget)
 
     testImplementation(libs.koin.test)
     testImplementation(projects.core.testing)

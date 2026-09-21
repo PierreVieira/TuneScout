@@ -11,5 +11,12 @@ sealed interface NavigationCommand {
         val route: NavKey,
     ) : NavigationCommand
 
+    /**
+     * @property routes the whole back stack, root first.
+     */
+    data class ResetTo(
+        val routes: List<NavKey>,
+    ) : NavigationCommand
+
     data object Back : NavigationCommand
 }

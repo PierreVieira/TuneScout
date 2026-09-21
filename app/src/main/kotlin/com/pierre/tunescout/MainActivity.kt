@@ -1,5 +1,6 @@
 package com.pierre.tunescout
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,14 +12,21 @@ import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.deeplink.DeepLinkMatcher
+import com.pierre.tunescout.core.navigation.deeplink.SyntheticBackStackFactory
 import com.pierre.tunescout.presentation.content.MainContent
 import com.pierre.tunescout.presentation.model.MainUiState
 import com.pierre.tunescout.presentation.viewmodel.MainViewModel
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModel()
+    private val deepLinkMatcher: DeepLinkMatcher by inject()
+    private val syntheticBackStackFactory: SyntheticBackStackFactory by inject()
+    private val navigator: Navigator by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
@@ -26,6 +34,7 @@ class MainActivity : ComponentActivity() {
             setOnExitAnimationListener(SplashScreenViewProvider::remove)
         }
         super.onCreate(savedInstanceState)
+        navigateToDeepLink(intent)
         setContent {
             val isSystemInDarkTheme = isSystemInDarkTheme()
             LaunchedEffect(isSystemInDarkTheme) { viewModel.onSystemDarkThemeChanged(isSystemInDarkTheme) }
@@ -35,6 +44,29 @@ class MainActivity : ComponentActivity() {
                 is MainUiState.Ready -> ThemedContent(state)
             }
         }
+    }
+
+    /**
+     * The activity is `singleTop`, so a widget tapped while the app is already open lands here
+     * instead of on a second instance.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        navigateToDeepLink(intent)
+    }
+
+    /**
+     * The command is sent before composition starts, which the navigator's unlimited channel holds
+     * until the collector attaches: the first back stack the app draws is already the deep link's,
+     * so the splash is never shown on top of a screen the user asked for.
+     *
+     * An intent that names no route — the launcher icon, a link this version does not know — leaves
+     * the app to start where it normally does.
+     */
+    private fun navigateToDeepLink(intent: Intent) {
+        val route = deepLinkMatcher.findRouteOrNull(intent.dataString) ?: return
+        navigator.navigateResettingTo(syntheticBackStackFactory.buildBackStack(route))
     }
 
     @Composable
