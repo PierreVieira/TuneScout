@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="songs_title">Songs</string>
+    <string name="songs_search_placeholder">Suchen</string>
+    <string name="songs_open_theme">Design ändern</string>
+    <string name="songs_audio_search">Per Sprache suchen</string>
+    <string name="songs_microphone_denied">Die Sprachsuche braucht das Mikrofon.</string>
+    <string name="songs_microphone_denied_permanently">Erlaube das Mikrofon in den Einstellungen, um per Sprache zu suchen.</string>
+    <string name="songs_open_settings">Einstellungen</string>
+    <string name="songs_recently_played">Zuletzt gehört</string>
+    <string name="songs_remove_recent">Aus „Zuletzt gehört“ entfernen</string>
+    <string name="songs_empty_title">Noch nichts gehört</string>
+    <string name="songs_empty_description">Such nach einem Song und tippe darauf, um loszuhören. Er erscheint dann hier.</string>
+    <string name="songs_no_results_title">Keine Songs gefunden</string>
+    <string name="songs_no_results_description">Versuch einen anderen Künstler, Song oder Albumnamen.</string>
+    <string name="songs_error_title">Songs konnten nicht geladen werden</string>
+    <string name="songs_error_offline">Prüfe deine Verbindung und versuch es noch mal.</string>
+    <string name="songs_error_generic">Bei uns ist etwas schiefgelaufen. Versuch es noch mal.</string>
+    <string name="songs_offline_notice">Du bist offline. Du siehst die auf diesem Gerät gespeicherten Songs.</string>
+    <string name="songs_error_rate_limited">Der iTunes-Katalog ist gerade ausgelastet. Warte kurz und versuch es noch mal.</string>
+    <string name="songs_confirm_cancel">Abbrechen</string>
+    <string name="songs_remove_recent_confirm_title">Aus „Zuletzt gehört“ entfernen?</string>
+    <string name="songs_remove_recent_confirm_message">%1$s wird aus deinem Verlauf entfernt. Du kannst jederzeit wieder danach suchen.</string>
+    <string name="songs_remove_recent_confirm_action">Entfernen</string>
+    <plurals name="songs_results_loaded">
+        <item quantity="one">%1$d Ergebnis geladen</item>
+        <item quantity="other">%1$d Ergebnisse geladen</item>
+    </plurals>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_now_playing_label">Läuft gerade</string>
+    <string name="widget_now_playing_shortcuts_label">Läuft gerade und zuletzt gehört</string>
+    <string name="widget_now_playing_description">Steuere die Wiedergabe direkt vom Startbildschirm aus.</string>
+    <string name="widget_now_playing_shortcuts_description">Steuere die Wiedergabe und spring zurück zu den Songs, die du zuletzt gehört hast.</string>
+    <string name="widget_play">Abspielen</string>
+    <string name="widget_pause">Pausieren</string>
+    <string name="widget_skip_to_next">Nächster Song</string>
+    <string name="widget_skip_to_previous">Vorheriger Song</string>
+    <string name="widget_control_unavailable">%1$s, nicht verfügbar</string>
+    <string name="widget_play_song">%1$s abspielen</string>
+    <string name="widget_preview_song_title">Deine Musik</string>
+    <string name="widget_preview_song_artist">Abspielen, pausieren und überspringen von hier</string>
+    <string name="widget_empty_title">Nichts wird abgespielt</string>
+    <string name="widget_empty_message">Öffne TuneScout, um einen Song auszuwählen.</string>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_album">Album</string>
+    <string name="library_filter_playlists">Playlists</string>
+    <string name="library_filter_albums">Alben</string>
+    <string name="library_title">Deine Bibliothek</string>
+    <string name="library_favorites">Lieblingssongs</string>
+    <string name="library_playlist">Playlist</string>
+    <string name="library_recents">Zuletzt</string>
+    <string name="library_open_search">In deiner Bibliothek suchen</string>
+    <string name="library_create_playlist">Playlist erstellen</string>
+    <string name="library_view_as_grid">Als Raster anzeigen</string>
+    <string name="library_view_as_list">Als Liste anzeigen</string>
+    <string name="library_open_item">Öffnen</string>
+    <string name="library_search_placeholder">In deiner Bibliothek suchen</string>
+    <string name="library_recent_searches">Letzte Suchen</string>
+    <string name="library_remove_recent_search">Aus den letzten Suchen entfernen</string>
+    <string name="library_search_empty_title">Nichts gefunden</string>
+    <string name="library_search_empty_description">Versuch einen anderen Playlist-Namen.</string>
+    <string name="library_collection_empty_title">Noch keine Songs</string>
+    <string name="library_collection_empty_description">Songs, die du hinzufügst, erscheinen hier.</string>
+    <string name="library_delete_playlist">Playlist löschen</string>
+    <string name="library_collection_play_now">Jetzt abspielen</string>
+    <string name="library_collection_more_options">Weitere Optionen für diese Sammlung</string>
+    <string name="library_collection_play_next">Als Nächstes abspielen</string>
+    <string name="library_collection_add_to_queue">Zur Warteschlange hinzufügen</string>
+    <string name="library_create_playlist_title">Gib deiner Playlist einen Namen</string>
+    <string name="library_create_playlist_placeholder">Meine Playlist</string>
+    <string name="library_create_playlist_confirm">Erstellen</string>
+    <string name="library_create_playlist_cancel">Abbrechen</string>
+    <string name="library_confirm_cancel">Abbrechen</string>
+    <string name="library_delete_playlist_confirm_title">Diese Playlist löschen?</string>
+    <string name="library_delete_playlist_confirm_message">%1$s wird endgültig gelöscht. Die Songs bleiben in deiner Bibliothek.</string>
+    <string name="library_delete_playlist_confirm_action">Löschen</string>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d Song</item>
+        <item quantity="other">%1$d Songs</item>
+    </plurals>
+</resources>

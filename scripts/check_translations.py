@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # Locale folders every module must provide alongside the default `values`
-REQUIRED_LOCALES = ('values-pt-rBR', 'values-es', 'values-fr')
+REQUIRED_LOCALES = ('values-pt-rBR', 'values-es', 'values-fr', 'values-de')
 
 # Directories that never contain source resources
 EXCLUDE_DIRS = {

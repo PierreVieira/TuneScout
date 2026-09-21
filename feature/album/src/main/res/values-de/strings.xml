@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_favorite">Dieses Album gefällt mir</string>
+    <string name="album_unfavorite">Dieses Album aus deiner Bibliothek entfernen</string>
+    <string name="album_error_title">Album konnte nicht geladen werden</string>
+    <string name="album_error_description">Prüfe deine Verbindung und versuch es noch mal.</string>
+    <string name="album_stale_notice">Album konnte nicht aktualisiert werden. Du siehst die auf diesem Gerät gespeicherte Version.</string>
+    <string name="album_partial_notice">Das ganze Album konnte nicht geladen werden. Du siehst nur die auf diesem Gerät gespeicherten Titel.</string>
+    <string name="album_play">Album abspielen</string>
+    <string name="album_play_next">Album als Nächstes abspielen</string>
+    <string name="album_add_to_queue">Album zur Warteschlange hinzufügen</string>
+    <string name="album_more_options">Weitere Optionen für dieses Album</string>
+</resources>

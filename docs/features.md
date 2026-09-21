@@ -74,7 +74,7 @@ screenshots.
   and next are dimmed when there is no song that way. With nothing to play, the widget says so.
 - Loading, empty, error, offline and rate-limited states on every screen — the device's own
   connectivity decides which one, not the shape of the last failure; pull to refresh on search
-  results; English, Brazilian Portuguese, Spanish and French.
+  results; English, Brazilian Portuguese, Spanish, French and German.
 - **Accessible** with TalkBack and Switch Access: every screen and heading is named, toggles say
   their state through their role, a search announces how it ended, the timeline is read as time
   rather than as a percentage and every swipe has an action that does the same. Targets are 48dp,
