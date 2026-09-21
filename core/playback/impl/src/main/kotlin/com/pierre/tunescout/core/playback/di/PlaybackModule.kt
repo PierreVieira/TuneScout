@@ -1,7 +1,9 @@
 package com.pierre.tunescout.core.playback.di
 
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DataSource
@@ -11,7 +13,9 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.ShuffleOrder
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.playback.ContextStarter
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
@@ -45,6 +49,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import java.io.File
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 internal const val PLAYBACK_SCOPE = "playbackScope"
@@ -89,10 +94,11 @@ val playbackModule: Module = module {
             ).setHandleAudioBecomingNoisy(true)
             .setMaxSeekToPreviousPositionMs(PlaybackState.previousSongWindow.inWholeMilliseconds)
             .build()
+            .apply { keepQueueOrderWhenShuffled() }
     }
     single<PlaybackServiceLauncher> { ForegroundPlaybackServiceLauncher(context = androidContext()) }
     single<MediaItemFactory> { AndroidMediaItemFactory() }
-    singleOf(::QueueTimelineFactory)
+    single { QueueTimelineFactory(idGenerator = get(), random = Random.Default) }
     single { PlaybackQueue(player = get(), mediaItemFactory = get(), timelineFactory = get()) }
     single {
         ExoPlayerPlaybackController(
@@ -104,6 +110,7 @@ val playbackModule: Module = module {
     }
     single<ObservablePlayback> { get<ExoPlayerPlaybackController>() }
     single<PlaybackStarter> { get<ExoPlayerPlaybackController>() }
+    single<ContextStarter> { get<ExoPlayerPlaybackController>() }
     single<Enqueuer> { get<ExoPlayerPlaybackController>() }
     single<QueueControls> { get<ExoPlayerPlaybackController>() }
     single<TransportControls> { get<ExoPlayerPlaybackController>() }
@@ -129,4 +136,15 @@ val playbackModule: Module = module {
             favoriteSongLocalDataSource = get(),
         )
     }
+}
+
+/**
+ * The queue shuffles its own entries, so the order the queue screen lists is the order that plays.
+ * The player's shuffle mode stays on while it does — it is what the media session shows the
+ * notification and the lock screen — but with an order that leaves the queue's as it is instead of
+ * shuffling it a second time.
+ */
+@OptIn(UnstableApi::class)
+private fun ExoPlayer.keepQueueOrderWhenShuffled() {
+    setShuffleOrder(ShuffleOrder.UnshuffledShuffleOrder(0))
 }

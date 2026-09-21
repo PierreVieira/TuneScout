@@ -19,7 +19,9 @@ sealed interface CollectionUiEvent {
 
     data object OnRemovalDismissed : CollectionUiEvent
 
-    data object OnPlayNowClicked : CollectionUiEvent
+    data object OnPlayPauseClicked : CollectionUiEvent
+
+    data object OnShuffleClicked : CollectionUiEvent
 
     data object OnMoreClicked : CollectionUiEvent
 

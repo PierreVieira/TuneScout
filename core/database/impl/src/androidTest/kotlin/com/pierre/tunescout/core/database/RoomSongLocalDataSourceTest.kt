@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.database.internal.RoomPlaylistLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomRecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomSongLocalDataSource
 import com.pierre.tunescout.core.model.PlaybackSession
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.queueEntries
@@ -177,7 +178,9 @@ class RoomSongLocalDataSourceTest {
                     currentEntryId = "entry-1",
                     context = null,
                     position = Duration.ZERO,
-                    isRepeatEnabled = false,
+                    repeatMode = RepeatMode.Off,
+                    isShuffleEnabled = false,
+                    unshuffledOrder = emptyList(),
                     hasEnded = false,
                 ),
             )

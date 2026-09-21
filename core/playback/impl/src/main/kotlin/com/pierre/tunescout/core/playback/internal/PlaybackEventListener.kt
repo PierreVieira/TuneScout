@@ -8,6 +8,7 @@ internal class PlaybackEventListener(
     private val onPlaybackStarted: () -> Unit,
     private val onPlaybackStopped: () -> Unit,
     private val onPlaybackChanged: () -> Unit,
+    private val onShuffleModeChanged: () -> Unit,
 ) : Player.Listener {
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (isPlaying) onPlaybackStarted() else onPlaybackStopped()
@@ -26,5 +27,13 @@ internal class PlaybackEventListener(
 
     override fun onPlayerErrorChanged(error: PlaybackException?) {
         onPlaybackChanged()
+    }
+
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        onPlaybackChanged()
+    }
+
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        onShuffleModeChanged()
     }
 }

@@ -16,6 +16,8 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         isDeletable = true,
         songPendingRemoval = null,
         unplayableSongIds = emptySet(),
+        isPlaying = true,
+        isShuffleEnabled = false,
     )
 
     @Test
@@ -37,7 +39,13 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
     fun favorites() {
         snapshot(name = "favorites", variants = ScreenshotVariant.all) {
             CollectionContent(
-                uiState = loaded.copy(title = CollectionTitle.Favorites, isDeletable = false, nowPlaying = null),
+                uiState = loaded.copy(
+                    title = CollectionTitle.Favorites,
+                    isDeletable = false,
+                    nowPlaying = null,
+                    isPlaying = false,
+                    isShuffleEnabled = true,
+                ),
                 onEvent = {},
             )
         }
@@ -46,7 +54,10 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
     @Test
     fun empty() {
         snapshot(name = "empty") {
-            CollectionContent(uiState = loaded.copy(songs = emptyList(), nowPlaying = null), onEvent = {})
+            CollectionContent(
+                uiState = loaded.copy(songs = emptyList(), nowPlaying = null, isPlaying = false),
+                onEvent = {},
+            )
         }
     }
 

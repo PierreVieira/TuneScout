@@ -2,7 +2,6 @@ package com.pierre.tunescout.feature.player.presentation.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -13,9 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.ui.component.PlayButtonState
 import com.pierre.tunescout.ui.component.PlayPauseButton
 import com.pierre.tunescout.ui.component.R
+import com.pierre.tunescout.ui.component.ShuffleButton
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -30,11 +31,13 @@ internal fun PlaybackControlsComponent(
     playButtonState: PlayButtonState,
     hasPrevious: Boolean,
     hasNext: Boolean,
-    isRepeatEnabled: Boolean,
+    repeatMode: RepeatMode,
+    isShuffleEnabled: Boolean,
     onPlayPauseClick: () -> Unit,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onRepeatClick: () -> Unit,
+    onShuffleClick: () -> Unit,
     onQueueClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -59,12 +62,21 @@ internal fun PlaybackControlsComponent(
             enabled = hasNext,
             onClick = onNextClick,
         )
-        Spacer(modifier = Modifier.weight(1f))
-        RepeatButton(
-            isEnabled = isRepeatEnabled,
-            onClick = onRepeatClick,
-        )
-        QueueButton(onClick = onQueueClick)
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ShuffleButton(
+                isEnabled = isShuffleEnabled,
+                onClick = onShuffleClick,
+            )
+            RepeatButton(
+                mode = repeatMode,
+                onClick = onRepeatClick,
+            )
+            QueueButton(onClick = onQueueClick)
+        }
     }
 }
 
@@ -106,7 +118,7 @@ private fun SkipButton(
 
 @Composable
 private fun RepeatButton(
-    isEnabled: Boolean,
+    mode: RepeatMode,
     onClick: () -> Unit,
 ) {
     IconButton(
@@ -114,11 +126,15 @@ private fun RepeatButton(
         modifier = Modifier.size(buttonSize),
     ) {
         Icon(
-            imageVector = TuneScoutIcons.repeat,
+            imageVector = if (mode == RepeatMode.One) TuneScoutIcons.repeatOne else TuneScoutIcons.repeat,
             contentDescription = stringResource(
-                if (isEnabled) R.string.ui_repeat_on else R.string.ui_repeat_off,
+                when (mode) {
+                    RepeatMode.Off -> R.string.ui_repeat_off
+                    RepeatMode.All -> R.string.ui_repeat_all
+                    RepeatMode.One -> R.string.ui_repeat_one
+                },
             ),
-            tint = if (isEnabled) TuneScoutColors.textPrimary else TuneScoutColors.elementSubtle,
+            tint = if (mode == RepeatMode.Off) TuneScoutColors.elementSubtle else TuneScoutColors.textPrimary,
             modifier = Modifier.size(repeatIconSize),
         )
     }

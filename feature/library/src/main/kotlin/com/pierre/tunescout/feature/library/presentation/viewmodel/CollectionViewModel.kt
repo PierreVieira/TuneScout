@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
+import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
@@ -12,6 +13,7 @@ import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.playback.SongPlayback
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
@@ -34,9 +36,10 @@ class CollectionViewModel(
     private val songPlayback: SongPlayback,
     private val playableSongs: PlayableSongs,
     private val enqueuer: Enqueuer,
+    private val transportControls: TransportControls,
     private val navigator: Navigator,
+    private val observablePlayback: ObservablePlayback,
     collectionStreams: CollectionStreams,
-    observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
 ) : ActionViewModel<CollectionUiAction>() {
     private val songPendingRemoval = MutableStateFlow<Song?>(null)
@@ -58,6 +61,8 @@ class CollectionViewModel(
                 isDeletable = key is CollectionKey.Playlist,
                 songPendingRemoval = pendingRemoval,
                 unplayableSongIds = playable.findUnplayableIds(songs),
+                isPlaying = playback.isPlaying && playback.isOnOneOf(songs),
+                isShuffleEnabled = playback.isShuffleEnabled,
             )
         }
     }.stateIn(
@@ -72,7 +77,8 @@ class CollectionViewModel(
         is CollectionUiEvent.OnSongSwipedAway -> requestRemoval(event.song)
         CollectionUiEvent.OnRemovalConfirmed -> confirmRemoval()
         CollectionUiEvent.OnRemovalDismissed -> songPendingRemoval.value = null
-        CollectionUiEvent.OnPlayNowClicked -> playNow()
+        CollectionUiEvent.OnPlayPauseClicked -> togglePlayback()
+        CollectionUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
         CollectionUiEvent.OnMoreClicked -> navigator.navigate(key.toOptionsRoute())
         CollectionUiEvent.OnBackClicked -> navigator.navigateBack()
     }
@@ -91,12 +97,30 @@ class CollectionViewModel(
         }
     }
 
-    private fun playNow() {
+    /**
+     * The player already on one of the collection's songs is paused and resumed; otherwise the
+     * collection is played now, ahead of the rest of the queue. It is not a context the player can
+     * shuffle later, so with shuffle on it is handed over already shuffled.
+     */
+    private fun togglePlayback() {
         val songs = (uiState.value as? CollectionUiState.Loaded)?.songs.orEmpty()
         if (songs.isEmpty()) return
+        val playback = observablePlayback.observePlaybackState().value
+        if (playback.isOnOneOf(songs) && !playback.hasEnded) return resume(playback)
         val playable = playableSongs.findPlayableOrNull(songs) ?: return showSongUnavailableOffline()
-        enqueuer.playNow(playable)
+        enqueuer.playNow(if (playback.isShuffleEnabled) playable.shuffled() else playable)
     }
+
+    /** Pausing is always honoured; resuming a song the player cannot reach is refused. */
+    private fun resume(playback: PlaybackState) {
+        val song = playback.currentSong
+        if (!playback.isPlaying && song != null && !playableSongs.isPlayable(song)) {
+            return showSongUnavailableOffline()
+        }
+        transportControls.togglePlayPause()
+    }
+
+    private fun PlaybackState.isOnOneOf(songs: List<Song>): Boolean = songs.any { song -> song.id == currentSong?.id }
 
     private fun showSongUnavailableOffline() {
         emitAction(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))

@@ -7,6 +7,7 @@ import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.playback.ContextStarter
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -29,6 +30,7 @@ internal class ExoPlayerPlaybackController(
     private val scope: CoroutineScope,
 ) : ObservablePlayback,
     PlaybackStarter,
+    ContextStarter,
     Enqueuer,
     QueueControls,
     TransportControls,
@@ -45,6 +47,7 @@ internal class ExoPlayerPlaybackController(
                 onPlaybackStarted = ::handlePlaybackStarted,
                 onPlaybackStopped = ::stopTicking,
                 onPlaybackChanged = ::publish,
+                onShuffleModeChanged = ::syncShuffle,
             ),
         )
     }
@@ -61,6 +64,16 @@ internal class ExoPlayerPlaybackController(
         startPlaying()
     }
 
+    override fun playFromStart(
+        songs: List<Song>,
+        context: PlaybackContext,
+    ) {
+        if (songs.isEmpty()) return
+        this.context = context
+        queue.startContextFromTop(songs)
+        startPlaying()
+    }
+
     override fun restore(session: PlaybackSession) {
         if (session.entries.isEmpty()) return
         context = session.context
@@ -68,9 +81,12 @@ internal class ExoPlayerPlaybackController(
             restoredEntries = session.entries,
             currentEntryId = session.currentEntryId,
             position = session.position,
+            isShuffled = session.isShuffleEnabled,
+            unshuffledOrder = session.unshuffledOrder,
         )
         restoredEndedEntryId = session.currentEntryId.takeIf { session.hasEnded }
-        player.repeatMode = if (session.isRepeatEnabled) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        player.repeatMode = session.repeatMode.toPlayerRepeatMode()
+        player.shuffleModeEnabled = session.isShuffleEnabled
         player.prepare()
         publish()
     }
@@ -136,12 +152,26 @@ internal class ExoPlayerPlaybackController(
         player.seekToPrevious()
     }
 
-    override fun toggleRepeat() {
-        player.repeatMode = if (player.repeatMode == Player.REPEAT_MODE_ONE) {
-            Player.REPEAT_MODE_OFF
-        } else {
-            Player.REPEAT_MODE_ONE
-        }
+    override fun cycleRepeatMode() {
+        player.repeatMode = player.repeatMode
+            .toRepeatMode()
+            .next
+            .toPlayerRepeatMode()
+        publish()
+    }
+
+    override fun toggleShuffle() {
+        player.shuffleModeEnabled = !player.shuffleModeEnabled
+        syncShuffle()
+    }
+
+    /**
+     * The player's shuffle mode is what the media session shows, and the notification or a paired
+     * device can flip it on their own: the queue follows it from here, whoever changed it. The
+     * player itself never reorders anything — it is built with an order that keeps the queue's.
+     */
+    private fun syncShuffle() {
+        if (player.shuffleModeEnabled) queue.shuffle() else queue.unshuffle()
         publish()
     }
 
@@ -172,6 +202,7 @@ internal class ExoPlayerPlaybackController(
             entries = queue.entries,
             currentIndex = queue.currentIndex,
             context = context,
+            unshuffledOrder = queue.unshuffledOrder,
         )
         state.value = if (isStillEnded(playbackState)) {
             playbackState.copy(status = PlaybackStatus.Ended)

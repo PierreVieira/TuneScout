@@ -16,6 +16,11 @@ sealed interface CollectionUiState {
      * @property unplayableSongIds which of [songs] the player cannot reach right now — offline, the
      * ones whose preview never reached the device. Their rows are drawn dimmer, so a tap that is
      * refused is seen coming.
+     * @property isPlaying whether the song playing is one of [songs], which turns the collection's
+     * play button into a pause button. A playlist is not a context the player keeps, so the song is
+     * all there is to tell it by.
+     * @property isShuffleEnabled whether the player shuffles, which is also the order the collection
+     * is handed over in.
      */
     data class Loaded(
         val title: CollectionTitle,
@@ -24,5 +29,7 @@ sealed interface CollectionUiState {
         val isDeletable: Boolean,
         val songPendingRemoval: Song?,
         val unplayableSongIds: Set<Long>,
+        val isPlaying: Boolean,
+        val isShuffleEnabled: Boolean,
     ) : CollectionUiState
 }

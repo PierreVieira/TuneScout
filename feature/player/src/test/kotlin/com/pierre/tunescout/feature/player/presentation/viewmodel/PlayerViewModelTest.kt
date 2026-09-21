@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.player.presentation.viewmodel
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
@@ -272,6 +273,47 @@ class PlayerViewModelTest {
             // Then
             verify { transportControls.skipToPrevious() }
         }
+
+    @Test
+    fun `GIVEN shuffle and repeat all are on WHEN observing THEN the player shows both`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 1),
+                playback = playing(song(id = 1)).copy(repeatMode = RepeatMode.All, isShuffleEnabled = true),
+            )
+
+            // When
+            val state = viewModel.uiState.value as PlayerUiState.Loaded
+
+            // Then
+            assertThat(state.repeatMode).isEqualTo(RepeatMode.All)
+            assertThat(state.isShuffleEnabled).isTrue()
+        }
+
+    @Test
+    fun `WHEN clicking repeat THEN steps to the next repeat mode`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(routeSong = song(id = 1), playback = playing(song(id = 1)))
+
+        // When
+        viewModel.onEvent(PlayerUiEvent.OnRepeatClicked)
+
+        // Then
+        verify { transportControls.cycleRepeatMode() }
+    }
+
+    @Test
+    fun `WHEN clicking shuffle THEN toggles shuffle`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(routeSong = song(id = 1), playback = playing(song(id = 1)))
+
+        // When
+        viewModel.onEvent(PlayerUiEvent.OnShuffleClicked)
+
+        // Then
+        verify { transportControls.toggleShuffle() }
+    }
 
     private fun TestScope.prepareScenario(
         routeSong: Song?,

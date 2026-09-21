@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
@@ -15,6 +16,7 @@ import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.SongPlayOutcome
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
 import com.pierre.tunescout.core.testing.fake.SongPlayRequest
@@ -30,6 +32,7 @@ import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
 import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -46,6 +49,7 @@ class CollectionViewModelTest {
     private lateinit var actions: MutableList<CollectionUiAction>
     private lateinit var songPlayback: FakeSongPlayback
     private lateinit var enqueuer: Enqueuer
+    private lateinit var transportControls: TransportControls
     private lateinit var removedFavoriteIds: MutableList<Long>
     private lateinit var removedFromPlaylist: MutableList<Pair<Long, Long>>
 
@@ -139,29 +143,123 @@ class CollectionViewModelTest {
     }
 
     @Test
-    fun `GIVEN the favourites WHEN playing them now THEN the whole list takes over the current song`() =
+    fun `GIVEN the favourites WHEN pressing play THEN the whole list takes over the current song`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             val songs = listOf(song(id = 1), song(id = 2))
             prepareScenario(key = CollectionKey.Favorites, favorites = songs)
 
             // When
-            viewModel.onEvent(CollectionUiEvent.OnPlayNowClicked)
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
             // Then
             verify { enqueuer.playNow(songs) }
         }
 
     @Test
-    fun `GIVEN an empty collection WHEN playing it now THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+    fun `GIVEN an empty collection WHEN pressing play THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(key = CollectionKey.Favorites)
 
         // When
-        viewModel.onEvent(CollectionUiEvent.OnPlayNowClicked)
+        viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
         // Then
         verify(exactly = 0) { enqueuer.playNow(any()) }
+    }
+
+    @Test
+    fun `GIVEN one of the favourites is playing WHEN pressing its button THEN the player pauses`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = listOf(song(id = 1), song(id = 2))
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = songs,
+                playback = playbackState(songs = listOf(song(id = 2))),
+            )
+
+            // When
+            val state = loadedState()
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(state.isPlaying).isTrue()
+            verify { transportControls.togglePlayPause() }
+            verify(exactly = 0) { enqueuer.playNow(any()) }
+        }
+
+    @Test
+    fun `GIVEN one of the favourites is paused WHEN pressing its button THEN the player resumes it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Paused),
+            )
+
+            // When
+            val state = loadedState()
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(state.isPlaying).isFalse()
+            verify { transportControls.togglePlayPause() }
+        }
+
+    @Test
+    fun `GIVEN one of the favourites is paused offline WHEN pressing its button THEN says it cannot be reached`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1), song(id = 2)),
+                playableSongIds = setOf(2L),
+                playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Paused),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+            runCurrent()
+
+            // Then
+            assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { transportControls.togglePlayPause() }
+        }
+
+    @Test
+    fun `GIVEN shuffle is on WHEN pressing play THEN the collection is handed over shuffled`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = (1L..20L).map { id -> song(id = id) }
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = songs,
+                playback = playbackState(songs = listOf(song(id = 99)), isShuffleEnabled = true),
+            )
+            val handedOver = slot<List<Song>>()
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(loadedState().isShuffleEnabled).isTrue()
+            verify { enqueuer.playNow(capture(handedOver)) }
+            assertThat(handedOver.captured).containsExactlyElementsIn(songs)
+            assertThat(handedOver.captured).isNotEqualTo(songs)
+        }
+
+    @Test
+    fun `WHEN clicking shuffle THEN the player's shuffle mode is toggled`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
+
+        // When
+        viewModel.onEvent(CollectionUiEvent.OnShuffleClicked)
+
+        // Then
+        verify { transportControls.toggleShuffle() }
     }
 
     @Test
@@ -307,7 +405,7 @@ class CollectionViewModelTest {
         }
 
     @Test
-    fun `GIVEN only one song the player can reach WHEN playing the collection now THEN plays that one alone`() =
+    fun `GIVEN only one song the player can reach WHEN pressing play THEN plays that one alone`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(
@@ -317,14 +415,14 @@ class CollectionViewModelTest {
             )
 
             // When
-            viewModel.onEvent(CollectionUiEvent.OnPlayNowClicked)
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
             // Then
             verify { enqueuer.playNow(listOf(song(id = 2))) }
         }
 
     @Test
-    fun `GIVEN no song the player can reach WHEN playing the collection now THEN says so instead`() =
+    fun `GIVEN no song the player can reach WHEN pressing play THEN says so instead`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(
@@ -334,7 +432,7 @@ class CollectionViewModelTest {
             )
 
             // When
-            viewModel.onEvent(CollectionUiEvent.OnPlayNowClicked)
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
 
             // Then
             assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
@@ -393,6 +491,7 @@ class CollectionViewModelTest {
         navigator = mockk(relaxUnitFun = true)
         songPlayback = FakeSongPlayback()
         enqueuer = mockk(relaxUnitFun = true)
+        transportControls = mockk(relaxUnitFun = true)
         val useCases = CollectionUseCases(
             observePlaylist = { flowOf(playlist) },
             observePlaylistSongs = { flowOf(playlistSongs) },
@@ -409,6 +508,7 @@ class CollectionViewModelTest {
             observablePlayback = ObservablePlayback { MutableStateFlow(playback) },
             songPlayback = songPlayback,
             enqueuer = enqueuer,
+            transportControls = transportControls,
             playableSongs = playableSongs,
             navigator = navigator,
             observablePlayableSongs = { flowOf(playableSongs) },

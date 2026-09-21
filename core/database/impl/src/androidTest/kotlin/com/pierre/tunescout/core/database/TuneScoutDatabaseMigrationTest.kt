@@ -10,6 +10,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_1_2
 import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
 import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
 import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
+import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -176,6 +177,51 @@ class TuneScoutDatabaseMigrationTest {
         }
     }
 
+    @Test
+    fun givenAVersionFiveSessionThatRepeatedItsSongTheMigrationKeepsItRepeatingAndNotShuffled() = runBlocking {
+        // Given
+        helper.createDatabase(version = 5).use { connection ->
+            connection.execSQL("INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 1, 10, 'Album', 1)")
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 6, migrations = listOf(MIGRATION_5_6))
+
+        // Then
+        migrated.use { connection ->
+            assertThat(connection.selectText("SELECT repeatMode FROM playback_session")).isEqualTo("One")
+            assertThat(connection.selectCount("SELECT isShuffleEnabled FROM playback_session")).isEqualTo(0)
+            assertThat(connection.selectCount("SELECT positionMillis FROM playback_session")).isEqualTo(5000)
+            assertThat(connection.selectCount("SELECT hasEnded FROM playback_session")).isEqualTo(1)
+            assertThat(connection.selectText("SELECT contextAlbumTitle FROM playback_session")).isEqualTo("Album")
+        }
+    }
+
+    @Test
+    fun givenAVersionFiveSessionThatDidNotRepeatTheMigrationTurnsRepeatOffAndKeepsTheQueue() = runBlocking {
+        // Given
+        helper.createDatabase(version = 5).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8, 0)",
+            )
+            connection.execSQL("INSERT INTO playback_queue VALUES ('entry-1', 0, 1, 'Context')")
+            connection.execSQL("INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 0, NULL, NULL, 0)")
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 6, migrations = listOf(MIGRATION_5_6))
+
+        // Then
+        migrated.use { connection ->
+            assertThat(connection.selectText("SELECT repeatMode FROM playback_session")).isEqualTo("Off")
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM playback_queue")).isEqualTo(1)
+            assertThat(
+                connection.selectCount("SELECT COUNT(*) FROM playback_queue WHERE unshuffledPosition IS NULL"),
+            ).isEqualTo(1)
+        }
+    }
+
     private fun deleteDatabaseFiles() {
         listOf("", "-wal", "-shm").forEach { suffix -> File("${databaseFile.path}$suffix").delete() }
     }
@@ -188,4 +234,9 @@ class TuneScoutDatabaseMigrationTest {
 private fun SQLiteConnection.selectCount(sql: String): Long = prepare(sql).use { statement ->
     statement.step()
     statement.getLong(0)
+}
+
+private fun SQLiteConnection.selectText(sql: String): String = prepare(sql).use { statement ->
+    statement.step()
+    statement.getText(0)
 }

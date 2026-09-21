@@ -73,6 +73,8 @@ class AlbumContentTest {
                         isFavorite = false,
                         isStale = false,
                         unplayableSongIds = emptySet(),
+                        isPlaying = false,
+                        isShuffleEnabled = false,
                     ),
                     onEvent = events::add,
                 )
@@ -102,6 +104,8 @@ class AlbumContentTest {
                         isFavorite = false,
                         isStale = false,
                         unplayableSongIds = emptySet(),
+                        isPlaying = false,
+                        isShuffleEnabled = false,
                     ),
                     onEvent = events::add,
                 )
@@ -113,6 +117,41 @@ class AlbumContentTest {
         onNodeWithText("The Game of Love").performClick()
 
         assertThat(events).containsExactly(AlbumUiEvent.OnSongClicked(album.songs[1]))
+    }
+
+    @Test
+    fun givenTheAlbumIsNotPlayingItsPlayButtonAndShuffleSitUnderTheHeaderAndEmitTheirEvents() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(isHeaderInline = false, uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Shuffle is off").performClick()
+        onNodeWithContentDescription("Play the album").performClick()
+
+        assertThat(events)
+            .containsExactly(AlbumUiEvent.OnShuffleClicked, AlbumUiEvent.OnPlayPauseClicked)
+            .inOrder()
+    }
+
+    @Test
+    fun givenTheAlbumIsPlayingItsButtonPausesAndShuffleShowsItIsOn() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(
+                    isHeaderInline = false,
+                    uiState = loaded(isPlaying = true, isShuffleEnabled = true),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Shuffle is on").assertIsDisplayed()
+        onNodeWithContentDescription("Play the album").assertDoesNotExist()
+        onNodeWithContentDescription("Pause").performClick()
+
+        assertThat(events).containsExactly(AlbumUiEvent.OnPlayPauseClicked)
     }
 
     @Test
@@ -174,14 +213,18 @@ class AlbumContentTest {
     }
 
     private fun loaded(
-        isFavorite: Boolean,
+        isFavorite: Boolean = false,
         isStale: Boolean = false,
+        isPlaying: Boolean = false,
+        isShuffleEnabled: Boolean = false,
     ): AlbumUiState.Loaded = AlbumUiState.Loaded(
         album = album(),
         nowPlaying = null,
         isFavorite = isFavorite,
         isStale = isStale,
         unplayableSongIds = emptySet(),
+        isPlaying = isPlaying,
+        isShuffleEnabled = isShuffleEnabled,
     )
 
     private companion object {

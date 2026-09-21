@@ -7,6 +7,7 @@ import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueSource
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.playback.internal.PlaybackSessionKeeper
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.queueEntries
@@ -33,7 +34,9 @@ class PlaybackSessionKeeperTest {
             currentEntryId = "entry-2",
             context = PlaybackContext.Album(id = 10, title = "Random Access Memories"),
             position = 12.seconds,
-            isRepeatEnabled = true,
+            repeatMode = RepeatMode.One,
+            isShuffleEnabled = true,
+            unshuffledOrder = listOf("entry-2", "entry-1"),
             hasEnded = false,
         )
 

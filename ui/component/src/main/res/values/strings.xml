@@ -7,8 +7,11 @@
     <string name="ui_replay">Replay</string>
     <string name="ui_skip_next">Next song</string>
     <string name="ui_skip_previous">Previous song</string>
-    <string name="ui_repeat_on">Repeat is on</string>
     <string name="ui_repeat_off">Repeat is off</string>
+    <string name="ui_repeat_all">Repeating the queue</string>
+    <string name="ui_repeat_one">Repeating this song</string>
+    <string name="ui_shuffle_on">Shuffle is on</string>
+    <string name="ui_shuffle_off">Shuffle is off</string>
     <string name="ui_clear_search">Clear search</string>
     <string name="ui_search">Search</string>
     <string name="ui_artwork_of">Artwork of %1$s</string>

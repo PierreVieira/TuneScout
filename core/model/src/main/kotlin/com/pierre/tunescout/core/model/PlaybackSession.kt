@@ -7,6 +7,8 @@ data class PlaybackSession(
     val currentEntryId: String?,
     val context: PlaybackContext?,
     val position: Duration,
-    val isRepeatEnabled: Boolean,
+    val repeatMode: RepeatMode,
+    val isShuffleEnabled: Boolean,
+    val unshuffledOrder: List<String>,
     val hasEnded: Boolean,
 )

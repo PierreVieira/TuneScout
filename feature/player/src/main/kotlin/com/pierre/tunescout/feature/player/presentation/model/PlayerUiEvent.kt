@@ -15,6 +15,8 @@ sealed interface PlayerUiEvent {
 
     data object OnRepeatClicked : PlayerUiEvent
 
+    data object OnShuffleClicked : PlayerUiEvent
+
     data object OnQueueClicked : PlayerUiEvent
 
     data object OnBackClicked : PlayerUiEvent

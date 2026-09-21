@@ -11,8 +11,13 @@ screenshots.
   and survives starting something else, the way Spotify's queue does. The queue screen reorders by
   drag, removes by tap, and jumps to any song. It opens as a sheet from the player or the mini
   player.
+- **Shuffle and repeat**: shuffle plays the rest of the album in a random order, always behind the
+  songs you queued by hand, and the queue screen lists that order. Turning it off puts the album
+  back in order from the song playing. Repeat steps through off, the whole queue and the current
+  song. Both are the player's own modes, so the notification and the lock screen agree with them.
 - **Pick up where you left off**: closing the app keeps the queue, the song and its position, and
-  reopening restores all three, paused, from the local database.
+  reopening restores all three, paused, from the local database — shuffled or not, and with the
+  repeat mode it had.
 - **Two tabs**: Home, which is search and recently played, and Your Library. The bar at the bottom
   becomes a navigation rail as soon as the window has width to spare, so a phone turned sideways
   gives the list its height back.
@@ -24,6 +29,10 @@ screenshots.
   including every track of an album. Adding to a playlist can create one on the spot.
 - **Like an album** from the heart in its top bar; queueing it moved into the overflow beside it,
   because liking is a state the bar should show and queueing is not.
+- **Play an album or a playlist** from the round accent button under its header, with shuffle
+  beside it, the way Spotify lays them out. On an album the button starts it from the top — from
+  any song with shuffle on — and turns into pause while that album plays. A playlist or your liked
+  songs are played now, ahead of the queue, shuffled first while shuffle is on.
 - **Recently played** is the first tab. It is stored locally, so it works offline and survives
   restarts. Playing a song records it once, wherever playback was started from.
 - **Offline**, the app is still the app: a preview that played once plays again from the media
@@ -32,7 +41,7 @@ screenshots.
   by itself. Songs the player cannot reach offline are faded, and tapping one says why instead of
   failing silently.
 - **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
-  repeat and the queue. Dragging the timeline seeks on release without pausing.
+  shuffle, repeat and the queue. Dragging the timeline seeks on release without pausing.
 - **Mini player** above every screen while something is loaded, with its own play/pause and a tap
   to reopen the player. The artwork flies between the two.
 - **Album** screen reached from the song options sheet. Fetched once through the lookup endpoint

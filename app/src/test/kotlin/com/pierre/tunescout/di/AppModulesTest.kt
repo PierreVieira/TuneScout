@@ -20,14 +20,15 @@ import org.koin.dsl.module
 import org.koin.test.verify.definition
 import org.koin.test.verify.injectedParameters
 import org.koin.test.verify.verify
+import kotlin.random.Random
 import kotlin.time.Duration
 
 class AppModulesTest {
     /**
-     * Not resolved by type: [Flow] and [Duration] are passed as literals inside their definitions, and
-     * the [Context] is the one `androidContext()` hands over when the app starts.
+     * Not resolved by type: [Flow], [Duration] and [Random] are passed as literals inside their
+     * definitions, and the [Context] is the one `androidContext()` hands over when the app starts.
      */
-    private val literalParameterTypes = listOf(Flow::class, Duration::class, Context::class)
+    private val literalParameterTypes = listOf(Flow::class, Duration::class, Random::class, Context::class)
 
     /**
      * Walks every constructor reachable from [appModules] and fails when a parameter has no

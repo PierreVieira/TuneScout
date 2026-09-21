@@ -10,12 +10,13 @@ import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
-import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ContextStarter
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.playback.SongPlayback
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiAction
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
@@ -37,10 +38,11 @@ class AlbumViewModel(
     private val route: AlbumRoute,
     private val useCases: AlbumUseCases,
     private val songPlayback: SongPlayback,
-    private val enqueuer: Enqueuer,
+    private val contextStarter: ContextStarter,
+    private val transportControls: TransportControls,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
-    observablePlayback: ObservablePlayback,
+    private val observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
 ) : ActionViewModel<AlbumUiAction>() {
     private val refreshFailed = MutableStateFlow(false)
@@ -93,7 +95,8 @@ class AlbumViewModel(
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> play(event.song)
         is AlbumUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
-        AlbumUiEvent.OnPlayNowClicked -> playNow()
+        AlbumUiEvent.OnPlayPauseClicked -> togglePlayback()
+        AlbumUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
         AlbumUiEvent.OnFavoriteClicked -> toggleFavorite()
         AlbumUiEvent.OnMoreClicked -> navigator.navigate(AlbumOptionsRoute(albumId = route.albumId))
         AlbumUiEvent.OnRetryClicked -> refresh()
@@ -123,10 +126,29 @@ class AlbumViewModel(
         }
     }
 
-    private fun playNow() {
+    /**
+     * The album the player is already on is paused and resumed, like the player's own button; any
+     * other album — or this one once it has played to its end — starts over from its first song, or
+     * from any of them while shuffle is on. Songs queued by hand stay queued either way.
+     */
+    private fun togglePlayback() {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
+        val playback = observablePlayback.observePlaybackState().value
+        if (playback.isOnAlbum(album.id) && !playback.hasEnded) return resume(playback)
         val songs = playableSongs.findPlayableOrNull(album.songs) ?: return showSongUnavailableOffline()
-        enqueuer.playNow(songs)
+        contextStarter.playFromStart(
+            songs = songs,
+            context = PlaybackContext.Album(id = album.id, title = album.title),
+        )
+    }
+
+    /** Pausing is always honoured; resuming a song the player cannot reach is refused. */
+    private fun resume(playback: PlaybackState) {
+        val song = playback.currentSong
+        if (!playback.isPlaying && song != null && !playableSongs.isPlayable(song)) {
+            return showSongUnavailableOffline()
+        }
+        transportControls.togglePlayPause()
     }
 
     private fun toggleFavorite() {
@@ -172,6 +194,8 @@ class AlbumViewModel(
                 isFavorite = isFavorite,
                 isStale = refreshFailed,
                 unplayableSongIds = reach.playableSongs.findUnplayableIds(album.songs),
+                isPlaying = playback.isPlaying && playback.isOnAlbum(album.id),
+                isShuffleEnabled = playback.isShuffleEnabled,
             )
 
             refreshFailed -> AlbumUiState.Error
@@ -179,6 +203,8 @@ class AlbumViewModel(
             else -> AlbumUiState.Loading
         }
     }
+
+    private fun PlaybackState.isOnAlbum(albumId: Long): Boolean = (context as? PlaybackContext.Album)?.id == albumId
 
     /**
      * @property album the album as the device has it, or null before it has one.

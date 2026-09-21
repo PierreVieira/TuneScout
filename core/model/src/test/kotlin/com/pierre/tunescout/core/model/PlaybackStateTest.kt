@@ -100,10 +100,48 @@ class PlaybackStateTest {
         assertThat(state.previousEntry).isNull()
     }
 
+    @Test
+    fun `GIVEN the whole queue repeats WHEN the last entry is playing THEN next goes back to the first`() {
+        // Given
+        val state = stateOf(currentIndex = 2, repeatMode = RepeatMode.All)
+
+        // When / Then
+        assertThat(state.hasNext).isTrue()
+        assertThat(state.hasPrevious).isTrue()
+    }
+
+    @Test
+    fun `GIVEN the whole queue repeats WHEN the first entry just started THEN before it is the last one`() {
+        // Given
+        val state = stateOf(currentIndex = 0, repeatMode = RepeatMode.All)
+
+        // When / Then
+        assertThat(state.hasPrevious).isTrue()
+        assertThat(state.previousEntry?.song?.id).isEqualTo(3L)
+    }
+
+    @Test
+    fun `GIVEN only the song repeats WHEN the last entry is playing THEN there is still no next`() {
+        // Given
+        val state = stateOf(currentIndex = 2, repeatMode = RepeatMode.One)
+
+        // When / Then
+        assertThat(state.hasNext).isFalse()
+    }
+
+    @Test
+    fun `WHEN stepping through the repeat modes THEN they go off, all, one and back to off`() {
+        // When / Then
+        assertThat(RepeatMode.Off.next).isEqualTo(RepeatMode.All)
+        assertThat(RepeatMode.All.next).isEqualTo(RepeatMode.One)
+        assertThat(RepeatMode.One.next).isEqualTo(RepeatMode.Off)
+    }
+
     private fun stateOf(
         currentIndex: Int,
         status: PlaybackStatus = PlaybackStatus.Playing,
         position: Duration = Duration.ZERO,
+        repeatMode: RepeatMode = RepeatMode.Off,
     ): PlaybackState = PlaybackState.Idle.copy(
         entries = listOf(1L, 2L, 3L).map { id ->
             QueueEntry(id = "entry-$id", song = songOf(id), source = QueueSource.Context)
@@ -111,6 +149,7 @@ class PlaybackStateTest {
         currentIndex = currentIndex,
         status = status,
         position = position,
+        repeatMode = repeatMode,
     )
 
     private fun songOf(id: Long): Song = Song(
