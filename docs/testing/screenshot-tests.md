@@ -35,6 +35,11 @@ commits them to the branch and drops the label, so the next push verifies again.
 `recordRoborazziDebug` is what that workflow runs, and it is also how a new test's first images are
 produced — on CI, through the label.
 
+Update the branch with `main` before asking for the recording. A pull request is verified against
+its **merge** with `main`, while the references are recorded on the branch alone: a screen `main`
+changed in the meantime would be recorded as the branch still draws it and fail verification right
+after.
+
 ## Adding a test
 
 One class per screen, extending `ScreenshotTest`, one `@Test` per state worth looking at:
