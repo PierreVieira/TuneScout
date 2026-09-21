@@ -7,4 +7,5 @@
     <string name="playback_repeat_queue">Ripeti la coda</string>
     <string name="playback_repeat_song">Ripeti questo brano</string>
     <string name="playback_repeat_turn_off">Disattiva la ripetizione</string>
+    <string name="playback_download_channel_name">Download</string>
 </resources>
