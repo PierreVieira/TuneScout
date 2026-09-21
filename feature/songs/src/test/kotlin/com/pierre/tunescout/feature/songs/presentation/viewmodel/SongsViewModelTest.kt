@@ -12,12 +12,15 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
+import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
+import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +38,7 @@ class SongsViewModelTest {
     private lateinit var viewModel: SongsViewModel
     private lateinit var playbackStarter: PlaybackStarter
     private lateinit var navigator: Navigator
+    private lateinit var actions: MutableList<SongsUiAction>
     private lateinit var searchedTerms: MutableList<String>
     private lateinit var removedSongIds: MutableList<Long>
     private lateinit var isOnline: MutableStateFlow<Boolean>
@@ -270,13 +274,29 @@ class SongsViewModelTest {
             assertThat(searchedTerms).containsExactly("daft punk")
         }
 
+    @Test
+    fun `GIVEN a song the player cannot reach WHEN clicking it THEN says so instead of playing it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(isOnline = false, playableSongIds = emptySet())
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
+
+            // Then
+            assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
     private fun TestScope.prepareScenario(
         recentlyPlayed: List<Song> = emptyList(),
         catalog: List<Song> = emptyList(),
         playback: PlaybackState = PlaybackState.Idle,
         isOnline: Boolean = true,
+        playableSongIds: Set<Long>? = null,
     ) {
         searchedTerms = mutableListOf()
+        actions = mutableListOf()
         removedSongIds = mutableListOf()
         this@SongsViewModelTest.isOnline = MutableStateFlow(isOnline)
         val playbackStateFlow = MutableStateFlow(playback)
@@ -294,9 +314,11 @@ class SongsViewModelTest {
             ),
             observablePlayback = { playbackStateFlow },
             playbackStarter = playbackStarter,
+            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
+        backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
 

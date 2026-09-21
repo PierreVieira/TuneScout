@@ -7,10 +7,13 @@ import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songoptions.domain.usecase.SongOptionsUseCases
+import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiAction
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
+import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
@@ -27,6 +30,7 @@ class SongOptionsViewModelTest {
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
+    private lateinit var actions: MutableList<SongOptionsUiAction>
 
     @Test
     fun `GIVEN a cached song WHEN observing THEN exposes it`() = runTest(mainDispatcher.dispatcher) {
@@ -179,11 +183,28 @@ class SongOptionsViewModelTest {
             verify { navigator.navigateReplacingTop(AddToPlaylistRoute(songId = 7)) }
         }
 
+    @Test
+    fun `GIVEN a song the player cannot reach WHEN queueing it THEN says so and keeps the sheet open`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isPlayable = false)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnPlayNowClicked)
+
+            // Then
+            assertThat(actions).containsExactly(SongOptionsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { enqueuer.playNow(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
     private fun TestScope.prepareScenario(
         song: Song?,
         isFavorite: Boolean = false,
+        isPlayable: Boolean = true,
     ) {
         favoriteToggles = mutableListOf()
+        actions = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongOptionsViewModel(
@@ -194,9 +215,11 @@ class SongOptionsViewModelTest {
                 toggleFavorite = { toggled, wasFavorite -> favoriteToggles += toggled.id to wasFavorite },
             ),
             enqueuer = enqueuer,
+            playableSongs = PlayableSongs { isPlayable },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
+        backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
 

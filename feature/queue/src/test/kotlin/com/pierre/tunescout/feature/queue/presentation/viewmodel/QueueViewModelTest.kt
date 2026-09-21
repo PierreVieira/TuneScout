@@ -7,12 +7,15 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.queueEntries
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.queue.presentation.model.QueueUiAction
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
+import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +31,7 @@ class QueueViewModelTest {
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var queueControls: QueueControls
     private lateinit var navigator: Navigator
+    private lateinit var actions: MutableList<QueueUiAction>
 
     @Test
     fun `GIVEN songs queued by hand WHEN observing THEN they come before the rest of the album`() =
@@ -158,6 +162,20 @@ class QueueViewModelTest {
             verify(exactly = 0) { queueControls.moveInQueue(any(), any()) }
         }
 
+    @Test
+    fun `GIVEN an entry the player cannot reach WHEN tapping it THEN says so instead of jumping to it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playback = queuedOverAlbum(), playableSongIds = setOf(1))
+
+            // When
+            viewModel.onEvent(QueueUiEvent.OnEntryClicked(entryId = "entry-9"))
+
+            // Then
+            assertThat(actions).containsExactly(QueueUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { queueControls.skipTo(any()) }
+        }
+
     private fun queuedOverAlbum(): PlaybackState = playbackState(
         entries = queueEntries(listOf(song(id = 1))) +
             queueEntries(listOf(song(id = 9)), source = QueueSource.UserQueue) +
@@ -166,16 +184,22 @@ class QueueViewModelTest {
         context = PlaybackContext.Album(id = 10, title = "Random Access Memories"),
     )
 
-    private fun TestScope.prepareScenario(playback: PlaybackState) {
+    private fun TestScope.prepareScenario(
+        playback: PlaybackState,
+        playableSongIds: Set<Long>? = null,
+    ) {
         playbackStateFlow = MutableStateFlow(playback)
         queueControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
+        actions = mutableListOf()
         viewModel = QueueViewModel(
             observablePlayback = { playbackStateFlow },
             queueControls = queueControls,
+            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
+        backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
 

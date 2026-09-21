@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.only
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -22,11 +23,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiAction
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
 import com.pierre.tunescout.feature.miniplayer.presentation.viewmodel.MiniPlayerViewModel
 import com.pierre.tunescout.ui.component.PlayButtonState
+import com.pierre.tunescout.ui.component.SnackbarBox
+import com.pierre.tunescout.ui.utils.ActionCollector
 import com.pierre.tunescout.ui.utils.animation.LocalSharedElementScopes
 import com.pierre.tunescout.ui.utils.animation.rememberSharedElementScopes
 import org.koin.compose.viewmodel.koinViewModel
@@ -75,6 +80,13 @@ fun MiniPlayerScaffold(
     val loaded = uiState as? MiniPlayerUiState.Loaded
     val isVisible = isAllowed && loaded != null
     val song = rememberBarSong(song = loaded?.song, isVisible = isVisible)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val resources = LocalResources.current
+    ActionCollector(viewModel.uiAction) { action ->
+        when (action) {
+            is MiniPlayerUiAction.ShowSnackBar -> snackbarHostState.showSnackbar(resources.getString(action.message))
+        }
+    }
     Column(modifier = modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -82,7 +94,9 @@ fun MiniPlayerScaffold(
                 .consumeWindowInsets(WindowInsets.ime)
                 .then(if (isVisible) Modifier.consumeWindowInsets(consumedInsets) else Modifier),
         ) {
-            content()
+            SnackbarBox(hostState = snackbarHostState, modifier = Modifier.fillMaxSize()) {
+                content()
+            }
         }
         AnimatedVisibility(
             visible = isVisible,

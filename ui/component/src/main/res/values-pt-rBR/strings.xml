@@ -17,4 +17,5 @@
     <string name="ui_loading">Carregando</string>
     <string name="ui_close">Fechar</string>
     <string name="ui_now_playing">Tocando agora</string>
+    <string name="ui_song_unavailable_offline">Esta música não está salva neste aparelho. Conecte-se à internet para ouvi-la.</string>
 </resources>
