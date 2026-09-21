@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_favorite">J\'aime cet album</string>
+    <string name="album_unfavorite">Retirer cet album de ta bibliothèque</string>
+    <string name="album_error_title">Impossible de charger cet album</string>
+    <string name="album_error_description">Vérifie ta connexion et réessaie.</string>
+    <string name="album_stale_notice">Impossible d\'actualiser cet album. Voici la version enregistrée sur cet appareil.</string>
+    <string name="album_partial_notice">Impossible de charger l\'album en entier. Seuls les titres enregistrés sur cet appareil sont affichés.</string>
+    <string name="album_play">Lire l\'album</string>
+    <string name="album_play_next">Lire l\'album ensuite</string>
+    <string name="album_add_to_queue">Ajouter l\'album à la file d\'attente</string>
+    <string name="album_more_options">Plus d\'options pour cet album</string>
+</resources>

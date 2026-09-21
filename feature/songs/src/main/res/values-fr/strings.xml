@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="songs_title">Titres</string>
+    <string name="songs_search_placeholder">Rechercher</string>
+    <string name="songs_open_theme">Changer de thème</string>
+    <string name="songs_audio_search">Rechercher par la voix</string>
+    <string name="songs_microphone_denied">La recherche vocale a besoin du micro.</string>
+    <string name="songs_microphone_denied_permanently">Autorise le micro dans les Paramètres pour rechercher par la voix.</string>
+    <string name="songs_open_settings">Paramètres</string>
+    <string name="songs_recently_played">Écoutés récemment</string>
+    <string name="songs_remove_recent">Retirer des titres écoutés récemment</string>
+    <string name="songs_empty_title">Rien écouté pour l\'instant</string>
+    <string name="songs_empty_description">Recherche un titre et touche-le pour commencer l\'écoute. Il apparaîtra ici.</string>
+    <string name="songs_no_results_title">Aucun titre trouvé</string>
+    <string name="songs_no_results_description">Essaie un autre nom d\'artiste, de titre ou d\'album.</string>
+    <string name="songs_error_title">Impossible de charger les titres</string>
+    <string name="songs_error_offline">Vérifie ta connexion et réessaie.</string>
+    <string name="songs_error_generic">Un problème est survenu de notre côté. Réessaie.</string>
+    <string name="songs_offline_notice">Tu es hors connexion. Voici les titres enregistrés sur cet appareil.</string>
+    <string name="songs_error_rate_limited">Le catalogue iTunes est surchargé pour le moment. Patiente un instant et réessaie.</string>
+    <string name="songs_confirm_cancel">Annuler</string>
+    <string name="songs_remove_recent_confirm_title">Retirer des titres écoutés récemment&#160;?</string>
+    <string name="songs_remove_recent_confirm_message">%1$s sera retiré de ton historique. Tu pourras toujours le rechercher à nouveau.</string>
+    <string name="songs_remove_recent_confirm_action">Retirer</string>
+</resources>

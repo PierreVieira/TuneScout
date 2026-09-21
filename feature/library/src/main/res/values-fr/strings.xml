@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_album">Album</string>
+    <string name="library_filter_playlists">Playlists</string>
+    <string name="library_filter_albums">Albums</string>
+    <string name="library_title">Ta bibliothèque</string>
+    <string name="library_favorites">Titres likés</string>
+    <string name="library_playlist">Playlist</string>
+    <string name="library_recents">Récents</string>
+    <string name="library_open_search">Rechercher dans ta bibliothèque</string>
+    <string name="library_create_playlist">Créer une playlist</string>
+    <string name="library_view_as_grid">Afficher en grille</string>
+    <string name="library_view_as_list">Afficher en liste</string>
+    <string name="library_search_placeholder">Rechercher dans ta bibliothèque</string>
+    <string name="library_recent_searches">Recherches récentes</string>
+    <string name="library_remove_recent_search">Retirer des recherches récentes</string>
+    <string name="library_search_empty_title">Aucun résultat</string>
+    <string name="library_search_empty_description">Essaie un autre nom de playlist.</string>
+    <string name="library_collection_empty_title">Aucun titre pour l\'instant</string>
+    <string name="library_collection_empty_description">Les titres que tu ajoutes apparaissent ici.</string>
+    <string name="library_delete_playlist">Supprimer la playlist</string>
+    <string name="library_collection_play_now">Lire maintenant</string>
+    <string name="library_collection_more_options">Plus d\'options pour cette collection</string>
+    <string name="library_collection_play_next">Lire ensuite</string>
+    <string name="library_collection_add_to_queue">Ajouter à la file d\'attente</string>
+    <string name="library_create_playlist_title">Donne un nom à ta playlist</string>
+    <string name="library_create_playlist_placeholder">Ma playlist</string>
+    <string name="library_create_playlist_confirm">Créer</string>
+    <string name="library_create_playlist_cancel">Annuler</string>
+    <string name="library_confirm_cancel">Annuler</string>
+    <string name="library_delete_playlist_confirm_title">Supprimer cette playlist&#160;?</string>
+    <string name="library_delete_playlist_confirm_message">%1$s sera supprimée définitivement. Les titres restent dans ta bibliothèque.</string>
+    <string name="library_delete_playlist_confirm_action">Supprimer</string>
+    <string name="library_remove_song_confirm_title">Retirer ce titre&#160;?</string>
+    <string name="library_remove_song_confirm_message">%1$s sera retiré de cette playlist. Il reste dans ta bibliothèque.</string>
+    <string name="library_remove_song_confirm_action">Retirer</string>
+    <plurals name="library_song_count">
+        <item quantity="one">%1$d titre</item>
+        <item quantity="many">%1$d titres</item>
+        <item quantity="other">%1$d titres</item>
+    </plurals>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_now_playing_label">TuneScout</string>
+    <string name="widget_now_playing_shortcuts_label">TuneScout</string>
+    <string name="widget_now_playing_description">Contrôle ce qui est en cours de lecture directement depuis l\'écran d\'accueil.</string>
+    <string name="widget_now_playing_shortcuts_description">Contrôle ce qui est en cours de lecture et retrouve les derniers titres que tu as écoutés.</string>
+    <string name="widget_play">Lire</string>
+    <string name="widget_pause">Mettre en pause</string>
+    <string name="widget_skip_to_next">Titre suivant</string>
+    <string name="widget_skip_to_previous">Titre précédent</string>
+    <string name="widget_preview_song_title">Ta musique</string>
+    <string name="widget_preview_song_artist">Lis, mets en pause et passe au suivant d\'ici</string>
+    <string name="widget_empty_title">Aucune lecture en cours</string>
+    <string name="widget_empty_message">Ouvre TuneScout pour choisir un titre.</string>
+</resources>
