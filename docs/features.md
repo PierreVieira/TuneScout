@@ -4,6 +4,10 @@ Everything the app does, screen by screen. The [README](../README.md) has the sh
 screenshots.
 
 - **Search** the iTunes Search API as you type, with debounce and paginated results.
+- **Search by voice** from the microphone beside the field: a sheet listens, shows the words as
+  they are understood with a halo that follows the voice, and searches as soon as you stop
+  speaking. The microphone permission is asked first, a refusal is explained with a shortcut to
+  the settings, and a device with no speech recognition never sees the button.
 - **Play** a preview. A song tapped in search or in recently played plays on its own; a track
   tapped inside an album plays the album from there.
 - **Queue** songs and whole albums by hand, either right after the current song ("Play next") or
@@ -64,4 +68,4 @@ screenshots.
   and next are dimmed when there is no song that way. With nothing to play, the widget says so.
 - Loading, empty, error, offline and rate-limited states on every screen — the device's own
   connectivity decides which one, not the shape of the last failure; pull to refresh on search
-  results; English and Brazilian Portuguese; content descriptions on every control.
+  results; English, Brazilian Portuguese and Spanish; content descriptions on every control.

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!--
+      From Android 11 on, package visibility hides the device's recognition service from an app
+      that does not declare it: SpeechRecognizer.isRecognitionAvailable() answers false and
+      createSpeechRecognizer() binds to nothing.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
+</manifest>

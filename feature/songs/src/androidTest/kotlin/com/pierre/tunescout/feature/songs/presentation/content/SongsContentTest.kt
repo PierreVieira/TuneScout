@@ -48,6 +48,22 @@ class SongsContentTest {
     }
 
     @Test
+    fun givenAudioSearchIsAvailableClickingTheMicrophoneEmitsAudioSearch() = compose.use {
+        setContent { Content(uiState = state(isAudioSearchAvailable = true)) }
+
+        onNodeWithContentDescription("Search by voice").performClick()
+
+        assertThat(events).containsExactly(SongsUiEvent.OnAudioSearchClicked)
+    }
+
+    @Test
+    fun givenAudioSearchIsUnavailableTheMicrophoneIsNotOffered() = compose.use {
+        setContent { Content(uiState = state(isAudioSearchAvailable = false)) }
+
+        onNodeWithContentDescription("Search by voice").assertDoesNotExist()
+    }
+
+    @Test
     fun givenRecentSongsClickingOneEmitsPlayForThatSongAlone() = compose.use {
         val recents = listOf(song(id = 1, title = "One More Time"), song(id = 2, title = "Get Lucky"))
         setContent { Content(uiState = state(recentlyPlayed = recents)) }
@@ -229,6 +245,7 @@ class SongsContentTest {
 
     private fun state(
         query: String = "",
+        isAudioSearchAvailable: Boolean = true,
         recentlyPlayed: List<Song> = emptyList(),
         nowPlaying: NowPlaying? = null,
         songPendingRemoval: Song? = null,
@@ -236,6 +253,7 @@ class SongsContentTest {
         unplayableSongIds: Set<Long> = emptySet(),
     ): SongsUiState = SongsUiState(
         query = query,
+        isAudioSearchAvailable = isAudioSearchAvailable,
         recentlyPlayed = recentlyPlayed,
         nowPlaying = nowPlaying,
         songPendingRemoval = songPendingRemoval,

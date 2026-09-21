@@ -20,6 +20,7 @@ import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
 import com.pierre.tunescout.feature.addtoplaylist.presentation.navigation.addToPlaylistEntry
 import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
 import com.pierre.tunescout.feature.album.presentation.navigation.albumOptionsEntry
+import com.pierre.tunescout.feature.audiosearch.presentation.navigation.audioSearchEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.createPlaylistEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.favoritesEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.favoritesOptionsEntry
@@ -89,6 +90,7 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
                         entryProvider = entryProvider {
                             splashEntry()
                             homeEntry(tabsState = tabsState)
+                            audioSearchEntry()
                             librarySearchEntry()
                             favoritesEntry()
                             favoritesOptionsEntry()

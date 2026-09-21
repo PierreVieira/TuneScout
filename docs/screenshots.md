@@ -35,6 +35,7 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `splash.png` | `SplashScreenshots` | Straight into the music | |
 | `songs.png` | `SongsScreenshots.songs` | Pick up where you left off | Recently played, five songs, under a mini player holding a restored, paused song. |
 | `search.png` | `SongsScreenshots.search` | Find any song as you type | The query `daft punk` over ten paged results. |
+| `audio_search.png` | `AudioSearchScreenshots` | Or just say it | The audio search sheet over the songs screen, mid-sentence: `Daft Punk get lucky` heard so far, with the halos wide open. |
 | `player.png` | `PlayerScreenshots` | A player, and the queue behind it | Get Lucky, playing, 18 seconds into a 29-second preview. |
 | `queue.png` | `QueueScreenshots` | Queue what you want next | The queue sheet over the player: Random Access Memories playing, two songs queued by hand ahead of it. |
 | `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player. |
@@ -60,7 +61,7 @@ next to the screen's `capture` call; changing one means changing the table above
 The two library shots pass `LibraryContent` its view mode directly, which is also how the screen
 gets it from the DataStore.
 
-`queue.png`, `options.png` and `theme.png` all draw their sheet by hand, through the shared
+`queue.png`, `options.png`, `theme.png` and `audio_search.png` all draw their sheet by hand, through the shared
 `SheetOverScreen` — a `Surface` with the drag handle over a scrim — because `ModalBottomSheet`
 animates in and Robolectric captures the frame before it lands.
 

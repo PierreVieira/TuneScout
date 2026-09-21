@@ -66,6 +66,7 @@ dependencies {
     implementation(projects.feature.album)
     implementation(projects.feature.themeSelection)
     implementation(projects.feature.addToPlaylist)
+    implementation(projects.feature.audioSearch)
     implementation(projects.feature.widget)
 
     baselineProfile(projects.baselineprofile)

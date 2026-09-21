@@ -16,5 +16,6 @@
   plugin, `profileinstaller` in `:app`), generated and measured by Macrobenchmark and UiAutomator in
   `:baselineprofile`; a Compose stability configuration in `compose_stability.conf`. See
   [Performance](../performance.md)
+- **Speech:** the platform's `android.speech.SpeechRecognizer`, behind `feature/audio_search`
 - **Lint:** ktlint with the custom `tunescout-style` ruleset in `tools/ktlint_custom_rules`, run through `./scripts/ktlint.sh`
 - **Tests:** JUnit 6 Jupiter + Google Truth + kotlinx-coroutines-test + Turbine + MockK; Compose screen tests and E2E run on device with the android-junit5 plugin (`createComposeExtension()`), no Robolectric

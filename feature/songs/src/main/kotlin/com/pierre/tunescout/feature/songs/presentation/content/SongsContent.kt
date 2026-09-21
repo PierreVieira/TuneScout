@@ -116,7 +116,7 @@ private fun Header(
         if (isHeaderInline) {
             HeaderRow(horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small)) {
                 Title()
-                SongsSearchField(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
+                SongsSearchBar(uiState = uiState, onEvent = onEvent, modifier = Modifier.weight(1f))
                 ThemeAction(onEvent = onEvent)
             }
         } else {
@@ -124,7 +124,7 @@ private fun Header(
                 Title(modifier = Modifier.weight(1f))
                 ThemeAction(onEvent = onEvent)
             }
-            SongsSearchField(uiState = uiState, onEvent = onEvent)
+            SongsSearchBar(uiState = uiState, onEvent = onEvent)
         }
     }
 }
@@ -166,17 +166,38 @@ private fun ThemeAction(onEvent: (SongsUiEvent) -> Unit) {
     )
 }
 
+/**
+ * The field and, where the device can listen, the microphone beside it. The microphone is a button
+ * with its own padding, so the row gives up most of its end padding to keep it under the theme
+ * action above instead of further in.
+ */
 @Composable
-private fun SongsSearchField(
+private fun SongsSearchBar(
     uiState: SongsUiState,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SearchField(
-        query = uiState.query,
-        placeholder = stringResource(R.string.songs_search_placeholder),
-        onQueryChange = { query -> onEvent(SongsUiEvent.OnQueryChanged(query)) },
-        onClear = { onEvent(SongsUiEvent.OnClearQueryClicked) },
-        modifier = modifier.padding(horizontal = TuneScoutSpacing.screen, vertical = TuneScoutSpacing.small),
-    )
+    val endPadding = if (uiState.isAudioSearchAvailable) TuneScoutSpacing.small else TuneScoutSpacing.screen
+    Row(
+        modifier = modifier
+            .padding(start = TuneScoutSpacing.screen, end = endPadding)
+            .padding(vertical = TuneScoutSpacing.small),
+        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SearchField(
+            query = uiState.query,
+            placeholder = stringResource(R.string.songs_search_placeholder),
+            onQueryChange = { query -> onEvent(SongsUiEvent.OnQueryChanged(query)) },
+            onClear = { onEvent(SongsUiEvent.OnClearQueryClicked) },
+            modifier = Modifier.weight(1f),
+        )
+        if (uiState.isAudioSearchAvailable) {
+            TopBarAction(
+                icon = TuneScoutIcons.microphone,
+                contentDescription = stringResource(R.string.songs_audio_search),
+                onClick = { onEvent(SongsUiEvent.OnAudioSearchClicked) },
+            )
+        }
+    }
 }

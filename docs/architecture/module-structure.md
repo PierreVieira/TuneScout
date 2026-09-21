@@ -19,6 +19,7 @@ core/
 ├── playback/
 │   ├── api/             # Playback role interfaces (ObservablePlayback, PlaybackStarter, ...) — pure JVM
 │   └── impl/            # ExoPlayer implementation, media session service, Koin module — only :app sees it
+├── audio_search/        # What the audio search sheet and the screen that opens it share (availability, the spoken queries) — pure JVM
 └── testing/             # Test helpers shared by feature tests (test-only dependency)
 ui/
 ├── theme/               # TuneScoutTheme, the light and dark palettes, dynamic color, typography
@@ -30,6 +31,7 @@ feature/
 ├── library/           # The library tab, its search, a playlist and the create dialog
 ├── song_options/
 ├── add_to_playlist/
+├── audio_search/      # The sheet that listens and turns speech into a search query
 ├── player/
 ├── queue/
 ├── mini_player/
@@ -126,7 +128,8 @@ jar by name.
 
 Shared things live in core: domain models (`core/model`), `NavKey` routes and the `Navigator`
 (`core/navigation`), the playback interfaces (`core/playback/api`), the local data sources
-(`core/database/api`) and the remote ones (`core/network/api`). Features talk to each other only through those.
+(`core/database/api`), the remote ones (`core/network/api`) and the audio search contract
+(`core/audio_search`). Features talk to each other only through those.
 
 ### When a core module earns an `api`/`impl` split
 
@@ -156,6 +159,13 @@ have no implementation worth hiding.
 `feature/song_options` owns the song bottom sheet, which `songs` and `player` both open — an entry
 gets its own module once something outside the module that hosts it navigates to it. They reach it
 through `SongOptionsRoute` in `core/navigation`, so neither knows who draws it.
+
+`feature/audio_search` owns the sheet that listens, the recognizer behind it and the `RECORD_AUDIO`
+declaration in its manifest. `songs` opens it through `AudioSearchRoute` and hears back through
+`:core:audio_search`: `ObservableAudioSearchQueries` for what was said and `AudioSearchAvailability`
+for whether the microphone is worth offering. Both are implemented in the feature and bound by its
+Koin module, so `core` holds the contract and no implementation. The permission is requested by
+`songs`, before it navigates — see [Decisions](../decisions.md).
 
 `feature/theme_selection` owns the theme sheet and the preference behind it. `app` reads that
 preference through the feature's `ObserveTheme` use case, the same way it reaches any other

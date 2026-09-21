@@ -3,6 +3,10 @@
     <string name="songs_title">Songs</string>
     <string name="songs_search_placeholder">Search</string>
     <string name="songs_open_theme">Change theme</string>
+    <string name="songs_audio_search">Search by voice</string>
+    <string name="songs_microphone_denied">Voice search needs the microphone.</string>
+    <string name="songs_microphone_denied_permanently">Allow the microphone in Settings to search by voice.</string>
+    <string name="songs_open_settings">Settings</string>
     <string name="songs_recently_played">Recently played</string>
     <string name="songs_remove_recent">Remove from recently played</string>
     <string name="songs_empty_title">Nothing played yet</string>

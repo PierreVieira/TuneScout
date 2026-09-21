@@ -9,6 +9,7 @@ android {
 dependencies {
     api(libs.androidx.lifecycle.viewmodel)
 
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3.adaptive)
 
     testImplementation(projects.core.testing)
