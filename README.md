@@ -32,12 +32,12 @@ native Android app written for the Music AI Android code challenge.
 | :--: | :--: | :--: |
 | <img src="docs/screenshots/lock_screen.png" width="260" alt="The media controls on the locked screen, with the cover, previous, pause and next"> | <img src="docs/screenshots/lock_screen_expanded.png" width="260" alt="The lock screen controls expanded: the cover, title, timeline, like, previous and pause"> | <img src="docs/screenshots/notification.png" width="300" alt="Media controls in the notification shade, with the like button beside the timeline"> |
 
-| Home screen widgets |
-| :--: |
-| <img src="docs/screenshots/widgets.png" width="420" alt="The two home screen widgets: now playing with the five songs played last, and the compact now playing row"> |
+| Widget, 4×2: now playing with shortcuts | Widget, 4×1: now playing |
+| :--: | :--: |
+| <img src="docs/screenshots/widget_shortcuts.png" width="400" alt="The 4 by 2 widget: the cover, title, timeline and transport controls over the five songs played last"> | <img src="docs/screenshots/widget_now_playing.png" width="400" alt="The 4 by 1 widget: the cover, title, transport controls and timeline in a single row"> |
 
 The screens inside the app are rendered from its own composables, under Robolectric, by
-[`./scripts/screenshots.sh`](docs/screenshots.md); the four outside it are device captures, since
+[`./scripts/screenshots.sh`](docs/screenshots.md); the five outside it are device captures, since
 the launcher, the lock screen and the notification shade are not composables.
 
 ## ✨ Features
