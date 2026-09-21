@@ -4,6 +4,7 @@ The project uses a multi-module Gradle setup. Every new feature gets its own mod
 
 ```
 app/                     # Android application: composition root (Koin appModules, TuneScoutNavigationContent, the tab host, MainActivity)
+baselineprofile/         # Generates :app's Baseline Profile and benchmarks it (com.android.test, run on a device by hand — see docs/performance.md)
 core/
 ├── model/               # Domain models shared across features (Song, Album, Playlist) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM
