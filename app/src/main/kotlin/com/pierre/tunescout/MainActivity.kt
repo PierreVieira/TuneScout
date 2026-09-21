@@ -41,12 +41,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Only on a fresh launch. A recreated activity — a rotation, a return after process death —
-     * still carries the intent it was launched with, but the back stack it restores already holds
-     * the deep link and whatever the user opened after it; sending the link again would throw that
-     * away.
-     */
     private fun reportLaunchDeepLink(savedInstanceState: Bundle?) {
         if (savedInstanceState == null) viewModel.onDeepLinkReceived(intent.dataString)
     }
