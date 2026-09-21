@@ -23,6 +23,7 @@ internal abstract class NowPlayingGlanceWidget :
     KoinComponent {
     private val observeWidgetState: ObserveWidgetState by inject()
     private val artworkLoader: WidgetArtworkLoader by inject()
+    private val previewContentFactory: WidgetPreviewContentFactory by inject()
 
     final override suspend fun provideGlance(
         context: Context,
@@ -33,6 +34,18 @@ internal abstract class NowPlayingGlanceWidget :
             val content by contents.collectAsState(WidgetContent.Empty)
             NowPlayingContent(content = content)
         }
+    }
+
+    /**
+     * What the widget picker draws before the widget is placed: the real layout, filled with the
+     * sample [WidgetPreviewContentFactory] builds.
+     */
+    final override suspend fun providePreview(
+        context: Context,
+        widgetCategory: Int,
+    ) {
+        val content = previewContentFactory.createContent(context)
+        provideContent { NowPlayingContent(content = content) }
     }
 
     @Composable

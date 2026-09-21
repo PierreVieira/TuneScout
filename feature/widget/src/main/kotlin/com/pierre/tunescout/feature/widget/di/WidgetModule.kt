@@ -6,6 +6,8 @@ import com.pierre.tunescout.feature.widget.domain.usecase.impl.ControlWidgetPlay
 import com.pierre.tunescout.feature.widget.domain.usecase.impl.ObserveWidgetStateUseCase
 import com.pierre.tunescout.feature.widget.presentation.widget.NowPlayingWidgetUpdater
 import com.pierre.tunescout.feature.widget.presentation.widget.WidgetArtworkLoader
+import com.pierre.tunescout.feature.widget.presentation.widget.WidgetPreviewContentFactory
+import com.pierre.tunescout.feature.widget.presentation.widget.WidgetPreviewPublisher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -34,8 +36,13 @@ val widgetModule: Module = module {
         )
     }
     single { WidgetArtworkLoader(imageLoader = get(), context = androidContext()) }
+    factoryOf(::WidgetPreviewContentFactory)
     single(createdAtStart = true) {
         NowPlayingWidgetUpdater(observeWidgetState = get(), context = androidContext())
             .also { updater -> updater.start(get(named(WIDGET_SCOPE))) }
+    }
+    single(createdAtStart = true) {
+        WidgetPreviewPublisher(context = androidContext())
+            .also { publisher -> publisher.start(get(named(WIDGET_SCOPE))) }
     }
 }

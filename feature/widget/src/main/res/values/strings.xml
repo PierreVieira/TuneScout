@@ -8,6 +8,8 @@
     <string name="widget_pause">Pause</string>
     <string name="widget_skip_to_next">Next song</string>
     <string name="widget_skip_to_previous">Previous song</string>
+    <string name="widget_preview_song_title">Your music</string>
+    <string name="widget_preview_song_artist">Play, pause and skip from here</string>
     <string name="widget_empty_title">Nothing playing</string>
     <string name="widget_empty_message">Open TuneScout to pick a song.</string>
 </resources>
