@@ -24,9 +24,12 @@ on:
 permissions:
   contents: read
 
-# Cancels in-progress runs if a new commit is pushed to the same PR or branch
+# A new push to a pull request cancels the run of the previous one. On main every commit has a group
+# of its own and always finishes: a cancelled run saves no Gradle cache, so when merges came in
+# quick succession main's entries fell several commits behind and the next pull requests
+# recompiled everything from scratch.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
