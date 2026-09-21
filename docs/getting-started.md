@@ -32,6 +32,11 @@ every workflow is described in [Continuous integration](ci.md). What each check
 enforces is in [Code quality](code-quality.md); how the suites are organised is in
 [Testing](testing/README.md).
 
+## Measuring performance
+
+The Baseline Profile and the macrobenchmarks run by hand on a device; how, and the numbers they
+gave, are in [Performance](performance.md).
+
 ## Regenerating the README screenshots
 
 ```bash

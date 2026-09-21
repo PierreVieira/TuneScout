@@ -12,6 +12,10 @@
 - **Navigation:** Navigation 3 (`androidx.navigation3`, Android only) with type-safe `@Serializable` `NavKey` routes
 - **Images:** Coil 3 with the Ktor network fetcher
 - **Playback:** Media3 ExoPlayer (`media3-exoplayer` + `media3-session`)
+- **Performance:** a committed Baseline Profile and startup profile (`androidx.baselineprofile`
+  plugin, `profileinstaller` in `:app`), generated and measured by Macrobenchmark and UiAutomator in
+  `:tools:baselineprofile`; a Compose stability configuration in `compose_stability.conf`. See
+  [Performance](../performance.md)
 - **Speech:** the platform's `android.speech.SpeechRecognizer`, behind `feature/audio_search`
 - **Lint:** ktlint with the custom `tunescout-style` ruleset in `tools/ktlint_custom_rules`, run through `./scripts/ktlint.sh`
 - **Tests:** JUnit 6 Jupiter + Google Truth + kotlinx-coroutines-test + Turbine + MockK; Compose screen tests and E2E run on device with the android-junit5 plugin (`createComposeExtension()`), no Robolectric

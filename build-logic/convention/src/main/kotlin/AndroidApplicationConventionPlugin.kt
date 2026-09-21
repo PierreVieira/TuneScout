@@ -2,6 +2,7 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.pierre.tunescout.buildlogic.addInstrumentedTestDependencies
 import com.pierre.tunescout.buildlogic.addUnitTestDependencies
 import com.pierre.tunescout.buildlogic.configureAndroid
+import com.pierre.tunescout.buildlogic.configureComposeCompiler
 import com.pierre.tunescout.buildlogic.configureCoverage
 import com.pierre.tunescout.buildlogic.configureJUnitPlatform
 import com.pierre.tunescout.buildlogic.libs
@@ -48,6 +49,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 execution = "ANDROIDX_TEST_ORCHESTRATOR"
             }
         }
+
+        configureComposeCompiler()
 
         dependencies {
             val bom = libs.findLibrary("androidx-compose-bom").get()

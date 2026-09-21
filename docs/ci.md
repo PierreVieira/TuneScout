@@ -73,6 +73,10 @@ job's 45, so a run that hangs still uploads `instrumented-test-reports-shard-<n>
 The AVD is not cached. Measured, it saved about 20 seconds, and its 1.3 GB entry pushed the Gradle
 caches out of the budget.
 
+`:tools:baselineprofile` is not in any shard: its tests are in `src/main`, as a `com.android.test` module's
+are, and they are the macrobenchmarks, which run by hand on a device nothing else is using. See
+[Performance](performance.md#reproducing).
+
 ### screenshot-tests
 
 `verify` uploads `screenshot-differences` when it fails: the reference, the render and the diff
