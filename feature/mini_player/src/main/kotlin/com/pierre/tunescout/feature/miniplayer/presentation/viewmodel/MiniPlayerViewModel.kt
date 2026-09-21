@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.miniplayer.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.navigation.Navigator
@@ -13,13 +12,11 @@ import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiAc
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiEvent
 import com.pierre.tunescout.feature.miniplayer.presentation.model.MiniPlayerUiState
 import com.pierre.tunescout.ui.component.R
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import kotlin.time.Duration
 
 class MiniPlayerViewModel(
@@ -27,10 +24,7 @@ class MiniPlayerViewModel(
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
-) : ViewModel() {
-    val uiAction: SharedFlow<MiniPlayerUiAction>
-        field = MutableSharedFlow<MiniPlayerUiAction>()
-
+) : ActionViewModel<MiniPlayerUiAction>() {
     val uiState: StateFlow<MiniPlayerUiState> = observablePlayback
         .observePlaybackState()
         .map(::toUiState)
@@ -56,10 +50,6 @@ class MiniPlayerViewModel(
 
     private fun showSongUnavailableOffline() {
         emitAction(MiniPlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-    }
-
-    private fun emitAction(action: MiniPlayerUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun openPlayer() {

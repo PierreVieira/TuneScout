@@ -22,7 +22,7 @@ core/
 ui/
 ├── theme/               # TuneScoutTheme, the light and dark palettes, dynamic color, typography
 ├── component/           # Shared composables (Artwork, song rows, buttons)
-└── utils/               # Compose helpers (ActionCollector, the shared-element scopes and modifiers)
+└── utils/               # Presentation helpers (ActionViewModel and ActionCollector, the shared-element scopes and modifiers)
 feature/
 ├── splash/
 ├── songs/
