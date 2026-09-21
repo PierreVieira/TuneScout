@@ -29,6 +29,7 @@ internal fun RecentlyPlayedList(
     songs: List<Song>,
     nowPlaying: NowPlaying?,
     songPendingRemoval: Song?,
+    unplayableSongIds: Set<Long>,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -71,6 +72,7 @@ internal fun RecentlyPlayedList(
                         isCurrentSong = song.id == nowPlaying?.songId,
                         isPlaying = nowPlaying?.isPlaying == true,
                     ),
+                    isUnavailable = song.id in unplayableSongIds,
                     sharedSongId = song.id,
                     onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
                     trailing = {

@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.feature.miniplayer.presentation.content.MiniPlayerContent
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
+import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.screenshotfixtures.emptyPagingItems
 import com.pierre.tunescout.screenshotfixtures.getLucky
@@ -34,6 +35,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                             nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = false),
                             songPendingRemoval = null,
                             isOffline = false,
+                            unplayableSongIds = emptySet(),
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},
@@ -64,8 +66,13 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                     nowPlaying = null,
                     songPendingRemoval = null,
                     isOffline = false,
+                    unplayableSongIds = emptySet(),
                 ),
-                searchResults = pagingItems(searchSongs),
+                searchResults = pagingItems(
+                    searchSongs.map { song ->
+                        SearchResultUiModel(song = song, isUnavailable = false)
+                    },
+                ),
                 onEvent = {},
             )
         }

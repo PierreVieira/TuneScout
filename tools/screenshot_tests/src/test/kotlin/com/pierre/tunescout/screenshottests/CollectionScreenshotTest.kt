@@ -15,6 +15,7 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = true),
         isDeletable = true,
         songPendingRemoval = null,
+        unplayableSongIds = emptySet(),
     )
 
     @Test

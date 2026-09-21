@@ -7,6 +7,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -36,6 +37,7 @@ class CollectionViewModel(
     private val navigator: Navigator,
     collectionStreams: CollectionStreams,
     observablePlayback: ObservablePlayback,
+    observablePlayableSongs: ObservablePlayableSongs,
 ) : ViewModel() {
     private val songPendingRemoval = MutableStateFlow<Song?>(null)
 
@@ -47,7 +49,8 @@ class CollectionViewModel(
         collectionStreams.observeSongs(key),
         observablePlayback.observePlaybackState(),
         songPendingRemoval,
-    ) { title, songs, playback, pendingRemoval ->
+        observablePlayableSongs.observePlayableSongs(),
+    ) { title, songs, playback, pendingRemoval, playable ->
         if (title == null) {
             CollectionUiState.Loading
         } else {
@@ -57,6 +60,7 @@ class CollectionViewModel(
                 nowPlaying = playback.nowPlaying,
                 isDeletable = key is CollectionKey.Playlist,
                 songPendingRemoval = pendingRemoval,
+                unplayableSongIds = playable.findUnplayableIds(songs),
             )
         }
     }.stateIn(

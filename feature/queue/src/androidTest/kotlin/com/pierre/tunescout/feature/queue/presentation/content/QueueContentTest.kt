@@ -55,6 +55,7 @@ class QueueContentTest {
                         status = PlaybackStatus.Idle,
                         queuedByUser = emptyList(),
                         upNext = emptyList(),
+                        unplayableSongIds = emptySet(),
                     ),
                     onEvent = events::add,
                 )
@@ -162,6 +163,7 @@ class QueueContentTest {
         status = status,
         queuedByUser = listOf(userEntry(id = 9, title = "One More Time")),
         upNext = listOf(queueEntry(song = song(id = 2, title = "Around the World"))),
+        unplayableSongIds = emptySet(),
     )
 
     private fun userEntry(

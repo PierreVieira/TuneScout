@@ -328,6 +328,23 @@ class CollectionViewModelTest {
 
     private fun loadedState(): CollectionUiState.Loaded = viewModel.uiState.value as CollectionUiState.Loaded
 
+    @Test
+    fun `GIVEN songs the player cannot reach WHEN observing THEN marks their rows`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1), song(id = 2)),
+                playableSongIds = setOf(1L),
+            )
+
+            // When
+            val state = viewModel.uiState.value as CollectionUiState.Loaded
+
+            // Then
+            assertThat(state.unplayableSongIds).containsExactly(2L)
+        }
+
     private fun TestScope.prepareScenario(
         key: CollectionKey,
         favorites: List<Song> = emptyList(),
@@ -349,6 +366,7 @@ class CollectionViewModelTest {
             removeFavorite = { songId -> removedFavoriteIds += songId },
             deletePlaylist = { },
         )
+        val playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true }
         viewModel = CollectionViewModel(
             key = key,
             useCases = useCases,
@@ -356,8 +374,9 @@ class CollectionViewModelTest {
             observablePlayback = ObservablePlayback { MutableStateFlow(playbackState()) },
             playbackStarter = playbackStarter,
             enqueuer = enqueuer,
-            playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
+            playableSongs = playableSongs,
             navigator = navigator,
+            observablePlayableSongs = { flowOf(playableSongs) },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

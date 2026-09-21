@@ -26,6 +26,7 @@ import io.mockk.verify
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -469,6 +470,21 @@ class AlbumViewModelTest {
         verify { navigator.navigateBack() }
     }
 
+    @Test
+    fun `GIVEN a track not on the device WHEN the connection drops THEN marks its row`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10), cachedPreviews = setOf(1L))
+
+            // When
+            isOnline.value = false
+            runCurrent()
+
+            // Then
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+            assertThat(state.unplayableSongIds).containsExactly(2L)
+        }
+
     private fun TestScope.prepareScenario(
         cached: Album?,
         refreshResult: Result<Unit>? = Result.success(Unit),
@@ -504,6 +520,9 @@ class AlbumViewModelTest {
             enqueuer = enqueuer,
             playableSongs = PlayableSongs { song -> isOnline.value || song.id in cachedPreviews },
             navigator = navigator,
+            observablePlayableSongs = {
+                isOnline.map { isOnline -> PlayableSongs { song -> isOnline || song.id in cachedPreviews } }
+            },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

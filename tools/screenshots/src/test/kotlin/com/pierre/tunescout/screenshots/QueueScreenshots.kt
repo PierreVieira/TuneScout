@@ -33,6 +33,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
         status = PlaybackStatus.Playing,
         queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),
         upNext = listOf(contextEntry(instantCrush), contextEntry(loseYourselfToDance)),
+        unplayableSongIds = emptySet(),
     )
 
     @Test

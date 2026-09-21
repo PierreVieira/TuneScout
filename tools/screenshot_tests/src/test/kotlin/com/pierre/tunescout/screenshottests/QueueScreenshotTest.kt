@@ -22,6 +22,7 @@ internal class QueueScreenshotTest : ScreenshotTest() {
         status = PlaybackStatus.Playing,
         queuedByUser = listOf(userEntry(oneMoreTime), userEntry(aroundTheWorld)),
         upNext = listOf(contextEntry(instantCrush), contextEntry(loseYourselfToDance)),
+        unplayableSongIds = emptySet(),
     )
 
     @Test
@@ -56,6 +57,7 @@ internal class QueueScreenshotTest : ScreenshotTest() {
                     status = PlaybackStatus.Idle,
                     queuedByUser = emptyList(),
                     upNext = emptyList(),
+                    unplayableSongIds = emptySet(),
                 ),
             )
         }

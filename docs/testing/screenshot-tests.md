@@ -80,8 +80,8 @@ repository. `isLandscape = true` covers the layouts that switch on width (`isSid
 | Test | States |
 | --- | --- |
 | `PlayerScreenshotTest` | loading, not found, loaded, ended with repeat on, side by side |
-| `AlbumScreenshotTest` | loading, error, loaded, playing, stale, inline header |
-| `SongsScreenshotTest` | recently played, empty, searching, no results, offline, remove confirmation, inline header |
+| `AlbumScreenshotTest` | loading, error, loaded, playing, unplayable tracks, stale, inline header |
+| `SongsScreenshotTest` | recently played, empty, searching, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header |
 | `LibraryScreenshotTest` | list, grid, filtered, empty, search: recent, results and no results |
 | `CollectionScreenshotTest` | loading, loaded, favourites, empty, remove confirmation |
 | `QueueScreenshotTest` | playing, paused, context only, empty |

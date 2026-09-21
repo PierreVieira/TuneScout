@@ -13,6 +13,7 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
         nowPlaying = null,
         isFavorite = true,
         isStale = false,
+        unplayableSongIds = emptySet(),
     )
 
     @Test
@@ -43,6 +44,23 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
                 uiState = loaded.copy(
                     nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = true),
                     isFavorite = false,
+                ),
+                isHeaderInline = false,
+                onEvent = {},
+            )
+        }
+    }
+
+    /** Offline: the tracks the player cannot reach are dimmer, so a refused tap is seen coming. */
+    @Test
+    fun loadedWithUnplayableTracks() {
+        snapshot(name = "loaded_unplayable") {
+            AlbumContent(
+                uiState = loaded.copy(
+                    unplayableSongIds = randomAccessMemories.songs
+                        .drop(2)
+                        .map { song -> song.id }
+                        .toSet(),
                 ),
                 isHeaderInline = false,
                 onEvent = {},

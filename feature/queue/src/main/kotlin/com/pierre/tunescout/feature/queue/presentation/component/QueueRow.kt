@@ -28,6 +28,7 @@ internal fun ReorderableCollectionItemScope.QueueRow(
     entry: QueueEntry,
     previousEntryId: String?,
     nextEntryId: String?,
+    isUnavailable: Boolean,
     onEvent: (QueueUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -38,6 +39,7 @@ internal fun ReorderableCollectionItemScope.QueueRow(
         subtitle = entry.song.artistName,
         artworkUrl = entry.song.artwork.thumbnailUrl,
         onClick = { onEvent(QueueUiEvent.OnEntryClicked(entry.id)) },
+        isUnavailable = isUnavailable,
         modifier = modifier.semantics {
             customActions = buildList {
                 previousEntryId?.let { target -> add(createMoveAction(moveUp, entry.id, target, onEvent)) }

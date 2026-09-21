@@ -1,7 +1,9 @@
 package com.pierre.tunescout.screenshottests
 
 import com.pierre.tunescout.core.model.NowPlaying
+import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
+import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.screenshotfixtures.emptyPagingItems
 import com.pierre.tunescout.screenshotfixtures.getLucky
@@ -17,6 +19,7 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = true),
         songPendingRemoval = null,
         isOffline = false,
+        unplayableSongIds = emptySet(),
     )
 
     @Test
@@ -43,7 +46,7 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         snapshot(name = "searching") {
             SongsContent(
                 uiState = recent.copy(query = "daft punk"),
-                searchResults = pagingItems(searchSongs),
+                searchResults = pagingItems(searchResults(searchSongs)),
                 isHeaderInline = false,
                 onEvent = {},
             )
@@ -62,12 +65,32 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         }
     }
 
+    /** Offline: the rows the player cannot reach are dimmer, so a tap that is refused is seen coming. */
     @Test
     fun offline() {
         snapshot(name = "offline") {
             SongsContent(
-                uiState = recent.copy(isOffline = true),
+                uiState = recent.copy(
+                    isOffline = true,
+                    unplayableSongIds = recentlyPlayed.drop(1).map { song -> song.id }.toSet(),
+                ),
                 searchResults = emptyPagingItems(),
+                isHeaderInline = false,
+                onEvent = {},
+            )
+        }
+    }
+
+    @Test
+    fun searchingWithUnavailableResults() {
+        snapshot(name = "searching_with_unavailable_results") {
+            SongsContent(
+                uiState = recent.copy(query = "daft punk", isOffline = true),
+                searchResults = pagingItems(
+                    searchSongs.mapIndexed { index, song ->
+                        SearchResultUiModel(song = song, isUnavailable = index % 2 == 1)
+                    },
+                ),
                 isHeaderInline = false,
                 onEvent = {},
             )
@@ -85,6 +108,9 @@ internal class SongsScreenshotTest : ScreenshotTest() {
             )
         }
     }
+
+    private fun searchResults(songs: List<Song>): List<SearchResultUiModel> =
+        songs.map { song -> SearchResultUiModel(song = song, isUnavailable = false) }
 
     /** The header sits beside the list once the window is wide enough for it. */
     @Test

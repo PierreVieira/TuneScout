@@ -4,11 +4,18 @@ import androidx.compose.runtime.Composable
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.pierre.tunescout.core.model.Song
 import kotlinx.coroutines.flow.flowOf
 
+/**
+ * A screen takes its paged results as [LazyPagingItems], which only a composition can produce.
+ * The type is the screen's own, so the fixture stays out of the features.
+ *
+ * @return [items] as a single, already loaded page.
+ */
 @Composable
-fun pagingItems(songs: List<Song>): LazyPagingItems<Song> = flowOf(PagingData.from(songs)).collectAsLazyPagingItems()
+fun <T : Any> pagingItems(items: List<T>): LazyPagingItems<T> =
+    flowOf(PagingData.from(items)).collectAsLazyPagingItems()
 
+/** @return no results at all, which is what a screen shows before anything is searched for. */
 @Composable
-fun emptyPagingItems(): LazyPagingItems<Song> = pagingItems(emptyList())
+fun <T : Any> emptyPagingItems(): LazyPagingItems<T> = pagingItems(emptyList())

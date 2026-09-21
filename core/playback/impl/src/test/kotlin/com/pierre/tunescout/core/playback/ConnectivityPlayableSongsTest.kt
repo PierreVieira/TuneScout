@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.playback.internal.ConnectivityPlayableSongs
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -63,6 +64,26 @@ class ConnectivityPlayableSongsTest {
 
         // Then
         assertThat(playable).containsExactly(cached)
+    }
+
+    @Test
+    fun `GIVEN songs being followed WHEN the connection goes away THEN the answer says what is left`() = runTest {
+        // Given
+        prepareScenario(isOnlineAtStart = true)
+
+        // When
+        val answers = mutableListOf<Set<Long>>()
+        backgroundScope.launch {
+            playableSongs.observePlayableSongs().collect { playable ->
+                answers += playable.findUnplayableIds(listOf(cached, notCached))
+            }
+        }
+        runCurrent()
+        isOnline.value = false
+        runCurrent()
+
+        // Then
+        assertThat(answers).containsExactly(emptySet<Long>(), setOf(notCached.id)).inOrder()
     }
 
     private fun TestScope.prepareScenario(isOnlineAtStart: Boolean) {
