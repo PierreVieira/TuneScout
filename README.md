@@ -14,17 +14,17 @@ native Android app written for the Music AI Android code challenge.
 | :--: | :--: | :--: |
 | <img src="docs/screenshots/splash.png" width="260" alt="The splash screen, a note over the app's gradient"> | <img src="docs/screenshots/songs.png" width="260" alt="Recently played songs on the home screen"> | <img src="docs/screenshots/search.png" width="260" alt="Search results for daft punk, paged as you scroll"> |
 
-| Player | Song options | Album |
+| Search by voice | Player | Song options |
 | :--: | :--: | :--: |
-| <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet, with play next, add to queue and view album"> | <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks, with the queue actions in the top bar"> |
+| <img src="docs/screenshots/audio_search.png" width="260" alt="The audio search sheet over the songs screen, showing the words heard so far above a microphone with halos that follow the voice"> | <img src="docs/screenshots/player.png" width="260" alt="The player, with artwork, timeline and transport controls"> | <img src="docs/screenshots/options.png" width="260" alt="The song options sheet, with play next, add to queue and view album"> |
 
-| Queue | Theme | Library |
+| Album | Queue | Theme |
 | :--: | :--: | :--: |
-| <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> | <img src="docs/screenshots/theme.png" width="260" alt="The theme sheet over the songs screen, with light, dark and system previews and a dynamic colors toggle"> | <img src="docs/screenshots/library.png" width="260" alt="The library tab listing liked songs and playlists as a list"> |
+| <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks, with the queue actions in the top bar"> | <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> | <img src="docs/screenshots/theme.png" width="260" alt="The theme sheet over the songs screen, with light, dark and system previews and a dynamic colors toggle"> |
 
-| Library as a grid |
-| :--: |
-| <img src="docs/screenshots/library_grid.png" width="260" alt="The same library drawn as a grid of covers"> |
+| Library | Library as a grid |
+| :--: | :--: |
+| <img src="docs/screenshots/library.png" width="260" alt="The library tab listing liked songs and playlists as a list"> | <img src="docs/screenshots/library_grid.png" width="260" alt="The same library drawn as a grid of covers"> |
 
 ### Outside the app
 
@@ -42,7 +42,8 @@ the launcher, the lock screen and the notification shade are not composables.
 
 ## ✨ Features
 
-- **Search as you type** over the iTunes catalog, paged as you scroll, and **play** any preview.
+- **Search as you type**, or **by voice**, over the iTunes catalog, paged as you scroll, and
+  **play** any preview.
 - **A queue like Spotify's**: play next or add to queue, reorder by drag, and what you queued
   survives starting another album.
 - **Pick up where you left off**: the queue, the song and its position come back, paused, after the

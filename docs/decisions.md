@@ -2,6 +2,37 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — Searching by voice
+
+**The platform's recognizer, not a library and not the system's dialog.** `SpeechRecognizer` adds no
+dependency and reports what the sheet draws: partial results for the words as they arrive, and a
+level for the halo around the microphone. The `ACTION_RECOGNIZE_SPEECH` activity would have been
+less code, but it is Google's screen over the app, and nothing of it can be themed or tested. Cost:
+the recognizer is whichever service the device ships — usually Google's, which sends the audio to a
+server — so the microphone is only offered where
+[`AudioSearchAvailability`](../core/audio_search/src/main/kotlin/com/pierre/tunescout/core/audiosearch/AudioSearchAvailability.kt)
+says one exists, and "no connection" is one of the failures the sheet explains.
+
+**The permission is asked on the songs screen, before the sheet exists.** The sheet opens the
+microphone as it opens, so reaching it without the permission would mean a sheet with nothing to
+do. The songs ViewModel asks through a `UiAction`, and only navigates once the answer is yes. A
+refusal stays on the songs screen as a snackbar, with a shortcut to the app's settings once the
+system stops asking. Cost: `feature/songs` knows a microphone is involved, through
+`rememberMicrophonePermissionRequest` in `:ui:utils`; the `RECORD_AUDIO` declaration itself lives
+in `feature/audio_search`'s manifest, with the code that uses it.
+
+**The sheet and the screen talk through `:core:audio_search`.** A feature may not depend on a
+feature, so what was said travels over two small interfaces: the sheet publishes a query, the songs
+screen observes them, and the bus between the two is bound in `feature/audio_search`. The query
+lands in the same field a typed one does, so the debounce, the clear button and the offline rules
+are the ones the keyboard already had. Nothing is replayed: a query is searched once, by the screen
+that was there when it was said.
+
+**A session ends the way the user ends it.** The final result closes the sheet and starts the
+search; silence or an error keeps the sheet open with a reason and a retry, since closing it would
+read as the app ignoring them. Dismissing the sheet clears its ViewModel, which cancels the
+collection and destroys the recognizer — the microphone never outlives the sheet.
+
 ## 2026-09-21 — Shuffle, and repeat for the whole queue
 
 **Shuffle reorders the queue itself.** Media3 can shuffle on its own, but only as a play order laid

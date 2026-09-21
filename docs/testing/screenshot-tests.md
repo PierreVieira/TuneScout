@@ -81,11 +81,12 @@ repository. `isLandscape = true` covers the layouts that switch on width (`isSid
 | --- | --- |
 | `PlayerScreenshotTest` | loading, not found, loaded, ended repeating the song, shuffled repeating the queue, side by side |
 | `AlbumScreenshotTest` | loading, error, loaded, playing, unplayable tracks, stale, inline header |
-| `SongsScreenshotTest` | recently played, empty, searching, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header |
+| `SongsScreenshotTest` | recently played, empty, searching, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header, no audio search |
 | `LibraryScreenshotTest` | list, grid, filtered, empty, search: recent, results and no results |
 | `CollectionScreenshotTest` | loading, loaded, favourites, empty, remove confirmation |
 | `QueueScreenshotTest` | playing, paused, context only, empty |
 | `MiniPlayerScreenshotTest` | playing, paused, ended |
+| `AudioSearchScreenshotTest` | waiting for speech, hearing with a transcript, failed |
 | `ThemeSelectionScreenshotTest` | the three themes, dynamic colour on, dynamic colour unsupported, its info dialog |
 | `ComponentScreenshotTest` | the `:ui:component` pieces on their own: rows and skeletons, bars and inputs, play button, state messages, name prompt, confirmation dialog |
 

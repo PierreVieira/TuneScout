@@ -4,7 +4,8 @@ import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 
 /**
- * @property query what the user typed in the search field.
+ * @property query what the user typed in the search field, or said to the audio search.
+ * @property isAudioSearchAvailable the device can turn speech into text, so the microphone is offered.
  * @property recentlyPlayed the songs played last, newest first.
  * @property nowPlaying which song is playing, when one is.
  * @property songPendingRemoval the recent song swiped away, while the removal can still be undone.
@@ -15,6 +16,7 @@ import com.pierre.tunescout.core.model.Song
  */
 data class SongsUiState(
     val query: String,
+    val isAudioSearchAvailable: Boolean,
     val recentlyPlayed: List<Song>,
     val nowPlaying: NowPlaying?,
     val songPendingRemoval: Song?,

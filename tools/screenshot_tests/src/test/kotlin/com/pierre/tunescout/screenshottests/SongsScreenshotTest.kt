@@ -15,6 +15,7 @@ import org.junit.Test
 internal class SongsScreenshotTest : ScreenshotTest() {
     private val recent = SongsUiState(
         query = "",
+        isAudioSearchAvailable = true,
         recentlyPlayed = recentlyPlayed,
         nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = true),
         songPendingRemoval = null,
@@ -26,6 +27,19 @@ internal class SongsScreenshotTest : ScreenshotTest() {
     fun recentlyPlayed() {
         snapshot(name = "recently_played", variants = ScreenshotVariant.all) {
             SongsContent(uiState = recent, searchResults = emptyPagingItems(), isHeaderInline = false, onEvent = {})
+        }
+    }
+
+    /** A device with no recognition service gets the field alone, back at its full width. */
+    @Test
+    fun withoutAudioSearch() {
+        snapshot(name = "without_audio_search") {
+            SongsContent(
+                uiState = recent.copy(isAudioSearchAvailable = false),
+                searchResults = emptyPagingItems(),
+                isHeaderInline = false,
+                onEvent = {},
+            )
         }
     }
 
