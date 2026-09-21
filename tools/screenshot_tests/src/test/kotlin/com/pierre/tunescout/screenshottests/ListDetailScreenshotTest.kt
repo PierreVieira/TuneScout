@@ -1,7 +1,7 @@
 package com.pierre.tunescout.screenshottests
 
-import com.pierre.tunescout.core.model.CollectionDownloadState
 import androidx.compose.runtime.Composable
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.RepeatMode
