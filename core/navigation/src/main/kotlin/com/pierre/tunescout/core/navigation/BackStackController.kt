@@ -18,6 +18,16 @@ class BackStackController(
         }
     }
 
+    /**
+     * An empty list is ignored: a back stack with nothing in it has no screen to draw, and a deep
+     * link that resolved to nothing should leave the app where it already was.
+     */
+    fun resetTo(routes: List<NavKey>) {
+        if (routes.isEmpty() || routes == backStack) return
+        backStack.clear()
+        backStack.addAll(routes)
+    }
+
     fun navigateBack() {
         if (backStack.size > 1) {
             backStack.removeLastOrNull()

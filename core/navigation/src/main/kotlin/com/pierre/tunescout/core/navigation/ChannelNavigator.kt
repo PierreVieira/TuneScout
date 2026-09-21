@@ -18,6 +18,10 @@ class ChannelNavigator : Navigator {
         channel.trySend(NavigationCommand.ReplaceTop(route))
     }
 
+    override fun navigateResettingTo(routes: List<NavKey>) {
+        channel.trySend(NavigationCommand.ResetTo(routes))
+    }
+
     override fun navigateBack() {
         channel.trySend(NavigationCommand.Back)
     }

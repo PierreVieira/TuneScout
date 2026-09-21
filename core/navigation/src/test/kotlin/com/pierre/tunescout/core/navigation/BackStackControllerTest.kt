@@ -76,6 +76,42 @@ class BackStackControllerTest {
     }
 
     @Test
+    fun `GIVEN a deeper back stack WHEN resetting THEN replaces it with the given routes`() {
+        // Given
+        prepareScenario(backStack = listOf(songsRoute, albumRoute))
+
+        // When
+        backStackController.resetTo(listOf(songsRoute, playerRoute))
+
+        // Then
+        assertThat(backStack).containsExactly(songsRoute, playerRoute).inOrder()
+    }
+
+    @Test
+    fun `GIVEN no routes WHEN resetting THEN keeps the back stack untouched`() {
+        // Given
+        prepareScenario(backStack = listOf(songsRoute, playerRoute))
+
+        // When
+        backStackController.resetTo(emptyList())
+
+        // Then
+        assertThat(backStack).containsExactly(songsRoute, playerRoute).inOrder()
+    }
+
+    @Test
+    fun `GIVEN the same routes WHEN resetting THEN keeps the back stack untouched`() {
+        // Given
+        prepareScenario(backStack = listOf(songsRoute, playerRoute))
+
+        // When
+        backStackController.resetTo(listOf(songsRoute, playerRoute))
+
+        // Then
+        assertThat(backStack).containsExactly(songsRoute, playerRoute).inOrder()
+    }
+
+    @Test
     fun `GIVEN a stacked route WHEN navigating back THEN pops it`() {
         // Given
         prepareScenario(backStack = listOf(songsRoute, playerRoute))

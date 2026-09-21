@@ -14,5 +14,11 @@ interface Navigator {
 
     fun navigateReplacingTop(route: NavKey)
 
+    /**
+     * Replaces the whole back stack with [routes], root first. This is what a deep link lands on:
+     * the target plus the screens the user would have passed through to reach it.
+     */
+    fun navigateResettingTo(routes: List<NavKey>)
+
     fun navigateBack()
 }

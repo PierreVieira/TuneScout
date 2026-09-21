@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_now_playing_label">TuneScout</string>
+    <string name="widget_now_playing_shortcuts_label">TuneScout</string>
+    <string name="widget_now_playing_description">Control what is playing straight from the home screen.</string>
+    <string name="widget_now_playing_shortcuts_description">Control what is playing and jump back into the songs you listened to last.</string>
+    <string name="widget_play">Play</string>
+    <string name="widget_pause">Pause</string>
+    <string name="widget_skip_to_next">Next song</string>
+    <string name="widget_skip_to_previous">Previous song</string>
+    <string name="widget_empty_title">Nothing playing</string>
+    <string name="widget_empty_message">Open TuneScout to pick a song.</string>
+</resources>

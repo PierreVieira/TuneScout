@@ -31,6 +31,8 @@ from the root. Inject `Navigator` (`core/navigation`) into the ViewModel and cal
 - `navigateBack()` — pop the top entry
 - `navigateReplacingTop(route: NavKey)` — pop the current entry and push a route (the old
   `popUpTo(current) { inclusive = true }` pattern)
+- `navigateResettingTo(routes: List<NavKey>)` — replace the whole back stack, root first (see
+  [Deep links](#deep-links))
 
 ```kotlin
 internal class SongsViewModel(
@@ -45,7 +47,7 @@ internal class SongsViewModel(
 ```
 
 `Navigator` is an event bus: the `ChannelNavigator` implementation pushes a `NavigationCommand`
-(`Navigate`, `ReplaceTop`, `Back`) into a buffered channel, and `TuneScoutNavigationContent` collects the
+(`Navigate`, `ReplaceTop`, `ResetTo`, `Back`) into a buffered channel, and `TuneScoutNavigationContent` collects the
 commands and applies them to the back stack. The back stack is only ever mutated in that one place,
 inside the composition.
 
@@ -106,6 +108,37 @@ entryProvider = entryProvider<NavKey> {
 ```
 
 `app` is the only module that depends on every feature, which is why the registration lives there.
+
+## Deep links
+
+The home screen widgets open the app on a screen of its own. The pieces follow the
+[Navigation 3 deep link guide](https://github.com/android/nav3-recipes/blob/main/docs/deeplink-guide.md),
+adapted to this app: `androidx.navigation3.runtime.deeplink` is not in the stable release the
+project uses, and the URLs are ours rather than a public `https` domain, so no URI pattern matching
+or serializer decoding is needed.
+
+`core/navigation/deeplink/` holds the four pieces:
+
+| Piece | What it does |
+|---|---|
+| `DeepLinkUrls` | the URL space — the `tunescout` scheme and the builders. Whoever opens a link and whoever reads one back both go through it, so the shapes cannot drift |
+| `DeepLinkKey` | a route something outside the app can open, with the `parent` it sits under |
+| `TuneScoutDeepLinkMatcher` | a URL back into a route, or `null` when it names none |
+| `SyntheticBackStackFactory` | the route plus its ancestors, root first |
+
+`MainActivity` parses the intent in `onCreate` and in `onNewIntent` — it is `singleTop`, so a widget
+tapped while the app is open lands on the running instance — and sends one `navigateResettingTo` with
+the synthetic back stack. The command is emitted *before* composition starts; the navigator's
+unlimited channel holds it until the collector attaches, so the first back stack the app draws is
+already the deep link's and the splash is never shown on top of a screen the user asked for.
+
+The synthetic back stack is what the guide's first principle asks for: a deep link into
+`PlayerRoute` lands on `[HomeRoute, PlayerRoute]`, so Back leads where it would have led had the
+user navigated there by hand instead of dropping them out of the app. A new deep-linkable route
+implements `DeepLinkKey`, names its `parent`, and gets a branch in the matcher.
+
+The scheme is declared in `app`'s manifest without the `BROWSABLE` category: these links are for the
+app's own surfaces, not for the browser.
 
 ## The tab host
 

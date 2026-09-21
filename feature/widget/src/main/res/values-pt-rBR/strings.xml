@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_now_playing_description">Controle o que está tocando direto da tela inicial.</string>
+    <string name="widget_now_playing_shortcuts_description">Controle o que está tocando e volte para as músicas que você ouviu por último.</string>
+    <string name="widget_play">Tocar</string>
+    <string name="widget_pause">Pausar</string>
+    <string name="widget_skip_to_next">Próxima música</string>
+    <string name="widget_skip_to_previous">Música anterior</string>
+    <string name="widget_empty_title">Nada tocando</string>
+    <string name="widget_empty_message">Abra o TuneScout para escolher uma música.</string>
+</resources>
