@@ -1,13 +1,17 @@
 package com.pierre.tunescout.feature.songoptions.di
 
+import com.pierre.tunescout.feature.songoptions.domain.usecase.IsDownloaded
 import com.pierre.tunescout.feature.songoptions.domain.usecase.IsFavorite
 import com.pierre.tunescout.feature.songoptions.domain.usecase.ObserveSong
 import com.pierre.tunescout.feature.songoptions.domain.usecase.RemoveFromPlaylist
 import com.pierre.tunescout.feature.songoptions.domain.usecase.SongOptionsUseCases
+import com.pierre.tunescout.feature.songoptions.domain.usecase.ToggleDownload
 import com.pierre.tunescout.feature.songoptions.domain.usecase.ToggleFavorite
+import com.pierre.tunescout.feature.songoptions.domain.usecase.impl.IsDownloadedUseCase
 import com.pierre.tunescout.feature.songoptions.domain.usecase.impl.IsFavoriteUseCase
 import com.pierre.tunescout.feature.songoptions.domain.usecase.impl.ObserveSongUseCase
 import com.pierre.tunescout.feature.songoptions.domain.usecase.impl.RemoveFromPlaylistUseCase
+import com.pierre.tunescout.feature.songoptions.domain.usecase.impl.ToggleDownloadUseCase
 import com.pierre.tunescout.feature.songoptions.domain.usecase.impl.ToggleFavoriteUseCase
 import com.pierre.tunescout.feature.songoptions.presentation.viewmodel.SongOptionsViewModel
 import org.koin.core.module.Module
@@ -21,6 +25,8 @@ val songOptionsModule: Module = module {
     factoryOf(::IsFavoriteUseCase).bind<IsFavorite>()
     factoryOf(::ToggleFavoriteUseCase).bind<ToggleFavorite>()
     factoryOf(::RemoveFromPlaylistUseCase).bind<RemoveFromPlaylist>()
+    factoryOf(::IsDownloadedUseCase).bind<IsDownloaded>()
+    factoryOf(::ToggleDownloadUseCase).bind<ToggleDownload>()
     factoryOf(::SongOptionsUseCases)
     viewModelOf(::SongOptionsViewModel)
 }

@@ -7,11 +7,14 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ArrowCircleDown
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.DownloadForOffline
+import androidx.compose.material.icons.rounded.Downloading
 import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
@@ -113,4 +116,10 @@ object TuneScoutIcons {
     val viewGrid: ImageVector get() = Icons.Rounded.GridView
 
     val viewList: ImageVector get() = Icons.Rounded.ViewList
+
+    val download: ImageVector get() = Icons.Rounded.ArrowCircleDown
+
+    val downloading: ImageVector get() = Icons.Rounded.Downloading
+
+    val downloaded: ImageVector get() = Icons.Rounded.DownloadForOffline
 }

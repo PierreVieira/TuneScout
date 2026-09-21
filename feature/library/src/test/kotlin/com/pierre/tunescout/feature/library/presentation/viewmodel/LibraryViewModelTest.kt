@@ -226,11 +226,31 @@ class LibraryViewModelTest {
             assertThat(viewModel.uiState.value.filteredItems).hasSize(2)
         }
 
+    @Test
+    fun `GIVEN collections the user downloaded WHEN observing the library THEN it knows which ones they are`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playlists = listOf(playlist(id = 7)),
+                downloadedCollections = setOf(LibraryItemKey.Favorites, LibraryItemKey.Playlist(playlistId = 7)),
+            )
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.downloadedKeys).containsExactly(
+                LibraryItemKey.Favorites,
+                LibraryItemKey.Playlist(playlistId = 7),
+            )
+        }
+
     private fun TestScope.prepareScenario(
         favorites: List<Song> = emptyList(),
         playlists: List<Playlist> = emptyList(),
         albums: List<AlbumSummary> = emptyList(),
         viewMode: LibraryViewMode = LibraryViewMode.LIST,
+        downloadedCollections: Set<LibraryItemKey> = emptySet(),
     ) {
         storedViewMode = MutableStateFlow(viewMode)
         navigator = mockk(relaxUnitFun = true)
@@ -241,6 +261,7 @@ class LibraryViewModelTest {
                 observeFavoriteAlbums = { flowOf(albums) },
                 observeViewMode = { storedViewMode },
                 setViewMode = { mode -> storedViewMode.value = mode },
+                observeCollectionDownloads = { flowOf(downloadedCollections) },
             ),
             itemMapper = LibraryItemUiModelMapper(),
             navigator = navigator,

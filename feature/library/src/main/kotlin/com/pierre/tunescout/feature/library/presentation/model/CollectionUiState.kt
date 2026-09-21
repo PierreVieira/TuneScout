@@ -1,7 +1,9 @@
 package com.pierre.tunescout.feature.library.presentation.model
 
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 
 sealed interface CollectionUiState {
     data object Loading : CollectionUiState
@@ -26,6 +28,9 @@ sealed interface CollectionUiState {
      * can, the liked songs are kept in the order they were liked.
      * @property isReordering whether [songs] are there to be dragged into a new order: each row shows
      * a handle instead of its options, and a tap no longer plays it.
+     * @property download whether the user asked for the whole collection, and how far it has got.
+     * @property downloadStatuses how far each of [songs] the user asked to keep has got, whether on
+     * its own or with a collection; a song absent from it has no download.
      */
     data class Loaded(
         val title: CollectionTitle,
@@ -38,5 +43,7 @@ sealed interface CollectionUiState {
         val isShuffleEnabled: Boolean,
         val isReorderable: Boolean,
         val isReordering: Boolean,
+        val download: CollectionDownloadState,
+        val downloadStatuses: Map<Long, SongDownloadStatus>,
     ) : CollectionUiState
 }

@@ -9,4 +9,6 @@ data class AlbumUseCases(
     val observeFavoriteSongIds: ObserveFavoriteSongIds,
     val toggleSongFavorite: ToggleSongFavorite,
     val saveTrackOrder: SaveTrackOrder,
+    val observeCollectionDownloads: ObserveCollectionDownloads,
+    val toggleAlbumDownload: ToggleAlbumDownload,
 )

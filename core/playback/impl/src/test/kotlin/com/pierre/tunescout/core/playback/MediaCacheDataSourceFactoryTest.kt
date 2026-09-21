@@ -9,38 +9,42 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
 class MediaCacheDataSourceFactoryTest {
-    private lateinit var factory: DataSource.Factory
+    private lateinit var factory: MediaCacheDataSourceFactory
     private lateinit var cache: Cache
+    private lateinit var downloadCache: Cache
 
     @Test
-    fun `GIVEN a media cache WHEN creating a data source THEN it reads through the cache`() {
+    fun `GIVEN both caches WHEN creating the player's data source THEN it reads the downloads first`() {
         // Given
         prepareScenario()
 
         // When
-        val dataSource = factory.createDataSource()
+        val dataSource = factory.createDataSourceFactory().createDataSource()
 
         // Then
         assertThat(dataSource).isInstanceOf(CacheDataSource::class.java)
+        assertThat((dataSource as CacheDataSource).cache).isSameInstanceAs(downloadCache)
     }
 
     @Test
-    fun `GIVEN a media cache WHEN creating a data source THEN it is the one the cache was built on`() {
+    fun `GIVEN both caches WHEN creating what a download is fetched through THEN it reads the played previews`() {
         // Given
         prepareScenario()
 
         // When
-        val dataSource = factory.createDataSource() as CacheDataSource
+        val dataSource = factory.createDownloadUpstreamFactory().createDataSource()
 
         // Then
-        assertThat(dataSource.cache).isSameInstanceAs(cache)
+        assertThat((dataSource as CacheDataSource).cache).isSameInstanceAs(cache)
     }
 
     private fun prepareScenario() {
         cache = mockk(relaxed = true)
+        downloadCache = mockk(relaxed = true)
         factory = MediaCacheDataSourceFactory(
             cache = cache,
+            downloadCache = downloadCache,
             upstreamFactory = DataSource.Factory { mockk(relaxed = true) },
-        ).createDataSourceFactory()
+        )
     }
 }

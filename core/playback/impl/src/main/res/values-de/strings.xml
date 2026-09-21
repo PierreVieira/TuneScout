@@ -7,4 +7,5 @@
     <string name="playback_repeat_queue">Warteschlange wiederholen</string>
     <string name="playback_repeat_song">Diesen Song wiederholen</string>
     <string name="playback_repeat_turn_off">Wiederholen ausschalten</string>
+    <string name="playback_download_channel_name">Downloads</string>
 </resources>

@@ -7,4 +7,5 @@
     <string name="playback_repeat_queue">Repetir la cola</string>
     <string name="playback_repeat_song">Repetir esta canción</string>
     <string name="playback_repeat_turn_off">Desactivar repetición</string>
+    <string name="playback_download_channel_name">Descargas</string>
 </resources>

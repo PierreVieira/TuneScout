@@ -25,6 +25,7 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         favoriteSongIds = emptySet(),
         isOffline = false,
         unplayableSongIds = emptySet(),
+        downloadStatuses = emptyMap(),
     )
 
     @Test
@@ -125,7 +126,7 @@ internal class SongsScreenshotTest : ScreenshotTest() {
                 uiState = recent.copy(query = "daft punk", isOffline = true),
                 searchResults = pagingItems(
                     searchSongs.mapIndexed { index, song ->
-                        SearchResultUiModel(song = song, isUnavailable = index % 2 == 1)
+                        SearchResultUiModel(song = song, isUnavailable = index % 2 == 1, downloadStatus = null)
                     },
                 ),
                 isHeaderInline = false,
@@ -147,7 +148,7 @@ internal class SongsScreenshotTest : ScreenshotTest() {
     }
 
     private fun searchResults(songs: List<Song>): List<SearchResultUiModel> =
-        songs.map { song -> SearchResultUiModel(song = song, isUnavailable = false) }
+        songs.map { song -> SearchResultUiModel(song = song, isUnavailable = false, downloadStatus = null) }
 
     /** The header sits beside the list once the window is wide enough for it. */
     @Test

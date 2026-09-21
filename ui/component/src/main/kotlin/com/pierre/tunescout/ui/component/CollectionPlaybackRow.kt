@@ -25,11 +25,13 @@ private val pauseIconSize = 28.dp
 /**
  * The shuffle toggle and the play button a whole collection — an album, a playlist — is started
  * from, laid out the way Spotify lays them out: at the end of the row, the play button last and
- * filled with the accent.
+ * filled with the accent. The download switch goes at the start, as far from them as the row
+ * allows, which is right beside them when the row is only as wide as its buttons.
  *
  * @param isPlaying whether the collection is what the player is playing, which turns the play
  * button into a pause button.
  * @param playContentDescription what the play button says it does while [isPlaying] is false.
+ * @param download the collection's download switch, or null for a row without one.
  */
 @Composable
 fun CollectionPlaybackRow(
@@ -39,10 +41,38 @@ fun CollectionPlaybackRow(
     onPlayPauseClick: () -> Unit,
     onShuffleClick: () -> Unit,
     modifier: Modifier = Modifier,
+    download: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small, Alignment.End),
+        horizontalArrangement = if (download != null) {
+            Arrangement.SpaceBetween
+        } else {
+            Arrangement.End
+        },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        download?.invoke()
+        PlaybackButtonsRow(
+            isPlaying = isPlaying,
+            isShuffleEnabled = isShuffleEnabled,
+            playContentDescription = playContentDescription,
+            onPlayPauseClick = onPlayPauseClick,
+            onShuffleClick = onShuffleClick,
+        )
+    }
+}
+
+@Composable
+private fun PlaybackButtonsRow(
+    isPlaying: Boolean,
+    isShuffleEnabled: Boolean,
+    playContentDescription: String,
+    onPlayPauseClick: () -> Unit,
+    onShuffleClick: () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         ShuffleButton(isEnabled = isShuffleEnabled, onClick = onShuffleClick)

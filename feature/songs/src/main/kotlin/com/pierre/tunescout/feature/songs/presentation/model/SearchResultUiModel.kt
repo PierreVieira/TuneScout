@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.songs.presentation.model
 
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 
 /**
  * A search result next to what the player can do with it. Paging items never travel through
@@ -9,8 +10,10 @@ import com.pierre.tunescout.core.model.Song
  * @property song the song the row draws.
  * @property isUnavailable the player cannot reach the song right now — offline, one whose preview
  * never reached the device. The row is drawn dimmer, so a tap that is refused is seen coming.
+ * @property downloadStatus how far the song's download has got, or null when nobody asked for it.
  */
 data class SearchResultUiModel(
     val song: Song,
     val isUnavailable: Boolean,
+    val downloadStatus: SongDownloadStatus?,
 )

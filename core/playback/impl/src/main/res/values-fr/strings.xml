@@ -7,4 +7,5 @@
     <string name="playback_repeat_queue">Répéter la file d\'attente</string>
     <string name="playback_repeat_song">Répéter ce titre</string>
     <string name="playback_repeat_turn_off">Désactiver la répétition</string>
+    <string name="playback_download_channel_name">Téléchargements</string>
 </resources>

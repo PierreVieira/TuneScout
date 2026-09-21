@@ -146,3 +146,19 @@ internal val MIGRATION_7_8 = object : Migration(7, 8) {
         )
     }
 }
+
+/** The user can keep songs and whole collections on the device, which two tables remember. */
+internal val MIGRATION_8_9 = object : Migration(8, 9) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `downloaded_songs` (`songId` INTEGER NOT NULL, " +
+                "`requestedAt` INTEGER NOT NULL, PRIMARY KEY(`songId`), " +
+                "FOREIGN KEY(`songId`) REFERENCES `songs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        )
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `downloaded_collections` (`kind` TEXT NOT NULL, " +
+                "`collectionId` INTEGER NOT NULL, `requestedAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`kind`, `collectionId`))",
+        )
+    }
+}

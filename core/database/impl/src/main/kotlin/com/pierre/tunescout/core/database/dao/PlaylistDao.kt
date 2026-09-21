@@ -70,6 +70,19 @@ internal interface PlaylistDao {
     @Query("DELETE FROM playlists WHERE id = :playlistId")
     suspend fun deleteById(playlistId: Long)
 
+    @Query("DELETE FROM downloaded_collections WHERE kind = 'Playlist' AND collectionId = :playlistId")
+    suspend fun deleteDownloadRequest(playlistId: Long)
+
+    /**
+     * A download request has no key to the playlist it names, so it is deleted here with it: a new
+     * playlist that got the same id would otherwise start out downloaded.
+     */
+    @Transaction
+    suspend fun deleteWithDownloadRequest(playlistId: Long) {
+        deleteById(playlistId)
+        deleteDownloadRequest(playlistId)
+    }
+
     @Query("SELECT COALESCE(MAX(position), -1) + 1 FROM playlist_songs WHERE playlistId = :playlistId")
     suspend fun getNextPosition(playlistId: Long): Int
 

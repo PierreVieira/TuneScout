@@ -5,4 +5,6 @@ data class SongOptionsUseCases(
     val isFavorite: IsFavorite,
     val toggleFavorite: ToggleFavorite,
     val removeFromPlaylist: RemoveFromPlaylist,
+    val isDownloaded: IsDownloaded,
+    val toggleDownload: ToggleDownload,
 )

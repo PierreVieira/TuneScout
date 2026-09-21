@@ -1,16 +1,22 @@
 package com.pierre.tunescout.feature.album.presentation.content
 
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.CollectionDownloadState
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
@@ -49,6 +55,49 @@ class AlbumContentTest {
     }
 
     @Test
+    fun givenAnAlbumNotDownloadedItsSwitchIsOffAndATapAsksForIt() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(isHeaderInline = false, uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Download")
+            .assertIsOff()
+            .assert(hasStateDescription("Not downloaded"))
+            .performClick()
+
+        assertThat(events).containsExactly(AlbumUiEvent.OnDownloadClicked)
+    }
+
+    @Test
+    fun givenAnAlbumHalfwayDownloadedItsSwitchSaysHowManySongsArrivedAndTheirRowsSayWhereTheyStand() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(
+                    isHeaderInline = false,
+                    uiState = loaded(
+                        download = CollectionDownloadState.Downloading(downloadedCount = 1, totalCount = 2),
+                        downloadStatuses = mapOf(
+                            1L to SongDownloadStatus.Downloaded,
+                            2L to SongDownloadStatus.Downloading,
+                        ),
+                    ),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Download")
+            .assertIsOn()
+            .assert(hasStateDescription("1 of 2 downloaded"))
+        onNode(hasText("Give Life Back to Music", substring = true) and hasStateDescription("Downloaded"))
+            .assertIsDisplayed()
+        onNode(hasText("The Game of Love", substring = true) and hasStateDescription("Downloading"))
+            .assertIsDisplayed()
+    }
+
+    @Test
     fun givenALikedAlbumTheTopBarOffersToRemoveIt() = compose.use {
         setContent {
             TuneScoutTheme {
@@ -80,6 +129,8 @@ class AlbumContentTest {
                         isPlaying = false,
                         isShuffleEnabled = false,
                         isReordering = false,
+                        download = CollectionDownloadState.NotDownloaded,
+                        downloadStatuses = emptyMap(),
                     ),
                     onEvent = events::add,
                 )
@@ -113,6 +164,8 @@ class AlbumContentTest {
                         isPlaying = false,
                         isShuffleEnabled = false,
                         isReordering = false,
+                        download = CollectionDownloadState.NotDownloaded,
+                        downloadStatuses = emptyMap(),
                     ),
                     onEvent = events::add,
                 )
@@ -273,6 +326,8 @@ class AlbumContentTest {
         isPlaying: Boolean = false,
         isShuffleEnabled: Boolean = false,
         isReordering: Boolean = false,
+        download: CollectionDownloadState = CollectionDownloadState.NotDownloaded,
+        downloadStatuses: Map<Long, SongDownloadStatus> = emptyMap(),
     ): AlbumUiState.Loaded = AlbumUiState.Loaded(
         album = reorderableAlbum,
         nowPlaying = null,
@@ -283,7 +338,12 @@ class AlbumContentTest {
         isPlaying = isPlaying,
         isShuffleEnabled = isShuffleEnabled,
         isReordering = isReordering,
+        download = download,
+        downloadStatuses = downloadStatuses,
     )
+
+    private fun hasStateDescription(state: String): SemanticsMatcher =
+        SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, state)
 
     private val reorderableAlbum = album(
         songs = listOf(

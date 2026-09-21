@@ -1,6 +1,8 @@
 package com.pierre.tunescout.screenshottests
 
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.model.NowPlaying
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.feature.library.presentation.content.CollectionContent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
@@ -20,6 +22,8 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         isShuffleEnabled = false,
         isReorderable = true,
         isReordering = false,
+        download = CollectionDownloadState.NotDownloaded,
+        downloadStatuses = emptyMap(),
     )
 
     @Test
@@ -58,6 +62,27 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         snapshot(name = "empty") {
             CollectionContent(
                 uiState = loaded.copy(songs = emptyList(), nowPlaying = null, isPlaying = false),
+                onEvent = {},
+            )
+        }
+    }
+
+    /** Downloading the playlist: the switch fills up, and each song says how far it has got. */
+    @Test
+    fun downloading() {
+        snapshot(name = "downloading", variants = ScreenshotVariant.all) {
+            val first = recentlyPlayed.first().id
+            CollectionContent(
+                uiState = loaded.copy(
+                    download = CollectionDownloadState.Downloading(
+                        downloadedCount = 1,
+                        totalCount = recentlyPlayed.size,
+                    ),
+                    downloadStatuses = recentlyPlayed.associate { song ->
+                        song.id to
+                            if (song.id == first) SongDownloadStatus.Downloaded else SongDownloadStatus.Downloading
+                    },
+                ),
                 onEvent = {},
             )
         }

@@ -33,6 +33,7 @@ internal class AudioSearchScreenshots : ReadmeScreenshotsTest() {
                             favoriteSongIds = emptySet(),
                             isOffline = false,
                             unplayableSongIds = emptySet(),
+                            downloadStatuses = emptyMap(),
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},

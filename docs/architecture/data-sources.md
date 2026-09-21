@@ -197,10 +197,21 @@ exactly what the app can still show with no connection.
 active network's `NET_CAPABILITY_VALIDATED`. A screen uses it to say where its rows come from, to pick
 the right wording for a failure, and to retry by itself — never to decide whether to make a call.
 
-Offline, `PreviewCache` (`core/playback/api`, over the same `SimpleCache` the player writes) says
-whether a song's whole preview is on the device. The album screen asks it before handing a track to
+Offline, a song can play when the user downloaded it (`ObservableDownloads`, `core/playback/api`)
+or when `PreviewCache` (over the same `SimpleCache` the player writes, checked against its files)
+says its whole preview is on the device. The album screen asks it before handing a track to
 the player: a track that is not there shows a snackbar instead of failing in the player, and the queue
 behind one that is keeps only the saved tracks.
+
+### Downloads
+
+`DownloadLocalDataSource` (`core/database/api`) keeps what the user asked to keep: songs on their
+own in `downloaded_songs`, and whole collections — an album, a playlist, the liked songs — in
+`downloaded_collections`. `observeWantedSongs` turns them into the songs they add up to, so a song
+added to a downloaded playlist is wanted with it. `DownloadReconciler` (`core/playback/impl`) follows
+that list and adds or removes Media3 downloads to match; `ObservableDownloads` reports how far each
+song has got, which the rows and the collection headers draw. A downloaded song, or one part of a
+downloaded album, is never dropped by the song cache's trimming.
 
 ### What is cached where
 
@@ -208,5 +219,6 @@ behind one that is keeps only the saved tracks.
 |---|---|---|---|
 | Songs, albums, the history, the library | Room (`tunescout.db`) | 500 orphan songs | The screens open with no connection |
 | Previews | `SimpleCache` in `cacheDir/media_cache` | 128 MB, least recently used | A song played once plays again offline |
+| Downloads | `SimpleCache` in `filesDir/downloads`, filled by Media3's `DownloadManager` | unbounded, only a removed download frees it | A song, album, playlist or the liked songs the user downloaded play offline even once the cache is cleared |
 | Artwork | Coil's disk cache in `cacheDir/image_cache` | 2% of the free space, never under 64 MB | The lists look the same offline |
 | API responses | Ktor `HttpCache` over `FileStorage` in `cacheDir/http_cache` | unbounded, honours `Cache-Control` | A repeated search survives a restart |

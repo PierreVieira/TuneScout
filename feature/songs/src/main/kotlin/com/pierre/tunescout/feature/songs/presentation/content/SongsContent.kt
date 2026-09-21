@@ -112,6 +112,7 @@ fun SongsContent(
                     nowPlaying = uiState.nowPlaying,
                     favoriteSongIds = uiState.favoriteSongIds,
                     unplayableSongIds = uiState.unplayableSongIds,
+                    downloadStatuses = uiState.downloadStatuses,
                     onEvent = onEvent,
                 )
             }

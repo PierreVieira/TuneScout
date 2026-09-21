@@ -270,6 +270,8 @@ class CollectionOptionsViewModelTest {
             toggleSongFavorite = { _, _ -> },
             deletePlaylist = { playlistId -> deletedPlaylistIds += playlistId },
             reorderPlaylistSongs = { _, _ -> },
+            observeCollectionDownloads = { flowOf(emptySet()) },
+            toggleCollectionDownload = { _, _ -> },
         )
         viewModel = CollectionOptionsViewModel(
             key = key,

@@ -1,6 +1,7 @@
 package com.pierre.tunescout.core.playback
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.playback.internal.ConnectivityPlayableSongs
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,9 @@ import org.junit.jupiter.api.Test
 class ConnectivityPlayableSongsTest {
     private val cached = song(id = 1)
     private val notCached = song(id = 2)
+    private val downloaded = song(id = 3)
     private lateinit var isOnline: MutableStateFlow<Boolean>
+    private lateinit var downloadStatuses: MutableStateFlow<Map<Long, SongDownloadStatus>>
     private lateinit var playableSongs: ConnectivityPlayableSongs
 
     @Test
@@ -86,11 +89,69 @@ class ConnectivityPlayableSongsTest {
         assertThat(answers).containsExactly(emptySet<Long>(), setOf(notCached.id)).inOrder()
     }
 
-    private fun TestScope.prepareScenario(isOnlineAtStart: Boolean) {
+    @Test
+    fun `GIVEN the device is offline WHEN asking about a song the user downloaded THEN it can play`() = runTest {
+        // Given
+        prepareScenario(
+            isOnlineAtStart = false,
+            downloadsAtStart = mapOf(downloaded.id to SongDownloadStatus.Downloaded),
+        )
+
+        // When
+        val isPlayable = playableSongs.isPlayable(downloaded)
+
+        // Then
+        assertThat(isPlayable).isTrue()
+    }
+
+    @Test
+    fun `GIVEN the device is offline WHEN asking about a song still downloading THEN it cannot play`() = runTest {
+        // Given
+        prepareScenario(
+            isOnlineAtStart = false,
+            downloadsAtStart = mapOf(downloaded.id to SongDownloadStatus.Downloading),
+        )
+
+        // When
+        val isPlayable = playableSongs.isPlayable(downloaded)
+
+        // Then
+        assertThat(isPlayable).isFalse()
+    }
+
+    @Test
+    fun `GIVEN songs followed offline WHEN a download completes THEN the answer counts it in`() = runTest {
+        // Given
+        prepareScenario(
+            isOnlineAtStart = false,
+            downloadsAtStart = mapOf(downloaded.id to SongDownloadStatus.Downloading),
+        )
+
+        // When
+        val answers = mutableListOf<Set<Long>>()
+        backgroundScope.launch {
+            playableSongs.observePlayableSongs().collect { playable ->
+                answers += playable.findUnplayableIds(listOf(cached, downloaded))
+            }
+        }
+        runCurrent()
+        downloadStatuses.value = mapOf(downloaded.id to SongDownloadStatus.Downloaded)
+        runCurrent()
+
+        // Then
+        assertThat(answers).containsExactly(setOf(downloaded.id), emptySet<Long>()).inOrder()
+    }
+
+    private fun TestScope.prepareScenario(
+        isOnlineAtStart: Boolean,
+        downloadsAtStart: Map<Long, SongDownloadStatus> = emptyMap(),
+    ) {
         isOnline = MutableStateFlow(isOnlineAtStart)
+        downloadStatuses = MutableStateFlow(downloadsAtStart)
         playableSongs = ConnectivityPlayableSongs(
             previewCache = { song -> song.id == cached.id },
             networkMonitor = { isOnline },
+            observableDownloads = { downloadStatuses },
             scope = backgroundScope,
         )
         runCurrent()

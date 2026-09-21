@@ -1,7 +1,9 @@
 package com.pierre.tunescout.feature.album.presentation.model
 
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.model.NowPlaying
+import com.pierre.tunescout.core.model.SongDownloadStatus
 
 sealed interface AlbumUiState {
     data object Loading : AlbumUiState
@@ -25,6 +27,9 @@ sealed interface AlbumUiState {
      * @property isShuffleEnabled whether the player shuffles, which is also how the album starts.
      * @property isReordering whether the tracks are there to be dragged into an order of the user's
      * own: each row shows a handle instead of its options, and a tap no longer plays it.
+     * @property download whether the user asked for the whole album, and how far it has got.
+     * @property downloadStatuses how far each track the user asked to keep has got, whether on its
+     * own or with a collection; a track absent from it has no download.
      */
     data class Loaded(
         val album: Album,
@@ -36,5 +41,7 @@ sealed interface AlbumUiState {
         val isPlaying: Boolean,
         val isShuffleEnabled: Boolean,
         val isReordering: Boolean,
+        val download: CollectionDownloadState,
+        val downloadStatuses: Map<Long, SongDownloadStatus>,
     ) : AlbumUiState
 }

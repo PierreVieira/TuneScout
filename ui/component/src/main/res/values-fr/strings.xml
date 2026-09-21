@@ -33,4 +33,11 @@
     <string name="ui_move_down">Descendre</string>
     <string name="ui_reorder_songs">Réorganiser les titres</string>
     <string name="ui_reorder_done">Terminer la réorganisation</string>
+    <string name="ui_download">Télécharger</string>
+    <string name="ui_remove_download">Supprimer le téléchargement</string>
+    <string name="ui_song_state_downloaded">Téléchargé</string>
+    <string name="ui_song_state_downloading">Téléchargement en cours</string>
+    <string name="ui_collection_state_not_downloaded">Non téléchargé</string>
+    <string name="ui_collection_state_downloading">%1$d sur %2$d téléchargés</string>
+    <string name="ui_collection_state_downloaded">Téléchargé</string>
 </resources>

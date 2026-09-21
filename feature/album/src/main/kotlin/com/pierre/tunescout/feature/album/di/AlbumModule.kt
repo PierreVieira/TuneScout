@@ -5,18 +5,22 @@ import com.pierre.tunescout.feature.album.domain.repository.AlbumRepository
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.domain.usecase.IsAlbumFavorite
 import com.pierre.tunescout.feature.album.domain.usecase.ObserveAlbum
+import com.pierre.tunescout.feature.album.domain.usecase.ObserveCollectionDownloads
 import com.pierre.tunescout.feature.album.domain.usecase.ObserveFavoriteSongIds
 import com.pierre.tunescout.feature.album.domain.usecase.ObserveIsOnline
 import com.pierre.tunescout.feature.album.domain.usecase.RefreshAlbum
 import com.pierre.tunescout.feature.album.domain.usecase.SaveTrackOrder
+import com.pierre.tunescout.feature.album.domain.usecase.ToggleAlbumDownload
 import com.pierre.tunescout.feature.album.domain.usecase.ToggleAlbumFavorite
 import com.pierre.tunescout.feature.album.domain.usecase.ToggleSongFavorite
 import com.pierre.tunescout.feature.album.domain.usecase.impl.IsAlbumFavoriteUseCase
 import com.pierre.tunescout.feature.album.domain.usecase.impl.ObserveAlbumUseCase
+import com.pierre.tunescout.feature.album.domain.usecase.impl.ObserveCollectionDownloadsUseCase
 import com.pierre.tunescout.feature.album.domain.usecase.impl.ObserveFavoriteSongIdsUseCase
 import com.pierre.tunescout.feature.album.domain.usecase.impl.ObserveIsOnlineUseCase
 import com.pierre.tunescout.feature.album.domain.usecase.impl.RefreshAlbumUseCase
 import com.pierre.tunescout.feature.album.domain.usecase.impl.SaveTrackOrderUseCase
+import com.pierre.tunescout.feature.album.domain.usecase.impl.ToggleAlbumDownloadUseCase
 import com.pierre.tunescout.feature.album.domain.usecase.impl.ToggleAlbumFavoriteUseCase
 import com.pierre.tunescout.feature.album.domain.usecase.impl.ToggleSongFavoriteUseCase
 import com.pierre.tunescout.feature.album.presentation.viewmodel.AlbumOptionsViewModel
@@ -47,6 +51,8 @@ val albumModule: Module = module {
     factoryOf(::ObserveFavoriteSongIdsUseCase).bind<ObserveFavoriteSongIds>()
     factoryOf(::ToggleSongFavoriteUseCase).bind<ToggleSongFavorite>()
     factoryOf(::SaveTrackOrderUseCase).bind<SaveTrackOrder>()
+    factoryOf(::ObserveCollectionDownloadsUseCase).bind<ObserveCollectionDownloads>()
+    factoryOf(::ToggleAlbumDownloadUseCase).bind<ToggleAlbumDownload>()
     factoryOf(::AlbumUseCases)
     viewModelOf(::AlbumViewModel)
     viewModelOf(::AlbumOptionsViewModel)

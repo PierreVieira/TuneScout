@@ -1,12 +1,15 @@
 package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.CollectionDownloadState
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.reorder.SharedFlowReorderRequests
@@ -55,6 +58,80 @@ class CollectionViewModelTest {
     private lateinit var favoriteSongs: MutableStateFlow<List<Song>>
     private lateinit var reorderRequests: SharedFlowReorderRequests
     private lateinit var playlistReorders: MutableList<Pair<Long, List<Long>>>
+    private lateinit var downloadToggles: MutableList<Pair<LibraryItemKey, Boolean>>
+
+    @Test
+    fun `GIVEN a downloaded playlist with a song on its way WHEN observing THEN it counts the songs there`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val statuses = mapOf(1L to SongDownloadStatus.Downloaded, 2L to SongDownloadStatus.Downloading)
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 1), song(id = 2)),
+                downloadStatuses = statuses,
+                downloadedCollections = setOf(LibraryItemKey.Playlist(playlistId = 7)),
+            )
+
+            // When
+            val state = viewModel.uiState.value as CollectionUiState.Loaded
+
+            // Then
+            assertThat(
+                state.download,
+            ).isEqualTo(CollectionDownloadState.Downloading(downloadedCount = 1, totalCount = 2))
+            assertThat(state.downloadStatuses).isEqualTo(statuses)
+        }
+
+    @Test
+    fun `GIVEN the liked songs are downloaded and all on the device WHEN observing THEN they are downloaded`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                downloadStatuses = mapOf(1L to SongDownloadStatus.Downloaded),
+                downloadedCollections = setOf(LibraryItemKey.Favorites),
+            )
+
+            // When
+            val state = viewModel.uiState.value as CollectionUiState.Loaded
+
+            // Then
+            assertThat(state.download).isEqualTo(CollectionDownloadState.Downloaded)
+        }
+
+    @Test
+    fun `GIVEN liked songs not downloaded WHEN tapping download THEN they are asked for`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(downloadToggles).containsExactly(LibraryItemKey.Favorites to false)
+        }
+
+    @Test
+    fun `GIVEN a downloaded playlist WHEN tapping download THEN the request is taken back`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                downloadedCollections = setOf(LibraryItemKey.Playlist(playlistId = 7)),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(downloadToggles).containsExactly(LibraryItemKey.Playlist(playlistId = 7) to true)
+        }
 
     @Test
     fun `GIVEN the favourites WHEN observing THEN titles itself with the liked songs and cannot be deleted`() =
@@ -714,8 +791,11 @@ class CollectionViewModelTest {
         playlistSongs: List<Song> = emptyList(),
         playableSongIds: Set<Long>? = null,
         playback: PlaybackState = PlaybackState.Idle,
+        downloadStatuses: Map<Long, SongDownloadStatus> = emptyMap(),
+        downloadedCollections: Set<LibraryItemKey> = emptySet(),
     ) {
         favoriteSongs = MutableStateFlow(favorites)
+        downloadToggles = mutableListOf()
         reorderRequests = SharedFlowReorderRequests()
         playlistReorders = mutableListOf()
         actions = mutableListOf()
@@ -737,6 +817,8 @@ class CollectionViewModelTest {
             },
             deletePlaylist = { },
             reorderPlaylistSongs = { playlistId, songIds -> playlistReorders += playlistId to songIds },
+            observeCollectionDownloads = { flowOf(downloadedCollections) },
+            toggleCollectionDownload = { key, isDownloaded -> downloadToggles += key to isDownloaded },
         )
         val playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true }
         viewModel = CollectionViewModel(
@@ -752,6 +834,7 @@ class CollectionViewModelTest {
             navigator = navigator,
             reorderRequests = reorderRequests,
             observablePlayableSongs = { flowOf(playableSongs) },
+            observableDownloads = { flowOf(downloadStatuses) },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

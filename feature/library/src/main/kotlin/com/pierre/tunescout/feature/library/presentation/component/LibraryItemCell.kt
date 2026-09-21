@@ -27,6 +27,7 @@ internal fun LibraryItemCell(
     name: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isDownloaded: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -48,12 +49,6 @@ internal fun LibraryItemCell(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Text(
-            text = libraryItemSubtitle(item),
-            style = MaterialTheme.typography.bodySmall,
-            color = TuneScoutColors.textSecondary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        LibraryItemSubtitleLine(item = item, isDownloaded = isDownloaded)
     }
 }

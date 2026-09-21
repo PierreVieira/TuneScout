@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChipRow
@@ -74,8 +75,17 @@ fun LibraryContent(
             )
             Box(modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen)) {
                 when (uiState.viewMode) {
-                    LibraryViewMode.LIST -> LibraryList(items = uiState.filteredItems, onEvent = onEvent)
-                    LibraryViewMode.GRID -> LibraryGrid(items = uiState.filteredItems, onEvent = onEvent)
+                    LibraryViewMode.LIST -> LibraryList(
+                        items = uiState.filteredItems,
+                        downloadedKeys = uiState.downloadedKeys,
+                        onEvent = onEvent,
+                    )
+
+                    LibraryViewMode.GRID -> LibraryGrid(
+                        items = uiState.filteredItems,
+                        downloadedKeys = uiState.downloadedKeys,
+                        onEvent = onEvent,
+                    )
                 }
             }
         }
@@ -179,6 +189,7 @@ private fun SectionBar(
 @Composable
 private fun LibraryList(
     items: List<LibraryItemUiModel>,
+    downloadedKeys: Set<LibraryItemKey>,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     LazyColumn(
@@ -193,6 +204,7 @@ private fun LibraryList(
                 name = item.getName(stringResource(R.string.library_favorites)),
                 onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
                 modifier = Modifier.animateItem(),
+                isDownloaded = item.key in downloadedKeys,
             )
         }
     }
@@ -201,6 +213,7 @@ private fun LibraryList(
 @Composable
 private fun LibraryGrid(
     items: List<LibraryItemUiModel>,
+    downloadedKeys: Set<LibraryItemKey>,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     LazyVerticalGrid(
@@ -216,6 +229,7 @@ private fun LibraryGrid(
                 name = item.getName(stringResource(R.string.library_favorites)),
                 onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
                 modifier = Modifier.animateItem(),
+                isDownloaded = item.key in downloadedKeys,
             )
         }
     }

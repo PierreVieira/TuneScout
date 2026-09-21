@@ -1,5 +1,6 @@
 package com.pierre.tunescout.screenshots
 
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.feature.album.presentation.content.AlbumContent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.screenshotfixtures.randomAccessMemories
@@ -16,6 +17,8 @@ internal class AlbumScreenshots : ReadmeScreenshotsTest() {
         isPlaying = false,
         isShuffleEnabled = false,
         isReordering = false,
+        download = CollectionDownloadState.NotDownloaded,
+        downloadStatuses = emptyMap(),
     )
 
     @Test

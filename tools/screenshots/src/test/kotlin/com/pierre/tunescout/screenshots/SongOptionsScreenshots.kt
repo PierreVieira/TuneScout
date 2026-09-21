@@ -40,6 +40,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
                             isFavorite = false,
                             isRemovableFromPlaylist = false,
                             isReorderable = false,
+                            isDownloaded = false,
                         ),
                         onEvent = {},
                     )

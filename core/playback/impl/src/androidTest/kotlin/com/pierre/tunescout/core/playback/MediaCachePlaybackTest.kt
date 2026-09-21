@@ -6,7 +6,6 @@ import androidx.media3.datasource.ByteArrayDataSource
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSourceUtil
 import androidx.media3.datasource.DataSpec
-import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.test.platform.app.InstrumentationRegistry
@@ -15,12 +14,12 @@ import com.pierre.tunescout.core.playback.internal.MediaCacheDataSourceFactory
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.IOException
 
 class MediaCachePlaybackTest {
     private val preview = ByteArray(PREVIEW_BYTES) { index -> index.toByte() }
     private val dataSpec = DataSpec(Uri.parse("https://example.com/preview/1.m4a"))
     private lateinit var cache: SimpleCache
+    private lateinit var downloadCache: SimpleCache
 
     @BeforeEach
     fun setUp() {
@@ -30,11 +29,17 @@ class MediaCachePlaybackTest {
             NoOpCacheEvictor(),
             StandaloneDatabaseProvider(context),
         )
+        downloadCache = SimpleCache(
+            context.cacheDir.resolve("download_cache_test").apply { deleteRecursively() },
+            NoOpCacheEvictor(),
+            StandaloneDatabaseProvider(context),
+        )
     }
 
     @AfterEach
     fun tearDown() {
         cache.release()
+        downloadCache.release()
     }
 
     @Test
@@ -82,6 +87,7 @@ class MediaCachePlaybackTest {
 
     private fun factoryOver(upstream: () -> DataSource): DataSource.Factory = MediaCacheDataSourceFactory(
         cache = cache,
+        downloadCache = downloadCache,
         upstreamFactory = DataSource.Factory { upstream() },
     ).createDataSourceFactory()
 
@@ -97,25 +103,5 @@ class MediaCachePlaybackTest {
 
     private companion object {
         const val PREVIEW_BYTES = 4096
-    }
-}
-
-private class OfflineDataSource : DataSource {
-    override fun addTransferListener(transferListener: TransferListener) {
-        Unit
-    }
-
-    override fun open(dataSpec: DataSpec): Long = throw IOException("offline")
-
-    override fun read(
-        buffer: ByteArray,
-        offset: Int,
-        length: Int,
-    ): Int = throw IOException("offline")
-
-    override fun getUri(): Uri? = null
-
-    override fun close() {
-        Unit
     }
 }

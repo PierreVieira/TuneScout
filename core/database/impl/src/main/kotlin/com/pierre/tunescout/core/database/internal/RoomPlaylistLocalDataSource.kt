@@ -42,7 +42,7 @@ internal class RoomPlaylistLocalDataSource(
     }
 
     override suspend fun delete(playlistId: Long) {
-        playlistDao.deleteById(playlistId)
+        playlistDao.deleteWithDownloadRequest(playlistId)
     }
 
     override suspend fun addSong(
