@@ -16,8 +16,8 @@ that measure what it buys, and what the Compose compiler says about stability.
 - **`startup-prof.txt`** lists what the cold start alone runs. R8 uses it to put those classes in
   the primary dex file (`dexLayoutOptimization`), so starting the app reads fewer pages.
 
-Both come from [`BaselineProfileGenerator`](../tools/baselineprofile/src/main/kotlin/com/pierre/tunescout/baselineprofile/BaselineProfileGenerator.kt)
-in `:tools:baselineprofile`, which drives a release-like build (minified off so the rules keep their
+Both come from [`BaselineProfileGenerator`](../tools/baseline_profile/src/main/kotlin/com/pierre/tunescout/baselineprofile/BaselineProfileGenerator.kt)
+in `:tools:baseline_profile`, which drives a release-like build (minified off so the rules keep their
 real names, not debuggable) through these journeys with UiAutomator:
 
 1. Cold start through the splash to the home screen (the only journey in the startup profile)
@@ -25,7 +25,7 @@ real names, not debuggable) through these journeys with UiAutomator:
 3. Play the first result, open the player from the mini player and close it
 4. Open that song's album from its options sheet and fling its tracks
 
-The journeys live in [`Journeys.kt`](../tools/baselineprofile/src/main/kotlin/com/pierre/tunescout/baselineprofile/Journeys.kt),
+The journeys live in [`Journeys.kt`](../tools/baseline_profile/src/main/kotlin/com/pierre/tunescout/baselineprofile/Journeys.kt),
 shared by the generator and the benchmarks. The app has no test hooks for them: they find screens
 by what is drawn — the English strings and content descriptions — and by the two lists tagged for
 it (`search_results`, `album_tracks`). `MainContent` sets `testTagsAsResourceId` so UiAutomator can
@@ -170,11 +170,11 @@ ANDROID_SERIAL=<device> ./gradlew :app:generateBaselineProfile
 is expected:
 
 ```bash
-ANDROID_SERIAL=<device> ./gradlew :tools:baselineprofile:connectedBenchmarkReleaseAndroidTest -Pandroid.testInstrumentationRunnerArguments.androidx.benchmark.suppressErrors=EMULATOR
+ANDROID_SERIAL=<device> ./gradlew :tools:baseline_profile:connectedBenchmarkReleaseAndroidTest -Pandroid.testInstrumentationRunnerArguments.androidx.benchmark.suppressErrors=EMULATOR
 ```
 
 The results print to the console and land in
-`tools/baselineprofile/build/outputs/connected_android_test_additional_output`, with a Perfetto trace
+`tools/baseline_profile/build/outputs/connected_android_test_additional_output`, with a Perfetto trace
 per iteration. A single class runs with
 `-Pandroid.testInstrumentationRunnerArguments.class=com.pierre.tunescout.baselineprofile.StartupBenchmark`.
 

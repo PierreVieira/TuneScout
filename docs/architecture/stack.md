@@ -14,7 +14,7 @@
 - **Playback:** Media3 ExoPlayer (`media3-exoplayer` + `media3-session`)
 - **Performance:** a committed Baseline Profile and startup profile (`androidx.baselineprofile`
   plugin, `profileinstaller` in `:app`), generated and measured by Macrobenchmark and UiAutomator in
-  `:tools:baselineprofile`; a Compose stability configuration in `compose_stability.conf`. See
+  `:tools:baseline_profile`; a Compose stability configuration in `compose_stability.conf`. See
   [Performance](../performance.md)
 - **Speech:** the platform's `android.speech.SpeechRecognizer`, behind `feature/audio_search`
 - **Lint:** ktlint with the custom `tunescout-style` ruleset in `tools/ktlint_custom_rules`, run through `./scripts/ktlint.sh`
