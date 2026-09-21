@@ -2,6 +2,27 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — One splash
+
+**The app's own splash screen is gone; the gradient moved into the system splash's exit.** A cold
+start used to show two splashes: the system window, then a `SplashRoute` drawn by a `feature:splash`
+module whose ViewModel held it for 700 ms before replacing itself with the home screen. The second
+one existed only because the system window cannot draw the designed gradient (see the 2026-09-18
+entry below) — and it paid for that with a module, a route, a ViewModel and a timer between the
+user and an app that was already ready. Now the back stack starts at `HomeRoute`, and the system
+splash is the only one. It is still held while `MainUiState` is `Loading`, and when it leaves,
+`MainActivity.dissolveSplashIntoContent`
+fades the gradient in over the flat colour, under the note the system already drew, and then fades
+the whole splash out over the home screen composed behind it — 200 ms each. Cost: the gradient is
+on screen for a fraction of a second instead of 700 ms, and it is a `View` animation over two XML
+drawables rather than a composable, so the README's splash shot is assembled from those drawables
+in its generator instead of rendering a `*Content`.
+
+**The splash resources live in `ui:theme`.** The flat colour, the gradient and the note are read by
+`app` (the splash theme and the exit animation) and by `:tools:screenshots`, which cannot depend on
+an application module. `TuneScoutBrandColors` went away with the composable that read it: the
+colours are resources now, since a window theme and a drawable are what use them.
+
 ## 2026-09-21 — An album beside the songs on a wide window
 
 **On an expanded width, an album opens beside the tabs instead of over them.**
@@ -683,6 +704,8 @@ them; the gain is that a screen can never forget an inset. The Songs screen gets
 insets from the same modifier, and the activity declares `adjustResize`.
 
 ## 2026-09-18 — Splash
+
+*Superseded in part on 2026-09-21 (One splash): the app splash described here no longer exists.*
 
 **The system splash screen is themed to continue into the app splash.** Since API 31 every cold
 start begins with a splash window drawn by the system, and by default it shows the launcher icon

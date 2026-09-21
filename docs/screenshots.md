@@ -32,7 +32,7 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 
 | File | Generator | Title | State |
 |---|---|---|---|
-| `splash.png` | `SplashScreenshots` | Straight into the music | |
+| `splash.png` | `SplashScreenshots` | Straight into the music | The splash as it leaves, with the gradient fully in. Not a composable: see below. |
 | `songs.png` | `SongsScreenshots.songs` | Pick up where you left off | Recently played, five songs, under a mini player holding a restored, paused song. |
 | `search.png` | `SongsScreenshots.search` | Find any song as you type | The query `daft punk` over ten paged results. |
 | `audio_search.png` | `AudioSearchScreenshots` | Or just say it | The audio search sheet over the songs screen, mid-sentence: `Daft Punk get lucky` heard so far, with the halos wide open. |
@@ -136,6 +136,11 @@ across rather than seven.
 **`edgeToEdge = false`.** The screens pad themselves with `safeDrawingPadding`, which measures zero
 in a Compose test with no real window, so the frame reserves the status bar's height instead. That
 is also what keeps the frame's own clock from sitting on top of the "Songs" title.
+
+**The splash is assembled here too.** It is the system's splash window and a `View` exit animation
+(`MainActivity.dissolveSplashIntoContent`), so there is no `*Content` to render. `SplashScreenshots` draws the
+two drawables that animation and the window's theme use — `splash_gradient` and `splash_note`, both
+in `ui:theme` — so the image still moves when the design does.
 
 **The options sheet is assembled here.** The real sheet is a `ModalBottomSheet` opened by
 `BottomSheetSceneStrategy`, which renders in a separate window that a Robolectric capture does not

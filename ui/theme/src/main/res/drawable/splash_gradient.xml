@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The splash background from the Figma file: bottom-left to top-right, black for the first 34% of
+    the way. `centerX` is that stop, the only one a shape gradient can place before API 29.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="45"
+        android:centerColor="@color/splash_gradient_start"
+        android:centerX="0.34"
+        android:endColor="@color/splash_gradient_end"
+        android:startColor="@color/splash_gradient_start" />
+</shape>

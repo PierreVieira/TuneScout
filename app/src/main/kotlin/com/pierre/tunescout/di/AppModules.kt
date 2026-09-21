@@ -15,7 +15,6 @@ import com.pierre.tunescout.feature.player.di.playerModule
 import com.pierre.tunescout.feature.queue.di.queueModule
 import com.pierre.tunescout.feature.songoptions.di.songOptionsModule
 import com.pierre.tunescout.feature.songs.di.songsModule
-import com.pierre.tunescout.feature.splash.di.splashModule
 import com.pierre.tunescout.feature.themeselection.di.themeSelectionModule
 import com.pierre.tunescout.feature.widget.di.widgetModule
 import org.koin.core.module.Module
@@ -28,7 +27,6 @@ val appModules: List<Module> = listOf(
     databaseModule,
     dataStoreModule,
     playbackModule,
-    splashModule,
     songsModule,
     audioSearchModule,
     libraryModule,
