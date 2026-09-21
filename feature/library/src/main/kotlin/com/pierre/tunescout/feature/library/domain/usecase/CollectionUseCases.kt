@@ -7,4 +7,6 @@ data class CollectionUseCases(
     val toggleSongFavorite: ToggleSongFavorite,
     val deletePlaylist: DeletePlaylist,
     val reorderPlaylistSongs: ReorderPlaylistSongs,
+    val observeCollectionDownloads: ObserveCollectionDownloads,
+    val toggleCollectionDownload: ToggleCollectionDownload,
 )

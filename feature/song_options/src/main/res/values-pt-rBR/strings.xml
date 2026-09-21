@@ -8,4 +8,5 @@
     <string name="song_options_play_next">Tocar a seguir</string>
     <string name="song_options_add_to_queue">Adicionar à fila</string>
     <string name="song_options_remove_from_playlist">Remover desta playlist</string>
+    <string name="song_options_download_kept_by_collection">Esta música continua baixada com um álbum ou uma playlist que você baixou.</string>
 </resources>

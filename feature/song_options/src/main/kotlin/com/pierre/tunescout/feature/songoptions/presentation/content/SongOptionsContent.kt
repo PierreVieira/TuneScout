@@ -37,6 +37,14 @@ fun SongOptionsContent(
             isEnabled = isEnabled,
             onClick = { onEvent(SongOptionsUiEvent.OnAddToPlaylistClicked) },
         )
+        OptionRow(
+            icon = if (uiState.isDownloaded) TuneScoutIcons.downloaded else TuneScoutIcons.download,
+            label = stringResource(
+                if (uiState.isDownloaded) ComponentR.string.ui_remove_download else ComponentR.string.ui_download,
+            ),
+            isEnabled = isEnabled,
+            onClick = { onEvent(SongOptionsUiEvent.OnDownloadClicked) },
+        )
         if (uiState.isRemovableFromPlaylist) {
             OptionRow(
                 icon = TuneScoutIcons.removeFromPlaylist,

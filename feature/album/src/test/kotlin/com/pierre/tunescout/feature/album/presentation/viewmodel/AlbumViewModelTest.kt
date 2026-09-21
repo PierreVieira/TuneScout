@@ -2,11 +2,14 @@ package com.pierre.tunescout.feature.album.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.CollectionDownloadState
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.reorder.SharedFlowReorderRequests
@@ -60,6 +63,80 @@ class AlbumViewModelTest {
     private lateinit var favoriteSongIds: MutableStateFlow<Set<Long>>
     private lateinit var reorderRequests: SharedFlowReorderRequests
     private lateinit var savedTrackOrders: MutableList<Pair<Long, List<Long>>>
+    private lateinit var downloadToggles: MutableList<DownloadToggle>
+
+    @Test
+    fun `GIVEN an album asked for with one track on the device WHEN observing THEN it is downloading, one of two`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val statuses = mapOf(1L to SongDownloadStatus.Downloaded, 2L to SongDownloadStatus.Downloading)
+            prepareScenario(
+                cached = album(id = 10),
+                downloadStatuses = statuses,
+                downloadedCollections = setOf(LibraryItemKey.Album(albumId = 10)),
+            )
+
+            // When
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+
+            // Then
+            assertThat(
+                state.download,
+            ).isEqualTo(CollectionDownloadState.Downloading(downloadedCount = 1, totalCount = 2))
+            assertThat(state.downloadStatuses).isEqualTo(statuses)
+        }
+
+    @Test
+    fun `GIVEN every track downloaded on its own WHEN observing THEN the album itself is not downloaded`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                cached = album(id = 10),
+                downloadStatuses = mapOf(1L to SongDownloadStatus.Downloaded, 2L to SongDownloadStatus.Downloaded),
+                downloadedCollections = setOf(LibraryItemKey.Album(albumId = 99)),
+            )
+
+            // When
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+
+            // Then
+            assertThat(state.download).isEqualTo(CollectionDownloadState.NotDownloaded)
+        }
+
+    @Test
+    fun `GIVEN an album not downloaded WHEN tapping download THEN it is asked for, with whether it is liked`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10), isFavorite = true)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(
+                downloadToggles,
+            ).containsExactly(DownloadToggle(albumId = 10, isDownloaded = false, isFavorite = true))
+        }
+
+    @Test
+    fun `GIVEN an album still downloading WHEN tapping download THEN the request is taken back`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                cached = album(id = 10),
+                downloadedCollections = setOf(LibraryItemKey.Album(albumId = 10)),
+            )
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(
+                downloadToggles,
+            ).containsExactly(DownloadToggle(albumId = 10, isDownloaded = true, isFavorite = false))
+        }
 
     @Test
     fun `GIVEN no cached album WHEN starting THEN refreshes it and shows loading meanwhile`() =
@@ -776,8 +853,11 @@ class AlbumViewModelTest {
         isOnlineAtStart: Boolean = true,
         cachedPreviews: Set<Long> = emptySet(),
         likedSongIds: Set<Long> = emptySet(),
+        downloadStatuses: Map<Long, SongDownloadStatus> = emptyMap(),
+        downloadedCollections: Set<LibraryItemKey> = emptySet(),
     ) {
         localAlbum = MutableStateFlow(cached)
+        downloadToggles = mutableListOf()
         refreshResults = refreshResult
         refreshCalls = mutableListOf()
         favoriteToggles = mutableListOf()
@@ -812,6 +892,11 @@ class AlbumViewModelTest {
                     }
                 },
                 saveTrackOrder = { albumId, songIds -> savedTrackOrders += albumId to songIds },
+                observeCollectionDownloads = { flowOf(downloadedCollections) },
+                toggleAlbumDownload = { album, isDownloaded, isFavorite ->
+                    downloadToggles +=
+                        DownloadToggle(albumId = album.id, isDownloaded = isDownloaded, isFavorite = isFavorite)
+                },
             ),
             observablePlayback = { playbackStateFlow },
             songPlayback = songPlayback,
@@ -824,6 +909,7 @@ class AlbumViewModelTest {
             observablePlayableSongs = {
                 isOnline.map { isOnline -> PlayableSongs { song -> isOnline || song.id in cachedPreviews } }
             },
+            observableDownloads = { flowOf(downloadStatuses) },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
@@ -831,6 +917,12 @@ class AlbumViewModelTest {
     }
 
     private fun Album.asContext(): PlaybackContext = PlaybackContext.Album(id = id, title = title)
+
+    private data class DownloadToggle(
+        val albumId: Long,
+        val isDownloaded: Boolean,
+        val isFavorite: Boolean,
+    )
 
     companion object {
         @JvmField

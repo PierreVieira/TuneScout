@@ -26,6 +26,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import com.pierre.tunescout.feature.songoptions.R as FeatureR
 
 class SongOptionsViewModelTest {
     private lateinit var viewModel: SongOptionsViewModel
@@ -35,6 +36,65 @@ class SongOptionsViewModelTest {
     private lateinit var actions: MutableList<SongOptionsUiAction>
     private lateinit var playlistRemovals: MutableList<Pair<Long, Long>>
     private lateinit var reorderRequests: ReorderRequests
+    private lateinit var downloadToggles: MutableList<Pair<Long, Boolean>>
+
+    @Test
+    fun `GIVEN a song not downloaded WHEN tapping download THEN it is asked for and the sheet closes`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(downloadToggles).containsExactly(1L to false)
+            verify { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN a song downloaded on its own WHEN tapping remove download THEN it is taken back and the sheet closes`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isDownloaded = true, isKeptByCollection = false)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(downloadToggles).containsExactly(1L to true)
+            verify { navigator.navigateBack() }
+            assertThat(actions).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN a song a downloaded album keeps WHEN tapping remove download THEN the sheet stays open and says why`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isDownloaded = true, isKeptByCollection = true)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(actions).containsExactly(
+                SongOptionsUiAction.ShowSnackBar(FeatureR.string.song_options_download_kept_by_collection),
+            )
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN a downloaded song WHEN observing THEN the sheet offers to remove the download`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), isDownloaded = true)
+
+            // When / Then
+            assertThat(viewModel.uiState.value.isDownloaded).isTrue()
+        }
 
     @Test
     fun `GIVEN a cached song WHEN observing THEN exposes it`() = runTest(mainDispatcher.dispatcher) {
@@ -296,7 +356,10 @@ class SongOptionsViewModelTest {
         isPlayable: Boolean = true,
         playlistId: Long? = null,
         reorderTarget: ReorderTarget? = null,
+        isDownloaded: Boolean = false,
+        isKeptByCollection: Boolean = false,
     ) {
+        downloadToggles = mutableListOf()
         reorderRequests = mockk(relaxUnitFun = true)
         favoriteToggles = mutableListOf()
         playlistRemovals = mutableListOf()
@@ -310,6 +373,11 @@ class SongOptionsViewModelTest {
                 isFavorite = { flowOf(isFavorite) },
                 toggleFavorite = { toggled, wasFavorite -> favoriteToggles += toggled.id to wasFavorite },
                 removeFromPlaylist = { playlistId, songId -> playlistRemovals += playlistId to songId },
+                isDownloaded = { flowOf(isDownloaded) },
+                toggleDownload = { toggled, wasDownloaded ->
+                    downloadToggles += toggled.id to wasDownloaded
+                    !wasDownloaded || isKeptByCollection
+                },
             ),
             enqueuer = enqueuer,
             playableSongs = PlayableSongs { isPlayable },

@@ -19,12 +19,15 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
+import com.pierre.tunescout.ui.component.CollectionDownloadButton
 import com.pierre.tunescout.ui.component.CollectionPlaybackRow
+import com.pierre.tunescout.ui.component.DownloadIndicator
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.ReorderableSongSwipeBox
 import com.pierre.tunescout.ui.component.SongDragHandle
@@ -144,6 +147,13 @@ private fun SongList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = TuneScoutSpacing.small),
+                download = {
+                    CollectionDownloadButton(
+                        progress = uiState.download.progress,
+                        totalCount = uiState.songs.size,
+                        onClick = { onEvent(CollectionUiEvent.OnDownloadClicked) },
+                    )
+                },
             )
         }
         itemsIndexed(items = uiState.songs, key = { _, song -> song.id }) { index, song ->
@@ -170,6 +180,10 @@ private fun SongList(
                             isPlaying = nowPlaying?.isPlaying == true,
                         ),
                         isUnavailable = song.id in uiState.unplayableSongIds,
+                        downloadIndicator = DownloadIndicator.of(
+                            isRequested = song.id in uiState.downloadStatuses,
+                            isComplete = uiState.downloadStatuses[song.id] == SongDownloadStatus.Downloaded,
+                        ),
                         sharedSongId = song.id,
                         onClick = {
                             onEvent(

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
@@ -83,5 +84,7 @@ class CollectionContentTest {
         isShuffleEnabled = false,
         isReorderable = true,
         isReordering = isReordering,
+        download = CollectionDownloadState.NotDownloaded,
+        downloadStatuses = emptyMap(),
     )
 }

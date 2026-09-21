@@ -10,6 +10,7 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AudioSearchRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
@@ -103,6 +104,39 @@ class SongsViewModelTest {
             assertThat(searchedTerms).containsExactly("daft punk")
             assertThat(results.map { result -> result.song.id }).containsExactly(1L)
             assertThat(viewModel.uiState.value.isSearching).isTrue()
+        }
+
+    @Test
+    fun `GIVEN downloaded songs WHEN searching THEN each result says how far its download has got`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                catalog = listOf(song(id = 1), song(id = 2), song(id = 3)),
+                downloadStatuses = mapOf(1L to SongDownloadStatus.Downloaded, 2L to SongDownloadStatus.Downloading),
+            )
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnQueryChanged("daft punk"))
+            val results = viewModel.searchResults.asSnapshot()
+
+            // Then
+            assertThat(results.map { result -> result.downloadStatus })
+                .containsExactly(SongDownloadStatus.Downloaded, SongDownloadStatus.Downloading, null)
+                .inOrder()
+        }
+
+    @Test
+    fun `GIVEN downloaded songs WHEN observing the recents THEN the state carries their downloads`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val statuses = mapOf(1L to SongDownloadStatus.Downloaded)
+            prepareScenario(recentlyPlayed = listOf(song(id = 1)), downloadStatuses = statuses)
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.downloadStatuses).isEqualTo(statuses)
         }
 
     @Test
@@ -531,6 +565,7 @@ class SongsViewModelTest {
         playableSongIds: Set<Long>? = null,
         isAudioSearchAvailable: Boolean = true,
         likedSongIds: Set<Long> = emptySet(),
+        downloadStatuses: Map<Long, SongDownloadStatus> = emptyMap(),
     ) {
         spokenQueries = MutableSharedFlow()
         searchedTerms = mutableListOf()
@@ -569,6 +604,7 @@ class SongsViewModelTest {
             enqueuer = enqueuer,
             playableSongs = { song -> reach(onlineFlow.value).isPlayable(song) },
             observablePlayableSongs = { onlineFlow.map(reach) },
+            observableDownloads = { flowOf(downloadStatuses) },
             navigator = navigator,
             audioSearchAvailability = { isAudioSearchAvailable },
             audioSearchQueries = { spokenQueries },

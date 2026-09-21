@@ -26,7 +26,12 @@ class LibraryViewModel(
     private val navigator: Navigator,
     itemMapper: LibraryItemUiModelMapper,
 ) : ViewModel() {
-    private val emptyUiState = LibraryUiState(items = emptyList(), viewMode = LibraryViewMode.LIST, filter = null)
+    private val emptyUiState = LibraryUiState(
+        items = emptyList(),
+        viewMode = LibraryViewMode.LIST,
+        filter = null,
+        downloadedKeys = emptySet(),
+    )
     private val filter = MutableStateFlow<LibraryFilter?>(null)
     private val items: Flow<List<LibraryItemUiModel>> = combine(
         useCases.observeFavorites(),
@@ -39,6 +44,7 @@ class LibraryViewModel(
         items,
         useCases.observeViewMode(),
         filter,
+        useCases.observeCollectionDownloads(),
         ::LibraryUiState,
     ).stateIn(
         scope = viewModelScope,

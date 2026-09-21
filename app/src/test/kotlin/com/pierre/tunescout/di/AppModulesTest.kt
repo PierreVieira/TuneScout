@@ -1,6 +1,9 @@
 package com.pierre.tunescout.di
 
 import android.content.Context
+import androidx.media3.exoplayer.offline.DownloadManager
+import androidx.media3.exoplayer.offline.DownloaderFactory
+import androidx.media3.exoplayer.offline.WritableDownloadIndex
 import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
@@ -27,8 +30,18 @@ class AppModulesTest {
     /**
      * Not resolved by type: [Flow], [Duration] and [Random] are passed as literals inside their
      * definitions, and the [Context] is the one `androidContext()` hands over when the app starts.
+     * The [DownloadManager] is built from the caches inside its definition, but the verification
+     * reads its other constructor, the one taking a [WritableDownloadIndex] and a
+     * [DownloaderFactory].
      */
-    private val literalParameterTypes = listOf(Flow::class, Duration::class, Random::class, Context::class)
+    private val literalParameterTypes = listOf(
+        Flow::class,
+        Duration::class,
+        Random::class,
+        Context::class,
+        WritableDownloadIndex::class,
+        DownloaderFactory::class,
+    )
 
     /**
      * Walks every constructor reachable from [appModules] and fails when a parameter has no

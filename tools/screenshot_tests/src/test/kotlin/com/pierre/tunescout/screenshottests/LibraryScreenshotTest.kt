@@ -34,7 +34,8 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
             artwork = randomAccessMemories.artwork,
         ),
     )
-    private val library = LibraryUiState(items = items, viewMode = LibraryViewMode.LIST, filter = null)
+    private val library =
+        LibraryUiState(items = items, viewMode = LibraryViewMode.LIST, filter = null, downloadedKeys = emptySet())
 
     @Test
     fun list() {

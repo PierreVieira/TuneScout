@@ -226,7 +226,9 @@ class SongsContentTest {
         results: List<Song> = emptyList(),
     ) {
         val pagingFlow = remember {
-            val searchResults = results.map { song -> SearchResultUiModel(song = song, isUnavailable = false) }
+            val searchResults = results.map { song ->
+                SearchResultUiModel(song = song, isUnavailable = false, downloadStatus = null)
+            }
             flowOf(PagingData.from(searchResults, sourceLoadStates = loadedStates))
         }
         TuneScoutTheme {
@@ -256,6 +258,7 @@ class SongsContentTest {
         favoriteSongIds = emptySet(),
         isOffline = isOffline,
         unplayableSongIds = unplayableSongIds,
+        downloadStatuses = emptyMap(),
     )
 
     private val loadedStates = LoadStates(

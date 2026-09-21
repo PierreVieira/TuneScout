@@ -137,6 +137,7 @@ class LibraryContentTest {
         items = listOf(favorites, roadTrip, toxicity),
         viewMode = viewMode,
         filter = filter,
+        downloadedKeys = emptySet(),
     )
 
     @Test

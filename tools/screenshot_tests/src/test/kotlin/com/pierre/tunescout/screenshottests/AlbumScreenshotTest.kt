@@ -1,6 +1,8 @@
 package com.pierre.tunescout.screenshottests
 
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.model.NowPlaying
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.feature.album.presentation.content.AlbumContent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.screenshotfixtures.getLucky
@@ -18,6 +20,8 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
         isPlaying = false,
         isShuffleEnabled = false,
         isReordering = false,
+        download = CollectionDownloadState.NotDownloaded,
+        downloadStatuses = emptyMap(),
     )
 
     @Test
@@ -38,6 +42,23 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
     fun loaded() {
         snapshot(name = "loaded", variants = ScreenshotVariant.all) {
             AlbumContent(uiState = loaded, isHeaderInline = false, onEvent = {})
+        }
+    }
+
+    /** A downloaded album: the switch is on, and every track wears the accent arrow. */
+    @Test
+    fun downloaded() {
+        snapshot(name = "downloaded", variants = ScreenshotVariant.all) {
+            AlbumContent(
+                uiState = loaded.copy(
+                    download = CollectionDownloadState.Downloaded,
+                    downloadStatuses = randomAccessMemories.songs.associate { song ->
+                        song.id to SongDownloadStatus.Downloaded
+                    },
+                ),
+                isHeaderInline = false,
+                onEvent = {},
+            )
         }
     }
 

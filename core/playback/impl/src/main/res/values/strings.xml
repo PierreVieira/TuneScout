@@ -7,4 +7,5 @@
     <string name="playback_repeat_queue">Repeat the queue</string>
     <string name="playback_repeat_song">Repeat this song</string>
     <string name="playback_repeat_turn_off">Turn off repeat</string>
+    <string name="playback_download_channel_name">Downloads</string>
 </resources>

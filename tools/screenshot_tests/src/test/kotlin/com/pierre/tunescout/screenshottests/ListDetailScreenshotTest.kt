@@ -1,5 +1,6 @@
 package com.pierre.tunescout.screenshottests
 
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import androidx.compose.runtime.Composable
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackStatus
@@ -36,6 +37,7 @@ internal class ListDetailScreenshotTest : ScreenshotTest() {
         favoriteSongIds = emptySet(),
         isOffline = false,
         unplayableSongIds = emptySet(),
+        downloadStatuses = emptyMap(),
     )
 
     private val album = AlbumUiState.Loaded(
@@ -48,6 +50,8 @@ internal class ListDetailScreenshotTest : ScreenshotTest() {
         isPlaying = true,
         isShuffleEnabled = false,
         isReordering = false,
+        download = CollectionDownloadState.NotDownloaded,
+        downloadStatuses = emptyMap(),
     )
 
     private val player = PlayerUiState.Loaded(
@@ -114,7 +118,9 @@ internal class ListDetailScreenshotTest : ScreenshotTest() {
                     SongsContent(
                         uiState = songs.copy(query = "daft punk"),
                         searchResults = pagingItems(
-                            searchSongs.map { song -> SearchResultUiModel(song = song, isUnavailable = false) },
+                            searchSongs.map { song ->
+                                SearchResultUiModel(song = song, isUnavailable = false, downloadStatus = null)
+                            },
                         ),
                         isHeaderInline = true,
                         onEvent = {},

@@ -3,6 +3,7 @@ package com.pierre.tunescout.core.database
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import com.pierre.tunescout.core.database.dao.AlbumDao
+import com.pierre.tunescout.core.database.dao.DownloadDao
 import com.pierre.tunescout.core.database.dao.FavoriteAlbumDao
 import com.pierre.tunescout.core.database.dao.FavoriteSongDao
 import com.pierre.tunescout.core.database.dao.LibrarySearchDao
@@ -12,6 +13,8 @@ import com.pierre.tunescout.core.database.dao.RecentlyPlayedDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.entity.AlbumEntity
 import com.pierre.tunescout.core.database.entity.AlbumTrackOrderEntity
+import com.pierre.tunescout.core.database.entity.DownloadedCollectionEntity
+import com.pierre.tunescout.core.database.entity.DownloadedSongEntity
 import com.pierre.tunescout.core.database.entity.FavoriteAlbumEntity
 import com.pierre.tunescout.core.database.entity.FavoriteSongEntity
 import com.pierre.tunescout.core.database.entity.LibrarySearchEntity
@@ -35,8 +38,10 @@ import com.pierre.tunescout.core.database.entity.SongEntity
         FavoriteAlbumEntity::class,
         LibrarySearchEntity::class,
         AlbumTrackOrderEntity::class,
+        DownloadedSongEntity::class,
+        DownloadedCollectionEntity::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = true,
 )
 internal abstract class TuneScoutDatabase : RoomDatabase() {
@@ -55,4 +60,6 @@ internal abstract class TuneScoutDatabase : RoomDatabase() {
     abstract fun favoriteAlbumDao(): FavoriteAlbumDao
 
     abstract fun librarySearchDao(): LibrarySearchDao
+
+    abstract fun downloadDao(): DownloadDao
 }

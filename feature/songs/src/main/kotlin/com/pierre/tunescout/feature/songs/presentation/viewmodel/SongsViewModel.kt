@@ -10,12 +10,14 @@ import com.pierre.tunescout.core.audiosearch.AudioSearchAvailability
 import com.pierre.tunescout.core.audiosearch.ObservableAudioSearchQueries
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AudioSearchRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservableDownloads
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -60,6 +62,7 @@ class SongsViewModel(
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
+    observableDownloads: ObservableDownloads,
     audioSearchAvailability: AudioSearchAvailability,
     audioSearchQueries: ObservableAudioSearchQueries,
 ) : ActionViewModel<SongsUiAction>() {
@@ -94,10 +97,16 @@ class SongsViewModel(
      */
     private val connection: Flow<Connection> = combine(isOnline, playableSongsNow, ::Connection)
 
-    /** What the user kept: the songs played last and the ones liked, which the rows read together. */
+    private val downloadStatuses: Flow<Map<Long, SongDownloadStatus>> = observableDownloads.observeDownloadStatuses()
+
+    /**
+     * What the user kept: the songs played last, the ones liked and the ones downloaded, which the
+     * rows read together.
+     */
     private val savedSongs: Flow<SavedSongs> = combine(
         useCases.observeRecentlyPlayed(),
         useCases.observeFavoriteSongIds(),
+        downloadStatuses,
         ::SavedSongs,
     )
 
@@ -118,6 +127,7 @@ class SongsViewModel(
             favoriteSongIds = saved.favoriteSongIds,
             isOffline = !connection.isOnline,
             unplayableSongIds = connection.playableSongs.findUnplayableIds(recentlyPlayed),
+            downloadStatuses = saved.downloadStatuses,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -131,6 +141,7 @@ class SongsViewModel(
             favoriteSongIds = emptySet(),
             isOffline = false,
             unplayableSongIds = emptySet(),
+            downloadStatuses = emptyMap(),
         ),
     )
 
@@ -150,8 +161,14 @@ class SongsViewModel(
         .flatMapLatest { term ->
             if (term.isBlank()) flowOf(PagingData.empty(idleLoadStates)) else useCases.searchSongs(term)
         }.cachedIn(viewModelScope)
-        .combine(playableSongsNow) { results, playable ->
-            results.map { song -> SearchResultUiModel(song = song, isUnavailable = !playable.isPlayable(song)) }
+        .combine(combine(playableSongsNow, downloadStatuses, ::Pair)) { results, (playable, statuses) ->
+            results.map { song ->
+                SearchResultUiModel(
+                    song = song,
+                    isUnavailable = !playable.isPlayable(song),
+                    downloadStatus = statuses[song.id],
+                )
+            }
         }
 
     init {
@@ -240,10 +257,12 @@ class SongsViewModel(
     /**
      * @property recentlyPlayed the songs played last, newest first.
      * @property favoriteSongIds the songs the user liked.
+     * @property downloadStatuses how far each song the user asked to keep has got.
      */
     private data class SavedSongs(
         val recentlyPlayed: List<Song>,
         val favoriteSongIds: Set<Long>,
+        val downloadStatuses: Map<Long, SongDownloadStatus>,
     )
 
     /**

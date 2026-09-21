@@ -277,6 +277,10 @@ private class FakePlaylistDao(
         entries.value = entries.value.filterNot { entry -> entry.playlistId == playlistId }
     }
 
+    override suspend fun deleteDownloadRequest(playlistId: Long) {
+        Unit
+    }
+
     override suspend fun getNextPosition(playlistId: Long): Int = entries.value
         .of(playlistId)
         .maxOfOrNull { entry -> entry.position }

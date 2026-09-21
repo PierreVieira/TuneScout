@@ -25,6 +25,8 @@ sealed interface AlbumUiEvent {
 
     data object OnFavoriteClicked : AlbumUiEvent
 
+    data object OnDownloadClicked : AlbumUiEvent
+
     data object OnMoreClicked : AlbumUiEvent
 
     data object OnRetryClicked : AlbumUiEvent

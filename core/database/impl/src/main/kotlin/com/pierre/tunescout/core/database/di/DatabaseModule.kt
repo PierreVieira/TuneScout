@@ -3,6 +3,7 @@ package com.pierre.tunescout.core.database.di
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.pierre.tunescout.core.database.AlbumLocalDataSource
+import com.pierre.tunescout.core.database.DownloadLocalDataSource
 import com.pierre.tunescout.core.database.FavoriteAlbumLocalDataSource
 import com.pierre.tunescout.core.database.FavoriteSongLocalDataSource
 import com.pierre.tunescout.core.database.LibrarySearchLocalDataSource
@@ -12,6 +13,7 @@ import com.pierre.tunescout.core.database.RecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.SongLocalDataSource
 import com.pierre.tunescout.core.database.TuneScoutDatabase
 import com.pierre.tunescout.core.database.dao.AlbumDao
+import com.pierre.tunescout.core.database.dao.DownloadDao
 import com.pierre.tunescout.core.database.dao.FavoriteAlbumDao
 import com.pierre.tunescout.core.database.dao.FavoriteSongDao
 import com.pierre.tunescout.core.database.dao.LibrarySearchDao
@@ -26,7 +28,9 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
 import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
 import com.pierre.tunescout.core.database.internal.MIGRATION_7_8
+import com.pierre.tunescout.core.database.internal.MIGRATION_8_9
 import com.pierre.tunescout.core.database.internal.RoomAlbumLocalDataSource
+import com.pierre.tunescout.core.database.internal.RoomDownloadLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteSongLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomLibrarySearchLocalDataSource
@@ -61,6 +65,7 @@ val databaseModule: Module = module {
                 MIGRATION_5_6,
                 MIGRATION_6_7,
                 MIGRATION_7_8,
+                MIGRATION_8_9,
             ).build()
     }
     single<SongDao> { get<TuneScoutDatabase>().songDao() }
@@ -71,6 +76,7 @@ val databaseModule: Module = module {
     single<FavoriteSongDao> { get<TuneScoutDatabase>().favoriteSongDao() }
     single<FavoriteAlbumDao> { get<TuneScoutDatabase>().favoriteAlbumDao() }
     single<LibrarySearchDao> { get<TuneScoutDatabase>().librarySearchDao() }
+    single<DownloadDao> { get<TuneScoutDatabase>().downloadDao() }
     single<TimestampProvider> { TimestampProvider(System::currentTimeMillis) }
     single<SongLocalDataSource> {
         RoomSongLocalDataSource(
@@ -84,6 +90,7 @@ val databaseModule: Module = module {
     singleOf(::RoomPlaylistLocalDataSource).bind<PlaylistLocalDataSource>()
     singleOf(::RoomFavoriteSongLocalDataSource).bind<FavoriteSongLocalDataSource>()
     singleOf(::RoomFavoriteAlbumLocalDataSource).bind<FavoriteAlbumLocalDataSource>()
+    singleOf(::RoomDownloadLocalDataSource).bind<DownloadLocalDataSource>()
     single<LibrarySearchLocalDataSource> {
         RoomLibrarySearchLocalDataSource(
             librarySearchDao = get(),

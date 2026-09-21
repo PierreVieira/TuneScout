@@ -1,9 +1,11 @@
 package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
@@ -11,6 +13,7 @@ import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.ContextStarter
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservableDownloads
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -20,6 +23,7 @@ import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
+import com.pierre.tunescout.feature.library.presentation.mapper.toLibraryItemKey
 import com.pierre.tunescout.feature.library.presentation.mapper.toOptionsRoute
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiAction
@@ -48,7 +52,10 @@ class CollectionViewModel(
     private val reorderRequests: ReorderRequests,
     collectionStreams: CollectionStreams,
     observablePlayableSongs: ObservablePlayableSongs,
+    observableDownloads: ObservableDownloads,
 ) : ActionViewModel<CollectionUiAction>() {
+    private val downloadKey = key.toLibraryItemKey()
+
     /** Only a playlist has an order of the user's own; the liked songs keep the order they were liked in. */
     private val reorderTarget: ReorderTarget.Playlist? =
         (key as? CollectionKey.Playlist)?.let { playlist -> ReorderTarget.Playlist(playlistId = playlist.playlistId) }
@@ -62,12 +69,23 @@ class CollectionViewModel(
         },
     )
 
-    /** The songs, in the order the user is dragging them into, and whether they are being dragged. */
+    /**
+     * The songs, in the order the user is dragging them into, whether they are being dragged, and
+     * where their downloads stand.
+     */
     private val arrangedSongs: Flow<ArrangedSongs> = combine(
         reorder.observeArranged(collectionStreams.observeSongs(key)),
         reorder.isReordering,
-        ::ArrangedSongs,
-    )
+        observableDownloads.observeDownloadStatuses(),
+        useCases.observeCollectionDownloads(),
+    ) { songs, isReordering, statuses, collections ->
+        ArrangedSongs(
+            songs = songs,
+            isReordering = isReordering,
+            downloadStatuses = statuses,
+            isDownloadRequested = downloadKey in collections,
+        )
+    }
 
     val uiState: StateFlow<CollectionUiState> = combine(
         collectionStreams.observeTitle(key),
@@ -91,6 +109,12 @@ class CollectionViewModel(
                 isShuffleEnabled = playback.isShuffleEnabled,
                 isReorderable = reorderTarget != null,
                 isReordering = arranged.isReordering,
+                download = CollectionDownloadState.of(
+                    isRequested = arranged.isDownloadRequested,
+                    songIds = songs.map(Song::id),
+                    statuses = arranged.downloadStatuses,
+                ),
+                downloadStatuses = arranged.downloadStatuses,
             )
         }
     }.stateIn(
@@ -110,6 +134,7 @@ class CollectionViewModel(
         is CollectionUiEvent.OnSongSwipedToFavorite -> toggleFavorite(event.song)
         CollectionUiEvent.OnPlayPauseClicked -> togglePlayback()
         CollectionUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
+        CollectionUiEvent.OnDownloadClicked -> toggleDownload()
         CollectionUiEvent.OnMoreClicked -> navigator.navigate(key.toOptionsRoute())
         CollectionUiEvent.OnReorderStarted -> startReordering()
         CollectionUiEvent.OnReorderFinished -> reorder.finish()
@@ -121,6 +146,16 @@ class CollectionViewModel(
     private fun goBack() {
         if (reorder.isReordering.value) return reorder.finish()
         navigator.navigateBack()
+    }
+
+    private fun toggleDownload() {
+        val loaded = uiState.value as? CollectionUiState.Loaded ?: return
+        viewModelScope.launch {
+            useCases.toggleCollectionDownload(
+                key = downloadKey,
+                isDownloaded = loaded.download != CollectionDownloadState.NotDownloaded,
+            )
+        }
     }
 
     private fun startReordering() {
@@ -236,9 +271,13 @@ class CollectionViewModel(
     /**
      * @property songs the collection's songs, in the order the user is dragging them into.
      * @property isReordering whether they are there to be dragged into a new order.
+     * @property downloadStatuses how far each song the user asked to keep has got.
+     * @property isDownloadRequested whether the user asked for the collection as a whole.
      */
     private data class ArrangedSongs(
         val songs: List<Song>,
         val isReordering: Boolean,
+        val downloadStatuses: Map<Long, SongDownloadStatus>,
+        val isDownloadRequested: Boolean,
     )
 }

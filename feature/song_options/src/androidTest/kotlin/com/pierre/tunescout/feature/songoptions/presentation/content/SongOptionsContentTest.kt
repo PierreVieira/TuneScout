@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
@@ -35,6 +36,26 @@ class SongOptionsContentTest {
         onNodeWithText("View album").performClick()
 
         assertThat(events).containsExactly(SongOptionsUiEvent.OnViewAlbumClicked)
+    }
+
+    @Test
+    fun givenASongNotDownloadedDownloadEmitsEvent() = compose.use {
+        setContent { SongOptionsContent(uiState = state(song = song(id = 1)), onEvent = events::add) }
+
+        onNodeWithText("Download").performScrollTo().performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnDownloadClicked)
+    }
+
+    @Test
+    fun givenADownloadedSongTheSheetOffersToRemoveTheDownload() = compose.use {
+        setContent {
+            SongOptionsContent(uiState = state(song = song(id = 1), isDownloaded = true), onEvent = events::add)
+        }
+
+        onNodeWithText("Remove download").performScrollTo().performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnDownloadClicked)
     }
 
     @Test
@@ -105,10 +126,12 @@ class SongOptionsContentTest {
         isFavorite: Boolean = false,
         isRemovableFromPlaylist: Boolean = false,
         isReorderable: Boolean = false,
+        isDownloaded: Boolean = false,
     ): SongOptionsUiState = SongOptionsUiState(
         song = song,
         isFavorite = isFavorite,
         isRemovableFromPlaylist = isRemovableFromPlaylist,
         isReorderable = isReorderable,
+        isDownloaded = isDownloaded,
     )
 }

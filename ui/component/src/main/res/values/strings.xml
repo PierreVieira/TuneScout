@@ -33,4 +33,11 @@
     <string name="ui_move_down">Move down</string>
     <string name="ui_reorder_songs">Reorder songs</string>
     <string name="ui_reorder_done">Done reordering</string>
+    <string name="ui_download">Download</string>
+    <string name="ui_remove_download">Remove download</string>
+    <string name="ui_song_state_downloaded">Downloaded</string>
+    <string name="ui_song_state_downloading">Downloading</string>
+    <string name="ui_collection_state_not_downloaded">Not downloaded</string>
+    <string name="ui_collection_state_downloading">%1$d of %2$d downloaded</string>
+    <string name="ui_collection_state_downloaded">Downloaded</string>
 </resources>

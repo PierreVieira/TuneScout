@@ -35,8 +35,9 @@ internal interface SongDao {
 
     /**
      * Drops the songs no other table points at, oldest cached first, once there are more than
-     * [keep] of them. A song that is in the history, in a playlist, liked, queued or part of a
-     * cached album is what the user can still reach offline, so it is never a candidate.
+     * [keep] of them. A song that is in the history, in a playlist, liked, queued, downloaded or
+     * part of a cached or downloaded album is what the user can still reach offline, so it is never
+     * a candidate.
      */
     @Query(
         """
@@ -46,7 +47,9 @@ internal interface SongDao {
                 AND id NOT IN (SELECT songId FROM favorite_songs)
                 AND id NOT IN (SELECT songId FROM playlist_songs)
                 AND id NOT IN (SELECT songId FROM playback_queue)
+                AND id NOT IN (SELECT songId FROM downloaded_songs)
                 AND albumId NOT IN (SELECT id FROM albums)
+                AND albumId NOT IN (SELECT collectionId FROM downloaded_collections WHERE kind = 'Album')
             ORDER BY cachedAt DESC
             LIMIT -1 OFFSET :keep
         )

@@ -23,6 +23,8 @@ sealed interface CollectionUiEvent {
 
     data object OnShuffleClicked : CollectionUiEvent
 
+    data object OnDownloadClicked : CollectionUiEvent
+
     data object OnMoreClicked : CollectionUiEvent
 
     /** A long press on a row started dragging it, which is also how the reordering starts. */

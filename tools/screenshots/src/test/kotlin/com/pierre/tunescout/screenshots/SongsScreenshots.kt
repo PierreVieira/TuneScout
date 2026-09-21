@@ -38,6 +38,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                             favoriteSongIds = emptySet(),
                             isOffline = false,
                             unplayableSongIds = emptySet(),
+                            downloadStatuses = emptyMap(),
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},
@@ -71,10 +72,11 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                     favoriteSongIds = emptySet(),
                     isOffline = false,
                     unplayableSongIds = emptySet(),
+                    downloadStatuses = emptyMap(),
                 ),
                 searchResults = pagingItems(
                     searchSongs.map { song ->
-                        SearchResultUiModel(song = song, isUnavailable = false)
+                        SearchResultUiModel(song = song, isUnavailable = false, downloadStatus = null)
                     },
                 ),
                 onEvent = {},

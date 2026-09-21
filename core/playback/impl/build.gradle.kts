@@ -18,4 +18,5 @@ dependencies {
     implementation(libs.koin.android)
 
     testImplementation(projects.core.testing)
+    androidTestImplementation(projects.core.testing)
 }

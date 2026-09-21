@@ -5,6 +5,8 @@ sealed interface SongOptionsUiEvent {
 
     data object OnAddToPlaylistClicked : SongOptionsUiEvent
 
+    data object OnDownloadClicked : SongOptionsUiEvent
+
     data object OnPlayNowClicked : SongOptionsUiEvent
 
     data object OnPlayNextClicked : SongOptionsUiEvent

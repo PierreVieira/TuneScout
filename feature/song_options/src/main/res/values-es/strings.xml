@@ -8,4 +8,5 @@
     <string name="song_options_play_next">Reproducir a continuación</string>
     <string name="song_options_add_to_queue">Añadir a la cola</string>
     <string name="song_options_remove_from_playlist">Quitar de esta playlist</string>
+    <string name="song_options_download_kept_by_collection">Esta canción sigue descargada con un álbum o una playlist que descargaste.</string>
 </resources>

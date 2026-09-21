@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.pierre.tunescout.feature.songoptions.R as FeatureR
 
 class SongOptionsViewModel(
     private val useCases: SongOptionsUseCases,
@@ -32,6 +33,7 @@ class SongOptionsViewModel(
     private val emptyUiState = SongOptionsUiState(
         song = null,
         isFavorite = false,
+        isDownloaded = false,
         isRemovableFromPlaylist = route.playlistId != null,
         isReorderable = route.reorderTarget != null,
     )
@@ -39,13 +41,15 @@ class SongOptionsViewModel(
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
         useCases.isFavorite(route.songId),
-    ) { song, isFavorite ->
-        emptyUiState.copy(song = song, isFavorite = isFavorite)
+        useCases.isDownloaded(route.songId),
+    ) { song, isFavorite, isDownloaded ->
+        emptyUiState.copy(song = song, isFavorite = isFavorite, isDownloaded = isDownloaded)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
         SongOptionsUiEvent.OnFavoriteClicked -> toggleFavorite()
         SongOptionsUiEvent.OnAddToPlaylistClicked -> openAddToPlaylist()
+        SongOptionsUiEvent.OnDownloadClicked -> toggleDownload()
         SongOptionsUiEvent.OnPlayNowClicked -> queue(enqueuer::playNow)
         SongOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
@@ -76,6 +80,23 @@ class SongOptionsViewModel(
         viewModelScope.launch {
             useCases.toggleFavorite(song = song, isFavorite = state.isFavorite)
             navigator.navigateBack()
+        }
+    }
+
+    /**
+     * A song an album or a playlist keeps downloaded stays on the device when its own request is
+     * taken back, so the sheet stays open and says why instead of closing as if it were gone.
+     */
+    private fun toggleDownload() {
+        val state = uiState.value
+        val song = state.song ?: return
+        viewModelScope.launch {
+            val isStillDownloaded = useCases.toggleDownload(song = song, isDownloaded = state.isDownloaded)
+            if (state.isDownloaded && isStillDownloaded) {
+                emitAction(SongOptionsUiAction.ShowSnackBar(FeatureR.string.song_options_download_kept_by_collection))
+            } else {
+                navigator.navigateBack()
+            }
         }
     }
 

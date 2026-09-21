@@ -85,5 +85,7 @@ class CollectionStreamsTest {
         toggleSongFavorite = { _, _ -> },
         deletePlaylist = { },
         reorderPlaylistSongs = { _, _ -> },
+        observeCollectionDownloads = { flowOf(emptySet()) },
+        toggleCollectionDownload = { _, _ -> },
     )
 }

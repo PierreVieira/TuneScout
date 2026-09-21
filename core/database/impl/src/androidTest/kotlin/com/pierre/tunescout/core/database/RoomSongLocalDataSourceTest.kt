@@ -5,11 +5,13 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.internal.RoomAlbumLocalDataSource
+import com.pierre.tunescout.core.database.internal.RoomDownloadLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteSongLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomPlaybackSessionLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomPlaylistLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomRecentlyPlayedLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomSongLocalDataSource
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
@@ -194,6 +196,39 @@ class RoomSongLocalDataSourceTest {
         }
     }
 
+    @Test
+    fun trimmingTheCacheKeepsTheSongsDownloadedOnTheirOwn() {
+        runBlocking {
+            // Given
+            prepareScenario(maxCachedSongs = 1)
+            downloads().addSong(song(id = 1))
+
+            // When
+            dataSource.save(listOf(song(id = 2)))
+            dataSource.save(listOf(song(id = 3)))
+
+            // Then
+            assertThat(cachedIds()).contains(1L)
+        }
+    }
+
+    @Test
+    fun trimmingTheCacheKeepsTheSongsOfADownloadedAlbumThatWasNeverLookedUp() {
+        runBlocking {
+            // Given
+            prepareScenario(maxCachedSongs = 1)
+            dataSource.save(listOf(song(id = 1, albumId = 10)))
+            downloads().addCollection(LibraryItemKey.Album(albumId = 10))
+
+            // When
+            dataSource.save(listOf(song(id = 2, albumId = 99)))
+            dataSource.save(listOf(song(id = 3, albumId = 99)))
+
+            // Then
+            assertThat(cachedIds()).contains(1L)
+        }
+    }
+
     private suspend fun cachedIds(): List<Long> =
         database.songDao().findByTerm(term = "", limit = 100).map { entity -> entity.id }
 
@@ -218,6 +253,12 @@ class RoomSongLocalDataSourceTest {
 
     private fun albums(): AlbumLocalDataSource = RoomAlbumLocalDataSource(
         albumDao = database.albumDao(),
+        songDao = database.songDao(),
+        timestampProvider = { ++now },
+    )
+
+    private fun downloads(): DownloadLocalDataSource = RoomDownloadLocalDataSource(
+        downloadDao = database.downloadDao(),
         songDao = database.songDao(),
         timestampProvider = { ++now },
     )

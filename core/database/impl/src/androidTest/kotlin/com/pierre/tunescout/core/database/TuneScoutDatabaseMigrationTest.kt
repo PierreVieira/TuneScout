@@ -13,6 +13,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
 import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
 import com.pierre.tunescout.core.database.internal.MIGRATION_7_8
+import com.pierre.tunescout.core.database.internal.MIGRATION_8_9
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -309,6 +310,29 @@ class TuneScoutDatabaseMigrationTest {
             connection.execSQL("INSERT INTO album_track_order VALUES (10, 1, 0)")
             assertThat(connection.selectCount("SELECT COUNT(*) FROM songs")).isEqualTo(1)
             assertThat(connection.selectCount("SELECT COUNT(*) FROM album_track_order")).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun givenAVersionEightDatabaseTheMigrationKeepsTheSongsAndAcceptsDownloadRequests() = runBlocking {
+        // Given
+        helper.createDatabase(version = 8).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8, 0)",
+            )
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 9, migrations = listOf(MIGRATION_8_9))
+
+        // Then
+        migrated.use { connection ->
+            connection.execSQL("INSERT INTO downloaded_songs VALUES (1, 0)")
+            connection.execSQL("INSERT INTO downloaded_collections VALUES ('Album', 10, 0)")
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM downloaded_songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM downloaded_collections")).isEqualTo(1)
         }
     }
 

@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pierre.tunescout.screenshotfixtures.getLucky
+import com.pierre.tunescout.ui.component.CollectionDownloadButton
 import com.pierre.tunescout.ui.component.ConfirmationDialog
+import com.pierre.tunescout.ui.component.DownloadIndicator
 import com.pierre.tunescout.ui.component.NamePromptCard
 import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
@@ -54,6 +56,50 @@ internal class ComponentScreenshotTest : ScreenshotTest() {
                     nowPlaying = NowPlayingState.Paused,
                 )
                 SongListSkeleton(rows = 2, hasMoreAction = true)
+            }
+        }
+    }
+
+    /** A song on its way, one on the device, and one that cannot play offline, which shows only why. */
+    @Test
+    fun songRowDownloads() {
+        snapshot(name = "song_row_downloads", variants = ScreenshotVariant.all) {
+            GalleryContent {
+                SongRow(
+                    title = getLucky.title,
+                    subtitle = getLucky.artistName,
+                    artworkUrl = getLucky.artwork.thumbnailUrl,
+                    onClick = {},
+                    downloadIndicator = DownloadIndicator.Downloading,
+                )
+                SongRow(
+                    title = getLucky.title,
+                    subtitle = getLucky.artistName,
+                    artworkUrl = getLucky.artwork.thumbnailUrl,
+                    onClick = {},
+                    downloadIndicator = DownloadIndicator.Downloaded,
+                    trailing = { SongRowMoreAction(onClick = {}) },
+                )
+                SongRow(
+                    title = getLucky.title,
+                    subtitle = getLucky.artistName,
+                    artworkUrl = getLucky.artwork.thumbnailUrl,
+                    onClick = {},
+                    isUnavailable = true,
+                    downloadIndicator = DownloadIndicator.Downloading,
+                )
+            }
+        }
+    }
+
+    /** Not downloaded, a third of the way there, and every song on the device. */
+    @Test
+    fun collectionDownloadButtonStates() {
+        snapshot(name = "collection_download_button_states", variants = ScreenshotVariant.all) {
+            GalleryContent {
+                listOf(null, 1f / 3, 1f).forEach { progress ->
+                    CollectionDownloadButton(progress = progress, totalCount = 3, onClick = {})
+                }
             }
         }
     }

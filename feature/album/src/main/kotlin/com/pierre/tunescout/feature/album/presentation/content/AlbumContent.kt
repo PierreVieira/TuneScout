@@ -34,13 +34,16 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.presentation.component.AlbumSkeleton
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.Artwork
+import com.pierre.tunescout.ui.component.CollectionDownloadButton
 import com.pierre.tunescout.ui.component.CollectionPlaybackRow
+import com.pierre.tunescout.ui.component.DownloadIndicator
 import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.ReorderableSongSwipeBox
@@ -217,6 +220,13 @@ private fun LoadedContent(
                             onPlayPauseClick = { onEvent(AlbumUiEvent.OnPlayPauseClicked) },
                             onShuffleClick = { onEvent(AlbumUiEvent.OnShuffleClicked) },
                             modifier = modifier,
+                            download = {
+                                CollectionDownloadButton(
+                                    progress = uiState.download.progress,
+                                    totalCount = album.songs.size,
+                                    onClick = { onEvent(AlbumUiEvent.OnDownloadClicked) },
+                                )
+                            },
                         )
                     }
                 },
@@ -246,6 +256,10 @@ private fun LoadedContent(
                             isPlaying = uiState.nowPlaying?.isPlaying == true,
                         ),
                         isUnavailable = song.id in uiState.unplayableSongIds,
+                        downloadIndicator = DownloadIndicator.of(
+                            isRequested = song.id in uiState.downloadStatuses,
+                            isComplete = uiState.downloadStatuses[song.id] == SongDownloadStatus.Downloaded,
+                        ),
                         sharedSongId = song.id,
                         onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) }.takeUnless { uiState.isReordering },
                         trailing = {

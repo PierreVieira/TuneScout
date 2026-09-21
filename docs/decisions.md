@@ -2,6 +2,42 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — Downloading songs, albums, playlists and the liked songs
+
+**A request is saved with the library, and the files follow it.** Asking to keep a song or a
+collection writes a row to `downloaded_songs` or `downloaded_collections`, nothing more. One query
+turns those rows into the songs they add up to — the song's own request, its album's, a playlist's
+it is in, the liked songs' while it is liked — and
+[`DownloadReconciler`](../core/playback/impl/src/main/kotlin/com/pierre/tunescout/core/playback/internal/DownloadReconciler.kt)
+fetches or drops files every time that list changes. That is what makes a downloaded playlist follow
+its songs, the way Spotify's does: a song added later is downloaded with it, one taken out is deleted
+unless something else still holds it, and no screen has to know about files. Cost: the rules live in
+SQL, which the unit tests fake, so they are covered against a real database on a device.
+
+**Downloads live in `filesDir`, apart from the played previews.** A second `SimpleCache`, with no
+eviction, is filled by Media3's `DownloadManager` and read by the player before the 128 MB cache and
+the network. Clearing the app's cache from the system settings, or the system reclaiming space, no
+longer takes a download with it. A preview already played is copied from the cache instead of
+fetched again. Cost: downloads count as app data, and only removing a download frees them.
+
+**The manager starts paused, and the service is the usual way to resume it.** `DownloadService`
+shows the progress and keeps the process alive while files arrive, but a foreground service cannot
+start from the background — a like from the lock screen changes what is wanted too. The manager is
+therefore resumed where it is built, and a download the service cannot take goes to the manager
+directly: it still arrives while the process lives. There is no scheduler: a download left waiting
+for a connection when the process dies resumes the next time the app starts.
+
+**A collection is downloaded because it was asked for, not because its songs happen to be there.**
+The header switch is on only for a requested album, playlist or the liked songs; its songs all
+downloaded one by one leave it off. Taking back a song's own download while a collection holds it
+leaves it on the device, and the song sheet says so instead of closing as if it were gone.
+Downloading an album also puts it in the library, like Spotify, so it can be found offline.
+
+**The played-preview cache is checked against its files.** `SimpleCache` keeps its index in memory,
+and clearing the cache from the system settings deletes the files without telling it: until the
+process restarted, a song whose preview was gone still looked playable offline, and the player
+failed on it. `MediaCachePreviewCache` now also asks whether the files exist.
+
 ## 2026-09-21 — The player beside the tabs on a wide window
 
 **On an expanded width the player replaces the mini player, in the right pane.** The tabs always have

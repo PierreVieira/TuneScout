@@ -37,7 +37,7 @@ private val rowCornerRadius = 8.dp
 private const val ARTWORK_CORNER_PERCENT = 15
 private val actionButtonSize = 48.dp
 private val actionIconSize = 20.dp
-private val unavailableIconSize = 14.dp
+private val statusIconSize = 14.dp
 private const val UNAVAILABLE_ALPHA = 0.38f
 
 /**
@@ -49,6 +49,8 @@ private const val UNAVAILABLE_ALPHA = 0.38f
  *
  * Fading and the accent on a paused song are colour alone, so the row also says them: an offline
  * glyph beside the artist of a song that cannot play, and a state a screen reader reads with the row.
+ * A downloaded song gets the accent arrow in the same place, the way Spotify marks it, and one on
+ * its way the outlined one; a song that cannot play shows only why.
  *
  * @param onClick what a tap on the row does; null for a row a tap does nothing on — one of a list
  * being reordered, which is there to be moved.
@@ -66,11 +68,16 @@ fun SongRow(
     artworkSize: Dp = 52.dp,
     nowPlaying: NowPlayingState = NowPlayingState.None,
     isUnavailable: Boolean = false,
+    downloadIndicator: DownloadIndicator = DownloadIndicator.None,
     sharedSongId: Long? = null,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
     val isNowPlaying = nowPlaying != NowPlayingState.None
-    val state = songStateDescription(nowPlaying = nowPlaying, isUnavailable = isUnavailable)
+    val state = songStateDescription(
+        nowPlaying = nowPlaying,
+        isUnavailable = isUnavailable,
+        downloadIndicator = downloadIndicator,
+    )
     CompositionLocalProvider(LocalSharedArtworkSurface provides SharedArtworkSurface.LIST_ROW) {
         Row(
             modifier = modifier
@@ -124,14 +131,7 @@ fun SongRow(
                         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (isUnavailable) {
-                            Icon(
-                                imageVector = TuneScoutIcons.offline,
-                                contentDescription = null,
-                                tint = TuneScoutColors.textSecondary,
-                                modifier = Modifier.size(unavailableIconSize),
-                            )
-                        }
+                        SongStatusIcon(isUnavailable = isUnavailable, downloadIndicator = downloadIndicator)
                         Text(
                             text = subtitle,
                             style = MaterialTheme.typography.bodySmall,
@@ -150,19 +150,54 @@ fun SongRow(
     }
 }
 
+/** The glyph beside the artist: why the song cannot play, or else where its download stands. */
+@Composable
+private fun SongStatusIcon(
+    isUnavailable: Boolean,
+    downloadIndicator: DownloadIndicator,
+) {
+    val (icon, tint) = when {
+        isUnavailable -> TuneScoutIcons.offline to TuneScoutColors.textSecondary
+
+        downloadIndicator == DownloadIndicator.Downloaded -> TuneScoutIcons.downloaded to TuneScoutColors.accent
+
+        downloadIndicator == DownloadIndicator.Downloading ->
+            TuneScoutIcons.downloading to
+                TuneScoutColors.textSecondary
+
+        else -> return
+    }
+    Icon(
+        imageVector = icon,
+        contentDescription = null,
+        tint = tint,
+        modifier = Modifier.size(statusIconSize),
+    )
+}
+
 /**
  * A playing song needs no state of its own: [NowPlayingBarsIcon] is on the row and says so.
  *
- * @return what the row's colours say about the song, in words, or null when they say nothing.
+ * @return what the row's colours and glyphs say about the song, in words, or null when they say
+ * nothing.
  */
 @Composable
 private fun songStateDescription(
     nowPlaying: NowPlayingState,
     isUnavailable: Boolean,
-): String? = when {
-    isUnavailable -> stringResource(R.string.ui_song_state_unavailable)
-    nowPlaying == NowPlayingState.Paused -> stringResource(R.string.ui_song_state_paused)
-    else -> null
+    downloadIndicator: DownloadIndicator,
+): String? {
+    val playback = when {
+        isUnavailable -> stringResource(R.string.ui_song_state_unavailable)
+        nowPlaying == NowPlayingState.Paused -> stringResource(R.string.ui_song_state_paused)
+        else -> null
+    }
+    val download = when (downloadIndicator) {
+        DownloadIndicator.None -> null
+        DownloadIndicator.Downloading -> stringResource(R.string.ui_song_state_downloading)
+        DownloadIndicator.Downloaded -> stringResource(R.string.ui_song_state_downloaded)
+    }
+    return listOfNotNull(playback, download).joinToString().ifEmpty { null }
 }
 
 @Composable

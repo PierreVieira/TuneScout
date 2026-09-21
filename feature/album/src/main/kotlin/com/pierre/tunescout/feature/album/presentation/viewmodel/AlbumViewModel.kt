@@ -2,9 +2,12 @@ package com.pierre.tunescout.feature.album.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.CollectionDownloadState
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
@@ -14,6 +17,7 @@ import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.ContextStarter
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservableDownloads
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -50,8 +54,17 @@ class AlbumViewModel(
     private val observablePlayback: ObservablePlayback,
     private val reorderRequests: ReorderRequests,
     observablePlayableSongs: ObservablePlayableSongs,
+    observableDownloads: ObservableDownloads,
 ) : ActionViewModel<AlbumUiAction>() {
     private val reorderTarget = ReorderTarget.Album(albumId = route.albumId)
+
+    private val downloadKey = LibraryItemKey.Album(albumId = route.albumId)
+
+    /** How far each song has got, and whether the user asked for the album as a whole. */
+    private val downloads: Flow<AlbumDownloads> = combine(
+        observableDownloads.observeDownloadStatuses(),
+        useCases.observeCollectionDownloads(),
+    ) { statuses, collections -> AlbumDownloads(statuses = statuses, isRequested = downloadKey in collections) }
 
     private val reorder = ListReorder<Song, Long>(
         keyOf = { song -> song.id },
@@ -70,9 +83,10 @@ class AlbumViewModel(
     private val showsPartialAlbum = MutableStateFlow(false)
 
     /**
-     * The album, the reach the player has over its tracks and which of them are liked arrive as one,
-     * so the rows are never drawn against the reach of a connection the monitor has already replaced.
-     * Its tracks come in the order the user is dragging them into, so the play button follows it too.
+     * The album, the reach the player has over its tracks, which of them are liked and where their
+     * downloads stand arrive as one, so the rows are never drawn against the reach of a connection
+     * the monitor has already replaced. Its tracks come in the order the user is dragging them into,
+     * so the play button follows it too.
      */
     private val albumReach: Flow<AlbumReach> = combine(
         reorder.observeArranged(useCases.observeAlbum(route.albumId)) { album, arrange ->
@@ -81,6 +95,7 @@ class AlbumViewModel(
         observablePlayableSongs.observePlayableSongs(),
         useCases.observeFavoriteSongIds(),
         reorder.isReordering,
+        downloads,
         ::AlbumReach,
     )
 
@@ -120,6 +135,7 @@ class AlbumViewModel(
         AlbumUiEvent.OnPlayPauseClicked -> togglePlayback()
         AlbumUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
         AlbumUiEvent.OnFavoriteClicked -> toggleFavorite()
+        AlbumUiEvent.OnDownloadClicked -> toggleDownload()
         AlbumUiEvent.OnMoreClicked -> navigator.navigate(AlbumOptionsRoute(albumId = route.albumId))
         AlbumUiEvent.OnRetryClicked -> refresh()
         AlbumUiEvent.OnReorderStarted -> reorder.start()
@@ -209,6 +225,17 @@ class AlbumViewModel(
         }
     }
 
+    private fun toggleDownload() {
+        val state = uiState.value as? AlbumUiState.Loaded ?: return
+        viewModelScope.launch {
+            useCases.toggleAlbumDownload(
+                album = state.album,
+                isDownloaded = state.download != CollectionDownloadState.NotDownloaded,
+                isFavorite = state.isFavorite,
+            )
+        }
+    }
+
     /** A song the player cannot reach never enters the queue, so it does not stall on it. */
     private fun addToQueue(song: Song) {
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
@@ -264,6 +291,12 @@ class AlbumViewModel(
                 isPlaying = playback.isPlaying && playback.isOnAlbum(album.id),
                 isShuffleEnabled = playback.isShuffleEnabled,
                 isReordering = reach.isReordering,
+                download = CollectionDownloadState.of(
+                    isRequested = reach.downloads.isRequested,
+                    songIds = album.songs.map(Song::id),
+                    statuses = reach.downloads.statuses,
+                ),
+                downloadStatuses = reach.downloads.statuses,
             )
 
             refreshFailed -> AlbumUiState.Error
@@ -279,11 +312,22 @@ class AlbumViewModel(
      * @property playableSongs which of its tracks the player can reach with the connection it has.
      * @property favoriteSongIds the songs the user liked, from this album or any other.
      * @property isReordering whether the rows are there to be dragged into a new order.
+     * @property downloads where the downloads of the album and of its tracks stand.
      */
     private data class AlbumReach(
         val album: Album?,
         val playableSongs: PlayableSongs,
         val favoriteSongIds: Set<Long>,
         val isReordering: Boolean,
+        val downloads: AlbumDownloads,
+    )
+
+    /**
+     * @property statuses how far each song the user asked to keep has got, from this album or any other.
+     * @property isRequested whether the user asked for the album as a whole.
+     */
+    private data class AlbumDownloads(
+        val statuses: Map<Long, SongDownloadStatus>,
+        val isRequested: Boolean,
     )
 }

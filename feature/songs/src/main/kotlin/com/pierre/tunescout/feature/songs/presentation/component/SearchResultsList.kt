@@ -23,11 +23,13 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import com.pierre.tunescout.core.model.NowPlaying
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.core.network.RemoteException
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
+import com.pierre.tunescout.ui.component.DownloadIndicator
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongListSkeleton
 import com.pierre.tunescout.ui.component.SongRow
@@ -112,6 +114,10 @@ internal fun SearchResultsList(
                             isPlaying = nowPlaying?.isPlaying == true,
                         ),
                         isUnavailable = result.isUnavailable,
+                        downloadIndicator = DownloadIndicator.of(
+                            isRequested = result.downloadStatus != null,
+                            isComplete = result.downloadStatus == SongDownloadStatus.Downloaded,
+                        ),
                         sharedSongId = song.id,
                         onClick = {
                             onEvent(SongsUiEvent.OnSongClicked(song))

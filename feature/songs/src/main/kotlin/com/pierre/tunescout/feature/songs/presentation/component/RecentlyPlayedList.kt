@@ -15,9 +15,11 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
+import com.pierre.tunescout.ui.component.DownloadIndicator
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowAction
@@ -35,6 +37,7 @@ internal fun RecentlyPlayedList(
     nowPlaying: NowPlaying?,
     favoriteSongIds: Set<Long>,
     unplayableSongIds: Set<Long>,
+    downloadStatuses: Map<Long, SongDownloadStatus>,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -82,6 +85,10 @@ internal fun RecentlyPlayedList(
                         isPlaying = nowPlaying?.isPlaying == true,
                     ),
                     isUnavailable = song.id in unplayableSongIds,
+                    downloadIndicator = DownloadIndicator.of(
+                        isRequested = song.id in downloadStatuses,
+                        isComplete = downloadStatuses[song.id] == SongDownloadStatus.Downloaded,
+                    ),
                     sharedSongId = song.id,
                     onClick = { onEvent(SongsUiEvent.OnSongClicked(song)) },
                     trailing = {

@@ -77,6 +77,7 @@ dependencies {
     baselineProfile(projects.tools.baselineProfile)
 
     testImplementation(libs.koin.test)
+    testImplementation(libs.androidx.media3.exoplayer)
     testImplementation(projects.core.testing)
     androidTestImplementation(projects.core.testing)
 }
