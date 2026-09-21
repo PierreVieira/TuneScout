@@ -18,3 +18,4 @@ This document describes the architecture conventions of this project. Follow the
 - [@docs/testing/README.md](testing/README.md)
 - [@docs/screenshots.md](screenshots.md)
 - [@docs/code-quality.md](code-quality.md)
+- [@docs/ci.md](ci.md)
