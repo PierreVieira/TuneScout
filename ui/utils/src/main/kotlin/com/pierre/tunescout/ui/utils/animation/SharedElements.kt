@@ -1,8 +1,11 @@
 package com.pierre.tunescout.ui.utils.animation
 
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.compositionLocalOf
@@ -61,6 +64,47 @@ val LocalTappedSharedArtworkSurface: ProvidableCompositionLocal<TappedSharedArtw
 
 @Composable
 fun rememberTappedSharedArtworkSurface(): TappedSharedArtworkSurface = remember { TappedSharedArtworkSurface() }
+
+/**
+ * The player's end of every flight, for as long as it is drawn. The `NavDisplay` only turns its
+ * transition around a few frames after the back stack changes, and until it does the player still
+ * counts as the target of its keys. A bar that came back inside that gap would claim the same keys as
+ * a second target, and the flight home would land before it had started.
+ */
+@Stable
+class SharedArtworkDestination {
+    /** The transition of the entry drawing the player, or null while there is none. */
+    var transition: Transition<EnterExitState>? by mutableStateOf(null)
+
+    /** Whether the player is on screen and the `NavDisplay` has not started taking it away. */
+    val isStaying: Boolean
+        get() = transition?.targetState == EnterExitState.Visible
+}
+
+/** The player declares itself here, and the mini player bar waits for it to start leaving. */
+val LocalSharedArtworkDestination: ProvidableCompositionLocal<SharedArtworkDestination> =
+    compositionLocalOf { SharedArtworkDestination() }
+
+@Composable
+fun rememberSharedArtworkDestination(): SharedArtworkDestination = remember { SharedArtworkDestination() }
+
+/**
+ * Declares the screen calling it as the [SharedArtworkDestination], until it leaves the composition.
+ * A no-op outside a `NavDisplay`, where there is no transition to report.
+ */
+@Composable
+fun SharedArtworkDestinationEffect() {
+    val destination = LocalSharedArtworkDestination.current
+    val transition = LocalSharedElementScopes.current?.animatedVisibilityScope?.transition ?: return
+    DisposableEffect(destination, transition) {
+        destination.transition = transition
+        onDispose {
+            if (destination.transition === transition) {
+                destination.transition = null
+            }
+        }
+    }
+}
 
 @Composable
 fun rememberSharedElementScopes(animatedVisibilityScope: AnimatedVisibilityScope): SharedElementScopes? {
