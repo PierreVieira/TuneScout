@@ -81,3 +81,29 @@ internal val MIGRATION_4_5 = object : Migration(4, 5) {
         connection.execSQL("ALTER TABLE `songs` ADD COLUMN `cachedAt` INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+/**
+ * Repeat grows a third mode, so the flag becomes the mode's name — a session that repeated its song
+ * keeps doing so — and shuffle is saved beside it, with the order it would put back. SQLite cannot
+ * drop a column on every version the app runs on, so the session table is rebuilt instead.
+ */
+internal val MIGRATION_5_6 = object : Migration(5, 6) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL("ALTER TABLE `playback_queue` ADD COLUMN `unshuffledPosition` INTEGER")
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `playback_session_new` (`id` INTEGER NOT NULL, `currentEntryId` TEXT, " +
+                "`positionMillis` INTEGER NOT NULL, `repeatMode` TEXT NOT NULL, " +
+                "`isShuffleEnabled` INTEGER NOT NULL, `contextAlbumId` INTEGER, `contextAlbumTitle` TEXT, " +
+                "`hasEnded` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        )
+        connection.execSQL(
+            "INSERT INTO `playback_session_new` (`id`, `currentEntryId`, `positionMillis`, `repeatMode`, " +
+                "`isShuffleEnabled`, `contextAlbumId`, `contextAlbumTitle`, `hasEnded`) " +
+                "SELECT `id`, `currentEntryId`, `positionMillis`, " +
+                "CASE WHEN `isRepeatEnabled` THEN 'One' ELSE 'Off' END, 0, " +
+                "`contextAlbumId`, `contextAlbumTitle`, `hasEnded` FROM `playback_session`",
+        )
+        connection.execSQL("DROP TABLE `playback_session`")
+        connection.execSQL("ALTER TABLE `playback_session_new` RENAME TO `playback_session`")
+    }
+}

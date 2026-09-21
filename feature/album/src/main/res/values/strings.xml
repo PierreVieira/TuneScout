@@ -6,7 +6,7 @@
     <string name="album_error_description">Check your connection and try again.</string>
     <string name="album_stale_notice">Couldn\'t refresh this album. Showing the version saved on this device.</string>
     <string name="album_partial_notice">Couldn\'t load the whole album. Showing only the tracks saved on this device.</string>
-    <string name="album_play_now">Play the album now</string>
+    <string name="album_play">Play the album</string>
     <string name="album_play_next">Play the album next</string>
     <string name="album_add_to_queue">Add the album to the queue</string>
     <string name="album_more_options">More options for this album</string>

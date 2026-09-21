@@ -159,7 +159,11 @@ private class RecordingTransportControls : TransportControls {
         calls += "skipToPrevious"
     }
 
-    override fun toggleRepeat() {
+    override fun cycleRepeatMode() {
+        error("unused")
+    }
+
+    override fun toggleShuffle() {
         error("unused")
     }
 }

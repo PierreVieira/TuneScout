@@ -1,6 +1,7 @@
 package com.pierre.tunescout.screenshottests
 
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.screenshotfixtures.getLucky
@@ -13,7 +14,8 @@ internal class PlayerScreenshotTest : ScreenshotTest() {
         status = PlaybackStatus.Playing,
         position = 18.seconds,
         duration = 29.seconds,
-        isRepeatEnabled = false,
+        repeatMode = RepeatMode.Off,
+        isShuffleEnabled = false,
         hasPrevious = true,
         hasNext = true,
     )
@@ -46,9 +48,20 @@ internal class PlayerScreenshotTest : ScreenshotTest() {
                 uiState = loaded.copy(
                     status = PlaybackStatus.Ended,
                     position = 29.seconds,
-                    isRepeatEnabled = true,
+                    repeatMode = RepeatMode.One,
                     hasNext = false,
                 ),
+                isSideBySide = false,
+                onEvent = {},
+            )
+        }
+    }
+
+    @Test
+    fun shuffledRepeatingTheQueue() {
+        snapshot(name = "shuffled_repeating_queue") {
+            PlayerContent(
+                uiState = loaded.copy(repeatMode = RepeatMode.All, isShuffleEnabled = true),
                 isSideBySide = false,
                 onEvent = {},
             )

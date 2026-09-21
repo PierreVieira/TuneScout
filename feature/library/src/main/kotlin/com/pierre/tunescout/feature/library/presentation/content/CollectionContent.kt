@@ -14,13 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
+import com.pierre.tunescout.ui.component.CollectionPlaybackRow
 import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
@@ -63,15 +63,7 @@ private fun CollectionLoadedContent(
         modifier = Modifier.hideableTopBar(),
         onBackClick = { onEvent(CollectionUiEvent.OnBackClicked) },
         actions = {
-            val hasSongs = uiState.songs.isNotEmpty()
-            if (hasSongs) {
-                TopBarAction(
-                    icon = TuneScoutIcons.play,
-                    contentDescription = stringResource(R.string.library_collection_play_now),
-                    onClick = { onEvent(CollectionUiEvent.OnPlayNowClicked) },
-                )
-            }
-            if (hasSongs || uiState.isDeletable) {
+            if (uiState.songs.isNotEmpty() || uiState.isDeletable) {
                 TopBarAction(
                     icon = TuneScoutIcons.moreMenu,
                     contentDescription = stringResource(R.string.library_collection_more_options),
@@ -93,10 +85,7 @@ private fun CollectionLoadedContent(
             )
         } else {
             SongList(
-                songs = uiState.songs,
-                nowPlaying = uiState.nowPlaying,
-                songPendingRemoval = uiState.songPendingRemoval,
-                unplayableSongIds = uiState.unplayableSongIds,
+                uiState = uiState,
                 onEvent = onEvent,
             )
         }
@@ -123,23 +112,33 @@ private fun RemoveSongDialog(
 
 @Composable
 private fun SongList(
-    songs: List<Song>,
-    nowPlaying: NowPlaying?,
-    songPendingRemoval: Song?,
-    unplayableSongIds: Set<Long>,
+    uiState: CollectionUiState.Loaded,
     onEvent: (CollectionUiEvent) -> Unit,
 ) {
+    val nowPlaying = uiState.nowPlaying
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(),
         contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = TuneScoutSpacing.extraLarge),
     ) {
-        items(items = songs, key = { song -> song.id }) { song ->
+        item(key = "playback") {
+            CollectionPlaybackRow(
+                isPlaying = uiState.isPlaying,
+                isShuffleEnabled = uiState.isShuffleEnabled,
+                playContentDescription = stringResource(R.string.library_collection_play_now),
+                onPlayPauseClick = { onEvent(CollectionUiEvent.OnPlayPauseClicked) },
+                onShuffleClick = { onEvent(CollectionUiEvent.OnShuffleClicked) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = TuneScoutSpacing.small),
+            )
+        }
+        items(items = uiState.songs, key = { song -> song.id }) { song ->
             SwipeToRemoveBox(
                 onRemove = { onEvent(CollectionUiEvent.OnSongSwipedAway(song)) },
                 modifier = Modifier.animateItem(),
-                isRemovalPending = song == songPendingRemoval,
+                isRemovalPending = song == uiState.songPendingRemoval,
             ) {
                 SongRow(
                     title = song.title,
@@ -149,7 +148,7 @@ private fun SongList(
                         isCurrentSong = nowPlaying.isOn(song.id),
                         isPlaying = nowPlaying?.isPlaying == true,
                     ),
-                    isUnavailable = song.id in unplayableSongIds,
+                    isUnavailable = song.id in uiState.unplayableSongIds,
                     sharedSongId = song.id,
                     onClick = { onEvent(CollectionUiEvent.OnSongClicked(song)) },
                     trailing = { SongRowMoreAction { onEvent(CollectionUiEvent.OnSongOptionsClicked(song)) } },

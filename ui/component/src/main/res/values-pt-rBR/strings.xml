@@ -7,8 +7,11 @@
     <string name="ui_replay">Tocar de novo</string>
     <string name="ui_skip_next">Próxima música</string>
     <string name="ui_skip_previous">Música anterior</string>
-    <string name="ui_repeat_on">Repetição ligada</string>
     <string name="ui_repeat_off">Repetição desligada</string>
+    <string name="ui_repeat_all">Repetindo a fila</string>
+    <string name="ui_repeat_one">Repetindo esta música</string>
+    <string name="ui_shuffle_on">Ordem aleatória ligada</string>
+    <string name="ui_shuffle_off">Ordem aleatória desligada</string>
     <string name="ui_clear_search">Limpar busca</string>
     <string name="ui_search">Buscar</string>
     <string name="ui_artwork_of">Capa de %1$s</string>

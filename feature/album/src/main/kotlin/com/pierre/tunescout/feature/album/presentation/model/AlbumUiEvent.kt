@@ -11,7 +11,9 @@ sealed interface AlbumUiEvent {
         val song: Song,
     ) : AlbumUiEvent
 
-    data object OnPlayNowClicked : AlbumUiEvent
+    data object OnPlayPauseClicked : AlbumUiEvent
+
+    data object OnShuffleClicked : AlbumUiEvent
 
     data object OnFavoriteClicked : AlbumUiEvent
 

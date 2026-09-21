@@ -2,6 +2,44 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — Shuffle, and repeat for the whole queue
+
+**Shuffle reorders the queue itself.** Media3 can shuffle on its own, but only as a play order laid
+over the playlist: the queue screen, the next and previous buttons and every index the app keeps
+would still describe the unshuffled list. So the queue moves its own entries
+([`QueueTimelineFactory.buildShuffled`](../core/playback/impl/src/main/kotlin/com/pierre/tunescout/core/playback/internal/QueueTimelineFactory.kt))
+and replaces the songs around the one playing, never that song, so it plays on without a gap. The
+player's shuffle mode is still turned on, because it is what the media session shows the
+notification and the lock screen — but the player is built with `UnshuffledShuffleOrder`, which
+keeps the queue's order instead of shuffling it a second time. When something other than the app
+flips the mode, the player's listener brings the queue along.
+
+**Shuffle only moves the context, the way Spotify does.** Songs queued by hand play before the rest
+of the album, shuffled or not: turning shuffle on moves the songs still to come of the album behind
+them, and starting an album with shuffle on plays the tapped song first — or a random one, from the
+album's play button — with the rest of the album shuffled behind what was queued. What has already
+played stays where it is, so previous still walks back through it.
+
+**Turning shuffle off carries on from the song playing.** The album goes back to its own order, and
+the player continues from where the current song sits in it: the songs before it become what has
+played, the songs after it what is to come, behind the ones queued by hand. A song queued by hand
+that is playing counts as sitting where the last album song heard before it does. The album's own
+order is saved with the session — a nullable `unshuffledPosition` on each saved entry — so this
+still works after the app is closed. Cost: an album song already heard in shuffle can come up again
+once shuffle is off, which is what Spotify does too.
+
+**Repeat has three modes, and the flag became the mode.** `isRepeatEnabled` could not say "the whole
+queue", so the session now stores the mode's name. The migration rebuilds `playback_session` rather
+than dropping the column, since SQLite only learned `DROP COLUMN` in a version older devices do not
+ship, and a session that repeated its song keeps repeating it.
+
+**Albums and playlists get Spotify's play button.** The play icon left the top bar for a round
+accent button under the header, with shuffle beside it. On an album it starts the album as the
+context — not "play now" ahead of the queue, as the icon did — which is what lets it turn into
+pause while that album plays, and what gives shuffle something to reorder. A playlist is still not a
+context ([not done](not-done.md)), so its button keeps playing it now, shuffled first while shuffle
+is on, and shows pause while one of its songs is playing.
+
 ## 2026-09-20 — Offline first, not only cached
 
 **The preview itself is cached, not only what describes it.** ExoPlayer reads through a

@@ -14,6 +14,8 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
         isFavorite = true,
         isStale = false,
         unplayableSongIds = emptySet(),
+        isPlaying = false,
+        isShuffleEnabled = false,
     )
 
     @Test
@@ -44,6 +46,8 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
                 uiState = loaded.copy(
                     nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = true),
                     isFavorite = false,
+                    isPlaying = true,
+                    isShuffleEnabled = true,
                 ),
                 isHeaderInline = false,
                 onEvent = {},

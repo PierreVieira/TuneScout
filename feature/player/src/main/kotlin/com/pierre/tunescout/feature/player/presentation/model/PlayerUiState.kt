@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.player.presentation.model
 
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
 import kotlin.time.Duration
 
@@ -14,7 +15,8 @@ sealed interface PlayerUiState {
         val status: PlaybackStatus,
         val position: Duration,
         val duration: Duration,
-        val isRepeatEnabled: Boolean,
+        val repeatMode: RepeatMode,
+        val isShuffleEnabled: Boolean,
         val hasPrevious: Boolean,
         val hasNext: Boolean,
     ) : PlayerUiState {

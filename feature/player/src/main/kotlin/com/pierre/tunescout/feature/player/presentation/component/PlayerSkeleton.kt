@@ -114,6 +114,7 @@ private fun DetailsSkeleton(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.weight(1f))
             ShimmerBox(shape = CircleShape, modifier = Modifier.size(repeatButtonSize))
             ShimmerBox(shape = CircleShape, modifier = Modifier.size(repeatButtonSize))
+            ShimmerBox(shape = CircleShape, modifier = Modifier.size(repeatButtonSize))
         }
     }
 }

@@ -6,6 +6,9 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.QueueSource
+import com.pierre.tunescout.core.model.RepeatMode
+import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.playback.internal.ExoPlayerPlaybackController
 import com.pierre.tunescout.core.playback.internal.PlaybackQueue
 import com.pierre.tunescout.core.playback.internal.QueueTimelineFactory
@@ -19,6 +22,7 @@ import io.mockk.verify
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
 class ExoPlayerPlaybackControllerTest {
@@ -194,7 +198,9 @@ class ExoPlayerPlaybackControllerTest {
             currentEntryId = "b",
             context = randomAccessMemories,
             position = 12.seconds,
-            isRepeatEnabled = true,
+            repeatMode = RepeatMode.One,
+            isShuffleEnabled = false,
+            unshuffledOrder = emptyList(),
             hasEnded = false,
         )
 
@@ -221,7 +227,9 @@ class ExoPlayerPlaybackControllerTest {
                 currentEntryId = "a",
                 context = PlaybackContext.SingleSong,
                 position = 12.seconds,
-                isRepeatEnabled = false,
+                repeatMode = RepeatMode.Off,
+                isShuffleEnabled = false,
+                unshuffledOrder = emptyList(),
                 hasEnded = false,
             ),
         )
@@ -337,7 +345,9 @@ class ExoPlayerPlaybackControllerTest {
                 currentEntryId = null,
                 context = null,
                 position = 12.seconds,
-                isRepeatEnabled = false,
+                repeatMode = RepeatMode.Off,
+                isShuffleEnabled = false,
+                unshuffledOrder = emptyList(),
                 hasEnded = false,
             ),
         )
@@ -346,17 +356,226 @@ class ExoPlayerPlaybackControllerTest {
         verify(exactly = 0) { fakeExoPlayer.player.setMediaItems(any(), any<Int>(), any<Long>()) }
     }
 
+    @Test
+    fun `GIVEN a saved session WHEN restoring THEN its repeat mode is the player's`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        controller.restore(
+            PlaybackSession(
+                entries = listOf(queueEntry(id = "a", song = song(id = 1))),
+                currentEntryId = "a",
+                context = PlaybackContext.SingleSong,
+                position = 0.seconds,
+                repeatMode = RepeatMode.All,
+                isShuffleEnabled = false,
+                unshuffledOrder = emptyList(),
+                hasEnded = false,
+            ),
+        )
+
+        // Then
+        assertThat(fakeExoPlayer.repeatMode).isEqualTo(Player.REPEAT_MODE_ALL)
+        assertThat(currentState.repeatMode).isEqualTo(RepeatMode.All)
+    }
+
+    @Test
+    fun `GIVEN a shuffled session WHEN restoring THEN it keeps the saved order and can still put it back`() = runTest {
+        // Given
+        prepareScenario()
+        val saved = listOf(
+            queueEntry(id = "a", song = song(id = 1)),
+            queueEntry(id = "c", song = song(id = 3)),
+            queueEntry(id = "b", song = song(id = 2)),
+        )
+
+        // When
+        controller.restore(
+            PlaybackSession(
+                entries = saved,
+                currentEntryId = "a",
+                context = randomAccessMemories,
+                position = 0.seconds,
+                repeatMode = RepeatMode.Off,
+                isShuffleEnabled = true,
+                unshuffledOrder = listOf("a", "b", "c"),
+                hasEnded = false,
+            ),
+        )
+        playerListener.captured.onShuffleModeEnabledChanged(true)
+
+        // Then
+        assertThat(fakeExoPlayer.shuffleModeEnabled).isTrue()
+        assertThat(queuedSongIds()).containsExactly(1L, 3L, 2L).inOrder()
+        assertThat(currentState.isShuffleEnabled).isTrue()
+        assertThat(currentState.unshuffledOrder).containsExactly("a", "b", "c").inOrder()
+
+        // When
+        controller.toggleShuffle()
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 2L, 3L).inOrder()
+    }
+
+    @Test
+    fun `WHEN cycling the repeat mode THEN it goes from off to the whole queue to the song and back`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1)
+        val modes = mutableListOf<RepeatMode>()
+
+        // When
+        repeat(times = 3) {
+            controller.cycleRepeatMode()
+            modes += currentState.repeatMode
+        }
+
+        // Then
+        assertThat(modes).containsExactly(RepeatMode.All, RepeatMode.One, RepeatMode.Off).inOrder()
+        assertThat(fakeExoPlayer.repeatMode).isEqualTo(Player.REPEAT_MODE_OFF)
+    }
+
+    @Test
+    fun `GIVEN an album with a song queued by hand WHEN turning shuffle on THEN the queued song still plays next`() =
+        runTest {
+            // Given
+            prepareScenario()
+            playAlbum(startingAt = 1, songCount = 8)
+            controller.addToQueue(listOf(song(id = 99)))
+
+            // When
+            controller.toggleShuffle()
+
+            // Then
+            assertThat(fakeExoPlayer.shuffleModeEnabled).isTrue()
+            assertThat(currentState.isShuffleEnabled).isTrue()
+            assertThat(currentState.currentSong?.id).isEqualTo(1L)
+            assertThat(queuedSongIds().take(2)).containsExactly(1L, 99L).inOrder()
+            assertThat(queuedSongIds().drop(2)).containsExactly(2L, 3L, 4L, 5L, 6L, 7L, 8L)
+            assertThat(queuedSongIds().drop(2)).isNotEqualTo(listOf(2L, 3L, 4L, 5L, 6L, 7L, 8L))
+            assertThat(currentState.entries.map { entry -> entry.id }).isEqualTo(fakeExoPlayer.mediaIds)
+        }
+
+    @Test
+    fun `GIVEN shuffle is on WHEN turning it off THEN the album is back in order around the song playing`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1, songCount = 8)
+        controller.toggleShuffle()
+        val playing = currentState.entries[3]
+        controller.skipTo(playing.id)
+
+        // When
+        controller.toggleShuffle()
+
+        // Then
+        val songId = playing.song.id
+        assertThat(fakeExoPlayer.shuffleModeEnabled).isFalse()
+        assertThat(currentState.unshuffledOrder).isEmpty()
+        assertThat(queuedSongIds()).containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L).inOrder()
+        assertThat(currentState.currentSong?.id).isEqualTo(songId)
+        assertThat(currentState.currentIndex).isEqualTo(songId.toInt() - 1)
+        assertThat(currentState.entries.map { entry -> entry.id }).isEqualTo(fakeExoPlayer.mediaIds)
+    }
+
+    @Test
+    fun `GIVEN the notification turned shuffle on WHEN the player says so THEN the queue follows it`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1, songCount = 8)
+        fakeExoPlayer.shuffleModeEnabled = true
+
+        // When
+        playerListener.captured.onShuffleModeEnabledChanged(true)
+
+        // Then
+        assertThat(currentState.isShuffleEnabled).isTrue()
+        assertThat(currentState.unshuffledOrder).hasSize(8)
+        assertThat(queuedSongIds().drop(1)).isNotEqualTo(listOf(2L, 3L, 4L, 5L, 6L, 7L, 8L))
+    }
+
+    @Test
+    fun `WHEN playing an album from the start THEN it starts on its first song`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        controller.playFromStart(songs = albumSongs(count = 3), context = randomAccessMemories)
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 2L, 3L).inOrder()
+        assertThat(currentState.currentSong?.id).isEqualTo(1L)
+        assertThat(currentState.context).isEqualTo(randomAccessMemories)
+        verify { fakeExoPlayer.player.play() }
+    }
+
+    @Test
+    fun `GIVEN shuffle and a song queued by hand WHEN playing an album from the start THEN it is shuffled behind it`() =
+        runTest {
+            // Given
+            prepareScenario()
+            controller.play(song = song(id = 50), songs = listOf(song(id = 50)), context = PlaybackContext.SingleSong)
+            controller.toggleShuffle()
+            controller.addToQueue(listOf(song(id = 99)))
+
+            // When
+            controller.playFromStart(songs = albumSongs(count = 8), context = randomAccessMemories)
+
+            // Then
+            val current = currentState.currentEntry
+            assertThat(current?.source).isEqualTo(QueueSource.Context)
+            assertThat(currentState.currentIndex).isEqualTo(0)
+            assertThat(queuedSongIds()[1]).isEqualTo(99L)
+            assertThat(queuedSongIds().filter { id -> id != 99L }).containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L)
+            assertThat(currentState.unshuffledOrder).hasSize(8)
+        }
+
+    @Test
+    fun `WHEN playing an empty album from the start THEN the player is left alone`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        controller.playFromStart(songs = emptyList(), context = randomAccessMemories)
+
+        // Then
+        verify(exactly = 0) { fakeExoPlayer.player.play() }
+    }
+
+    @Test
+    fun `WHEN the repeat mode changes on the player THEN it is published`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1)
+        fakeExoPlayer.repeatMode = Player.REPEAT_MODE_ALL
+
+        // When
+        playerListener.captured.onRepeatModeChanged(Player.REPEAT_MODE_ALL)
+
+        // Then
+        assertThat(currentState.repeatMode).isEqualTo(RepeatMode.All)
+        assertThat(currentState.hasNext).isTrue()
+    }
+
+    private fun albumSongs(count: Int): List<Song> = (1L..count).map { id -> song(id = id) }
+
     private fun endedSession(): PlaybackSession = PlaybackSession(
         entries = listOf(queueEntry(id = "a", song = song(id = 1))),
         currentEntryId = "a",
         context = PlaybackContext.SingleSong,
         position = 30.seconds,
-        isRepeatEnabled = false,
+        repeatMode = RepeatMode.Off,
+        isShuffleEnabled = false,
+        unshuffledOrder = emptyList(),
         hasEnded = true,
     )
 
-    private fun playAlbum(startingAt: Long) {
-        val songs = listOf(song(id = 1), song(id = 2), song(id = 3))
+    private fun playAlbum(
+        startingAt: Long,
+        songCount: Int = 3,
+    ) {
+        val songs = albumSongs(count = songCount)
         controller.play(
             song = songs.first { song -> song.id == startingAt },
             songs = songs,
@@ -374,7 +593,7 @@ class ExoPlayerPlaybackControllerTest {
             queue = PlaybackQueue(
                 player = fakeExoPlayer.player,
                 mediaItemFactory = ::createTestMediaItem,
-                timelineFactory = QueueTimelineFactory(idGenerator = UuidIdGenerator()),
+                timelineFactory = QueueTimelineFactory(idGenerator = UuidIdGenerator(), random = Random(seed = 7)),
             ),
             scope = backgroundScope,
         )

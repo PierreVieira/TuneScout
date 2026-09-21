@@ -15,6 +15,14 @@ internal class PlaybackQueue(
     var entries: List<QueueEntry> = emptyList()
         private set
 
+    /** Whether the context's songs are in a random order, which is the player's shuffle mode once it syncs. */
+    var isShuffled: Boolean = false
+        private set
+
+    /** The context's own order while [isShuffled], so turning shuffle off can put it back. */
+    var unshuffledOrder: List<String> = emptyList()
+        private set
+
     val currentIndex: Int
         get() = if (player.mediaItemCount == 0) NO_QUEUE_INDEX else player.currentMediaItemIndex
 
@@ -25,23 +33,39 @@ internal class PlaybackQueue(
         song: Song,
         songs: List<Song>,
     ) {
-        val timeline = timelineFactory.buildTimeline(
-            songs = songs.ifEmpty { listOf(song) },
-            startSongId = song.id,
-            carriedEntries = timelineFactory.getCarriedEntries(entries, currentIndex),
-        )
-        replaceWith(timeline.entries, timeline.startIndex, 0L)
+        startContext(songs = songs.ifEmpty { listOf(song) }, startSongId = song.id)
+    }
+
+    /** Starts [songs] from their first song, or from a random one while [isShuffled]. */
+    fun startContextFromTop(songs: List<Song>) {
+        startContext(songs = songs, startSongId = null)
     }
 
     fun restore(
         restoredEntries: List<QueueEntry>,
         currentEntryId: String?,
         position: Duration,
+        isShuffled: Boolean,
+        unshuffledOrder: List<String>,
     ) {
         val startIndex = restoredEntries
             .indexOfFirst { entry -> entry.id == currentEntryId }
             .coerceAtLeast(0)
+        this.isShuffled = isShuffled
+        this.unshuffledOrder = if (isShuffled) unshuffledOrder else emptyList()
         replaceWith(restoredEntries, startIndex, position.inWholeMilliseconds)
+    }
+
+    fun shuffle() {
+        if (isShuffled) return
+        isShuffled = true
+        rearrange(timelineFactory.buildShuffled(entries, currentIndex))
+    }
+
+    fun unshuffle() {
+        if (!isShuffled) return
+        isShuffled = false
+        rearrange(timelineFactory.buildUnshuffled(entries, currentIndex, unshuffledOrder))
     }
 
     fun playNow(songs: List<Song>) {
@@ -83,6 +107,36 @@ internal class PlaybackQueue(
         val added = timelineFactory.buildEntries(songs, QueueSource.UserQueue)
         entries = entries.take(index) + added + entries.drop(index)
         player.addMediaItems(index, added.map(mediaItemFactory::createMediaItem))
+    }
+
+    private fun startContext(
+        songs: List<Song>,
+        startSongId: Long?,
+    ) {
+        val timeline = timelineFactory.buildTimeline(
+            songs = songs,
+            startSongId = startSongId,
+            carriedEntries = timelineFactory.getCarriedEntries(entries, currentIndex),
+            isShuffled = isShuffled,
+        )
+        unshuffledOrder = timeline.unshuffledOrder
+        replaceWith(timeline.entries, timeline.startIndex, 0L)
+    }
+
+    /**
+     * Puts [timeline] in place around the entry playing, which it keeps at [QueueTimeline.startIndex]:
+     * the songs before and after it are replaced, never the song itself, so it plays on without a
+     * gap.
+     */
+    private fun rearrange(timeline: QueueTimeline) {
+        val index = currentIndex
+        unshuffledOrder = timeline.unshuffledOrder
+        entries = timeline.entries
+        if (index < 0) return
+        val upcoming = timeline.entries.drop(timeline.startIndex + 1)
+        val played = timeline.entries.take(timeline.startIndex)
+        player.replaceMediaItems(index + 1, player.mediaItemCount, upcoming.map(mediaItemFactory::createMediaItem))
+        player.replaceMediaItems(0, index, played.map(mediaItemFactory::createMediaItem))
     }
 
     private fun replaceWith(

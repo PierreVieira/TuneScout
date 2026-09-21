@@ -210,11 +210,13 @@ private fun PlayerDetailsContent(
             playButtonState = PlayButtonState.of(isPlaying = uiState.isPlaying, hasEnded = uiState.hasEnded),
             hasPrevious = uiState.hasPrevious,
             hasNext = uiState.hasNext,
-            isRepeatEnabled = uiState.isRepeatEnabled,
+            repeatMode = uiState.repeatMode,
+            isShuffleEnabled = uiState.isShuffleEnabled,
             onPlayPauseClick = { onEvent(PlayerUiEvent.OnPlayPauseClicked) },
             onPreviousClick = { onEvent(PlayerUiEvent.OnSkipPreviousClicked) },
             onNextClick = { onEvent(PlayerUiEvent.OnSkipNextClicked) },
             onRepeatClick = { onEvent(PlayerUiEvent.OnRepeatClicked) },
+            onShuffleClick = { onEvent(PlayerUiEvent.OnShuffleClicked) },
             onQueueClick = { onEvent(PlayerUiEvent.OnQueueClicked) },
         )
     }

@@ -12,6 +12,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
@@ -151,6 +152,41 @@ class PlayerContentTest {
     }
 
     @Test
+    fun givenShuffleAndRepeatAreOffTheirButtonsSaySoAndEmitTheirEvents() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                PlayerContent(isSideBySide = false, uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Shuffle is off").performClick()
+        onNodeWithContentDescription("Repeat is off").performClick()
+
+        assertThat(events)
+            .containsExactly(PlayerUiEvent.OnShuffleClicked, PlayerUiEvent.OnRepeatClicked)
+            .inOrder()
+    }
+
+    @Test
+    fun givenEachRepeatModeTheButtonNamesIt() = compose.use {
+        var repeatMode by mutableStateOf(RepeatMode.All)
+        setContent {
+            TuneScoutTheme {
+                PlayerContent(
+                    isSideBySide = false,
+                    uiState = loaded(repeatMode = repeatMode, isShuffleEnabled = true),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Shuffle is on").assertIsDisplayed()
+        onNodeWithContentDescription("Repeating the queue").assertIsDisplayed()
+        repeatMode = RepeatMode.One
+        onNodeWithContentDescription("Repeating this song").assertIsDisplayed()
+    }
+
+    @Test
     fun givenNotFoundShowsTheMessage() = compose.use {
         setContent {
             TuneScoutTheme {
@@ -167,12 +203,15 @@ class PlayerContentTest {
         hasNext: Boolean = true,
         song: Song = song(),
         position: Duration = 5.seconds,
+        repeatMode: RepeatMode = RepeatMode.Off,
+        isShuffleEnabled: Boolean = false,
     ): PlayerUiState.Loaded = PlayerUiState.Loaded(
         song = song,
         status = status,
         position = position,
         duration = 30.seconds,
-        isRepeatEnabled = false,
+        repeatMode = repeatMode,
+        isShuffleEnabled = isShuffleEnabled,
         hasPrevious = hasPrevious,
         hasNext = hasNext,
     )

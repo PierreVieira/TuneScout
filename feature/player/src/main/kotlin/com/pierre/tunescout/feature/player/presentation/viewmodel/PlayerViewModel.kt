@@ -57,7 +57,8 @@ class PlayerViewModel(
         is PlayerUiEvent.OnSeekFinished -> transportControls.seekTo(event.position)
         PlayerUiEvent.OnSkipNextClicked -> skipToNext()
         PlayerUiEvent.OnSkipPreviousClicked -> skipToPrevious()
-        PlayerUiEvent.OnRepeatClicked -> transportControls.toggleRepeat()
+        PlayerUiEvent.OnRepeatClicked -> transportControls.cycleRepeatMode()
+        PlayerUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
         PlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
         PlayerUiEvent.OnBackClicked -> navigator.navigateBack()
         PlayerUiEvent.OnMoreClicked -> navigateToOptions()
@@ -125,7 +126,8 @@ class PlayerViewModel(
             } else {
                 song.duration
             },
-            isRepeatEnabled = playback.isRepeatEnabled,
+            repeatMode = playback.repeatMode,
+            isShuffleEnabled = playback.isShuffleEnabled,
             hasPrevious = playback.hasPrevious,
             hasNext = playback.hasNext,
         )

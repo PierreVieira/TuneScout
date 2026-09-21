@@ -1,6 +1,7 @@
 package com.pierre.tunescout.screenshots
 
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.feature.queue.presentation.content.QueueContent
@@ -23,7 +24,8 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
         status = PlaybackStatus.Playing,
         position = 18.seconds,
         duration = 29.seconds,
-        isRepeatEnabled = false,
+        repeatMode = RepeatMode.Off,
+        isShuffleEnabled = false,
         hasPrevious = true,
         hasNext = true,
     )

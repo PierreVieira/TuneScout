@@ -9,6 +9,7 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackSession
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -75,7 +76,7 @@ class RoomPlaybackSessionLocalDataSourceTest {
                 currentEntryId = "a",
                 context = PlaybackContext.Album(id = 10, title = "Random Access Memories"),
                 position = 12.seconds,
-                isRepeatEnabled = true,
+                repeatMode = RepeatMode.All,
             ),
         )
         val restored = localDataSource.find()
@@ -83,7 +84,51 @@ class RoomPlaybackSessionLocalDataSourceTest {
         // Then
         assertThat(restored?.context).isEqualTo(PlaybackContext.Album(id = 10, title = "Random Access Memories"))
         assertThat(restored?.position).isEqualTo(12.seconds)
-        assertThat(restored?.isRepeatEnabled).isTrue()
+        assertThat(restored?.repeatMode).isEqualTo(RepeatMode.All)
+    }
+
+    @Test
+    fun `GIVEN a shuffled queue WHEN reading back THEN it is still shuffled with the order to put back`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.save(
+            session(
+                entries = listOf(
+                    entry(id = "a", song = song(id = 1)),
+                    entry(id = "q", song = song(id = 9), source = QueueSource.UserQueue),
+                    entry(id = "c", song = song(id = 3)),
+                    entry(id = "b", song = song(id = 2)),
+                ),
+                currentEntryId = "a",
+                isShuffleEnabled = true,
+                unshuffledOrder = listOf("a", "b", "c"),
+            ),
+        )
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.isShuffleEnabled).isTrue()
+        assertThat(restored?.unshuffledOrder).containsExactly("a", "b", "c").inOrder()
+        assertThat(restored?.entries?.map { queued -> queued.id }).containsExactly("a", "q", "c", "b").inOrder()
+    }
+
+    @Test
+    fun `GIVEN a queue in order WHEN reading back THEN there is no order to put back`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.save(
+            session(entries = listOf(entry(id = "a", song = song(id = 1))), currentEntryId = "a"),
+        )
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.isShuffleEnabled).isFalse()
+        assertThat(restored?.unshuffledOrder).isEmpty()
+        assertThat(restored?.repeatMode).isEqualTo(RepeatMode.Off)
     }
 
     @Test
@@ -193,14 +238,18 @@ class RoomPlaybackSessionLocalDataSourceTest {
         currentEntryId: String?,
         context: PlaybackContext = PlaybackContext.SingleSong,
         position: kotlin.time.Duration = 5.seconds,
-        isRepeatEnabled: Boolean = false,
+        repeatMode: RepeatMode = RepeatMode.Off,
+        isShuffleEnabled: Boolean = false,
+        unshuffledOrder: List<String> = emptyList(),
         hasEnded: Boolean = false,
     ): PlaybackSession = PlaybackSession(
         entries = entries,
         currentEntryId = currentEntryId,
         context = context,
         position = position,
-        isRepeatEnabled = isRepeatEnabled,
+        repeatMode = repeatMode,
+        isShuffleEnabled = isShuffleEnabled,
+        unshuffledOrder = unshuffledOrder,
         hasEnded = hasEnded,
     )
 

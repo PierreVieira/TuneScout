@@ -26,13 +26,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.core.model.Album
-import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.presentation.component.AlbumSkeleton
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.Artwork
+import com.pierre.tunescout.ui.component.CollectionPlaybackRow
 import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
@@ -73,13 +73,6 @@ fun AlbumContent(
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
             actions = {
                 if (uiState is AlbumUiState.Loaded) {
-                    if (uiState.album.songs.isNotEmpty()) {
-                        TopBarAction(
-                            icon = TuneScoutIcons.play,
-                            contentDescription = stringResource(R.string.album_play_now),
-                            onClick = { onEvent(AlbumUiEvent.OnPlayNowClicked) },
-                        )
-                    }
                     if (uiState.album.isComplete) {
                         FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
                     }
@@ -109,9 +102,7 @@ fun AlbumContent(
                 LoadedNoticeBar(uiState = uiState)
                 Box(contentAlignment = Alignment.TopCenter) {
                     LoadedContent(
-                        album = uiState.album,
-                        nowPlaying = uiState.nowPlaying,
-                        unplayableSongIds = uiState.unplayableSongIds,
+                        uiState = uiState,
                         isHeaderInline = isHeaderInline,
                         onEvent = onEvent,
                     )
@@ -156,12 +147,11 @@ private fun FavoriteAction(
 
 @Composable
 private fun LoadedContent(
-    album: Album,
-    nowPlaying: NowPlaying?,
-    unplayableSongIds: Set<Long>,
+    uiState: AlbumUiState.Loaded,
     isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
 ) {
+    val album = uiState.album
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -173,7 +163,22 @@ private fun LoadedContent(
         ),
     ) {
         item(key = "header") {
-            AlbumHeader(album = album, isInline = isHeaderInline)
+            AlbumHeader(
+                album = album,
+                isInline = isHeaderInline,
+                playbackRow = { modifier ->
+                    if (album.songs.isNotEmpty()) {
+                        CollectionPlaybackRow(
+                            isPlaying = uiState.isPlaying,
+                            isShuffleEnabled = uiState.isShuffleEnabled,
+                            playContentDescription = stringResource(R.string.album_play),
+                            onPlayPauseClick = { onEvent(AlbumUiEvent.OnPlayPauseClicked) },
+                            onShuffleClick = { onEvent(AlbumUiEvent.OnShuffleClicked) },
+                            modifier = modifier,
+                        )
+                    }
+                },
+            )
         }
         items(items = album.songs, key = { song -> song.id }) { song ->
             SongRow(
@@ -182,10 +187,10 @@ private fun LoadedContent(
                 artworkUrl = song.artwork.thumbnailUrl,
                 artworkSize = rowArtworkSize,
                 nowPlaying = NowPlayingState.of(
-                    isCurrentSong = nowPlaying.isOn(song.id),
-                    isPlaying = nowPlaying?.isPlaying == true,
+                    isCurrentSong = uiState.nowPlaying.isOn(song.id),
+                    isPlaying = uiState.nowPlaying?.isPlaying == true,
                 ),
-                isUnavailable = song.id in unplayableSongIds,
+                isUnavailable = song.id in uiState.unplayableSongIds,
                 sharedSongId = song.id,
                 onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
                 trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },
@@ -194,10 +199,15 @@ private fun LoadedContent(
     }
 }
 
+/**
+ * A header laid out inline, beside a landscape list, has height to spare for nothing: the play button
+ * and shuffle join its row instead of taking one of their own under it.
+ */
 @Composable
 private fun AlbumHeader(
     album: Album,
     isInline: Boolean,
+    playbackRow: @Composable (Modifier) -> Unit,
 ) {
     if (isInline) {
         Row(
@@ -208,18 +218,24 @@ private fun AlbumHeader(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AlbumArtwork(album = album, size = inlineArtworkSize)
-            AlbumTitlesHeading(album = album, horizontalAlignment = Alignment.Start)
+            AlbumTitlesHeading(
+                album = album,
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier.weight(1f),
+            )
+            playbackRow(Modifier)
         }
     } else {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = TuneScoutSpacing.extraLarge),
+                .padding(bottom = TuneScoutSpacing.medium),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         ) {
             AlbumArtwork(album = album, size = artworkSize)
             AlbumTitlesHeading(album = album, horizontalAlignment = Alignment.CenterHorizontally)
+            playbackRow(Modifier.fillMaxWidth())
         }
     }
 }

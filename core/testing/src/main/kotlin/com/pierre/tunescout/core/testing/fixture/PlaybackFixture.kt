@@ -5,6 +5,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.core.model.QueueSource
+import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.core.model.Song
 import kotlin.time.Duration
 
@@ -31,7 +32,9 @@ fun playbackState(
     context: PlaybackContext = PlaybackContext.SingleSong,
     position: Duration = Duration.ZERO,
     duration: Duration = Duration.ZERO,
-    isRepeatEnabled: Boolean = false,
+    repeatMode: RepeatMode = RepeatMode.Off,
+    isShuffleEnabled: Boolean = false,
+    unshuffledOrder: List<String> = emptyList(),
 ): PlaybackState = PlaybackState(
     entries = entries,
     currentIndex = currentIndex,
@@ -39,5 +42,7 @@ fun playbackState(
     status = status,
     position = position,
     duration = duration,
-    isRepeatEnabled = isRepeatEnabled,
+    repeatMode = repeatMode,
+    isShuffleEnabled = isShuffleEnabled,
+    unshuffledOrder = unshuffledOrder,
 )

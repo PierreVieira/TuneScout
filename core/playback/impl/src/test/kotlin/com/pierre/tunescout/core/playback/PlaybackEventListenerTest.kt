@@ -10,6 +10,7 @@ internal class PlaybackEventListenerTest {
     private var startedCount = 0
     private var stoppedCount = 0
     private var changedCount = 0
+    private var shuffleChangedCount = 0
     private lateinit var listener: PlaybackEventListener
 
     @BeforeEach
@@ -18,6 +19,7 @@ internal class PlaybackEventListenerTest {
             onPlaybackStarted = { startedCount++ },
             onPlaybackStopped = { stoppedCount++ },
             onPlaybackChanged = { changedCount++ },
+            onShuffleModeChanged = { shuffleChangedCount++ },
         )
     }
 
@@ -66,6 +68,25 @@ internal class PlaybackEventListenerTest {
 
         // Then
         assertThat(changedCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `WHEN the repeat mode changes THEN the change is reported`() {
+        // When
+        listener.onRepeatModeChanged(Player.REPEAT_MODE_ALL)
+
+        // Then
+        assertThat(changedCount).isEqualTo(1)
+    }
+
+    @Test
+    fun `WHEN the shuffle mode changes THEN it is reported on its own`() {
+        // When
+        listener.onShuffleModeEnabledChanged(true)
+
+        // Then
+        assertThat(shuffleChangedCount).isEqualTo(1)
+        assertThat(changedCount).isEqualTo(0)
     }
 
     @Test

@@ -21,7 +21,12 @@ larger ones is in [Decisions and trade-offs](decisions.md).
 - The 200-item cap of the API is the end of every search; there is no "load more" beyond it.
 - Playing a song from a playlist, or from liked songs, plays that song alone. The queue only takes
   an album as its context, so a playlist is not one yet.
-- There is no shuffle, and repeat repeats the current song only.
+- A playlist, or the liked songs, is still not a context, so shuffle cannot reorder it after it
+  starts: its play button hands it over already shuffled, and turning shuffle off afterwards leaves
+  it in that order.
+- Repeating the whole queue starts it over in the same shuffled order instead of shuffling again.
+- The notification and the lock screen show the shuffle and repeat modes the player is in, but have
+  no buttons of their own to change them.
 
 ## Library
 
