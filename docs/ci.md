@@ -16,7 +16,7 @@ they share in [`.github/actions`](../.github/actions).
 | `screenshot-tests` | `verify` compares every screen with its committed reference; `record` renders new ones | Same as `build-and-test`, and when a label is added |
 | `static-analysis` | ktlint with the project's custom rules, through `scripts/ktlint.sh` | `.kt`/`.kts` files, `.editorconfig`, the version catalog, the ktlint script or action |
 | `module-graph` | `assertModuleGraph` | Build scripts, `build-logic`, the version catalog or the Gradle wrapper |
-| `translations` | `scripts/check_translations.py`: every string in `values` has a `values-pt-rBR` and a `values-es` twin | A `strings.xml` or the script |
+| `translations` | `scripts/check_translations.py`: every string in `values` has a `values-pt-rBR`, a `values-es` and a `values-fr` twin | A `strings.xml` or the script |
 | `cleanup-pr-caches` | Cancels a closed pull request's pending runs and deletes its Gradle caches | A pull request is closed |
 
 Each check can be run locally with the same command:
@@ -72,6 +72,10 @@ job's 45, so a run that hangs still uploads `instrumented-test-reports-shard-<n>
 
 The AVD is not cached. Measured, it saved about 20 seconds, and its 1.3 GB entry pushed the Gradle
 caches out of the budget.
+
+`:tools:baselineprofile` is not in any shard: its tests are in `src/main`, as a `com.android.test` module's
+are, and they are the macrobenchmarks, which run by hand on a device nothing else is using. See
+[Performance](performance.md#reproducing).
 
 ### screenshot-tests
 

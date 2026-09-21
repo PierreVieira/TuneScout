@@ -39,7 +39,8 @@ feature/
 └── widget/            # The home screen widgets (Glance), not a route
 tools/
 ├── ktlint_custom_rules/ # The tunescout-style ktlint ruleset
-└── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
+├── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
+└── baselineprofile/     # Generates :app's Baseline Profile and benchmarks it (com.android.test, run by hand on a device, see docs/performance.md)
 build-logic/             # Convention plugins (tunescout.android.feature, tunescout.jvm.library, ...)
 ```
 

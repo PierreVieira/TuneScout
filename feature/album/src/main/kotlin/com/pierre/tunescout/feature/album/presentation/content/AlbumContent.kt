@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +52,7 @@ import com.pierre.tunescout.ui.component.R as ComponentR
 private val artworkSize = 120.dp
 private val inlineArtworkSize = 72.dp
 private const val ARTWORK_CORNER_PERCENT = 17
+private const val ALBUM_TRACKS_TAG = "album_tracks"
 private val artworkElevation = 8.dp
 private val rowArtworkSize = 44.dp
 
@@ -156,7 +158,8 @@ private fun LoadedContent(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight(),
+            .fillMaxHeight()
+            .testTag(ALBUM_TRACKS_TAG),
         contentPadding = PaddingValues(
             start = TuneScoutSpacing.screen,
             end = TuneScoutSpacing.screen,

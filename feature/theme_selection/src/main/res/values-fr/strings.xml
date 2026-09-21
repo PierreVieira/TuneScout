@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_selection_title">Thème</string>
+    <string name="theme_selection_open">Changer de thème</string>
+    <string name="theme_selection_light">Clair</string>
+    <string name="theme_selection_dark">Sombre</string>
+    <string name="theme_selection_system">Système</string>
+    <string name="theme_selection_dynamic_color">Couleurs dynamiques</string>
+    <string name="theme_selection_dynamic_color_description">Reprend les couleurs de ton fond d\'écran.</string>
+    <string name="theme_selection_dynamic_color_info">À propos des couleurs dynamiques</string>
+    <string name="theme_selection_dynamic_color_toggle">Utiliser les couleurs dynamiques</string>
+    <string name="theme_selection_dynamic_color_explanation">Les couleurs dynamiques tirent la palette de l\'appli de ton fond d\'écran. Les arrière-plans, les panneaux et la progression de la lecture prennent des couleurs extraites de celui-ci, et le choix clair ou sombre ci-dessus s\'applique toujours.</string>
+    <string name="theme_selection_dynamic_color_availability">Disponible sur Android 12 et versions ultérieures. Les versions plus anciennes utilisent toujours la palette propre à l\'appli.</string>
+    <string name="theme_selection_got_it">J\'ai compris</string>
+</resources>

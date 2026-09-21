@@ -24,13 +24,18 @@ Or open the project in Android Studio and run the `app` configuration.
 | `./gradlew testDebugUnitTest test` | Unit tests on the JVM (JUnit 6). |
 | `./gradlew connectedDebugAndroidTest` | Compose screen tests and the end-to-end flow on a device (API 35+). |
 | `./gradlew assertModuleGraph` | Module dependency rules. |
-| `python3 scripts/check_translations.py` | Every string has its Brazilian Portuguese and Spanish translations. |
+| `python3 scripts/check_translations.py` | Every string has its Brazilian Portuguese, Spanish and French translations. |
 
 CI runs these on pull requests and pushes to `main`, each only when a file it checks changed. It
 also builds a debug and a release APK and compares every screen with its committed screenshot;
 every workflow is described in [Continuous integration](ci.md). What each check
 enforces is in [Code quality](code-quality.md); how the suites are organised is in
 [Testing](testing/README.md).
+
+## Measuring performance
+
+The Baseline Profile and the macrobenchmarks run by hand on a device; how, and the numbers they
+gave, are in [Performance](performance.md).
 
 ## Regenerating the README screenshots
 

@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -26,6 +27,7 @@ import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 private const val APPEND_SKELETON_ROWS = 2
+private const val SEARCH_RESULTS_TAG = "search_results"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +47,9 @@ internal fun SearchResultsList(
         modifier = modifier.fillMaxSize(),
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag(SEARCH_RESULTS_TAG),
             contentPadding = PaddingValues(
                 start = TuneScoutSpacing.large,
                 end = TuneScoutSpacing.medium,

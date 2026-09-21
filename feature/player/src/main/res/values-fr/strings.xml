@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_now_playing">En cours de lecture</string>
+    <string name="player_not_found_title">Ce titre n\'est pas disponible</string>
+    <string name="player_not_found_description">Il a peut-être été retiré du catalogue. Reviens en arrière et choisis-en un autre.</string>
+    <string name="player_failed">Impossible de lire cet extrait. Vérifie ta connexion et réessaie.</string>
+    <string name="player_remaining_time">-%1$s</string>
+    <string name="player_open_queue">Ouvrir la file d\'attente</string>
+</resources>

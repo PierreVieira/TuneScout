@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.pierre.tunescout.buildlogic.configureComposeCompiler
 import com.pierre.tunescout.buildlogic.hasInstrumentedTests
 import com.pierre.tunescout.buildlogic.libs
 import org.gradle.api.Plugin
@@ -22,6 +23,8 @@ class AndroidComposeLibraryConventionPlugin : Plugin<Project> {
                 compose = true
             }
         }
+
+        configureComposeCompiler()
 
         dependencies {
             val bom = libs.findLibrary("androidx-compose-bom").get()

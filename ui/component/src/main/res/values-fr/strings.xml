@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_back">Retour</string>
+    <string name="ui_more_options">Plus d\'options</string>
+    <string name="ui_play">Lire</string>
+    <string name="ui_pause">Mettre en pause</string>
+    <string name="ui_replay">Relire</string>
+    <string name="ui_skip_next">Titre suivant</string>
+    <string name="ui_skip_previous">Titre précédent</string>
+    <string name="ui_repeat_off">Répétition désactivée</string>
+    <string name="ui_repeat_all">Répétition de la file d\'attente</string>
+    <string name="ui_repeat_one">Répétition de ce titre</string>
+    <string name="ui_shuffle_on">Lecture aléatoire activée</string>
+    <string name="ui_shuffle_off">Lecture aléatoire désactivée</string>
+    <string name="ui_clear_search">Effacer la recherche</string>
+    <string name="ui_search">Rechercher</string>
+    <string name="ui_artwork_of">Pochette de %1$s</string>
+    <string name="ui_seek_bar">Position de lecture</string>
+    <string name="ui_retry">Réessayer</string>
+    <string name="ui_loading">Chargement</string>
+    <string name="ui_close">Fermer</string>
+    <string name="ui_now_playing">En cours de lecture</string>
+    <string name="ui_song_unavailable_offline">Ce titre n\'est pas enregistré sur cet appareil. Connecte-toi à Internet pour l\'écouter.</string>
+    <string name="ui_artwork_unavailable_offline">Pochette indisponible hors connexion</string>
+    <string name="ui_add_to_queue">Ajouter à la file d\'attente</string>
+    <string name="ui_favorite">J\'aime</string>
+    <string name="ui_unfavorite">Retirer des titres likés</string>
+    <string name="ui_added_to_queue">Ajouté à la file d\'attente</string>
+    <string name="ui_added_to_favorites">Ajouté aux titres likés</string>
+    <string name="ui_removed_from_favorites">Retiré des titres likés</string>
+</resources>
