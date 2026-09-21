@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -83,7 +84,7 @@ class SongSwipeFlowTest {
 
         onNodeWithContentDescription("Open the queue").performClick()
         waitUntilAtLeastOneExists(hasText("Next in queue"), SCREEN_TIMEOUT_MILLIS)
-        onNodeWithContentDescription("Reorder Instant Crush").assertExists()
+        onNode(hasTestTag("queue_entry") and hasText("Instant Crush")).assertExists()
     }
 
     /**

@@ -7,6 +7,14 @@ import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.getByType
 
+private val accessibilityLintChecks = setOf(
+    "ContentDescription",
+    "LabelFor",
+    "ClickableViewAccessibility",
+    "KeyboardInaccessibleWidget",
+    "GetContentDescriptionOverride",
+)
+
 val Project.libs: VersionCatalog
     get() = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
@@ -31,4 +39,19 @@ fun Project.configureAndroid(extension: CommonExtension) {
     extension.compileSdk = libs.requireVersion("android-compileSdk").toInt()
     extension.compileOptions.sourceCompatibility = JavaVersion.VERSION_17
     extension.compileOptions.targetCompatibility = JavaVersion.VERSION_17
+    configureLint(extension)
+}
+
+/**
+ * Android lint, which nothing ran before. Its accessibility checks are promoted from warnings to
+ * errors, so a missing content description or an unlabelled field in a layout — the widget picker's
+ * previews are plain XML — fails the build instead of scrolling past in a report nobody opens.
+ *
+ * `:app` lints its dependencies too, so `./gradlew :app:lintDebug` is the one task that covers every
+ * module; see docs/code-quality.md.
+ */
+private fun configureLint(extension: CommonExtension) {
+    extension.lint.abortOnError = true
+    extension.lint.checkReleaseBuilds = false
+    extension.lint.error += accessibilityLintChecks
 }

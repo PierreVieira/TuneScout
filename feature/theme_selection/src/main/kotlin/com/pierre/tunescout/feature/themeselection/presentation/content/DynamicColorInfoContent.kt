@@ -4,10 +4,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -20,6 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.themeselection.R
@@ -32,6 +37,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 private val dialogCornerRadius = 16.dp
 private val dialogMaxWidth = 560.dp
 private val headerIconSize = 32.dp
+private val toggleRowMinHeight = 48.dp
 
 @Composable
 fun DynamicColorInfoContent(
@@ -65,7 +71,9 @@ fun DynamicColorInfoContent(
                 style = MaterialTheme.typography.titleLarge,
                 color = TuneScoutColors.textPrimary,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { heading() },
             )
             ToggleRow(
                 isEnabled = uiState,
@@ -101,7 +109,9 @@ private fun ToggleRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = TuneScoutSpacing.extraSmall),
+            .padding(top = TuneScoutSpacing.extraSmall)
+            .heightIn(min = toggleRowMinHeight)
+            .toggleable(value = isEnabled, role = Role.Switch, onValueChange = onToggle),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -113,7 +123,7 @@ private fun ToggleRow(
         )
         Switch(
             checked = isEnabled,
-            onCheckedChange = onToggle,
+            onCheckedChange = null,
         )
     }
 }

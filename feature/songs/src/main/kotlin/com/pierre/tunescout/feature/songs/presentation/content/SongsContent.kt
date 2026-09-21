@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.paging.compose.LazyPagingItems
 import com.pierre.tunescout.core.model.Song
@@ -35,8 +37,9 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
+import com.pierre.tunescout.ui.utils.semantics.screenPane
 
-private val titleHeight = 48.dp
+private val titleMinHeight = 48.dp
 
 @Composable
 fun SongsContent(
@@ -49,6 +52,7 @@ fun SongsContent(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .screenPane(stringResource(R.string.songs_title))
             .safeDrawingPadding()
             .hidesBarsOnScroll(),
         contentAlignment = Alignment.TopCenter,
@@ -152,8 +156,9 @@ private fun Title(modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.headlineMedium,
         color = TuneScoutColors.textPrimary,
         modifier = modifier
-            .height(titleHeight)
-            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small),
+            .heightIn(min = titleMinHeight)
+            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.small)
+            .semantics { heading() },
     )
 }
 

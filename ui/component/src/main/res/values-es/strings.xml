@@ -7,13 +7,12 @@
     <string name="ui_replay">Volver a reproducir</string>
     <string name="ui_skip_next">Siguiente canción</string>
     <string name="ui_skip_previous">Canción anterior</string>
-    <string name="ui_repeat_off">Repetición desactivada</string>
-    <string name="ui_repeat_all">Repitiendo la cola</string>
-    <string name="ui_repeat_one">Repitiendo esta canción</string>
-    <string name="ui_shuffle_on">Orden aleatorio activado</string>
-    <string name="ui_shuffle_off">Orden aleatorio desactivado</string>
+    <string name="ui_repeat">Repetir</string>
+    <string name="ui_repeat_state_off">Desactivado</string>
+    <string name="ui_repeat_state_all">Toda la cola</string>
+    <string name="ui_repeat_state_one">Esta canción</string>
+    <string name="ui_shuffle">Orden aleatorio</string>
     <string name="ui_clear_search">Borrar búsqueda</string>
-    <string name="ui_search">Buscar</string>
     <string name="ui_artwork_of">Portada de %1$s</string>
     <string name="ui_seek_bar">Posición de la reproducción</string>
     <string name="ui_retry">Intentar de nuevo</string>
@@ -21,6 +20,8 @@
     <string name="ui_close">Cerrar</string>
     <string name="ui_now_playing">Reproduciendo ahora</string>
     <string name="ui_song_unavailable_offline">Esta canción no está guardada en este dispositivo. Conéctate a internet para escucharla.</string>
+    <string name="ui_song_state_unavailable">No disponible sin conexión</string>
+    <string name="ui_song_state_paused">En pausa</string>
     <string name="ui_artwork_unavailable_offline">Portada no disponible sin conexión</string>
     <string name="ui_add_to_queue">Añadir a la cola</string>
     <string name="ui_favorite">Me gusta</string>

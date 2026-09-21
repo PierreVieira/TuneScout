@@ -22,6 +22,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,8 +35,9 @@ import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
 
 private val rowCornerRadius = 8.dp
 private const val ARTWORK_CORNER_PERCENT = 15
-private val actionButtonSize = 36.dp
+private val actionButtonSize = 48.dp
 private val actionIconSize = 20.dp
+private val unavailableIconSize = 14.dp
 private const val UNAVAILABLE_ALPHA = 0.38f
 
 /**
@@ -43,6 +46,12 @@ private const val UNAVAILABLE_ALPHA = 0.38f
  * A song the player cannot reach — offline, one whose preview never reached the device — has that
  * part of the row drawn faded, so a tap that is refused is seen coming. Only the song itself fades:
  * the row still answers taps, and the actions at its end work as they always do.
+ *
+ * Fading and the accent on a paused song are colour alone, so the row also says them: an offline
+ * glyph beside the artist of a song that cannot play, and a state a screen reader reads with the row.
+ *
+ * @param onClickLabel what a tap on the row does, read by a screen reader in place of "activate";
+ * null for a row whose tap does not play the song.
  */
 @Composable
 fun SongRow(
@@ -51,6 +60,7 @@ fun SongRow(
     artworkUrl: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onClickLabel: String? = stringResource(R.string.ui_play),
     artworkSize: Dp = 52.dp,
     nowPlaying: NowPlayingState = NowPlayingState.None,
     isUnavailable: Boolean = false,
@@ -58,12 +68,14 @@ fun SongRow(
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
     val isNowPlaying = nowPlaying != NowPlayingState.None
+    val state = songStateDescription(nowPlaying = nowPlaying, isUnavailable = isUnavailable)
     CompositionLocalProvider(LocalSharedArtworkSurface provides SharedArtworkSurface.LIST_ROW) {
         Row(
             modifier = modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(rowCornerRadius))
-                .clickable(onClick = onClick)
+                .clickable(onClickLabel = onClickLabel, onClick = onClick)
+                .semantics { if (state != null) stateDescription = state }
                 .padding(vertical = TuneScoutSpacing.small),
             horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
             verticalAlignment = Alignment.CenterVertically,
@@ -101,21 +113,49 @@ fun SongRow(
                                 .sharedTextBounds(SongSharedKey.createOrNull(sharedSongId, SongSharedElement.TITLE)),
                         )
                     }
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isNowPlaying) TuneScoutColors.textEmphasis else TuneScoutColors.textSecondary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.sharedTextBounds(
-                            SongSharedKey.createOrNull(sharedSongId, SongSharedElement.ARTIST),
-                        ),
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.extraSmall),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (isUnavailable) {
+                            Icon(
+                                imageVector = TuneScoutIcons.offline,
+                                contentDescription = null,
+                                tint = TuneScoutColors.textSecondary,
+                                modifier = Modifier.size(unavailableIconSize),
+                            )
+                        }
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isNowPlaying) TuneScoutColors.textEmphasis else TuneScoutColors.textSecondary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.sharedTextBounds(
+                                SongSharedKey.createOrNull(sharedSongId, SongSharedElement.ARTIST),
+                            ),
+                        )
+                    }
                 }
             }
             trailing()
         }
     }
+}
+
+/**
+ * A playing song needs no state of its own: [NowPlayingBarsIcon] is on the row and says so.
+ *
+ * @return what the row's colours say about the song, in words, or null when they say nothing.
+ */
+@Composable
+private fun songStateDescription(
+    nowPlaying: NowPlayingState,
+    isUnavailable: Boolean,
+): String? = when {
+    isUnavailable -> stringResource(R.string.ui_song_state_unavailable)
+    nowPlaying == NowPlayingState.Paused -> stringResource(R.string.ui_song_state_paused)
+    else -> null
 }
 
 @Composable
@@ -132,7 +172,7 @@ fun SongRowAction(
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = TuneScoutColors.elementMuted,
+            tint = TuneScoutColors.textTertiary,
             modifier = Modifier.size(actionIconSize),
         )
     }

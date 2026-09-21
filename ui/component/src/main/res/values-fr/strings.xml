@@ -7,13 +7,12 @@
     <string name="ui_replay">Relire</string>
     <string name="ui_skip_next">Titre suivant</string>
     <string name="ui_skip_previous">Titre précédent</string>
-    <string name="ui_repeat_off">Répétition désactivée</string>
-    <string name="ui_repeat_all">Répétition de la file d\'attente</string>
-    <string name="ui_repeat_one">Répétition de ce titre</string>
-    <string name="ui_shuffle_on">Lecture aléatoire activée</string>
-    <string name="ui_shuffle_off">Lecture aléatoire désactivée</string>
+    <string name="ui_repeat">Répéter</string>
+    <string name="ui_repeat_state_off">Désactivé</string>
+    <string name="ui_repeat_state_all">Toute la file d\'attente</string>
+    <string name="ui_repeat_state_one">Ce titre</string>
+    <string name="ui_shuffle">Lecture aléatoire</string>
     <string name="ui_clear_search">Effacer la recherche</string>
-    <string name="ui_search">Rechercher</string>
     <string name="ui_artwork_of">Pochette de %1$s</string>
     <string name="ui_seek_bar">Position de lecture</string>
     <string name="ui_retry">Réessayer</string>
@@ -21,6 +20,8 @@
     <string name="ui_close">Fermer</string>
     <string name="ui_now_playing">En cours de lecture</string>
     <string name="ui_song_unavailable_offline">Ce titre n\'est pas enregistré sur cet appareil. Connecte-toi à Internet pour l\'écouter.</string>
+    <string name="ui_song_state_unavailable">Indisponible hors connexion</string>
+    <string name="ui_song_state_paused">En pause</string>
     <string name="ui_artwork_unavailable_offline">Pochette indisponible hors connexion</string>
     <string name="ui_add_to_queue">Ajouter à la file d\'attente</string>
     <string name="ui_favorite">J\'aime</string>

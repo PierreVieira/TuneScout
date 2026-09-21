@@ -11,6 +11,7 @@
     <string name="library_create_playlist">Créer une playlist</string>
     <string name="library_view_as_grid">Afficher en grille</string>
     <string name="library_view_as_list">Afficher en liste</string>
+    <string name="library_open_item">Ouvrir</string>
     <string name="library_search_placeholder">Rechercher dans ta bibliothèque</string>
     <string name="library_recent_searches">Recherches récentes</string>
     <string name="library_remove_recent_search">Retirer des recherches récentes</string>

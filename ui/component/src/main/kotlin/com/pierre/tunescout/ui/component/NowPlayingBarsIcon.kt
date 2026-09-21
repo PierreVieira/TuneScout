@@ -10,6 +10,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -21,6 +22,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.animation.rememberReduceMotion
 
 private val barsSize = 14.dp
 private val barDurationsMillis = listOf(420, 580, 500)
@@ -30,15 +32,19 @@ private const val TALLEST_BAR_FRACTION = 1f
 private const val BAR_AND_GAP_WIDTHS = 2
 private const val HALF_CYCLE = 0.5f
 private const val CYCLES_PER_SWEEP = 2
+private val stillBarPhases: List<State<Float>> = barStartPhases.map(::mutableFloatStateOf)
 
 /**
  * The three bouncing bars beside the song that is playing. They only exist while it plays: a
  * paused song keeps its highlighted title, but the bars leave with the sound, so the caller decides
  * when to show them.
+ *
+ * With motion reduced they stand still, at the heights the first frame of the bounce has: the icon
+ * still says "playing", it just stops moving.
  */
 @Composable
 fun NowPlayingBarsIcon(modifier: Modifier = Modifier) {
-    val phases = barPhases()
+    val phases = if (rememberReduceMotion()) stillBarPhases else barPhases()
     val color = TuneScoutColors.accent
     val label = stringResource(R.string.ui_now_playing)
     Canvas(

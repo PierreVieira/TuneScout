@@ -14,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.feature.queue.R
@@ -63,6 +65,7 @@ private fun SheetHeading(contextTitle: String?) {
             text = stringResource(R.string.queue_title),
             style = MaterialTheme.typography.titleLarge,
             color = TuneScoutColors.textPrimary,
+            modifier = Modifier.semantics { heading() },
         )
         if (contextTitle != null) {
             Text(
@@ -112,6 +115,7 @@ private fun QueueList(
                     subtitle = entry.song.artistName,
                     artworkUrl = entry.song.artwork.thumbnailUrl,
                     onClick = { onEvent(QueueUiEvent.OnNowPlayingClicked) },
+                    onClickLabel = null,
                     nowPlaying = NowPlayingState.of(
                         isCurrentSong = !uiState.hasEnded,
                         isPlaying = uiState.isPlaying,
@@ -140,7 +144,9 @@ private fun LazyListScope.sectionLabel(
             text = text,
             style = MaterialTheme.typography.bodySmall,
             color = TuneScoutColors.textSecondary,
-            modifier = Modifier.padding(top = TuneScoutSpacing.medium, bottom = TuneScoutSpacing.extraSmall),
+            modifier = Modifier
+                .padding(top = TuneScoutSpacing.medium, bottom = TuneScoutSpacing.extraSmall)
+                .semantics { heading() },
         )
     }
 }

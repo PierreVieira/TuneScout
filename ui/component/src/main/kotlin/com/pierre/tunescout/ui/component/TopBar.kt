@@ -2,8 +2,9 @@ package com.pierre.tunescout.ui.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -17,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
@@ -26,6 +29,10 @@ private val topBarHeight = 48.dp
 private val actionSize = 48.dp
 private val actionIconSize = 24.dp
 
+/**
+ * A screen still loading has no title yet and passes an empty one. It gets no text node at all
+ * then: an empty one is an item a screen reader stops on and has nothing to say about.
+ */
 @Composable
 fun TopBar(
     title: String,
@@ -36,7 +43,7 @@ fun TopBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(topBarHeight)
+            .heightIn(min = topBarHeight)
             .padding(horizontal = TuneScoutSpacing.small),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -47,16 +54,21 @@ fun TopBar(
                 onClick = onBackClick,
             )
         }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = TuneScoutColors.textPrimary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = TuneScoutSpacing.extraSmall),
-        )
+        if (title.isEmpty()) {
+            Spacer(modifier = Modifier.weight(1f))
+        } else {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                color = TuneScoutColors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = TuneScoutSpacing.extraSmall)
+                    .semantics { heading() },
+            )
+        }
         actions()
     }
 }

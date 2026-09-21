@@ -31,6 +31,7 @@ import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
+import com.pierre.tunescout.ui.utils.semantics.screenPane
 
 @Composable
 fun CollectionContent(
@@ -38,9 +39,11 @@ fun CollectionContent(
     onEvent: (CollectionUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val title = (uiState as? CollectionUiState.Loaded)?.let { loaded -> collectionTitleText(loaded.title) }
     Column(
         modifier = modifier
             .fillMaxSize()
+            .screenPane(title)
             .safeDrawingPadding()
             .hidesBarsOnScroll(),
     ) {

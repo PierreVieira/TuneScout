@@ -11,10 +11,21 @@ private const val MARQUEE_STOPPED = 0
 private const val CONTINUOUS_REPEAT_DELAY_MILLIS = 0
 private const val MARQUEE_INITIAL_DELAY_MILLIS = 1_200
 
+/**
+ * A marquee scrolls at a velocity, so it ignores the system's animator scale and would keep moving
+ * for someone who turned animations off. With motion reduced it is not applied at all: the text is
+ * measured against its real width again, and the caller's `overflow` ends it in an ellipsis.
+ *
+ * @return this modifier, scrolling text too long for its line unless motion is reduced.
+ */
 @Composable
-fun Modifier.loopingMarquee(): Modifier = basicMarquee(
-    iterations = if (isSharedTransitionActive()) MARQUEE_STOPPED else Int.MAX_VALUE,
-    repeatDelayMillis = CONTINUOUS_REPEAT_DELAY_MILLIS,
-    initialDelayMillis = MARQUEE_INITIAL_DELAY_MILLIS,
-    spacing = MarqueeSpacing(marqueeGap),
-)
+fun Modifier.loopingMarquee(): Modifier = if (rememberReduceMotion()) {
+    this
+} else {
+    basicMarquee(
+        iterations = if (isSharedTransitionActive()) MARQUEE_STOPPED else Int.MAX_VALUE,
+        repeatDelayMillis = CONTINUOUS_REPEAT_DELAY_MILLIS,
+        initialDelayMillis = MARQUEE_INITIAL_DELAY_MILLIS,
+        spacing = MarqueeSpacing(marqueeGap),
+    )
+}

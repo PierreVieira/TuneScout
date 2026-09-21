@@ -3,6 +3,7 @@ package com.pierre.tunescout.ui.utils.scroll
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -17,6 +18,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.pierre.tunescout.ui.utils.semantics.rememberIsTouchExplorationEnabled
 import kotlin.math.roundToInt
 
 private const val FULLY_VISIBLE = 0f
@@ -44,6 +46,14 @@ val LocalHideableBarsState: ProvidableCompositionLocal<HideableBarsState> =
 @Composable
 fun rememberHideableBarsState(): HideableBarsState = remember { HideableBarsState() }
 
+/**
+ * With a screen reader on, the bars stay put. It scrolls the list to follow its focus, which would
+ * collapse the top bar and the navigation under a user who never asked for that and cannot swipe
+ * them back the way a finger on the list does: the controls in them have to stay where focus can
+ * reach them.
+ *
+ * @return this modifier, hiding the bars as the content scrolls unless touch exploration is on.
+ */
 @Composable
 fun Modifier.hidesBarsOnScroll(): Modifier {
     val state = LocalHideableBarsState.current
@@ -51,8 +61,12 @@ fun Modifier.hidesBarsOnScroll(): Modifier {
     val connection = remember(state, toggleDistancePx) {
         HideableBarsNestedScrollConnection(state = state, toggleDistance = toggleDistancePx)
     }
+    val isTouchExplorationEnabled = rememberIsTouchExplorationEnabled()
     ShowBarsOnEnterAndOnLeaveEffect(state = state)
-    return nestedScroll(connection)
+    LaunchedEffect(state, isTouchExplorationEnabled) {
+        if (isTouchExplorationEnabled) state.show()
+    }
+    return if (isTouchExplorationEnabled) this else nestedScroll(connection)
 }
 
 @Composable

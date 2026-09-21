@@ -69,10 +69,11 @@ A screen in a module the test classpath does not have yet needs one `testImpleme
 | --- | --- |
 | `LIGHT`, `DARK` | the default for every snapshot, since most regressions are a colour that reads in one theme and not the other |
 | `LARGE_FONT_PT_BR` | Portuguese copy (longer than English) at a 1.5x font scale — the combination that truncates or wraps first |
+| `LARGEST_FONT` | English at a 2x font scale, the largest the system's font size setting reaches — where a fixed height clips and a row stops fitting its controls |
 
-The third is deliberately not the default: passing `variants = ScreenshotVariant.all` on the states
-that carry the most text says where truncation matters, instead of tripling every image in the
-repository. `isLandscape = true` covers the layouts that switch on width (`isSideBySide`,
+The last two are deliberately not the default: passing `variants = ScreenshotVariant.all` on the
+states that carry the most text says where truncation matters, instead of multiplying every image in
+the repository. `isLandscape = true` covers the layouts that switch on width (`isSideBySide`,
 `isHeaderInline`).
 
 ### What is covered
@@ -95,6 +96,26 @@ instead of the same diff repeated across every screen that draws it.
 
 Left out: the splash screen (one static gradient), the options sheets (`OptionsSheet` is covered by
 its own components) and anything that only exists mid-animation.
+
+## Accessibility checks
+
+Every capture is also handed to the
+[Accessibility Test Framework](https://github.com/google/Accessibility-Test-Framework-for-Android)
+through Roborazzi's `checkRoboAccessibility` — the same checks Accessibility Scanner runs on a
+device: touch targets under 48dp, text and image contrast, items with no label, clickable items that
+share one. It runs on each root, so a dialog is checked as well as the screen under it.
+
+An **error** fails the test. **Warnings** are printed and do not: they include measurements no
+screen can settle — contrast is read off the rendered pixels, so text over artwork, or the rows
+faded on purpose because they cannot play, are reported every time. Read them in the test's
+standard error when touching colours; the palette itself is held to 4.5:1 by
+`TuneScoutPalettesContrastTest`.
+
+This needs no device and no reference image, so unlike the comparison it also runs locally:
+
+```bash
+./gradlew :tools:screenshot_tests:testDebugUnitTest
+```
 
 ## The pieces that are not obvious
 

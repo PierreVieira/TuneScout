@@ -2,4 +2,9 @@
 <resources>
     <string name="playback_favorite">Curtir</string>
     <string name="playback_unfavorite">Remover das curtidas</string>
+    <string name="playback_shuffle_turn_on">Ligar ordem aleatória</string>
+    <string name="playback_shuffle_turn_off">Desligar ordem aleatória</string>
+    <string name="playback_repeat_queue">Repetir a fila</string>
+    <string name="playback_repeat_song">Repetir esta música</string>
+    <string name="playback_repeat_turn_off">Desligar repetição</string>
 </resources>

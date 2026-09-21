@@ -15,11 +15,16 @@ import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.R
+import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.playback.di.PLAYBACK_SCOPE
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -31,8 +36,15 @@ internal class PlaybackService :
     MediaSession.Callback {
     private val player: ExoPlayer by inject()
     private val favorites: PlaybackFavoriteController by inject()
+    private val observablePlayback: ObservablePlayback by inject()
+    private val transportControls: TransportControls by inject()
+    private val mediaButtonSpecFactory: MediaButtonSpecFactory by inject()
     private val scope: CoroutineScope by inject(named(PLAYBACK_SCOPE))
-    private val toggleFavoriteCommand = SessionCommand(TOGGLE_FAVORITE_ACTION, Bundle.EMPTY)
+    private val customCommands = listOf(
+        MediaButtonSpecFactory.TOGGLE_FAVORITE_ACTION,
+        MediaButtonSpecFactory.TOGGLE_SHUFFLE_ACTION,
+        MediaButtonSpecFactory.CYCLE_REPEAT_ACTION,
+    ).map { action -> SessionCommand(action, Bundle.EMPTY) }
     private var currentFavoriteState: FavoriteButtonState? = null
     private var mediaSession: MediaSession? = null
 
@@ -47,7 +59,7 @@ internal class PlaybackService :
             .apply { createLaunchIntent()?.let(::setSessionActivity) }
             .build()
             .also(::addSession)
-        observeFavoriteState()
+        observeMediaButtons()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = mediaSession
@@ -70,7 +82,7 @@ internal class PlaybackService :
         .setAvailableSessionCommands(
             MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS
                 .buildUpon()
-                .add(toggleFavoriteCommand)
+                .addSessionCommands(customCommands)
                 .build(),
         ).build()
 
@@ -79,14 +91,34 @@ internal class PlaybackService :
         controller: MediaSession.ControllerInfo,
         customCommand: SessionCommand,
         args: Bundle,
-    ): ListenableFuture<SessionResult> {
-        if (customCommand.customAction != TOGGLE_FAVORITE_ACTION) {
-            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED))
-        }
-        val state = currentFavoriteState
-            ?: return Futures.immediateFuture(SessionResult(SessionResult.RESULT_ERROR_INVALID_STATE))
+    ): ListenableFuture<SessionResult> = Futures.immediateFuture(
+        SessionResult(
+            when (customCommand.customAction) {
+                MediaButtonSpecFactory.TOGGLE_FAVORITE_ACTION -> toggleCurrentFavorite()
+
+                MediaButtonSpecFactory.TOGGLE_SHUFFLE_ACTION -> {
+                    transportControls.toggleShuffle()
+                    SessionResult.RESULT_SUCCESS
+                }
+
+                MediaButtonSpecFactory.CYCLE_REPEAT_ACTION -> {
+                    transportControls.cycleRepeatMode()
+                    SessionResult.RESULT_SUCCESS
+                }
+
+                else -> SessionResult.RESULT_ERROR_NOT_SUPPORTED
+            },
+        ),
+    )
+
+    /**
+     * @return the session result code: the like is switched in the background, so success means it
+     * was started, and an invalid state means no song is loaded to like.
+     */
+    private fun toggleCurrentFavorite(): Int {
+        val state = currentFavoriteState ?: return SessionResult.RESULT_ERROR_INVALID_STATE
         scope.launch { toggleFavorite(state) }
-        return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        return SessionResult.RESULT_SUCCESS
     }
 
     private fun createLaunchIntent(): PendingIntent? {
@@ -99,13 +131,18 @@ internal class PlaybackService :
         )
     }
 
-    private fun observeFavoriteState() {
+    private fun observeMediaButtons() {
+        val modes = observablePlayback
+            .observePlaybackState()
+            .map { state -> state.isShuffleEnabled to state.repeatMode }
+            .distinctUntilChanged()
         favorites
             .observe()
-            .onEach { state ->
-                currentFavoriteState = state
-                mediaSession?.setMediaButtonPreferences(buildFavoriteMediaButtons(state))
-            }.launchIn(scope)
+            .onEach { state -> currentFavoriteState = state }
+            .combine(modes) { favorite, (isShuffleEnabled, repeatMode) ->
+                mediaButtonSpecFactory.createSpecs(favorite, isShuffleEnabled, repeatMode)
+            }.onEach { specs -> mediaSession?.setMediaButtonPreferences(specs.map(::createCommandButton)) }
+            .launchIn(scope)
     }
 
     private suspend fun toggleFavorite(state: FavoriteButtonState) {
@@ -118,21 +155,13 @@ internal class PlaybackService :
         }
     }
 
-    private fun buildFavoriteMediaButtons(state: FavoriteButtonState?): List<CommandButton> {
-        if (state == null) return emptyList()
-        val icon = if (state.isFavorite) CommandButton.ICON_HEART_FILLED else CommandButton.ICON_HEART_UNFILLED
-        val label = getString(if (state.isFavorite) R.string.playback_unfavorite else R.string.playback_favorite)
-        return listOf(
-            CommandButton
-                .Builder(icon)
-                .setDisplayName(label)
-                .setSessionCommand(toggleFavoriteCommand)
-                .build(),
-        )
-    }
+    private fun createCommandButton(spec: MediaButtonSpec): CommandButton = CommandButton
+        .Builder(spec.icon)
+        .setDisplayName(getString(spec.label))
+        .setSessionCommand(SessionCommand(spec.action, Bundle.EMPTY))
+        .build()
 
     private companion object {
         const val TAG = "PlaybackService"
-        const val TOGGLE_FAVORITE_ACTION = "com.pierre.tunescout.TOGGLE_FAVORITE"
     }
 }

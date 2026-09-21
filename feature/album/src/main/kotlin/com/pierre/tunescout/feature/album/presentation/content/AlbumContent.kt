@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -47,6 +49,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
+import com.pierre.tunescout.ui.utils.semantics.screenPane
 import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val artworkSize = 120.dp
@@ -63,15 +66,17 @@ fun AlbumContent(
     onEvent: (AlbumUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val title = (uiState as? AlbumUiState.Loaded)?.album?.title.orEmpty()
     Column(
         modifier = modifier
             .fillMaxSize()
+            .screenPane(title)
             .safeDrawingPadding()
             .hidesBarsOnScroll(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         TopBar(
-            title = (uiState as? AlbumUiState.Loaded)?.album?.title.orEmpty(),
+            title = title,
             modifier = Modifier.hideableTopBar(),
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
             actions = {
@@ -296,6 +301,7 @@ private fun AlbumTitlesHeading(
             textAlign = textAlign,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.semantics { heading() },
         )
         Text(
             text = album.artistName,

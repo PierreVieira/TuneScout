@@ -47,7 +47,7 @@ import com.pierre.tunescout.ui.utils.animation.sharedTextBounds
 private val cardCornerRadius = 12.dp
 private const val ARTWORK_CORNER_PERCENT = 18
 private val artworkSize = 44.dp
-private val buttonSize = 40.dp
+private val buttonSize = 48.dp
 private val iconSize = 24.dp
 private val progressHeight = 2.dp
 
@@ -93,6 +93,7 @@ fun MiniPlayerContent(
                         style = MaterialTheme.typography.bodyLarge,
                         color = TuneScoutColors.textPrimary,
                         maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .sharedTextBounds(SongSharedKey.createOrNull(song.id, SongSharedElement.TITLE))
                             .loopingMarquee(),

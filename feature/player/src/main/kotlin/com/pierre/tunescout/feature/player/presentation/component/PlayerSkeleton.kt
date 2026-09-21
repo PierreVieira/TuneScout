@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -45,7 +47,10 @@ internal fun PlayerSkeleton(
             shape = RoundedCornerShape(percent = artworkCornerPercent),
             modifier = Modifier
                 .size(artworkSize)
-                .semantics { contentDescription = description },
+                .semantics {
+                    contentDescription = description
+                    liveRegion = LiveRegionMode.Polite
+                },
         )
     }
     if (isSideBySide) {

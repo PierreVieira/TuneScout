@@ -5,5 +5,19 @@
     <string name="player_not_found_description">Il a peut-être été retiré du catalogue. Reviens en arrière et choisis-en un autre.</string>
     <string name="player_failed">Impossible de lire cet extrait. Vérifie ta connexion et réessaie.</string>
     <string name="player_remaining_time">-%1$s</string>
+    <string name="player_position_description">%1$s sur %2$s</string>
+    <string name="player_elapsed_description">Écoulé : %1$s</string>
+    <string name="player_remaining_description">Restant : %1$s</string>
+    <string name="player_minutes_and_seconds">%1$s et %2$s</string>
     <string name="player_open_queue">Ouvrir la file d\'attente</string>
+    <plurals name="player_minutes">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="many">%1$d minutes</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="player_seconds">
+        <item quantity="one">%1$d seconde</item>
+        <item quantity="many">%1$d secondes</item>
+        <item quantity="other">%1$d secondes</item>
+    </plurals>
 </resources>

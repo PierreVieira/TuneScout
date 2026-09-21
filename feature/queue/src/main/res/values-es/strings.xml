@@ -9,7 +9,6 @@
     <string name="queue_empty_title">La cola está vacía</string>
     <string name="queue_empty_description">Añade una canción o un álbum completo a la cola y aparecerá aquí.</string>
     <string name="queue_remove">Quitar de la cola</string>
-    <string name="queue_reorder">Reordenar %1$s</string>
     <string name="queue_move_up">Subir</string>
     <string name="queue_move_down">Bajar</string>
 </resources>

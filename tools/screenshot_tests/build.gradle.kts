@@ -27,6 +27,7 @@ dependencies {
     testImplementation(libs.coil.compose)
     testImplementation(libs.robolectric)
     testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.accessibility.check)
     testImplementation(libs.roborazzi.compose)
     testRuntimeOnly(libs.junit.vintage.engine)
 }

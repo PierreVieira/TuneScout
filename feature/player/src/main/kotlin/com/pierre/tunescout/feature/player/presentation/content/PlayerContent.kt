@@ -9,12 +9,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -34,13 +38,15 @@ import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
+import com.pierre.tunescout.ui.utils.semantics.screenPane
 import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val maxArtworkSize = 264.dp
 private val minArtworkSize = 120.dp
 private val maxArtworkTopSpacing = 100.dp
 private const val ARTWORK_CORNER_PERCENT = 12
-private val detailsHeight = 260.dp
+private val detailsControlsHeight = 170.dp
+private val detailsTextHeight = 90.dp
 
 @Composable
 fun PlayerContent(
@@ -52,6 +58,7 @@ fun PlayerContent(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .screenPane(stringResource(R.string.player_now_playing))
             .safeDrawingPadding(),
     ) {
         TopBar(
@@ -68,16 +75,23 @@ fun PlayerContent(
             },
         )
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val detailsHeight = detailsHeight()
             val artworkSize = getArtworkSize(
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
+                detailsHeight = detailsHeight,
                 isSideBySide = isSideBySide,
+            )
+            val artworkTopSpacing = getArtworkTopSpacing(
+                maxHeight = maxHeight,
+                detailsHeight = detailsHeight,
+                artworkSize = artworkSize,
             )
             when (uiState) {
                 PlayerUiState.Loading -> PlayerSkeleton(
                     isSideBySide = isSideBySide,
                     artworkSize = artworkSize,
-                    artworkTopSpacing = getArtworkTopSpacing(maxHeight = maxHeight, artworkSize = artworkSize),
+                    artworkTopSpacing = artworkTopSpacing,
                     artworkCornerPercent = ARTWORK_CORNER_PERCENT,
                 )
 
@@ -97,7 +111,8 @@ fun PlayerContent(
                         uiState = uiState,
                         onEvent = onEvent,
                         artworkSize = artworkSize,
-                        artworkTopSpacing = getArtworkTopSpacing(maxHeight = maxHeight, artworkSize = artworkSize),
+                        artworkTopSpacing = artworkTopSpacing,
+                        viewportHeight = maxHeight,
                     )
                 }
             }
@@ -105,9 +120,20 @@ fun PlayerContent(
     }
 }
 
+/**
+ * The details are controls, which keep their size, and three lines of text, which grow with the
+ * font. Sizing the artwork against a fixed height left the text no room at a large font scale: the
+ * cover kept its share and the controls under the text were pushed off the screen.
+ *
+ * @return the height to keep free under the artwork at the font scale in force.
+ */
+@Composable
+private fun detailsHeight(): Dp = detailsControlsHeight + detailsTextHeight * LocalDensity.current.fontScale
+
 private fun getArtworkSize(
     maxWidth: Dp,
     maxHeight: Dp,
+    detailsHeight: Dp,
     isSideBySide: Boolean,
 ): Dp = when {
     isSideBySide -> minOf(maxHeight - TuneScoutSpacing.medium, maxWidth / 2)
@@ -116,17 +142,29 @@ private fun getArtworkSize(
 
 private fun getArtworkTopSpacing(
     maxHeight: Dp,
+    detailsHeight: Dp,
     artworkSize: Dp,
 ): Dp = ((maxHeight - detailsHeight - artworkSize) / 2).coerceIn(0.dp, maxArtworkTopSpacing)
 
+/**
+ * The column is at least as tall as the [viewportHeight], which is what lets the weighted spacer
+ * push the details to the bottom, and it scrolls: when the smallest artwork and the details still
+ * do not fit — a short window, the largest font — the controls are a scroll away instead of cut off.
+ */
 @Composable
 private fun StackedContent(
     uiState: PlayerUiState.Loaded,
     onEvent: (PlayerUiEvent) -> Unit,
     artworkSize: Dp,
     artworkTopSpacing: Dp,
+    viewportHeight: Dp,
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .heightIn(min = viewportHeight),
+    ) {
         Spacer(modifier = Modifier.height(artworkTopSpacing))
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -163,7 +201,9 @@ private fun SideBySideContent(
         PlayerDetailsContent(
             uiState = uiState,
             onEvent = onEvent,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
         )
     }
 }

@@ -30,6 +30,23 @@ The `static-analysis` workflow runs the same script on every pull request — an
 `main` — that touches a `.kt` or `.kts` file, the version catalog, the ktlint script or
 `.editorconfig`.
 
+## Android lint
+
+Lint is configured once, in `configureLint` in `build-logic`, for every Android module. Errors fail
+the build, and its accessibility checks — `ContentDescription`, `LabelFor`,
+`ClickableViewAccessibility`, `KeyboardInaccessibleWidget`, `GetContentDescriptionOverride` — are
+raised from warnings to errors. They look at XML and at custom views, which here means the widget
+picker's preview layouts; what Compose draws is checked by the accessibility validator in the
+screenshot tests instead (see [Screenshot tests](testing/screenshot-tests.md#accessibility-checks)).
+
+```bash
+./gradlew :app:lintDebug      # every module: :app lints its dependencies (what CI runs)
+```
+
+The report is `app/build/reports/lint-results-debug.html`. There is no baseline: the project lints
+clean, so a new finding is fixed or, when lint is wrong, suppressed where it happens with the reason
+beside it.
+
 ## Module graph
 
 The dependencies between Gradle modules are checked by
