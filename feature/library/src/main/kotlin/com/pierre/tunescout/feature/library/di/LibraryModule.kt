@@ -15,10 +15,9 @@ import com.pierre.tunescout.feature.library.domain.usecase.ObservePlaylistSongs
 import com.pierre.tunescout.feature.library.domain.usecase.ObservePlaylists
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveRecentLibrarySearches
 import com.pierre.tunescout.feature.library.domain.usecase.RecordLibrarySearch
-import com.pierre.tunescout.feature.library.domain.usecase.RemoveFavorite
 import com.pierre.tunescout.feature.library.domain.usecase.RemoveLibrarySearch
-import com.pierre.tunescout.feature.library.domain.usecase.RemoveSongFromPlaylist
 import com.pierre.tunescout.feature.library.domain.usecase.SetLibraryViewMode
+import com.pierre.tunescout.feature.library.domain.usecase.ToggleSongFavorite
 import com.pierre.tunescout.feature.library.domain.usecase.impl.CreatePlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.DeletePlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveFavoriteAlbumsUseCase
@@ -29,10 +28,9 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistU
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveRecentLibrarySearchesUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RecordLibrarySearchUseCase
-import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveFavoriteUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveLibrarySearchUseCase
-import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveSongFromPlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryViewModeUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleSongFavoriteUseCase
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
 import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
 import com.pierre.tunescout.feature.library.presentation.viewmodel.CollectionOptionsViewModel
@@ -58,8 +56,7 @@ val libraryModule: Module = module {
     factoryOf(::SetLibraryViewModeUseCase).bind<SetLibraryViewMode>()
     factoryOf(::CreatePlaylistUseCase).bind<CreatePlaylist>()
     factoryOf(::DeletePlaylistUseCase).bind<DeletePlaylist>()
-    factoryOf(::RemoveSongFromPlaylistUseCase).bind<RemoveSongFromPlaylist>()
-    factoryOf(::RemoveFavoriteUseCase).bind<RemoveFavorite>()
+    factoryOf(::ToggleSongFavoriteUseCase).bind<ToggleSongFavorite>()
     factoryOf(::RecordLibrarySearchUseCase).bind<RecordLibrarySearch>()
     factoryOf(::RemoveLibrarySearchUseCase).bind<RemoveLibrarySearch>()
     factoryOf(::LibraryUseCases)

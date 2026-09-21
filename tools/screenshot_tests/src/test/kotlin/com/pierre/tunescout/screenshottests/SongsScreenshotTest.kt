@@ -19,6 +19,7 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         recentlyPlayed = recentlyPlayed,
         nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = true),
         songPendingRemoval = null,
+        favoriteSongIds = emptySet(),
         isOffline = false,
         unplayableSongIds = emptySet(),
     )

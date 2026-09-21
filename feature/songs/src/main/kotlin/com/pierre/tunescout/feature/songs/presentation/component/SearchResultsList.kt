@@ -21,6 +21,7 @@ import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongListSkeleton
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
+import com.pierre.tunescout.ui.component.SongSwipeActionsBox
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
@@ -31,6 +32,7 @@ private const val APPEND_SKELETON_ROWS = 2
 internal fun SearchResultsList(
     searchResults: LazyPagingItems<SearchResultUiModel>,
     nowPlaying: NowPlaying?,
+    favoriteSongIds: Set<Long>,
     isOffline: Boolean,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -77,21 +79,27 @@ internal fun SearchResultsList(
             ) { index ->
                 val result = searchResults[index] ?: return@items
                 val song = result.song
-                SongRow(
-                    title = song.title,
-                    subtitle = song.artistName,
-                    artworkUrl = song.artwork.thumbnailUrl,
-                    nowPlaying = NowPlayingState.of(
-                        isCurrentSong = nowPlaying.isOn(song.id),
-                        isPlaying = nowPlaying?.isPlaying == true,
-                    ),
-                    isUnavailable = result.isUnavailable,
-                    sharedSongId = song.id,
-                    onClick = {
-                        onEvent(SongsUiEvent.OnSongClicked(song))
-                    },
-                    trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
-                )
+                SongSwipeActionsBox(
+                    isFavorite = song.id in favoriteSongIds,
+                    onAddToQueue = { onEvent(SongsUiEvent.OnSongSwipedToQueue(song)) },
+                    onToggleFavorite = { onEvent(SongsUiEvent.OnSongSwipedToFavorite(song)) },
+                ) {
+                    SongRow(
+                        title = song.title,
+                        subtitle = song.artistName,
+                        artworkUrl = song.artwork.thumbnailUrl,
+                        nowPlaying = NowPlayingState.of(
+                            isCurrentSong = nowPlaying.isOn(song.id),
+                            isPlaying = nowPlaying?.isPlaying == true,
+                        ),
+                        isUnavailable = result.isUnavailable,
+                        sharedSongId = song.id,
+                        onClick = {
+                            onEvent(SongsUiEvent.OnSongClicked(song))
+                        },
+                        trailing = { SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) } },
+                    )
+                }
             }
             when (appendState) {
                 is LoadState.Loading -> item(key = "appending") {

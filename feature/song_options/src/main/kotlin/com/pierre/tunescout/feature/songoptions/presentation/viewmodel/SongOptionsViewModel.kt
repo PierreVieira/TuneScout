@@ -25,18 +25,22 @@ class SongOptionsViewModel(
     private val enqueuer: Enqueuer,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
-    route: SongOptionsRoute,
+    private val route: SongOptionsRoute,
 ) : ActionViewModel<SongOptionsUiAction>() {
+    private val isRemovableFromPlaylist = route.playlistId != null
+
     private val emptyUiState = SongOptionsUiState(
         song = null,
         isFavorite = false,
+        isRemovableFromPlaylist = isRemovableFromPlaylist,
     )
 
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
         useCases.isFavorite(route.songId),
-        ::SongOptionsUiState,
-    ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
+    ) { song, isFavorite ->
+        SongOptionsUiState(song = song, isFavorite = isFavorite, isRemovableFromPlaylist = isRemovableFromPlaylist)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
         SongOptionsUiEvent.OnFavoriteClicked -> toggleFavorite()
@@ -45,6 +49,7 @@ class SongOptionsViewModel(
         SongOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()
+        SongOptionsUiEvent.OnRemoveFromPlaylistClicked -> removeFromPlaylist()
         SongOptionsUiEvent.OnDismissed -> navigator.navigateBack()
     }
 
@@ -80,5 +85,13 @@ class SongOptionsViewModel(
     private fun openAlbum() {
         val albumId = uiState.value.song?.albumId ?: return
         navigator.navigateReplacingTop(AlbumRoute(albumId = albumId))
+    }
+
+    private fun removeFromPlaylist() {
+        val playlistId = route.playlistId ?: return
+        viewModelScope.launch {
+            useCases.removeFromPlaylist(playlistId = playlistId, songId = route.songId)
+            navigator.navigateBack()
+        }
     }
 }

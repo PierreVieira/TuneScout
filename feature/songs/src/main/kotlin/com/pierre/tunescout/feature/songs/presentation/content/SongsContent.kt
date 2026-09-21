@@ -71,6 +71,7 @@ fun SongsContent(
                 SearchResultsList(
                     searchResults = searchResults,
                     nowPlaying = uiState.nowPlaying,
+                    favoriteSongIds = uiState.favoriteSongIds,
                     isOffline = uiState.isOffline,
                     onEvent = onEvent,
                 )
@@ -78,7 +79,7 @@ fun SongsContent(
                 RecentlyPlayedList(
                     songs = uiState.recentlyPlayed,
                     nowPlaying = uiState.nowPlaying,
-                    songPendingRemoval = uiState.songPendingRemoval,
+                    favoriteSongIds = uiState.favoriteSongIds,
                     unplayableSongIds = uiState.unplayableSongIds,
                     onEvent = onEvent,
                 )

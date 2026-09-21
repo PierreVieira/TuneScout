@@ -2,6 +2,26 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — Swiping a song to queue or like it
+
+**A song row answers a sideways swipe the way Spotify's does.** Toward the end it adds the song to
+the queue, toward the start it likes it or takes the like back, and the row springs back either way:
+[`SongSwipeActionsBox`](../ui/component/src/main/kotlin/com/pierre/tunescout/ui/component/SongSwipeActionsBox.kt)
+is a draggable offset, not a `SwipeToDismissBox`, because nothing leaves the list and a dismiss that
+has to be reset would slide the row off screen first. It wraps the rows of an album, a playlist, the
+liked songs, the search results and the recently played; the queue keeps swipe-to-remove, where
+adding to the queue would mean nothing. Both actions are also accessibility actions, and a snackbar
+says what happened, since the row is back in place before the user can see it change. A song the
+player cannot reach is refused the same way the options sheet refuses it.
+
+**Taking a song out of a playlist moved to its options sheet.** The swipe used to remove it, behind a
+confirmation dialog. With the swipe taken, the sheet opened from a playlist offers "Remove from this
+playlist" — `SongOptionsRoute` carries the playlist id for that — and removes it at once, with no
+dialog: it is two deliberate taps, not a gesture that can fire by accident. In the liked songs, the
+like the swipe takes back is what takes the song out, so nothing replaced the removal there. Cost:
+each feature that draws a swipeable list keeps its own pair of favorite use cases over
+`FavoriteSongLocalDataSource`, since features cannot share them.
+
 ## 2026-09-21 — Searching by voice
 
 **The platform's recognizer, not a library and not the system's dialog.** `SpeechRecognizer` adds no

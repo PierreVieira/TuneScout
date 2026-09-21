@@ -36,6 +36,14 @@ fun SongOptionsContent(
             isEnabled = isEnabled,
             onClick = { onEvent(SongOptionsUiEvent.OnAddToPlaylistClicked) },
         )
+        if (uiState.isRemovableFromPlaylist) {
+            OptionRow(
+                icon = TuneScoutIcons.removeFromPlaylist,
+                label = stringResource(R.string.song_options_remove_from_playlist),
+                isEnabled = isEnabled,
+                onClick = { onEvent(SongOptionsUiEvent.OnRemoveFromPlaylistClicked) },
+            )
+        }
         OptionRow(
             icon = TuneScoutIcons.play,
             label = stringResource(R.string.song_options_play_now),

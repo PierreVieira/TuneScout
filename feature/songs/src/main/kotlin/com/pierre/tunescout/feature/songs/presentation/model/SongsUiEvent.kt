@@ -26,7 +26,15 @@ sealed interface SongsUiEvent {
         val song: Song,
     ) : SongsUiEvent
 
-    data class OnRecentSongSwipedAway(
+    data class OnSongSwipedToQueue(
+        val song: Song,
+    ) : SongsUiEvent
+
+    data class OnSongSwipedToFavorite(
+        val song: Song,
+    ) : SongsUiEvent
+
+    data class OnRemoveRecentClicked(
         val song: Song,
     ) : SongsUiEvent
 

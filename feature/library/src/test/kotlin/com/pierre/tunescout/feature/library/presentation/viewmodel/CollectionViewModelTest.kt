@@ -50,8 +50,7 @@ class CollectionViewModelTest {
     private lateinit var songPlayback: FakeSongPlayback
     private lateinit var enqueuer: Enqueuer
     private lateinit var transportControls: TransportControls
-    private lateinit var removedFavoriteIds: MutableList<Long>
-    private lateinit var removedFromPlaylist: MutableList<Pair<Long, Long>>
+    private lateinit var favoriteSongs: MutableStateFlow<List<Song>>
 
     @Test
     fun `GIVEN the favourites WHEN observing THEN titles itself with the liked songs and cannot be deleted`() =
@@ -293,97 +292,95 @@ class CollectionViewModelTest {
         }
 
     @Test
-    fun `GIVEN the favourites WHEN swiping a song away THEN unlikes it without asking`() =
+    fun `GIVEN a playlist WHEN clicking a song's options THEN opens the sheet able to take it out of the playlist`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongOptionsClicked(song(id = 2)))
+
+            // Then
+            verify { navigator.navigate(SongOptionsRoute(songId = 2, playlistId = 7)) }
+        }
+
+    @Test
+    fun `GIVEN a song WHEN swiping it toward the end THEN adds it to the queue and says so`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedToQueue(song(id = 2)))
+
+            // Then
+            verify { enqueuer.addToQueue(listOf(song(id = 2))) }
+            assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN a song the player cannot reach WHEN swiping it toward the end THEN leaves the queue alone`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+                playableSongIds = emptySet(),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedToQueue(song(id = 2)))
+
+            // Then
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+        }
+
+    @Test
+    fun `GIVEN a playlist WHEN swiping a song toward the start THEN likes it and keeps it in the playlist`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedToFavorite(song(id = 2)))
+            runCurrent()
+
+            // Then
+            assertThat(loadedState().favoriteSongIds).containsExactly(2L)
+            assertThat(loadedState().songs).containsExactly(song(id = 2))
+            assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_added_to_favorites))
+        }
+
+    @Test
+    fun `GIVEN the favourites WHEN swiping a song toward the start THEN takes the like back and it leaves the list`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
 
             // When
-            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 1)))
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedToFavorite(song(id = 1)))
             runCurrent()
 
             // Then
-            assertThat(removedFavoriteIds).containsExactly(1L)
-            assertThat(removedFromPlaylist).isEmpty()
-            assertThat(loadedState().songPendingRemoval).isNull()
-        }
-
-    @Test
-    fun `GIVEN a playlist WHEN swiping a song away THEN only asks for confirmation`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(
-                key = CollectionKey.Playlist(playlistId = 7),
-                playlist = playlist(id = 7),
-                playlistSongs = listOf(song(id = 2)),
+            assertThat(loadedState().songs).isEmpty()
+            assertThat(actions).containsExactly(
+                CollectionUiAction.ShowSnackBar(R.string.ui_removed_from_favorites),
             )
-
-            // When
-            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 2)))
-            runCurrent()
-
-            // Then
-            assertThat(loadedState().songPendingRemoval).isEqualTo(song(id = 2))
-            assertThat(removedFromPlaylist).isEmpty()
         }
-
-    @Test
-    fun `GIVEN a pending removal WHEN confirming it THEN takes the song out of that playlist only`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(
-                key = CollectionKey.Playlist(playlistId = 7),
-                playlist = playlist(id = 7),
-                playlistSongs = listOf(song(id = 2)),
-            )
-            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 2)))
-
-            // When
-            viewModel.onEvent(CollectionUiEvent.OnRemovalConfirmed)
-            runCurrent()
-
-            // Then
-            assertThat(removedFromPlaylist).containsExactly(7L to 2L)
-            assertThat(removedFavoriteIds).isEmpty()
-            assertThat(loadedState().songPendingRemoval).isNull()
-        }
-
-    @Test
-    fun `GIVEN a pending removal WHEN dismissing it THEN the song stays in the playlist`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(
-                key = CollectionKey.Playlist(playlistId = 7),
-                playlist = playlist(id = 7),
-                playlistSongs = listOf(song(id = 2)),
-            )
-            viewModel.onEvent(CollectionUiEvent.OnSongSwipedAway(song(id = 2)))
-
-            // When
-            viewModel.onEvent(CollectionUiEvent.OnRemovalDismissed)
-            runCurrent()
-
-            // Then
-            assertThat(loadedState().songPendingRemoval).isNull()
-            assertThat(removedFromPlaylist).isEmpty()
-        }
-
-    @Test
-    fun `GIVEN no pending removal WHEN confirming THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
-        // Given
-        prepareScenario(
-            key = CollectionKey.Playlist(playlistId = 7),
-            playlist = playlist(id = 7),
-            playlistSongs = listOf(song(id = 2)),
-        )
-
-        // When
-        viewModel.onEvent(CollectionUiEvent.OnRemovalConfirmed)
-        runCurrent()
-
-        // Then
-        assertThat(removedFromPlaylist).isEmpty()
-    }
 
     @Test
     fun `GIVEN a song the player cannot reach WHEN clicking it THEN says so instead of playing it`() =
@@ -485,9 +482,8 @@ class CollectionViewModelTest {
         playableSongIds: Set<Long>? = null,
         playback: PlaybackState = PlaybackState.Idle,
     ) {
-        removedFavoriteIds = mutableListOf()
+        favoriteSongs = MutableStateFlow(favorites)
         actions = mutableListOf()
-        removedFromPlaylist = mutableListOf()
         navigator = mockk(relaxUnitFun = true)
         songPlayback = FakeSongPlayback()
         enqueuer = mockk(relaxUnitFun = true)
@@ -495,9 +491,14 @@ class CollectionViewModelTest {
         val useCases = CollectionUseCases(
             observePlaylist = { flowOf(playlist) },
             observePlaylistSongs = { flowOf(playlistSongs) },
-            observeFavorites = { flowOf(favorites) },
-            removeSongFromPlaylist = { playlistId, songId -> removedFromPlaylist += playlistId to songId },
-            removeFavorite = { songId -> removedFavoriteIds += songId },
+            observeFavorites = { favoriteSongs },
+            toggleSongFavorite = { song, isFavorite ->
+                favoriteSongs.value = if (isFavorite) {
+                    favoriteSongs.value.filterNot { favorite -> favorite.id == song.id }
+                } else {
+                    favoriteSongs.value + song
+                }
+            },
             deletePlaylist = { },
         )
         val playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true }

@@ -56,11 +56,8 @@ class LibraryRepositoryImpl(
         librarySearchLocalDataSource.remove(LibraryItemKey.Playlist(playlistId))
     }
 
-    override suspend fun removeSongFromPlaylist(
-        playlistId: Long,
-        songId: Long,
-    ) {
-        playlistLocalDataSource.removeSong(playlistId = playlistId, songId = songId)
+    override suspend fun addFavorite(song: Song) {
+        favoriteSongLocalDataSource.add(song)
     }
 
     override suspend fun removeFavorite(songId: Long) {

@@ -14,7 +14,7 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         songs = recentlyPlayed,
         nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = true),
         isDeletable = true,
-        songPendingRemoval = null,
+        favoriteSongIds = emptySet(),
         unplayableSongIds = emptySet(),
         isPlaying = true,
         isShuffleEnabled = false,
@@ -58,13 +58,6 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
                 uiState = loaded.copy(songs = emptyList(), nowPlaying = null, isPlaying = false),
                 onEvent = {},
             )
-        }
-    }
-
-    @Test
-    fun confirmingRemoval() {
-        snapshot(name = "confirming_removal") {
-            CollectionContent(uiState = loaded.copy(songPendingRemoval = getLucky), onEvent = {})
         }
     }
 }

@@ -14,6 +14,7 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AudioSearchRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
@@ -51,6 +52,8 @@ class SongsViewModelTest {
     private lateinit var removedSongIds: MutableList<Long>
     private lateinit var isOnline: MutableStateFlow<Boolean>
     private lateinit var spokenQueries: MutableSharedFlow<String>
+    private lateinit var enqueuer: Enqueuer
+    private lateinit var favoriteSongIds: MutableStateFlow<Set<Long>>
 
     @Test
     fun `GIVEN recently played songs WHEN observing THEN exposes them with the now playing id`() =
@@ -162,13 +165,74 @@ class SongsViewModelTest {
     }
 
     @Test
-    fun `GIVEN a recently played song WHEN swiping it away THEN only asks for confirmation`() =
+    fun `WHEN swiping a song toward the end THEN adds it to the queue and says so`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(recentlyPlayed = listOf(song(id = 7)))
 
             // When
-            viewModel.onEvent(SongsUiEvent.OnRecentSongSwipedAway(song(id = 7)))
+            viewModel.onEvent(SongsUiEvent.OnSongSwipedToQueue(song(id = 7)))
+
+            // Then
+            verify { enqueuer.addToQueue(listOf(song(id = 7))) }
+            assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(ComponentR.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN a song the player cannot reach WHEN swiping it toward the end THEN leaves the queue alone`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(recentlyPlayed = listOf(song(id = 7)), isOnline = false, playableSongIds = emptySet())
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnSongSwipedToQueue(song(id = 7)))
+
+            // Then
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            assertThat(actions).containsExactly(
+                SongsUiAction.ShowSnackBar(ComponentR.string.ui_song_unavailable_offline),
+            )
+        }
+
+    @Test
+    fun `WHEN swiping a song toward the start THEN likes it`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(recentlyPlayed = listOf(song(id = 7)))
+
+        // When
+        viewModel.onEvent(SongsUiEvent.OnSongSwipedToFavorite(song(id = 7)))
+        runCurrent()
+
+        // Then
+        assertThat(viewModel.uiState.value.favoriteSongIds).containsExactly(7L)
+        assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(ComponentR.string.ui_added_to_favorites))
+    }
+
+    @Test
+    fun `GIVEN a liked song WHEN swiping it toward the start THEN takes the like back`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(recentlyPlayed = listOf(song(id = 7)), likedSongIds = setOf(7L))
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnSongSwipedToFavorite(song(id = 7)))
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.favoriteSongIds).isEmpty()
+            assertThat(actions).containsExactly(
+                SongsUiAction.ShowSnackBar(ComponentR.string.ui_removed_from_favorites),
+            )
+        }
+
+    @Test
+    fun `GIVEN a recently played song WHEN asking to remove it THEN only asks for confirmation`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(recentlyPlayed = listOf(song(id = 7)))
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnRemoveRecentClicked(song(id = 7)))
             runCurrent()
 
             // Then
@@ -181,7 +245,7 @@ class SongsViewModelTest {
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(recentlyPlayed = listOf(song(id = 7)))
-            viewModel.onEvent(SongsUiEvent.OnRecentSongSwipedAway(song(id = 7)))
+            viewModel.onEvent(SongsUiEvent.OnRemoveRecentClicked(song(id = 7)))
 
             // When
             viewModel.onEvent(SongsUiEvent.OnRemoveRecentConfirmed)
@@ -197,7 +261,7 @@ class SongsViewModelTest {
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(recentlyPlayed = listOf(song(id = 7)))
-            viewModel.onEvent(SongsUiEvent.OnRecentSongSwipedAway(song(id = 7)))
+            viewModel.onEvent(SongsUiEvent.OnRemoveRecentClicked(song(id = 7)))
 
             // When
             viewModel.onEvent(SongsUiEvent.OnRemoveRecentDismissed)
@@ -466,6 +530,7 @@ class SongsViewModelTest {
         isOnline: Boolean = true,
         playableSongIds: Set<Long>? = null,
         isAudioSearchAvailable: Boolean = true,
+        likedSongIds: Set<Long> = emptySet(),
     ) {
         spokenQueries = MutableSharedFlow()
         searchedTerms = mutableListOf()
@@ -479,6 +544,8 @@ class SongsViewModelTest {
         }
         songPlayback = FakeSongPlayback()
         navigator = mockk(relaxUnitFun = true)
+        enqueuer = mockk(relaxUnitFun = true)
+        favoriteSongIds = MutableStateFlow(likedSongIds)
         viewModel = SongsViewModel(
             useCases = SongsUseCases(
                 searchSongs = { term ->
@@ -488,9 +555,19 @@ class SongsViewModelTest {
                 observeRecentlyPlayed = { flowOf(recentlyPlayed) },
                 removeFromRecentlyPlayed = { songId -> removedSongIds += songId },
                 observeIsOnline = { this@SongsViewModelTest.isOnline },
+                observeFavoriteSongIds = { favoriteSongIds },
+                toggleSongFavorite = { song, isFavorite ->
+                    favoriteSongIds.value = if (isFavorite) {
+                        favoriteSongIds.value - song.id
+                    } else {
+                        favoriteSongIds.value + song.id
+                    }
+                },
             ),
             observablePlayback = { playbackStateFlow },
             songPlayback = songPlayback,
+            enqueuer = enqueuer,
+            playableSongs = { song -> reach(onlineFlow.value).isPlayable(song) },
             observablePlayableSongs = { onlineFlow.map(reach) },
             navigator = navigator,
             audioSearchAvailability = { isAudioSearchAvailable },

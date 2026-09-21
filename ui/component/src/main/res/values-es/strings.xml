@@ -22,4 +22,10 @@
     <string name="ui_now_playing">Reproduciendo ahora</string>
     <string name="ui_song_unavailable_offline">Esta canción no está guardada en este dispositivo. Conéctate a internet para escucharla.</string>
     <string name="ui_artwork_unavailable_offline">Portada no disponible sin conexión</string>
+    <string name="ui_add_to_queue">Añadir a la cola</string>
+    <string name="ui_favorite">Me gusta</string>
+    <string name="ui_unfavorite">Quitar de canciones que te gustan</string>
+    <string name="ui_added_to_queue">Añadida a la cola</string>
+    <string name="ui_added_to_favorites">Añadida a canciones que te gustan</string>
+    <string name="ui_removed_from_favorites">Quitada de canciones que te gustan</string>
 </resources>

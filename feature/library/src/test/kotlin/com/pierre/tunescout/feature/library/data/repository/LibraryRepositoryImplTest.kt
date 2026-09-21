@@ -8,7 +8,6 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.FavoriteAlbumLocalDataSource
-import com.pierre.tunescout.core.database.FavoriteSongLocalDataSource
 import com.pierre.tunescout.core.database.LibrarySearchLocalDataSource
 import com.pierre.tunescout.core.database.PlaylistLocalDataSource
 import com.pierre.tunescout.core.model.Album
@@ -16,6 +15,7 @@ import com.pierre.tunescout.core.model.AlbumSummary
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.testing.fake.FakeFavoriteSongLocalDataSource
 import com.pierre.tunescout.core.testing.fixture.albumSummary
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
@@ -93,7 +93,6 @@ class LibraryRepositoryImplTest {
         // Then
         observed.test {
             assertThat(awaitItem()).containsExactlyElementsIn(favorites)
-            awaitComplete()
         }
     }
 
@@ -192,15 +191,15 @@ class LibraryRepositoryImplTest {
     }
 
     @Test
-    fun `WHEN removing a song from a playlist THEN the playlist drops it`() = runTest {
+    fun `WHEN liking a song THEN it joins the favourites`() = runTest {
         // Given
         prepareScenario()
 
         // When
-        repository.removeSongFromPlaylist(playlistId = 7, songId = 1)
+        repository.addFavorite(song(id = 1))
 
         // Then
-        assertThat(playlistLocalDataSource.removedSongs).containsExactly(7L to 1L)
+        assertThat(favoriteSongLocalDataSource.added).containsExactly(song(id = 1))
     }
 
     @Test
@@ -287,7 +286,6 @@ private class FakePlaylistLocalDataSource(
 ) : PlaylistLocalDataSource {
     val createdNames = mutableListOf<String>()
     val deletedPlaylistIds = mutableListOf<Long>()
-    val removedSongs = mutableListOf<Pair<Long, Long>>()
 
     override fun observeAll(): Flow<List<Playlist>> = flowOf(playlists)
 
@@ -329,25 +327,7 @@ private class FakePlaylistLocalDataSource(
         playlistId: Long,
         songId: Long,
     ) {
-        removedSongs += playlistId to songId
-    }
-}
-
-private class FakeFavoriteSongLocalDataSource(
-    private val favorites: List<Song>,
-) : FavoriteSongLocalDataSource {
-    val removedSongIds = mutableListOf<Long>()
-
-    override fun observeAll(): Flow<List<Song>> = flowOf(favorites)
-
-    override fun observeIsFavorite(songId: Long): Flow<Boolean> = error("unused")
-
-    override suspend fun add(song: Song) {
         error("unused")
-    }
-
-    override suspend fun remove(songId: Long) {
-        removedSongIds += songId
     }
 }
 

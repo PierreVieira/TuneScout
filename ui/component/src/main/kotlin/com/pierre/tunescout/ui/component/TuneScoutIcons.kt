@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Replay
@@ -101,6 +102,8 @@ object TuneScoutIcons {
     val favoriteFilled: ImageVector get() = Icons.Rounded.Favorite
 
     val addToPlaylist: ImageVector get() = Icons.Rounded.LibraryAdd
+
+    val removeFromPlaylist: ImageVector get() = Icons.Rounded.RemoveCircleOutline
 
     val add: ImageVector get() = Icons.Rounded.Add
 

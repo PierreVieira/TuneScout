@@ -34,6 +34,7 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
                             recentlyPlayed = recentlyPlayed,
                             nowPlaying = null,
                             songPendingRemoval = null,
+                            favoriteSongIds = emptySet(),
                             isOffline = false,
                             unplayableSongIds = emptySet(),
                         ),

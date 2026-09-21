@@ -31,6 +31,7 @@ class SongOptionsViewModelTest {
     private lateinit var navigator: Navigator
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
     private lateinit var actions: MutableList<SongOptionsUiAction>
+    private lateinit var playlistRemovals: MutableList<Pair<Long, Long>>
 
     @Test
     fun `GIVEN a cached song WHEN observing THEN exposes it`() = runTest(mainDispatcher.dispatcher) {
@@ -198,21 +199,68 @@ class SongOptionsViewModelTest {
             verify(exactly = 0) { navigator.navigateBack() }
         }
 
+    @Test
+    fun `GIVEN the sheet was not opened from a playlist WHEN observing THEN does not offer to remove the song`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1))
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.isRemovableFromPlaylist).isFalse()
+        }
+
+    @Test
+    fun `GIVEN the sheet was opened from a playlist WHEN removing the song THEN it leaves the playlist and closes`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), playlistId = 7)
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromPlaylistClicked)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.isRemovableFromPlaylist).isTrue()
+            assertThat(playlistRemovals).containsExactly(7L to 1L)
+            verify { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN the sheet was not opened from a playlist WHEN asked to remove the song THEN does nothing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnRemoveFromPlaylistClicked)
+            runCurrent()
+
+            // Then
+            assertThat(playlistRemovals).isEmpty()
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
     private fun TestScope.prepareScenario(
         song: Song?,
         isFavorite: Boolean = false,
         isPlayable: Boolean = true,
+        playlistId: Long? = null,
     ) {
         favoriteToggles = mutableListOf()
+        playlistRemovals = mutableListOf()
         actions = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongOptionsViewModel(
-            route = SongOptionsRoute(songId = 1),
+            route = SongOptionsRoute(songId = 1, playlistId = playlistId),
             useCases = SongOptionsUseCases(
                 observeSong = { flowOf(song) },
                 isFavorite = { flowOf(isFavorite) },
                 toggleFavorite = { toggled, wasFavorite -> favoriteToggles += toggled.id to wasFavorite },
+                removeFromPlaylist = { playlistId, songId -> playlistRemovals += playlistId to songId },
             ),
             enqueuer = enqueuer,
             playableSongs = PlayableSongs { isPlayable },

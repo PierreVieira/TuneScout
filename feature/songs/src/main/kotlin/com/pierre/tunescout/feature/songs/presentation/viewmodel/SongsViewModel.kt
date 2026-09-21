@@ -15,6 +15,7 @@ import com.pierre.tunescout.core.navigation.route.AudioSearchRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -54,6 +55,8 @@ import com.pierre.tunescout.ui.component.R as ComponentR
 class SongsViewModel(
     private val useCases: SongsUseCases,
     private val songPlayback: SongPlayback,
+    private val enqueuer: Enqueuer,
+    private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
@@ -91,19 +94,28 @@ class SongsViewModel(
      */
     private val connection: Flow<Connection> = combine(isOnline, playableSongsNow, ::Connection)
 
+    /** What the user kept: the songs played last and the ones liked, which the rows read together. */
+    private val savedSongs: Flow<SavedSongs> = combine(
+        useCases.observeRecentlyPlayed(),
+        useCases.observeFavoriteSongIds(),
+        ::SavedSongs,
+    )
+
     val uiState: StateFlow<SongsUiState> = combine(
         query,
-        useCases.observeRecentlyPlayed(),
+        savedSongs,
         observablePlayback.observePlaybackState(),
         songPendingRemoval,
         connection,
-    ) { query, recentlyPlayed, playback, pendingRemoval, connection ->
+    ) { query, saved, playback, pendingRemoval, connection ->
+        val recentlyPlayed = saved.recentlyPlayed
         SongsUiState(
             query = query,
             isAudioSearchAvailable = isAudioSearchAvailable,
             recentlyPlayed = recentlyPlayed,
             nowPlaying = playback.nowPlaying,
             songPendingRemoval = pendingRemoval,
+            favoriteSongIds = saved.favoriteSongIds,
             isOffline = !connection.isOnline,
             unplayableSongIds = connection.playableSongs.findUnplayableIds(recentlyPlayed),
         )
@@ -116,6 +128,7 @@ class SongsViewModel(
             recentlyPlayed = emptyList(),
             nowPlaying = null,
             songPendingRemoval = null,
+            favoriteSongIds = emptySet(),
             isOffline = false,
             unplayableSongIds = emptySet(),
         ),
@@ -153,7 +166,9 @@ class SongsViewModel(
         SongsUiEvent.OnThemeClicked -> navigator.navigate(ThemeSelectionRoute)
         is SongsUiEvent.OnSongClicked -> play(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
-        is SongsUiEvent.OnRecentSongSwipedAway -> songPendingRemoval.value = event.song
+        is SongsUiEvent.OnSongSwipedToQueue -> addToQueue(event.song)
+        is SongsUiEvent.OnSongSwipedToFavorite -> toggleFavorite(event.song)
+        is SongsUiEvent.OnRemoveRecentClicked -> songPendingRemoval.value = event.song
         SongsUiEvent.OnRemoveRecentConfirmed -> removeFromRecentlyPlayed()
         SongsUiEvent.OnRemoveRecentDismissed -> songPendingRemoval.value = null
     }
@@ -196,11 +211,40 @@ class SongsViewModel(
         emitAction(SongsUiAction.ShowSnackBar(ComponentR.string.ui_song_unavailable_offline))
     }
 
+    /** A song the player cannot reach never enters the queue, so it does not stall on it. */
+    private fun addToQueue(song: Song) {
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        enqueuer.addToQueue(listOf(song))
+        emitAction(SongsUiAction.ShowSnackBar(ComponentR.string.ui_added_to_queue))
+    }
+
+    private fun toggleFavorite(song: Song) {
+        val isFavorite = song.id in uiState.value.favoriteSongIds
+        viewModelScope.launch {
+            useCases.toggleSongFavorite(song = song, isFavorite = isFavorite)
+            val message = if (isFavorite) {
+                ComponentR.string.ui_removed_from_favorites
+            } else {
+                ComponentR.string.ui_added_to_favorites
+            }
+            emitAction(SongsUiAction.ShowSnackBar(message))
+        }
+    }
+
     private fun removeFromRecentlyPlayed() {
         val song = songPendingRemoval.value ?: return
         songPendingRemoval.value = null
         viewModelScope.launch { useCases.removeFromRecentlyPlayed(song.id) }
     }
+
+    /**
+     * @property recentlyPlayed the songs played last, newest first.
+     * @property favoriteSongIds the songs the user liked.
+     */
+    private data class SavedSongs(
+        val recentlyPlayed: List<Song>,
+        val favoriteSongIds: Set<Long>,
+    )
 
     /**
      * @property isOnline whether the device has a connection right now.

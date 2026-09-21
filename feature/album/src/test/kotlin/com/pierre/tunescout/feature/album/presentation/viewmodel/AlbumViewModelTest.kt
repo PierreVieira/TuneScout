@@ -12,6 +12,7 @@ import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.playback.TransportControls
@@ -53,6 +54,8 @@ class AlbumViewModelTest {
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
     private lateinit var isOnline: MutableStateFlow<Boolean>
     private lateinit var actions: MutableList<AlbumUiAction>
+    private lateinit var enqueuer: Enqueuer
+    private lateinit var favoriteSongIds: MutableStateFlow<Set<Long>>
 
     @Test
     fun `GIVEN no cached album WHEN starting THEN refreshes it and shows loading meanwhile`() =
@@ -317,6 +320,70 @@ class AlbumViewModelTest {
             // Then
             assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
             verify(exactly = 0) { navigator.navigate(any()) }
+        }
+
+    @Test
+    fun `GIVEN a loaded album WHEN swiping a track toward the end THEN adds it to the queue and says so`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongSwipedToQueue(album.songs[1]))
+
+            // Then
+            verify { enqueuer.addToQueue(listOf(album.songs[1])) }
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN a track the player cannot reach WHEN swiping it toward the end THEN leaves the queue alone`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, isOnlineAtStart = false)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongSwipedToQueue(album.songs[1]))
+
+            // Then
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+        }
+
+    @Test
+    fun `GIVEN a loaded album WHEN swiping a track toward the start THEN likes it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongSwipedToFavorite(album.songs[1]))
+            runCurrent()
+
+            // Then
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+            assertThat(state.favoriteSongIds).containsExactly(album.songs[1].id)
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_added_to_favorites))
+        }
+
+    @Test
+    fun `GIVEN a liked track WHEN swiping it toward the start THEN takes the like back`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, likedSongIds = setOf(album.songs[1].id))
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongSwipedToFavorite(album.songs[1]))
+            runCurrent()
+
+            // Then
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+            assertThat(state.favoriteSongIds).isEmpty()
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_removed_from_favorites))
         }
 
     @Test
@@ -606,6 +673,7 @@ class AlbumViewModelTest {
         isFavorite: Boolean = false,
         isOnlineAtStart: Boolean = true,
         cachedPreviews: Set<Long> = emptySet(),
+        likedSongIds: Set<Long> = emptySet(),
     ) {
         localAlbum = MutableStateFlow(cached)
         refreshResults = refreshResult
@@ -618,6 +686,8 @@ class AlbumViewModelTest {
         contextStarts = mutableListOf()
         transportControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
+        enqueuer = mockk(relaxUnitFun = true)
+        favoriteSongIds = MutableStateFlow(likedSongIds)
         viewModel = AlbumViewModel(
             route = AlbumRoute(albumId = 10),
             useCases = AlbumUseCases(
@@ -629,10 +699,19 @@ class AlbumViewModelTest {
                 isAlbumFavorite = { flowOf(isFavorite) },
                 toggleAlbumFavorite = { album, wasFavorite -> favoriteToggles += album.id to wasFavorite },
                 observeIsOnline = { isOnline },
+                observeFavoriteSongIds = { favoriteSongIds },
+                toggleSongFavorite = { song, isFavorite ->
+                    favoriteSongIds.value = if (isFavorite) {
+                        favoriteSongIds.value - song.id
+                    } else {
+                        favoriteSongIds.value + song.id
+                    }
+                },
             ),
             observablePlayback = { playbackStateFlow },
             songPlayback = songPlayback,
             contextStarter = { songs, context -> contextStarts += songs to context },
+            enqueuer = enqueuer,
             transportControls = transportControls,
             playableSongs = PlayableSongs { song -> isOnline.value || song.id in cachedPreviews },
             navigator = navigator,

@@ -34,7 +34,11 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
                 screen = { PlayerContent(uiState = playerBehindSheet, isSideBySide = false, onEvent = {}) },
                 sheet = {
                     SongOptionsContent(
-                        uiState = SongOptionsUiState(song = getLucky, isFavorite = false),
+                        uiState = SongOptionsUiState(
+                            song = getLucky,
+                            isFavorite = false,
+                            isRemovableFromPlaylist = false,
+                        ),
                         onEvent = {},
                     )
                 },

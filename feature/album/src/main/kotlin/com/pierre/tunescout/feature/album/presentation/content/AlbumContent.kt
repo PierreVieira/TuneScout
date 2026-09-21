@@ -37,6 +37,7 @@ import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
+import com.pierre.tunescout.ui.component.SongSwipeActionsBox
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
@@ -181,20 +182,26 @@ private fun LoadedContent(
             )
         }
         items(items = album.songs, key = { song -> song.id }) { song ->
-            SongRow(
-                title = song.title,
-                subtitle = song.artistName,
-                artworkUrl = song.artwork.thumbnailUrl,
-                artworkSize = rowArtworkSize,
-                nowPlaying = NowPlayingState.of(
-                    isCurrentSong = uiState.nowPlaying.isOn(song.id),
-                    isPlaying = uiState.nowPlaying?.isPlaying == true,
-                ),
-                isUnavailable = song.id in uiState.unplayableSongIds,
-                sharedSongId = song.id,
-                onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
-                trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },
-            )
+            SongSwipeActionsBox(
+                isFavorite = song.id in uiState.favoriteSongIds,
+                onAddToQueue = { onEvent(AlbumUiEvent.OnSongSwipedToQueue(song)) },
+                onToggleFavorite = { onEvent(AlbumUiEvent.OnSongSwipedToFavorite(song)) },
+            ) {
+                SongRow(
+                    title = song.title,
+                    subtitle = song.artistName,
+                    artworkUrl = song.artwork.thumbnailUrl,
+                    artworkSize = rowArtworkSize,
+                    nowPlaying = NowPlayingState.of(
+                        isCurrentSong = uiState.nowPlaying.isOn(song.id),
+                        isPlaying = uiState.nowPlaying?.isPlaying == true,
+                    ),
+                    isUnavailable = song.id in uiState.unplayableSongIds,
+                    sharedSongId = song.id,
+                    onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
+                    trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },
+                )
+            }
         }
     }
 }
