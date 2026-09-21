@@ -10,6 +10,7 @@ dependencies {
     implementation(projects.core.network.api)
     implementation(projects.core.database.api)
     implementation(projects.core.playback.api)
+    implementation(projects.core.audioSearch)
 
     implementation(libs.androidx.paging.common)
     implementation(libs.androidx.paging.compose)

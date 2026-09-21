@@ -6,9 +6,12 @@ import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.map
+import com.pierre.tunescout.core.audiosearch.AudioSearchAvailability
+import com.pierre.tunescout.core.audiosearch.ObservableAudioSearchQueries
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.AudioSearchRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
@@ -17,13 +20,14 @@ import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.playback.SongPlayback
+import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
-import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.utils.ActionViewModel
+import com.pierre.tunescout.ui.utils.permission.PermissionResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -37,11 +41,14 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import com.pierre.tunescout.ui.component.R as ComponentR
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
@@ -50,6 +57,8 @@ class SongsViewModel(
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
+    audioSearchAvailability: AudioSearchAvailability,
+    audioSearchQueries: ObservableAudioSearchQueries,
 ) : ActionViewModel<SongsUiAction>() {
     private val searchDebounce = 300.milliseconds
     private val idleLoadStates = LoadStates(
@@ -57,6 +66,7 @@ class SongsViewModel(
         prepend = LoadState.NotLoading(endOfPaginationReached = true),
         append = LoadState.NotLoading(endOfPaginationReached = true),
     )
+    private val isAudioSearchAvailable = audioSearchAvailability.isAvailable()
     private val query = MutableStateFlow("")
     private val songPendingRemoval = MutableStateFlow<Song?>(null)
 
@@ -90,6 +100,7 @@ class SongsViewModel(
     ) { query, recentlyPlayed, playback, pendingRemoval, connection ->
         SongsUiState(
             query = query,
+            isAudioSearchAvailable = isAudioSearchAvailable,
             recentlyPlayed = recentlyPlayed,
             nowPlaying = playback.nowPlaying,
             songPendingRemoval = pendingRemoval,
@@ -101,6 +112,7 @@ class SongsViewModel(
         started = SharingStarted.WhileSubscribed(),
         initialValue = SongsUiState(
             query = "",
+            isAudioSearchAvailable = isAudioSearchAvailable,
             recentlyPlayed = emptyList(),
             nowPlaying = null,
             songPendingRemoval = null,
@@ -129,15 +141,41 @@ class SongsViewModel(
             results.map { song -> SearchResultUiModel(song = song, isUnavailable = !playable.isPlayable(song)) }
         }
 
+    init {
+        searchSpokenQueries(audioSearchQueries)
+    }
+
     fun onEvent(event: SongsUiEvent) = when (event) {
         is SongsUiEvent.OnQueryChanged -> query.value = event.query
         SongsUiEvent.OnClearQueryClicked -> query.value = ""
+        SongsUiEvent.OnAudioSearchClicked -> emitAction(SongsUiAction.RequestMicrophonePermission)
+        is SongsUiEvent.OnMicrophonePermissionResult -> handleMicrophonePermission(event.result)
         SongsUiEvent.OnThemeClicked -> navigator.navigate(ThemeSelectionRoute)
         is SongsUiEvent.OnSongClicked -> play(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
         is SongsUiEvent.OnRecentSongSwipedAway -> songPendingRemoval.value = event.song
         SongsUiEvent.OnRemoveRecentConfirmed -> removeFromRecentlyPlayed()
         SongsUiEvent.OnRemoveRecentDismissed -> songPendingRemoval.value = null
+    }
+
+    /**
+     * A spoken query lands in the same field a typed one does, so the search it starts, the clear
+     * button and the debounce are the ones the keyboard already had.
+     */
+    private fun searchSpokenQueries(audioSearchQueries: ObservableAudioSearchQueries) {
+        audioSearchQueries
+            .observeQueries()
+            .onEach { spokenQuery -> query.value = spokenQuery }
+            .launchIn(viewModelScope)
+    }
+
+    /** The sheet opens the microphone as it opens, so it is only reached with the permission in hand. */
+    private fun handleMicrophonePermission(result: PermissionResult) {
+        when (result) {
+            PermissionResult.Granted -> navigator.navigate(AudioSearchRoute)
+            PermissionResult.Denied -> emitAction(SongsUiAction.ShowSnackBar(R.string.songs_microphone_denied))
+            PermissionResult.PermanentlyDenied -> emitAction(SongsUiAction.ShowMicrophoneSettingsSnackBar)
+        }
     }
 
     private fun play(song: Song) {
@@ -155,7 +193,7 @@ class SongsViewModel(
     }
 
     private fun showSongUnavailableOffline() {
-        emitAction(SongsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+        emitAction(SongsUiAction.ShowSnackBar(ComponentR.string.ui_song_unavailable_offline))
     }
 
     private fun removeFromRecentlyPlayed() {

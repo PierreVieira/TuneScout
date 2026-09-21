@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.AudioSearchRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -20,12 +21,14 @@ import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
 import com.pierre.tunescout.core.testing.fake.SongPlayRequest
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
-import com.pierre.tunescout.ui.component.R
+import com.pierre.tunescout.ui.utils.permission.PermissionResult
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -37,6 +40,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import kotlin.time.Duration.Companion.milliseconds
+import com.pierre.tunescout.ui.component.R as ComponentR
 
 class SongsViewModelTest {
     private lateinit var viewModel: SongsViewModel
@@ -46,6 +50,7 @@ class SongsViewModelTest {
     private lateinit var searchedTerms: MutableList<String>
     private lateinit var removedSongIds: MutableList<Long>
     private lateinit var isOnline: MutableStateFlow<Boolean>
+    private lateinit var spokenQueries: MutableSharedFlow<String>
 
     @Test
     fun `GIVEN recently played songs WHEN observing THEN exposes them with the now playing id`() =
@@ -290,7 +295,9 @@ class SongsViewModelTest {
             viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
 
             // Then
-            assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            assertThat(
+                actions,
+            ).containsExactly(SongsUiAction.ShowSnackBar(ComponentR.string.ui_song_unavailable_offline))
             verify(exactly = 0) { navigator.navigate(any()) }
         }
 
@@ -363,13 +370,104 @@ class SongsViewModelTest {
             assertThat(actions).isEmpty()
         }
 
+    @Test
+    fun `GIVEN a device that cannot recognize speech WHEN observing THEN the audio search is not offered`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(isAudioSearchAvailable = false)
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.isAudioSearchAvailable).isFalse()
+        }
+
+    @Test
+    fun `GIVEN the songs screen WHEN clicking the microphone THEN asks for the permission before opening the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario()
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnAudioSearchClicked)
+            runCurrent()
+
+            // Then
+            assertThat(actions).containsExactly(SongsUiAction.RequestMicrophonePermission)
+            verify(exactly = 0) { navigator.navigate(any()) }
+        }
+
+    @Test
+    fun `GIVEN the microphone was granted WHEN the result arrives THEN opens the audio search`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario()
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnMicrophonePermissionResult(PermissionResult.Granted))
+            runCurrent()
+
+            // Then
+            verify { navigator.navigate(AudioSearchRoute) }
+            assertThat(actions).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN the microphone was denied WHEN the result arrives THEN says why without opening the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario()
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnMicrophonePermissionResult(PermissionResult.Denied))
+            runCurrent()
+
+            // Then
+            assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(R.string.songs_microphone_denied))
+            verify(exactly = 0) { navigator.navigate(any()) }
+        }
+
+    @Test
+    fun `GIVEN the microphone was denied for good WHEN the result arrives THEN offers the settings`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario()
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnMicrophonePermissionResult(PermissionResult.PermanentlyDenied))
+            runCurrent()
+
+            // Then
+            assertThat(actions).containsExactly(SongsUiAction.ShowMicrophoneSettingsSnackBar)
+            verify(exactly = 0) { navigator.navigate(any()) }
+        }
+
+    @Test
+    fun `GIVEN the audio search heard a query WHEN it is published THEN fills the field and searches it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(catalog = listOf(song(id = 1)))
+
+            // When
+            spokenQueries.emit("daft punk")
+            val results = viewModel.searchResults.asSnapshot()
+
+            // Then
+            assertThat(viewModel.uiState.value.query).isEqualTo("daft punk")
+            assertThat(searchedTerms).containsExactly("daft punk")
+            assertThat(results.map { result -> result.song.id }).containsExactly(1L)
+        }
+
     private fun TestScope.prepareScenario(
         recentlyPlayed: List<Song> = emptyList(),
         catalog: List<Song> = emptyList(),
         playback: PlaybackState = PlaybackState.Idle,
         isOnline: Boolean = true,
         playableSongIds: Set<Long>? = null,
+        isAudioSearchAvailable: Boolean = true,
     ) {
+        spokenQueries = MutableSharedFlow()
         searchedTerms = mutableListOf()
         actions = mutableListOf()
         removedSongIds = mutableListOf()
@@ -395,6 +493,8 @@ class SongsViewModelTest {
             songPlayback = songPlayback,
             observablePlayableSongs = { onlineFlow.map(reach) },
             navigator = navigator,
+            audioSearchAvailability = { isAudioSearchAvailable },
+            audioSearchQueries = { spokenQueries },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

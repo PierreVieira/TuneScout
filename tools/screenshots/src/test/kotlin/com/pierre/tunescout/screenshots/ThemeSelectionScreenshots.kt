@@ -30,6 +30,7 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
                         isHeaderInline = false,
                         uiState = SongsUiState(
                             query = "",
+                            isAudioSearchAvailable = true,
                             recentlyPlayed = recentlyPlayed,
                             nowPlaying = null,
                             songPendingRemoval = null,

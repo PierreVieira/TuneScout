@@ -12,5 +12,6 @@
 - **Navigation:** Navigation 3 (`androidx.navigation3`, Android only) with type-safe `@Serializable` `NavKey` routes
 - **Images:** Coil 3 with the Ktor network fetcher
 - **Playback:** Media3 ExoPlayer (`media3-exoplayer` + `media3-session`)
+- **Speech:** the platform's `android.speech.SpeechRecognizer`, behind `feature/audio_search`
 - **Lint:** ktlint with the custom `tunescout-style` ruleset in `tools/ktlint_custom_rules`, run through `./scripts/ktlint.sh`
 - **Tests:** JUnit 6 Jupiter + Google Truth + kotlinx-coroutines-test + Turbine + MockK; Compose screen tests and E2E run on device with the android-junit5 plugin (`createComposeExtension()`), no Robolectric

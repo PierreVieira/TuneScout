@@ -31,6 +31,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                         isHeaderInline = false,
                         uiState = SongsUiState(
                             query = "",
+                            isAudioSearchAvailable = true,
                             recentlyPlayed = recentlyPlayed,
                             nowPlaying = NowPlaying(songId = getLucky.id, isPlaying = false),
                             songPendingRemoval = null,
@@ -62,6 +63,7 @@ internal class SongsScreenshots : ReadmeScreenshotsTest() {
                 isHeaderInline = false,
                 uiState = SongsUiState(
                     query = SEARCH_QUERY,
+                    isAudioSearchAvailable = true,
                     recentlyPlayed = recentlyPlayed,
                     nowPlaying = null,
                     songPendingRemoval = null,

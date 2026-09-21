@@ -21,6 +21,7 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LibraryAdd
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Pause
@@ -38,6 +39,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 object TuneScoutIcons {
     val search: ImageVector get() = Icons.Rounded.Search
+
+    val microphone: ImageVector get() = Icons.Rounded.Mic
 
     val clear: ImageVector get() = Icons.Rounded.Close
 

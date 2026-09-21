@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.playback.di.playbackModule
 import com.pierre.tunescout.core.utils.di.utilsModule
 import com.pierre.tunescout.feature.addtoplaylist.di.addToPlaylistModule
 import com.pierre.tunescout.feature.album.di.albumModule
+import com.pierre.tunescout.feature.audiosearch.di.audioSearchModule
 import com.pierre.tunescout.feature.library.di.libraryModule
 import com.pierre.tunescout.feature.miniplayer.di.miniPlayerModule
 import com.pierre.tunescout.feature.player.di.playerModule
@@ -29,6 +30,7 @@ val appModules: List<Module> = listOf(
     playbackModule,
     splashModule,
     songsModule,
+    audioSearchModule,
     libraryModule,
     songOptionsModule,
     addToPlaylistModule,
