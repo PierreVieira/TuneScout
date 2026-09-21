@@ -3,7 +3,6 @@
     <string name="player_now_playing">Läuft gerade</string>
     <string name="player_not_found_title">Dieser Song ist nicht verfügbar</string>
     <string name="player_not_found_description">Er wurde vielleicht aus dem Katalog entfernt. Geh zurück und wähl einen anderen.</string>
-    <string name="player_failed">Diese Vorschau konnte nicht abgespielt werden. Prüfe deine Verbindung und versuch es noch mal.</string>
     <string name="player_remaining_time">-%1$s</string>
     <string name="player_position_description">%1$s von %2$s</string>
     <string name="player_elapsed_description">%1$s gespielt</string>
