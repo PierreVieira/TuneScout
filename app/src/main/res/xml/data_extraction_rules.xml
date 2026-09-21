@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-    TuneScout keeps nothing worth restoring: the Room database is a cache of iTunes results and of
-    what was played recently, all of it re-fetchable. `android:allowBackup="false"` already rules out
-    cloud backup, but on Android 12+ it does not reliably stop device-to-device transfer, so both
-    channels are excluded explicitly here.
+    Nothing the app stores is backed up or carried to a new device. The Room database holds a cache
+    of iTunes results and of what was played recently, which is re-fetchable, but also the
+    playlists, liked songs and liked albums the user created, which are not: they are lost on a
+    reinstall or a new device. `android:allowBackup="false"` already rules out cloud backup, but on
+    Android 12+ it does not reliably stop device-to-device transfer, so both channels are excluded
+    explicitly here.
 
     Excluding each storage root covers its subdirectories (files, databases and shared preferences).
 -->

@@ -208,3 +208,5 @@ MockK · Turbine
   it would from search.
 - Playlists, liked songs and liked albums stay on the device. There is no account, so there is
   nothing to sync them to.
+- Backup is off: nothing goes to cloud backup or moves with a device-to-device transfer, so
+  playlists and likes are lost on a reinstall or a new phone.
