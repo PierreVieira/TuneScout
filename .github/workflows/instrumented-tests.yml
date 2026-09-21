@@ -64,14 +64,22 @@ jobs:
       # run-to-run noise, while its 1.3 GB entry crowded the repository's 10 GB cache budget and
       # evicted the Gradle dependency caches that every job depends on.
       # JUnit 6 on device needs API 35+ (Java 17 baseline)
+      # The step has a timeout of its own, well under the job's: a run that hangs on the device
+      # otherwise holds the emulator until the job is killed, and a killed job uploads no report.
       - name: Run Compose screen tests and end-to-end flows
+        timeout-minutes: 25
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: ./gradlew $(./scripts/instrumented_shard.sh connected ${{ matrix.shard }} "$SHARD_COUNT") --continue
+          # One module at a time: the shard has a single emulator, and Gradle's parallel execution
+          # otherwise installs and drives several test APKs on it at once — which interleaves the
+          # log past the point of telling which module is stuck.
+          script: >-
+            ./gradlew $(./scripts/instrumented_shard.sh connected ${{ matrix.shard }} "$SHARD_COUNT")
+            --continue --max-workers=1
 
       - name: Upload instrumented test reports
         if: failure()
