@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="theme_selection_title">Theme</string>
-    <string name="theme_selection_open">Change theme</string>
     <string name="theme_selection_light">Light</string>
     <string name="theme_selection_dark">Dark</string>
     <string name="theme_selection_system">System</string>
