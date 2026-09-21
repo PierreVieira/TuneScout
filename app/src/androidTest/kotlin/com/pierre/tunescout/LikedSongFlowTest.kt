@@ -3,6 +3,7 @@ package com.pierre.tunescout
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -59,13 +60,17 @@ class LikedSongFlowTest {
         unloadKoinModules(fakeRemoteModule)
     }
 
+    /**
+     * The sheet draws its options disabled until the song loads from the database, and a tap on a
+     * disabled option is dropped, so the test waits for "Like" to be enabled before tapping it.
+     */
     @Test
     fun aSongLikedFromItsOptionsSheetShowsUpUnderLikedSongsInTheLibraryTab() = compose.use {
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
         waitUntilAtLeastOneExists(hasText("Digital Love"), SCREEN_TIMEOUT_MILLIS)
 
         onAllNodesWithContentDescription("More options")[0].performClick()
-        waitUntilAtLeastOneExists(hasText("Like"), SCREEN_TIMEOUT_MILLIS)
+        waitUntilAtLeastOneExists(hasText("Like") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Like").performClick()
         waitUntilDoesNotExist(hasText("Like"), SCREEN_TIMEOUT_MILLIS)
         assertThat(storedFavoriteIds()).containsExactly(201L)

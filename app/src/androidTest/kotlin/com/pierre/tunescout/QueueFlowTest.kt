@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -86,7 +87,7 @@ class QueueFlowTest {
 
     private fun ComposeContext.queueSecondResultFromItsOptionsSheet() {
         onAllNodesWithContentDescription("More options")[1].performClick()
-        waitUntilAtLeastOneExists(hasText("Add to queue"), SCREEN_TIMEOUT_MILLIS)
+        waitUntilAtLeastOneExists(hasText("Add to queue") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Add to queue").performClick()
         waitUntilDoesNotExist(hasText("Add to queue"), SCREEN_TIMEOUT_MILLIS)
     }

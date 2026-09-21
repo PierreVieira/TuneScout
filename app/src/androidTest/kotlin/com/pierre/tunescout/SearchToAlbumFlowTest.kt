@@ -5,6 +5,7 @@ import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -59,7 +60,7 @@ class SearchToAlbumFlowTest {
 
         waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("More options").performClick()
-        waitUntilAtLeastOneExists(hasText("View album"), SCREEN_TIMEOUT_MILLIS)
+        waitUntilAtLeastOneExists(hasText("View album") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("View album").performClick()
 
         waitUntilAtLeastOneExists(hasText("Give Life Back to Music"), SCREEN_TIMEOUT_MILLIS)
