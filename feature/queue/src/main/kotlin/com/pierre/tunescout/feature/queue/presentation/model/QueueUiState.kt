@@ -4,7 +4,7 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.QueueEntry
 
 /**
- * @property contextTitle what the queue is playing from, when it came from an album.
+ * @property contextTitle what the queue is playing from, when it came from more than a single song.
  * @property nowPlaying the entry playing right now, when there is one.
  * @property status what the player is doing with it.
  * @property queuedByUser the entries the user put next, in order.
@@ -14,7 +14,7 @@ import com.pierre.tunescout.core.model.QueueEntry
  * so a tap that is refused is seen coming.
  */
 data class QueueUiState(
-    val contextTitle: String?,
+    val contextTitle: QueueContextTitle?,
     val nowPlaying: QueueEntry?,
     val status: PlaybackStatus,
     val queuedByUser: List<QueueEntry>,

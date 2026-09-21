@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import com.pierre.tunescout.core.model.QueueEntry
 import com.pierre.tunescout.feature.queue.R
 import com.pierre.tunescout.feature.queue.presentation.component.QueueRow
+import com.pierre.tunescout.feature.queue.presentation.model.QueueContextTitle
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.ui.component.NowPlayingState
@@ -42,7 +43,7 @@ fun QueueContent(
             .fillMaxWidth()
             .navigationBarsPadding(),
     ) {
-        SheetHeading(contextTitle = uiState.contextTitle)
+        SheetHeading(contextTitle = uiState.contextTitle?.resolve())
         if (uiState.isEmpty) {
             StateMessage(
                 title = stringResource(R.string.queue_empty_title),
@@ -52,6 +53,13 @@ fun QueueContent(
             QueueList(uiState = uiState, onEvent = onEvent)
         }
     }
+}
+
+@Composable
+private fun QueueContextTitle.resolve(): String = when (this) {
+    is QueueContextTitle.Custom -> name
+    QueueContextTitle.LikedSongs -> stringResource(R.string.queue_context_liked_songs)
+    QueueContextTitle.RecentlyPlayed -> stringResource(R.string.queue_context_recently_played)
 }
 
 @Composable
@@ -94,6 +102,7 @@ private fun QueueList(
     }
     val reorderable = uiState.queuedByUser + uiState.upNext
     val upNextLabel = uiState.contextTitle
+        ?.resolve()
         ?.let { title -> stringResource(R.string.queue_next_from, title) }
         ?: stringResource(R.string.queue_next_up)
     val queuedLabel = stringResource(R.string.queue_next_in_queue)

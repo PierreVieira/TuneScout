@@ -88,6 +88,77 @@ class RoomPlaybackSessionLocalDataSourceTest {
     }
 
     @Test
+    fun `GIVEN a playlist context WHEN reading back THEN its id and name survive`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.save(
+            session(
+                entries = listOf(entry(id = "a", song = song(id = 1))),
+                currentEntryId = "a",
+                context = PlaybackContext.Playlist(id = 3, title = "Road trip"),
+            ),
+        )
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.context).isEqualTo(PlaybackContext.Playlist(id = 3, title = "Road trip"))
+    }
+
+    @Test
+    fun `GIVEN the liked songs context WHEN reading back THEN it is still the liked songs`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.save(
+            session(
+                entries = listOf(entry(id = "a", song = song(id = 1))),
+                currentEntryId = "a",
+                context = PlaybackContext.LikedSongs,
+            ),
+        )
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.context).isEqualTo(PlaybackContext.LikedSongs)
+    }
+
+    @Test
+    fun `GIVEN the recently played context WHEN reading back THEN it is still the recently played`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.save(
+            session(
+                entries = listOf(entry(id = "a", song = song(id = 1))),
+                currentEntryId = "a",
+                context = PlaybackContext.RecentlyPlayed,
+            ),
+        )
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.context).isEqualTo(PlaybackContext.RecentlyPlayed)
+    }
+
+    @Test
+    fun `GIVEN a context kind this version does not know WHEN reading back THEN it is a single song`() = runTest {
+        // Given
+        prepareScenario()
+        localDataSource.save(session(entries = listOf(entry(id = "a", song = song(id = 1))), currentEntryId = "a"))
+        dao.upsertSession(requireNotNull(dao.findSession()).copy(contextType = "Radio", contextId = 7))
+
+        // When
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.context).isEqualTo(PlaybackContext.SingleSong)
+    }
+
+    @Test
     fun `GIVEN a shuffled queue WHEN reading back THEN it is still shuffled with the order to put back`() = runTest {
         // Given
         prepareScenario()

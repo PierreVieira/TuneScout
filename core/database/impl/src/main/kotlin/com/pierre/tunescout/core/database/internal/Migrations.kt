@@ -107,3 +107,28 @@ internal val MIGRATION_5_6 = object : Migration(5, 6) {
         connection.execSQL("ALTER TABLE `playback_session_new` RENAME TO `playback_session`")
     }
 }
+
+/**
+ * The queue's context stops being an album or nothing: the album columns become a kind, an id and
+ * a title, so a playlist or the liked songs can be saved too. A session built on an album keeps it,
+ * and one built on nothing becomes a single song, which is what reading it back already made of it.
+ */
+internal val MIGRATION_6_7 = object : Migration(6, 7) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `playback_session_new` (`id` INTEGER NOT NULL, `currentEntryId` TEXT, " +
+                "`positionMillis` INTEGER NOT NULL, `repeatMode` TEXT NOT NULL, " +
+                "`isShuffleEnabled` INTEGER NOT NULL, `contextType` TEXT NOT NULL, `contextId` INTEGER, " +
+                "`contextTitle` TEXT, `hasEnded` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        )
+        connection.execSQL(
+            "INSERT INTO `playback_session_new` (`id`, `currentEntryId`, `positionMillis`, `repeatMode`, " +
+                "`isShuffleEnabled`, `contextType`, `contextId`, `contextTitle`, `hasEnded`) " +
+                "SELECT `id`, `currentEntryId`, `positionMillis`, `repeatMode`, `isShuffleEnabled`, " +
+                "CASE WHEN `contextAlbumId` IS NULL THEN 'SingleSong' ELSE 'Album' END, " +
+                "`contextAlbumId`, `contextAlbumTitle`, `hasEnded` FROM `playback_session`",
+        )
+        connection.execSQL("DROP TABLE `playback_session`")
+        connection.execSQL("ALTER TABLE `playback_session_new` RENAME TO `playback_session`")
+    }
+}

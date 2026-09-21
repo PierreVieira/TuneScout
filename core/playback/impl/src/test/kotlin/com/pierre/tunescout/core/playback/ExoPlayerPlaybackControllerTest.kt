@@ -27,6 +27,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class ExoPlayerPlaybackControllerTest {
     private val randomAccessMemories = PlaybackContext.Album(id = 10, title = "Random Access Memories")
+    private val roadTrip = PlaybackContext.Playlist(id = 3, title = "Road trip")
 
     private val fakeExoPlayer = FakeExoPlayer()
     private var serviceLaunches = 0
@@ -544,6 +545,101 @@ class ExoPlayerPlaybackControllerTest {
     }
 
     @Test
+    fun `GIVEN a playlist WHEN playing one of its songs THEN the rest of it plays on with its context`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        controller.play(song = song(id = 2), songs = albumSongs(count = 4), context = roadTrip)
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 2L, 3L, 4L).inOrder()
+        assertThat(currentState.currentSong?.id).isEqualTo(2L)
+        assertThat(currentState.context).isEqualTo(roadTrip)
+    }
+
+    @Test
+    fun `GIVEN a song queued by hand WHEN playing a song from a playlist THEN the queued song plays before the rest`() =
+        runTest {
+            // Given
+            prepareScenario()
+            playAlbum(startingAt = 1)
+            controller.addToQueue(listOf(song(id = 99)))
+
+            // When
+            controller.play(song = song(id = 12), songs = playlistSongs(), context = roadTrip)
+
+            // Then
+            assertThat(queuedSongIds()).containsExactly(11L, 12L, 99L, 13L).inOrder()
+            assertThat(currentState.currentSong?.id).isEqualTo(12L)
+            assertThat(currentState.entries.map { entry -> entry.source })
+                .containsExactly(
+                    QueueSource.Context,
+                    QueueSource.Context,
+                    QueueSource.UserQueue,
+                    QueueSource.Context,
+                ).inOrder()
+        }
+
+    @Test
+    fun `GIVEN a song queued by hand WHEN starting the liked songs THEN it plays right after the first`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1)
+        controller.addToQueue(listOf(song(id = 99)))
+
+        // When
+        controller.playFromStart(songs = playlistSongs(), context = PlaybackContext.LikedSongs)
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(11L, 99L, 12L, 13L).inOrder()
+        assertThat(currentState.context).isEqualTo(PlaybackContext.LikedSongs)
+    }
+
+    @Test
+    fun `GIVEN a playlist is playing WHEN turning shuffle on and off THEN it is back in its own order`() = runTest {
+        // Given
+        prepareScenario()
+        controller.play(song = song(id = 1), songs = albumSongs(count = 8), context = roadTrip)
+        controller.toggleShuffle()
+        assertThat(queuedSongIds().drop(1)).isNotEqualTo(listOf(2L, 3L, 4L, 5L, 6L, 7L, 8L))
+
+        // When
+        controller.toggleShuffle()
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L).inOrder()
+        assertThat(currentState.context).isEqualTo(roadTrip)
+    }
+
+    @Test
+    fun `GIVEN a saved playlist session WHEN restoring THEN the playlist is still the context`() = runTest {
+        // Given
+        prepareScenario()
+        val session = PlaybackSession(
+            entries = listOf(
+                queueEntry(id = "a", song = song(id = 11)),
+                queueEntry(id = "q", song = song(id = 99), source = QueueSource.UserQueue),
+                queueEntry(id = "b", song = song(id = 12)),
+            ),
+            currentEntryId = "a",
+            context = roadTrip,
+            position = 3.seconds,
+            repeatMode = RepeatMode.Off,
+            isShuffleEnabled = false,
+            unshuffledOrder = emptyList(),
+            hasEnded = false,
+        )
+
+        // When
+        controller.restore(session)
+
+        // Then
+        assertThat(currentState.context).isEqualTo(roadTrip)
+        assertThat(queuedSongIds()).containsExactly(11L, 99L, 12L).inOrder()
+    }
+
+    @Test
     fun `WHEN the repeat mode changes on the player THEN it is published`() = runTest {
         // Given
         prepareScenario()
@@ -559,6 +655,8 @@ class ExoPlayerPlaybackControllerTest {
     }
 
     private fun albumSongs(count: Int): List<Song> = (1L..count).map { id -> song(id = id) }
+
+    private fun playlistSongs(): List<Song> = listOf(song(id = 11), song(id = 12), song(id = 13))
 
     private fun endedSession(): PlaybackSession = PlaybackSession(
         entries = listOf(queueEntry(id = "a", song = song(id = 1))),

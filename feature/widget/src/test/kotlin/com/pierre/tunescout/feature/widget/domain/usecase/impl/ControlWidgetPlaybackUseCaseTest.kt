@@ -104,7 +104,7 @@ class ControlWidgetPlaybackUseCaseTest {
         // Then
         assertThat(starter.startedSong).isEqualTo(recentSong)
         assertThat(starter.startedQueue).hasSize(2)
-        assertThat(starter.startedContext).isEqualTo(PlaybackContext.SingleSong)
+        assertThat(starter.startedContext).isEqualTo(PlaybackContext.RecentlyPlayed)
     }
 
     @Test
