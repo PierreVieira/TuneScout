@@ -77,6 +77,12 @@ job's 45, so a run that hangs still uploads `instrumented-test-reports-shard-<n>
 The AVD is not cached. Measured, it saved about 20 seconds, and its 1.3 GB entry pushed the Gradle
 caches out of the budget.
 
+The emulator and its system image are installed in a step of their own, which retries up to three
+times, before the emulator runner starts. Google's repository sometimes serves a corrupt archive
+("Error on ZipFile unknown archive"), and the runner fails the job on the first one. When the
+runner's turn comes, both packages are already up to date and it downloads nothing. If you change
+`api-level`, `target` or `arch`, update the system image in that step to match.
+
 `:tools:baseline_profile` is not in any shard: its tests are in `src/main`, as a `com.android.test` module's
 are, and they are the macrobenchmarks, which run by hand on a device nothing else is using. See
 [Performance](performance.md#reproducing).
