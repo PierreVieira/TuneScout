@@ -37,7 +37,7 @@ fun MainContent(
 
 /**
  * UiAutomator only sees what reaches the accessibility tree as a resource id, and a Compose
- * `testTag` does not unless this is set above it. The macrobenchmarks in :baselineprofile drive a
+ * `testTag` does not unless this is set above it. The macrobenchmarks in :tools:baselineprofile drive a
  * release build through UiAutomator, so this is on in every build type.
  *
  * @return this modifier, with the test tags below it visible to UiAutomator.

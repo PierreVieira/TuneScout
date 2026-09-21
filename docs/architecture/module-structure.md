@@ -4,7 +4,6 @@ The project uses a multi-module Gradle setup. Every new feature gets its own mod
 
 ```
 app/                     # Android application: composition root (Koin appModules, TuneScoutNavigationContent, the tab host, MainActivity)
-baselineprofile/         # Generates :app's Baseline Profile and benchmarks it (com.android.test, run on a device by hand — see docs/performance.md)
 core/
 ├── model/               # Domain models shared across features (Song, Album, Playlist) — pure JVM
 ├── utils/               # suspendRunCatching, DispatcherProvider, IdGenerator — pure JVM
@@ -40,7 +39,8 @@ feature/
 └── widget/            # The home screen widgets (Glance), not a route
 tools/
 ├── ktlint_custom_rules/ # The tunescout-style ktlint ruleset
-└── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
+├── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
+└── baselineprofile/     # Generates :app's Baseline Profile and benchmarks it (com.android.test, run by hand on a device, see docs/performance.md)
 build-logic/             # Convention plugins (tunescout.android.feature, tunescout.jvm.library, ...)
 ```
 

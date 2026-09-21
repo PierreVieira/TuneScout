@@ -36,7 +36,6 @@ plugins {
 }
 
 include(":app")
-include(":baselineprofile")
 
 include(":core:model")
 include(":core:utils")
@@ -72,3 +71,4 @@ include(":tools:ktlint_custom_rules")
 include(":tools:screenshots")
 include(":tools:screenshot_fixtures")
 include(":tools:screenshot_tests")
+include(":tools:baselineprofile")

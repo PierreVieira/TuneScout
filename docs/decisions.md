@@ -4,7 +4,7 @@ A running log, newest first. Each entry states the decision, why, and what it co
 
 ## 2026-09-21 — Performance is measured, not claimed
 
-**A Baseline Profile ships with the app, and the numbers are in the docs.** `:baselineprofile`
+**A Baseline Profile ships with the app, and the numbers are in the docs.** `:tools:baselineprofile`
 generates the profile from the critical journeys — cold start, search and scroll, the player, an
 album — and benchmarks each one without and with it. The profile is committed, so a build needs no
 device. With it, the median cold start on the benchmark emulator drops from 326.7 ms to 288.6 ms
