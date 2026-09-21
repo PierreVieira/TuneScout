@@ -64,6 +64,24 @@ jobs:
       - name: Assemble the shard's APKs
         run: ./gradlew $(./scripts/instrumented_shard.sh assemble ${{ matrix.shard }} "$SHARD_COUNT")
 
+      # The emulator runner downloads these two packages on every run and fails the job the first
+      # time a download comes back corrupt ("Error on ZipFile unknown archive"), which happened
+      # twice on main in one day. Installing them here first, with retries, leaves the runner
+      # nothing to download: sdkmanager skips a package that is already up to date. Keep the
+      # system image in step with api-level, target and arch below.
+      - name: Install the emulator and its system image
+        run: |
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null
+          for attempt in 1 2 3; do
+            if "$sdkmanager" --install emulator 'system-images;android-35;default;x86_64' > /dev/null; then
+              exit 0
+            fi
+            echo "::warning::SDK download failed (attempt $attempt of 3), retrying"
+            sleep 15
+          done
+          exit 1
+
       # Caching the AVD was measured on this workflow and dropped: it saved about 20s, inside the
       # run-to-run noise, while its 1.3 GB entry crowded the repository's 10 GB cache budget and
       # evicted the Gradle dependency caches that every job depends on.
