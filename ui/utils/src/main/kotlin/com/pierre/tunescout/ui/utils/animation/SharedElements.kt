@@ -2,6 +2,8 @@ package com.pierre.tunescout.ui.utils.animation
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Transition
 import androidx.compose.runtime.Composable
@@ -135,19 +137,30 @@ fun Modifier.sharedArtwork(key: Any?): Modifier {
     }
 }
 
+/**
+ * Text that flies between two screens, drawn by both ends at once while it does: the one leaving
+ * fades out as the one arriving fades in. The fade is [modulatedFade] rather than the `fadeIn` and
+ * `fadeOut` `sharedBounds` would run, which put each text in an offscreen buffer on every frame
+ * of the flight.
+ *
+ * @return this modifier, sharing its bounds under [key] while a transition runs.
+ */
 @Composable
 fun Modifier.sharedTextBounds(key: Any?): Modifier {
     val scopes = LocalSharedElementScopes.current
     if (key == null || scopes == null || !isSharedArtworkSurfaceFlying()) return this
     return with(scopes.sharedTransitionScope) {
-        this@sharedTextBounds.sharedBounds(
-            sharedContentState = rememberSharedContentState(key),
-            animatedVisibilityScope = scopes.animatedVisibilityScope,
-            resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(
-                contentScale = ContentScale.FillWidth,
-                alignment = Alignment.CenterStart,
-            ),
-        )
+        this@sharedTextBounds
+            .sharedBounds(
+                sharedContentState = rememberSharedContentState(key),
+                animatedVisibilityScope = scopes.animatedVisibilityScope,
+                enter = EnterTransition.None,
+                exit = ExitTransition.None,
+                resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(
+                    contentScale = ContentScale.FillWidth,
+                    alignment = Alignment.CenterStart,
+                ),
+            ).modulatedFade(visibilityScope = scopes.animatedVisibilityScope)
     }
 }
 
