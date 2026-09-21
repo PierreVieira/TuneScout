@@ -194,7 +194,7 @@ subprojects {
 // manual capture. See docs/screenshots.md.
 private val generatedScreenshotsPath = "outputs/screenshots"
 private val readmeScreenshotWidth = 520
-private val manualScreenshots = setOf("notification.png")
+private val manualScreenshots = setOf("notification.png", "widgets.png", "lock_screen.png", "lock_screen_expanded.png")
 
 private val clearGeneratedScreenshots = tasks.register<Delete>("clearGeneratedScreenshots") {
     delete(layout.buildDirectory.dir(generatedScreenshotsPath))

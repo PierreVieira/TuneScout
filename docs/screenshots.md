@@ -25,7 +25,7 @@ It runs the generators in `:tools:screenshots` (about 30 seconds, no device and 
 scales each 1242x2484 PNG down to 520px wide and rewrites `docs/screenshots/`. Review the diff and
 commit it with the change that caused it.
 
-The task **deletes every PNG in `docs/screenshots/` except the manual ones** before writing, so a
+The task **deletes every PNG in `docs/screenshots/` except the four manual ones** before writing, so a
 shot that was renamed or dropped cannot stay in the folder — and in the README — forever.
 
 ## What the images show
@@ -42,7 +42,10 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `theme.png` | `ThemeSelectionScreenshots` | Light, dark, or whatever the phone says | The theme sheet over the songs screen, dark selected, dynamic colors off. |
 | `library.png` | `LibraryScreenshots.library` | Keep what you like | The library tab as a list: liked songs, three playlists (one still empty) and a liked album, with no filter chip picked. |
 | `library_grid.png` | `LibraryScreenshots.libraryGrid` | Or see them as covers | The same library in the grid view. |
-| `notification.png` | — | — | **Manual capture**, captioned in the README itself. |
+| `widgets.png` | — | — | **Manual capture**: both home screen widgets on a device, cropped to them. |
+| `lock_screen.png` | — | — | **Manual capture**: the media controls on the locked screen. |
+| `lock_screen_expanded.png` | — | — | **Manual capture**: the same controls after a tap on them, expanded to the cover, the timeline and the like button. |
+| `notification.png` | — | — | **Manual capture**: the media controls in the notification shade. |
 
 Every generator renders under `Theme.DARK` rather than the default `Theme.SYSTEM`: Robolectric
 reports a light system theme, so leaving it to the default would silently flip every image the
@@ -64,10 +67,17 @@ The `songs.png` shot is the one that composes two screens: `SongsContent` under
 `MiniPlayerContent`, which is how `app` lays them out. The mini player lives outside the
 `NavDisplay`, so no single `*Content` composable carries it.
 
-`notification.png` is the one image that is not generated: the media controls live in the system
-notification shade, which is not a composable and cannot be rendered by a Compose test. It is a
-device capture, committed once, and `updateReadmeScreenshots` leaves it alone — the file is listed
-in `manualScreenshots` in the root `build.gradle.kts`.
+`widgets.png`, `lock_screen.png`, `lock_screen_expanded.png` and `notification.png` are the images that are not generated: the
+home screen widgets are drawn by the launcher, and the media controls live on the lock screen and in
+the notification shade — none of them is a composable a Compose test can render. They are device
+captures, committed once, and `updateReadmeScreenshots` leaves them alone — the files are listed in
+`manualScreenshots` in the root `build.gradle.kts`.
+
+To recapture one, play something on a device with a few songs in its history, take the screenshot
+with `adb exec-out screencap -p > shot.png`, and scale it down in halving steps like the generated
+ones: `lock_screen.png` and `lock_screen_expanded.png` are the whole screen at 520px wide, `widgets.png` is the two widgets cropped
+out of the home screen at 720px wide. A new manual image also needs its name added to
+`manualScreenshots`, or the next regeneration deletes it.
 
 ## Where to edit
 

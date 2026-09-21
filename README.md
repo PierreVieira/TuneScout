@@ -3,6 +3,13 @@
 Search the iTunes catalog, play 30-second previews, and pick up where you left off. TuneScout is a
 native Android app written for the Music AI Android code challenge.
 
+[![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/compose)
+[![Media3](https://img.shields.io/badge/Media3-ExoPlayer-3DDC84?logo=android&logoColor=white)](https://developer.android.com/media/media3)
+[![License: non-commercial](https://img.shields.io/badge/License-non--commercial-orange.svg)](./LICENSE.md)
+
+## 📱 Screenshots
+
 | Splash | Recently played | Search |
 | :--: | :--: | :--: |
 | <img src="docs/screenshots/splash.png" width="260" alt="The splash screen, a note over the app's gradient"> | <img src="docs/screenshots/songs.png" width="260" alt="Recently played songs on the home screen"> | <img src="docs/screenshots/search.png" width="260" alt="Search results for daft punk, paged as you scroll"> |
@@ -19,192 +26,77 @@ native Android app written for the Music AI Android code challenge.
 | :--: |
 | <img src="docs/screenshots/library_grid.png" width="260" alt="The same library drawn as a grid of covers"> |
 
-| Media controls |
+### Outside the app
+
+| Lock screen | Lock screen, expanded | Notification shade |
+| :--: | :--: | :--: |
+| <img src="docs/screenshots/lock_screen.png" width="260" alt="The media controls on the locked screen, with the cover, previous, pause and next"> | <img src="docs/screenshots/lock_screen_expanded.png" width="260" alt="The lock screen controls expanded: the cover, title, timeline, like, previous and pause"> | <img src="docs/screenshots/notification.png" width="300" alt="Media controls in the notification shade"> |
+
+| Home screen widgets |
 | :--: |
-| <img src="docs/screenshots/notification.png" width="360" alt="Media controls in the notification shade and on the lock screen"> |
+| <img src="docs/screenshots/widgets.png" width="420" alt="The two home screen widgets: now playing with the five songs played last, and the compact now playing row"> |
 
-The ten screens above are generated from the app's own composables, under Robolectric, by
-`./scripts/screenshots.sh`; the notification shade is a device capture, since it is not a
-composable. See [docs/screenshots.md](docs/screenshots.md).
+The screens inside the app are rendered from its own composables, under Robolectric, by
+[`./scripts/screenshots.sh`](docs/screenshots.md); the four outside it are device captures, since
+the launcher, the lock screen and the notification shade are not composables.
 
-## What it does
+## ✨ Features
 
-- **Search** the iTunes Search API as you type, with debounce and paginated results.
-- **Play** a preview. A song tapped in search or in recently played plays on its own; a track
-  tapped inside an album plays the album from there.
-- **Queue** songs and whole albums by hand, either right after the current song ("Play next") or
-  at the end of what you queued ("Add to queue"). What you add plays before the rest of the album
-  and survives starting something else, the way Spotify's queue does. The queue screen reorders by
-  drag, removes by tap, and jumps to any song. It opens as a sheet from the player or the mini
-  player.
-- **Pick up where you left off**: closing the app keeps the queue, the song and its position, and
-  reopening restores all three, paused, from the local database.
-- **Two tabs**: Home, which is search and recently played, and Your Library. The bar at the bottom
-  becomes a navigation rail as soon as the window has width to spare, so a phone turned sideways
-  gives the list its height back.
-- **Library** of your own: liked songs, the playlists you create and the albums you like, as a list
-  or a grid, with the choice remembered on the device. Chips narrow it to playlists or albums, and
-  its own search screen keeps the items you opened under "Recent searches" and lets you drop them
-  one by one.
-- **Like a song** or **add it to a playlist** from the same options sheet every list opens —
-  including every track of an album. Adding to a playlist can create one on the spot.
-- **Like an album** from the heart in its top bar; queueing it moved into the overflow beside it,
-  because liking is a state the bar should show and queueing is not.
-- **Recently played** is the first tab. It is stored locally, so it works offline and survives
-  restarts. Playing a song records it once, wherever playback was started from.
-- **Offline**, the app is still the app: a preview that played once plays again from the media
-  cache, search answers from the songs already on the device, artwork comes off disk, and a line
-  above the list says where the rows come from. When the connection returns, the search runs again
-  by itself.
-- **Player** with artwork, timeline, elapsed and remaining time, play/pause, previous, next,
-  repeat and the queue. Dragging the timeline seeks on release without pausing.
-- **Mini player** above every screen while something is loaded, with its own play/pause and a tap
-  to reopen the player.
-- **Album** screen reached from the song options sheet. Fetched once through the lookup endpoint
-  and cached, so it opens offline afterwards — and is not fetched again for an hour. A refresh that
-  fails keeps the cached tracks on screen and says it could not update them.
-- **Theme** picked from a sheet on the songs screen: light, dark, or whatever the system says.
-  On Android 12+ the palette can follow the wallpaper instead, explained by a dialog behind the
-  (i) next to the toggle. The choice is stored on the device with DataStore, and the splash holds
-  until it is read, so the first frame is already in the chosen theme.
-- **Media controls** in the notification shade and on the lock screen, backed by a media session.
-- Loading, empty, error, offline and rate-limited states on every screen — the device's own
-  connectivity decides which one, not the shape of the last failure; pull to refresh on search
-  results; English and Brazilian Portuguese; content descriptions on every control.
+- **Search as you type** over the iTunes catalog, paged as you scroll, and **play** any preview.
+- **A queue like Spotify's**: play next or add to queue, reorder by drag, and what you queued
+  survives starting another album.
+- **Pick up where you left off**: the queue, the song and its position come back, paused, after the
+  app is closed.
+- **A library of your own**: liked songs, playlists and liked albums, as a list or a grid.
+- **Offline**: previews that played once play again, search answers from what is on the device,
+  and every screen says where its rows come from.
+- **Outside the app**: two home screen widgets, and media controls on the lock screen and in the
+  notification shade.
+- **Light, dark or the system's**, with dynamic colour on Android 12+, in English and Brazilian
+  Portuguese.
 
-## Running it
+Every feature, screen by screen, is in [Features](docs/features.md).
 
-Requirements: JDK 21 and a device or emulator on API 26+. No API keys: the iTunes Search API is
-public.
+## 🧱 Tech stack
+
+Kotlin · Jetpack Compose · Navigation 3 · Koin · Ktor + kotlinx.serialization · Room 3 ·
+DataStore · Paging 3 · Coil 3 · Media3 ExoPlayer · Glance · ktlint with project rules · JUnit 6 ·
+Truth · MockK · Turbine
+
+MVVM with unidirectional data flow, one Gradle module per feature, and module dependency rules the
+build enforces. See the [Architecture overview](docs/architecture/overview.md).
+
+## 🚀 Getting started
+
+JDK 21 and a device or emulator on API 26+ — no API keys:
 
 ```bash
 ./gradlew :app:installDebug
 ```
 
-Or open the project in Android Studio and run the `app` configuration.
+The checks CI runs, and how to run each locally, are in [Getting started](docs/getting-started.md).
 
-## Checks
+## 🚧 Not done
 
-| Command | What it runs |
+What the app leaves out, on purpose or for lack of time — the typeface, a queue built from a
+playlist, backup, and a few more — is listed in [Not done](docs/not-done.md).
+
+## 📚 Documentation
+
+| Document | What's in it |
 |---|---|
-| `./scripts/ktlint.sh` | Formatting and the project rules, the same as CI. `--format` autocorrects. |
-| `./gradlew testDebugUnitTest test` | Unit tests on the JVM (JUnit 6). |
-| `./gradlew connectedDebugAndroidTest` | Compose screen tests and the end-to-end flow on a device (API 35+). |
-| `./gradlew assertModuleGraph` | Module dependency rules. |
+| [Features](docs/features.md) | Everything the app does, screen by screen. |
+| [Getting started](docs/getting-started.md) | Requirements, running the app, and the checks CI runs. |
+| [Architecture overview](docs/architecture/overview.md) | Modules, screens, navigation, data, paging, playback and the queue. |
+| [Architecture guide](docs/ai_agents.md) | The index every convention hangs off — state, use cases, DI, navigation, data sources, code style. |
+| [Decisions and trade-offs](docs/decisions.md) | Why each larger choice was made, and what it costs. |
+| [Not done](docs/not-done.md) | What is left out, and why. |
+| [Code quality](docs/code-quality.md) | ktlint, the custom ruleset, coverage, and what CI runs. |
+| [Testing](docs/testing/README.md) | How the suites are organised and what each layer covers. |
+| [README screenshots](docs/screenshots.md) | How the images above are generated, and which ones are captured by hand. |
 
-CI runs all four on every push and pull request, plus a debug and release build.
+## 📄 License
 
-## Architecture
-
-MVVM with unidirectional data flow, split into Gradle modules where each feature owns its own
-data, domain and presentation layers and `app` wires everything together.
-
-```
-app/                 composition root: Koin modules, MainActivity, NavDisplay, permission prompt
-core/
-  model/             domain models, plain Kotlin
-  utils/             coroutine helpers, dispatchers, duration formatting
-  network/api/       the iTunes API behind one interface per endpoint, and NetworkMonitor:
-                     whether the device can reach it; plain Kotlin
-  network/impl/      Ktor behind those interfaces: the HTTP client, its disk cache, DTOs and
-                     mappers; only app sees it, so the API client can be swapped for another
-  database/api/      the local data source interfaces every feature depends on, plain Kotlin
-  database/impl/     Room: songs, albums, the history, the saved session, playlists and likes
-  playback/api/      the playback role interfaces every screen depends on, plain Kotlin
-  playback/impl/     ExoPlayer behind those interfaces, the media session service and the
-                     preview cache that lets a song play again offline; only app sees it
-  navigation/        routes (NavKey), the Navigator event bus, back stack controller
-  datastore/         the Preferences DataStore the theme preference is written to
-  testing/           fixtures and a JUnit extension for Dispatchers.Main
-ui/
-  theme/             the light and dark palettes, dynamic color, type scale and spacing
-  component/         top bar, song row, search field, seek bar, artwork, state messages
-  utils/             Compose helpers
-feature/
-  splash/  songs/  library/  song_options/  add_to_playlist/  player/  queue/
-  mini_player/  album/  theme_selection/
-                     data / domain / presentation in each
-tools/
-  ktlint_custom_rules/
-  screenshots/       renders the README's screenshots from the app's own composables
-```
-
-**Dependency rules are enforced, not hoped for.** Features never depend on features, core never
-depends on a feature, `ui` knows nothing about features or data, and only `app` sees features.
-`assertModuleGraph` fails the build otherwise. Shared things live in core: models, routes, the
-navigator, the playback contract and the history.
-
-**Screens.** Every screen is a `UiState` rendered by a stateless `*Content` composable, a
-`UiEvent` sealed interface handled by a single `onEvent` in the ViewModel, and a `Navigator`
-injected into the ViewModel. Navigation is never a UI side effect the screen has to forward.
-
-**Navigation 3.** Routes are `@Serializable` `NavKey`s in `core/navigation`. ViewModels push
-commands into a `Navigator`; one collector in `app` applies them to the back stack through
-`BackStackController`, which guards against duplicate pushes and never pops the root. The song
-options sheet is a route rendered by a bottom sheet scene strategy, so Songs and Player open it
-the same way.
-
-**Data.** The network layer is an interface with a Ktor implementation kept `internal`; DTOs
-are mapped once to domain models and never leave the module. Room stores normalized tables
-(songs, albums, history with a foreign key) and exposes flows. Repositories live in the feature
-that needs them and combine the two.
-
-**Pagination.** The iTunes API ignores `offset` and caps `limit` at 200, so the Paging 3 source
-re-requests with a growing limit and keeps only the unseen tail, deduplicating by id. It is not a
-cursor, but it is an honest fit for the API, and the Paging load states drive the list UI.
-
-**Playback.** One ExoPlayer instance is shared by the app and by a `MediaSessionService` that
-posts the media notification. `ObservablePlayback` publishes a `PlaybackState` every screen reads,
-and a small recorder turns "first time a song plays" into a row in the history table.
-
-**The queue has two tiers.** `PlaybackState` carries `QueueEntry` items tagged `Context` (the album
-playing) or `UserQueue` (added by hand), and the play order is the context up to the current song,
-then everything queued by hand, then the rest of the context. Starting another album keeps what you
-queued. Adding, removing and reordering mutate the ExoPlayer timeline in place, so touching the
-queue never interrupts the song that is playing. A keeper writes the queue, the current entry and
-the position to Room — on every change and at most every five seconds while playing — and restores
-them, paused and prepared, when the app starts.
-
-The reasoning behind these and other choices, with what each one costs, is in
-[docs/decisions.md](docs/decisions.md). Conventions for contributors and AI assistants live under
-[docs/](docs/ai_agents.md).
-
-## Testing
-
-| Layer | How | Where |
-|---|---|---|
-| ViewModels, repositories, paging source, mappers, navigation | JUnit 6 + Truth + MockK, fakes as lambdas for `fun interface`s | `src/test` |
-| Playback | The queue controller against a fake ExoPlayer timeline, the ordering rules, the session keeper and the history recorder | `core/playback/impl/src/test` |
-| Database | The session round trip against a fake DAO, and against a real database: the migrations, the offline search and what the song cache is allowed to drop | `core/database/impl/src/{test,androidTest}` |
-| Screens | Compose UI tests on device through the android-junit5 extension | `feature/*/src/androidTest` |
-| Caches | A preview written to the media cache and read back with the network gone, and the artwork cache the app installs | `core/playback/impl/src/androidTest`, `app/src/androidTest` |
-| End to end | Launches the real app, replaces the remote data source through Koin: search → player → options → album, and search → play → queue a song → the queue screen. Both pass in portrait and landscape. | `app/src/androidTest` |
-
-Tests follow Given / When / Then with a `prepareScenario` factory; see
-[docs/testing](docs/testing/README.md).
-
-## Stack
-
-Kotlin · Jetpack Compose · Navigation 3 · Koin · Ktor + kotlinx.serialization · Room 3 ·
-DataStore · Paging 3 · Coil 3 · Media3 ExoPlayer · ktlint with project rules · JUnit 6 · Truth ·
-MockK · Turbine
-
-## Not done, on purpose or for lack of time
-
-- The design uses the Articulat CF typeface, which is commercial; the app ships the system
-  sans-serif with the same sizes and weights.
-- The splash window Android draws before the app's first frame only accepts a flat colour, so it
-  shows the same note over the gradient's average colour; the gradient itself starts with the
-  first frame the app draws.
-- The light palette is derived from the Figma dark one rather than designed: the file only
-  specifies dark.
-- The theme preference stays on the device. There is no account, so there is nothing to sync it
-  to.
-- The 200-item cap of the API is the end of every search; there is no "load more" beyond it.
-- A playlist holds a song once: adding it again leaves it where it already is.
-- Playing a song from a playlist plays that song alone. The queue only takes an album as its
-  context, so a playlist is not one yet.
-- A liked album is the album screen, not a screen of its own: the library row opens the same album
-  it would from search.
-- Playlists, liked songs and liked albums stay on the device. There is no account, so there is
-  nothing to sync them to.
+TuneScout is open to contributions, but not to commercial use: you may use, copy, modify and share
+it, but not sell it or ship it in a commercial product without written permission. See
+[LICENSE.md](./LICENSE.md).
