@@ -6,9 +6,11 @@ import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
@@ -142,18 +144,26 @@ class AlbumViewModel(
     }
 
     /**
-     * A track the player cannot reach is refused with a message before it gets there, and the queue
-     * behind one it can reach keeps only the tracks it can reach too. Playing the whole album follows
-     * the same rule.
+     * The track the player is already on opens the player instead of starting over: a tap on the row
+     * marked as the one playing means "take me there", not "play it again from the beginning". A track
+     * the player cannot reach is refused with a message before it gets there, and the queue behind one
+     * it can reach keeps only the tracks it can reach too. Playing the whole album follows the same
+     * rule.
      */
     private fun play(song: Song) {
-        val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
+        val loaded = uiState.value as? AlbumUiState.Loaded ?: return
+        if (loaded.nowPlaying.isOn(song.id)) return openPlayer(song.id)
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        val album = loaded.album
         playbackStarter.play(
             song = song,
             songs = playableSongs.filterPlayable(album.songs),
             context = PlaybackContext.Album(id = album.id, title = album.title),
         )
+    }
+
+    private fun openPlayer(songId: Long) {
+        navigator.navigate(PlayerRoute(songId = songId))
     }
 
     private fun showSongUnavailableOffline() {

@@ -5,9 +5,11 @@ import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -277,6 +279,57 @@ class AlbumViewModelTest {
         }
         verify(exactly = 0) { navigator.navigate(any()) }
     }
+
+    @Test
+    fun `GIVEN a playing track WHEN clicking its row THEN opens the player instead of starting it over`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(cached = album, playback = playbackState(songs = listOf(album.songs[1])))
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = album.songs[1].id)) }
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
+    @Test
+    fun `GIVEN a paused track WHEN clicking its row THEN opens the player instead of starting it over`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(songs = listOf(album.songs[1]), status = PlaybackStatus.Paused),
+            )
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = album.songs[1].id)) }
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
+    @Test
+    fun `GIVEN a track that ended WHEN clicking its row THEN plays it again from the start`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(songs = listOf(album.songs[1]), status = PlaybackStatus.Ended),
+            )
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongClicked(song = album.songs[1]))
+
+            // Then
+            verify { playbackStarter.play(song = album.songs[1], songs = album.songs, context = any()) }
+            verify(exactly = 0) { navigator.navigate(any()) }
+        }
 
     @Test
     fun `GIVEN no connection and a track not on the device WHEN clicking it THEN shows a message instead of playing`() =

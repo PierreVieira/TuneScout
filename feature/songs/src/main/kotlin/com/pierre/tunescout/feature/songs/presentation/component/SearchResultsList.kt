@@ -12,6 +12,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemKey
 import com.pierre.tunescout.core.model.NowPlaying
+import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.core.network.RemoteException
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
@@ -81,7 +82,7 @@ internal fun SearchResultsList(
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
                     nowPlaying = NowPlayingState.of(
-                        isCurrentSong = song.id == nowPlaying?.songId,
+                        isCurrentSong = nowPlaying.isOn(song.id),
                         isPlaying = nowPlaying?.isPlaying == true,
                     ),
                     isUnavailable = result.isUnavailable,

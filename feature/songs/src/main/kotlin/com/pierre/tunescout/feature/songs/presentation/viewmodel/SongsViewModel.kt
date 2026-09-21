@@ -9,7 +9,9 @@ import androidx.paging.cachedIn
 import androidx.paging.map
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
@@ -144,9 +146,18 @@ class SongsViewModel(
         SongsUiEvent.OnRemoveRecentDismissed -> songPendingRemoval.value = null
     }
 
+    /**
+     * The song the player is already on opens the player instead of starting over: a tap on the row
+     * marked as the one playing means "take me there", not "play it again from the beginning".
+     */
     private fun play(song: Song) {
+        if (uiState.value.nowPlaying.isOn(song.id)) return openPlayer(song.id)
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
+    }
+
+    private fun openPlayer(songId: Long) {
+        navigator.navigate(PlayerRoute(songId = songId))
     }
 
     private fun showSongUnavailableOffline() {

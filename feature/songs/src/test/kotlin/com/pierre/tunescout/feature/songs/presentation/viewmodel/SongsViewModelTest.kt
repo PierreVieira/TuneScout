@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
@@ -341,6 +342,77 @@ class SongsViewModelTest {
             // Then
             assertThat(results.filter { result -> result.isUnavailable }.map { result -> result.song.id })
                 .containsExactly(2L)
+        }
+
+    @Test
+    fun `GIVEN a playing song WHEN clicking its row THEN opens the player instead of starting it over`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playback = playbackState(songs = listOf(song(id = 2))))
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = 2L)) }
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
+    @Test
+    fun `GIVEN a paused song WHEN clicking its row THEN opens the player instead of starting it over`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playback = playbackState(songs = listOf(song(id = 2)), status = PlaybackStatus.Paused),
+            )
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = 2L)) }
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
+    @Test
+    fun `GIVEN a playing song WHEN clicking another row THEN plays that one`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = playbackState(songs = listOf(song(id = 2))))
+
+        // When
+        viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 3)))
+
+        // Then
+        verify {
+            playbackStarter.play(
+                song = song(id = 3),
+                songs = listOf(song(id = 3)),
+                context = PlaybackContext.SingleSong,
+            )
+        }
+        verify(exactly = 0) { navigator.navigate(any()) }
+    }
+
+    @Test
+    fun `GIVEN a song that ended WHEN clicking its row THEN plays it again from the start`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playback = playbackState(songs = listOf(song(id = 2)), status = PlaybackStatus.Ended),
+            )
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnSongClicked(song(id = 2)))
+
+            // Then
+            verify {
+                playbackStarter.play(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 2)),
+                    context = PlaybackContext.SingleSong,
+                )
+            }
+            verify(exactly = 0) { navigator.navigate(any()) }
         }
 
     private fun TestScope.prepareScenario(

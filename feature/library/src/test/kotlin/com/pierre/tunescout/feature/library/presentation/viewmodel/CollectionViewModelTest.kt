@@ -2,10 +2,13 @@ package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackContext
+import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
@@ -48,7 +51,11 @@ class CollectionViewModelTest {
     fun `GIVEN the favourites WHEN observing THEN titles itself with the liked songs and cannot be deleted`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 1))),
+            )
 
             // When
             val state = viewModel.uiState.value as CollectionUiState.Loaded
@@ -326,6 +333,66 @@ class CollectionViewModelTest {
             verify(exactly = 0) { enqueuer.playNow(any()) }
         }
 
+    @Test
+    fun `GIVEN a playing song WHEN clicking its row THEN opens the player instead of starting it over`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 1))),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = 1L)) }
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
+    @Test
+    fun `GIVEN a paused song WHEN clicking its row THEN opens the player instead of starting it over`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Paused),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = 1L)) }
+            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+        }
+
+    @Test
+    fun `GIVEN a song that ended WHEN clicking its row THEN plays it again from the start`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 1)), status = PlaybackStatus.Ended),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
+
+            // Then
+            verify {
+                playbackStarter.play(
+                    song = song(id = 1),
+                    songs = listOf(song(id = 1)),
+                    context = PlaybackContext.SingleSong,
+                )
+            }
+            verify(exactly = 0) { navigator.navigate(any()) }
+        }
+
     private fun loadedState(): CollectionUiState.Loaded = viewModel.uiState.value as CollectionUiState.Loaded
 
     @Test
@@ -351,6 +418,7 @@ class CollectionViewModelTest {
         playlist: Playlist? = null,
         playlistSongs: List<Song> = emptyList(),
         playableSongIds: Set<Long>? = null,
+        playback: PlaybackState = PlaybackState.Idle,
     ) {
         removedFavoriteIds = mutableListOf()
         actions = mutableListOf()
@@ -371,7 +439,7 @@ class CollectionViewModelTest {
             key = key,
             useCases = useCases,
             collectionStreams = CollectionStreams(useCases),
-            observablePlayback = ObservablePlayback { MutableStateFlow(playbackState()) },
+            observablePlayback = ObservablePlayback { MutableStateFlow(playback) },
             playbackStarter = playbackStarter,
             enqueuer = enqueuer,
             playableSongs = playableSongs,

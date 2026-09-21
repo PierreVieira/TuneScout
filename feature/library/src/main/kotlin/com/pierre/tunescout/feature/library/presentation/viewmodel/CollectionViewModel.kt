@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
@@ -81,12 +83,20 @@ class CollectionViewModel(
     }
 
     /**
-     * A song the player cannot reach is refused with a message before it gets there, and playing the
-     * whole collection keeps only the songs it can reach.
+     * The song the player is already on opens the player instead of starting over: a tap on the row
+     * marked as the one playing means "take me there", not "play it again from the beginning". A song
+     * the player cannot reach is refused with a message before it gets there, and playing the whole
+     * collection keeps only the songs it can reach.
      */
     private fun play(song: Song) {
+        val nowPlaying = (uiState.value as? CollectionUiState.Loaded)?.nowPlaying
+        if (nowPlaying.isOn(song.id)) return openPlayer(song.id)
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
         playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
+    }
+
+    private fun openPlayer(songId: Long) {
+        navigator.navigate(PlayerRoute(songId = songId))
     }
 
     private fun playNow() {
