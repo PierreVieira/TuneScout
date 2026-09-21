@@ -2,6 +2,7 @@ package com.pierre.tunescout.screenshots
 
 import com.pierre.tunescout.feature.album.presentation.content.AlbumContent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
+import com.pierre.tunescout.screenshotfixtures.randomAccessMemories
 import org.junit.Test
 
 internal class AlbumScreenshots : ReadmeScreenshotsTest() {

@@ -3,6 +3,7 @@ package com.pierre.tunescout.screenshots
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.feature.player.presentation.content.PlayerContent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
+import com.pierre.tunescout.screenshotfixtures.getLucky
 import org.junit.Test
 import kotlin.time.Duration.Companion.seconds
 

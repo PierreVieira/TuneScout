@@ -1,4 +1,4 @@
-package com.pierre.tunescout.screenshots
+package com.pierre.tunescout.screenshotfixtures
 
 import android.graphics.BitmapFactory
 import coil3.Image

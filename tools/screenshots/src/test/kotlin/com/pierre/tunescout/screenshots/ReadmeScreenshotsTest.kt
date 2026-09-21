@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil3.SingletonImageLoader
+import com.pierre.tunescout.screenshotfixtures.createArtworkImageLoader
 import com.pierre.tunescout.ui.theme.Theme
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
 import dev.lucianosantos.storescreenshots.FormFactor

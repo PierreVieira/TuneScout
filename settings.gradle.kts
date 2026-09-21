@@ -66,3 +66,5 @@ include(":feature:add_to_playlist")
 
 include(":tools:ktlint_custom_rules")
 include(":tools:screenshots")
+include(":tools:screenshot_fixtures")
+include(":tools:screenshot_tests")

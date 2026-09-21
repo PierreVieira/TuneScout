@@ -1,4 +1,4 @@
-package com.pierre.tunescout.screenshots
+package com.pierre.tunescout.screenshotfixtures
 
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Artwork
@@ -15,48 +15,48 @@ private val homeworkArtwork = Artwork(artworkUrl("homework"))
 private val discoveryArtwork = Artwork(artworkUrl("discovery"))
 private val randomAccessMemoriesArtwork = Artwork(artworkUrl("random_access_memories"))
 
-internal val oneMoreTime: Song = discoverySong(id = 1, title = "One More Time", trackNumber = 1)
-internal val harderBetterFasterStronger: Song = discoverySong(
+val oneMoreTime: Song = discoverySong(id = 1, title = "One More Time", trackNumber = 1)
+val harderBetterFasterStronger: Song = discoverySong(
     id = 2,
     title = "Harder Better Faster Stronger",
     trackNumber = 4,
 )
-internal val faceToFace: Song = discoverySong(id = 3, title = "Face to Face", trackNumber = 10)
-internal val daFunk: Song = homeworkSong(id = 4, title = "Da Funk", trackNumber = 3)
-internal val aroundTheWorld: Song = homeworkSong(id = 5, title = "Around the World", trackNumber = 7)
-internal val getLucky: Song = randomAccessMemoriesSong(
+val faceToFace: Song = discoverySong(id = 3, title = "Face to Face", trackNumber = 10)
+val daFunk: Song = homeworkSong(id = 4, title = "Da Funk", trackNumber = 3)
+val aroundTheWorld: Song = homeworkSong(id = 5, title = "Around the World", trackNumber = 7)
+val getLucky: Song = randomAccessMemoriesSong(
     id = 6,
     title = "Get Lucky",
     artistName = "Daft Punk, Pharrell Williams & Nile Rodgers",
     trackNumber = 8,
 )
-internal val instantCrush: Song = randomAccessMemoriesSong(
+val instantCrush: Song = randomAccessMemoriesSong(
     id = 7,
     title = "Instant Crush",
     artistName = "Daft Punk & Julian Casablancas",
     trackNumber = 5,
 )
-internal val loseYourselfToDance: Song = randomAccessMemoriesSong(
+val loseYourselfToDance: Song = randomAccessMemoriesSong(
     id = 8,
     title = "Lose Yourself to Dance",
     artistName = "Daft Punk & Pharrell Williams",
     trackNumber = 6,
 )
-internal val giorgioByMoroder: Song = randomAccessMemoriesSong(id = 9, title = "Giorgio by Moroder", trackNumber = 3)
-internal val touch: Song = randomAccessMemoriesSong(
+val giorgioByMoroder: Song = randomAccessMemoriesSong(id = 9, title = "Giorgio by Moroder", trackNumber = 3)
+val touch: Song = randomAccessMemoriesSong(
     id = 11,
     title = "Touch",
     artistName = "Daft Punk & Paul Williams",
     trackNumber = 7,
 )
-internal val recentlyPlayed: List<Song> = listOf(
+val recentlyPlayed: List<Song> = listOf(
     aroundTheWorld,
     harderBetterFasterStronger,
     instantCrush,
     getLucky,
     daFunk,
 )
-internal val searchSongs: List<Song> = listOf(
+val searchSongs: List<Song> = listOf(
     oneMoreTime,
     getLucky,
     aroundTheWorld,
@@ -68,7 +68,7 @@ internal val searchSongs: List<Song> = listOf(
     giorgioByMoroder,
     touch,
 )
-internal val randomAccessMemories: Album = album(
+val randomAccessMemories: Album = album(
     id = RANDOM_ACCESS_MEMORIES_ID,
     title = "Random Access Memories",
     artwork = randomAccessMemoriesArtwork,

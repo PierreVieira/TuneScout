@@ -56,8 +56,9 @@ next to the screen's `capture` call; changing one means changing the table above
 The two library shots pass `LibraryContent` its view mode directly, which is also how the screen
 gets it from the DataStore.
 
-`queue.png`, `options.png` and `theme.png` all draw their sheet by hand — a `Surface` with the drag handle over a
-scrim — because `ModalBottomSheet` animates in and Robolectric captures the frame before it lands.
+`queue.png`, `options.png` and `theme.png` all draw their sheet by hand, through the shared
+`SheetOverScreen` — a `Surface` with the drag handle over a scrim — because `ModalBottomSheet`
+animates in and Robolectric captures the frame before it lands.
 
 The `songs.png` shot is the one that composes two screens: `SongsContent` under
 `MiniPlayerContent`, which is how `app` lays them out. The mini player lives outside the
@@ -70,13 +71,22 @@ in `manualScreenshots` in the root `build.gradle.kts`.
 
 ## Where to edit
 
-Everything lives in one module, `tools/screenshots/src/test/kotlin/.../screenshots/`:
+The generators live in `tools/screenshots/src/test/kotlin/.../screenshots/`:
 
 ```
 ReadmeScreenshotsTest.kt   # base class: phone form factor, canvas background, theme, Coil setup
+<Screen>Screenshots.kt     # one class per screen: the UiState it renders and the file name
+```
+
+What they render comes from `:tools:screenshot_fixtures`, shared with the screenshot tests in
+[`:tools:screenshot_tests`](testing/screenshot-tests.md):
+
+```
 ScreenshotFixtures.kt      # the songs and the album every shot renders
 ScreenshotArtwork.kt       # the fake Coil loader that serves the committed covers
-<Screen>Screenshots.kt     # one class per screen: the UiState it renders and the file name
+ScreenshotQueue.kt         # queue entries, by context or queued by hand
+ScreenshotPaging.kt        # a LazyPagingItems over a fixed list, for the search results
+SheetOverScreen.kt         # the scrim, sheet colour and drag handle drawn around a sheet's content
 ```
 
 Adding a screen means one new `<Screen>Screenshots.kt` and, if the screen lives in a module the
@@ -93,7 +103,7 @@ test runtime: the feature modules stay Jupiter-only. `testDebugUnitTest` runs th
 too, so a screen that stops rendering fails the build like any other test.
 
 **Artwork is served from the repository, not the network.** Robolectric has no network, so the
-three album covers under `src/test/resources/artwork/` are handed to Coil by a
+three album covers under `tools/screenshot_fixtures/src/main/resources/artwork/` are handed to Coil by a
 `FakeImageLoaderEngine` installed as the singleton loader. A fixture's `Artwork` URL points at
 `https://artwork.tunescout.test/<album>/100x100bb.jpg`, and the engine matches on the album segment
 — which means the real `Artwork.thumbnailUrl` / `mediumUrl` / `largeUrl` resizing still runs, and
