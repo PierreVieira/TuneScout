@@ -1,8 +1,8 @@
 package com.pierre.tunescout.feature.miniplayer.presentation.content
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -35,6 +35,7 @@ import com.pierre.tunescout.ui.utils.ActionCollector
 import com.pierre.tunescout.ui.utils.animation.LocalSharedArtworkDestination
 import com.pierre.tunescout.ui.utils.animation.LocalSharedElementScopes
 import com.pierre.tunescout.ui.utils.animation.SharedArtworkDestination
+import com.pierre.tunescout.ui.utils.animation.modulatedFade
 import com.pierre.tunescout.ui.utils.animation.rememberSharedElementScopes
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -66,7 +67,8 @@ internal fun rememberBarSong(
 
 /**
  * The bar fades alone, with no expand or shrink: it keeps its bounds while it leaves, which is what
- * the artwork flying out of it animates from.
+ * the artwork flying out of it animates from. The fade is [modulatedFade], so it takes no offscreen
+ * buffer.
  *
  * On the way back from the player it waits for the `NavDisplay` to start taking the player away, not
  * only for the back stack to allow it: see [SharedArtworkDestination].
@@ -105,8 +107,8 @@ fun MiniPlayerScaffold(
         }
         AnimatedVisibility(
             visible = isVisible,
-            enter = fadeIn(),
-            exit = fadeOut(),
+            enter = EnterTransition.None,
+            exit = ExitTransition.None,
         ) {
             if (song != null) {
                 CompositionLocalProvider(
@@ -114,6 +116,7 @@ fun MiniPlayerScaffold(
                 ) {
                     Box(
                         modifier = Modifier
+                            .modulatedFade(visibilityScope = this@AnimatedVisibility)
                             .fillMaxWidth()
                             .navigationBarsPadding(),
                         contentAlignment = Alignment.Center,

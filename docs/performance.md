@@ -86,14 +86,35 @@ a quarter of what they were.
 
 | | Without profile | With profile |
 |---|--:|--:|
-| CPU time P50 / P90 / P99 | 32.3 / 37.5 / 47.6 ms | 32.3 / 35.0 / 46.1 ms |
-| Overrun P50 / P90 / P99 | 18.5 / 31.0 / 48.3 ms | 18.2 / 28.9 / 45.8 ms |
+| CPU time P50 / P90 / P99 | 18.5 / 33.9 / 85.2 ms | 16.5 / 18.3 / 37.9 ms |
+| Overrun P50 / P90 / P99 | 3.6 / 20.2 / 92.2 ms | 1.2 / 2.4 / 29.8 ms |
 
-This is the finding the benchmarks turned up: the player costs about 32 ms of CPU a frame with or
-without the profile, so it is not code waiting to be compiled but work done on every frame while
-the player is on screen — on this emulator, every frame of it is dropped. It is left for its own
-change, which should start from a trace of this benchmark (every iteration writes a Perfetto trace
-next to the results).
+It used to cost twice that. Measured again right before the change, on the same emulator:
+
+| Before | Without profile | With profile |
+|---|--:|--:|
+| CPU time P50 / P90 / P99 | 32.6 / 36.3 / 45.1 ms | 32.6 / 34.4 / 42.9 ms |
+| Overrun P50 / P90 / P99 | 18.2 / 29.8 / 45.5 ms | 18.1 / 24.6 / 42.4 ms |
+
+The profile did not move those numbers, so the time was not going to code waiting for the JIT. The
+trace showed where it went instead: the render thread was drawing offscreen layers. Android draws
+any layer that has an alpha below 1 and overlapping content into a buffer of its own first. Every
+fade in the journey was one of those layers: both whole screens in the `NavDisplay` cross-fade, the
+mini player, and the title and artist that `sharedBounds` cross-fades. That added up to about 35
+frames and 400 ms of layer drawing an iteration.
+
+Those fades now go through `modulatedFade`, which uses `CompositingStrategy.ModulateAlpha`: the alpha
+is applied to each draw call, and there is no buffer. The screens get it from
+`FadeSceneDecoratorStrategy`, a scene decorator. `NavDisplay` never passes a sheet or a dialog to a
+scene decorator, so they do not fade with the screen changing under them. The traces after the
+change have no offscreen layers left. Without the profile, P90 and P99 still show the first
+transition's shaders compiling: `pm clear` wipes the shader cache on every iteration.
+
+On an emulator, what is left of the median is mostly waiting. Once the player closes, the home
+screen keeps drawing while the song plays, because the now-playing bars animate. Each of those
+frames spends most of its 16 ms in `dequeueBuffer`, waiting for the emulator's display to hand back
+a buffer. The app's own work in such a frame is about a millisecond. The bars read their animation
+only when drawing, so the row they sit in does not recompose on every frame.
 
 ## Compose stability
 
