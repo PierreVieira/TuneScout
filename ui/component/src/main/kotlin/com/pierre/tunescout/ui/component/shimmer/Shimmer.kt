@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.animation.rememberReduceMotion
 import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.defaultShimmerTheme
 import com.valentinilk.shimmer.rememberShimmer
@@ -45,10 +46,13 @@ private val tuneScoutShimmerTheme = defaultShimmerTheme.copy(
  * leaves a placeholder at 5% white — invisible against a black background — so the edges are held
  * much higher and the pause between sweeps shortened.
  *
+ * The sweep never ends, so with motion reduced the placeholder is left as a still block.
+ *
  * @return this modifier with the placeholder sweep drawn over it.
  */
 @Composable
 fun Modifier.shimmer(): Modifier {
+    if (rememberReduceMotion()) return this
     val shimmer = rememberShimmer(shimmerBounds = ShimmerBounds.Window, theme = tuneScoutShimmerTheme)
     return valentinilkShimmer(customShimmer = shimmer)
 }

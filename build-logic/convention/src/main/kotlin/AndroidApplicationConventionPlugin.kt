@@ -44,6 +44,10 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 compose = true
             }
 
+            lint {
+                checkDependencies = true
+            }
+
             testOptions {
                 unitTests.isIncludeAndroidResources = true
                 execution = "ANDROIDX_TEST_ORCHESTRATOR"

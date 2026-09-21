@@ -3,6 +3,8 @@ package com.pierre.tunescout.feature.album.presentation.content
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -129,7 +131,7 @@ class AlbumContentTest {
             }
         }
 
-        onNodeWithContentDescription("Shuffle is off").performClick()
+        onNodeWithContentDescription("Shuffle").assertIsOff().performClick()
         onNodeWithContentDescription("Play the album").performClick()
 
         assertThat(events)
@@ -149,7 +151,7 @@ class AlbumContentTest {
             }
         }
 
-        onNodeWithContentDescription("Shuffle is on").assertIsDisplayed()
+        onNodeWithContentDescription("Shuffle").assertIsOn()
         onNodeWithContentDescription("Play the album").assertDoesNotExist()
         onNodeWithContentDescription("Pause").performClick()
 

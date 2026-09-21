@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pierre.tunescout.core.model.Artwork
@@ -103,6 +104,10 @@ private fun PlaylistCover(
     }
 }
 
+/**
+ * Only the first tile speaks. Offline, each of the four would say its artwork is unavailable, and a
+ * playlist's cover would be read as the same sentence four times over.
+ */
 @Composable
 private fun QuadrantGrid(
     artworks: List<Artwork>,
@@ -112,14 +117,21 @@ private fun QuadrantGrid(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
-        artworks.take(QUADRANT_COUNT).chunked(2).forEach { pair ->
+        artworks.take(QUADRANT_COUNT).withIndex().chunked(2).forEach { pair ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
             ) {
-                pair.forEach { artwork ->
-                    CoverImage(artwork = artwork, size = size, modifier = Modifier.weight(1f))
+                pair.forEach { (index, artwork) ->
+                    val isFirst = index == 0
+                    CoverImage(
+                        artwork = artwork,
+                        size = size,
+                        modifier = Modifier
+                            .weight(1f)
+                            .then(if (isFirst) Modifier else Modifier.clearAndSetSemantics {}),
+                    )
                 }
             }
         }

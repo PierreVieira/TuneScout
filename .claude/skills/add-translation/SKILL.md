@@ -62,7 +62,7 @@ Rules:
 - **Same keys, same order** as the English file. Keep the XML header and `<resources>` root.
 - **Skip `translatable="false"` entries entirely** — don't copy them (e.g. `widget_preview_elapsed`).
 - **Keep the brand**: `TuneScout` and `iTunes` are never translated (`app_name`,
-  `widget_now_playing_label`, …).
+  `widget_empty_message`, …).
 - **Keep format arguments exactly**: `%1$s`, `%1$d` stay, with the same index and type. Reorder
   them inside the sentence if the grammar needs to, but never drop one.
 - **Escape apostrophes** as `\'`, like the English files do. Quotes need `\"`; `&` needs `&amp;`.
@@ -75,7 +75,7 @@ Rules:
   gets the same translation everywhere — `ui_component`, `core/playback`, `song_options` and the
   widget all repeat labels. Follow what the platform's music apps use in that language (e.g. many
   keep "playlist" untranslated).
-- **Content descriptions** (`ui_play`, `ui_skip_next`, `queue_reorder`, …) are read by TalkBack:
+- **Content descriptions** (`ui_play`, `ui_skip_next`, `queue_move_up`, …) are read by TalkBack:
   translate them as spoken phrases, not as abbreviations.
 
 ### 4. Verify

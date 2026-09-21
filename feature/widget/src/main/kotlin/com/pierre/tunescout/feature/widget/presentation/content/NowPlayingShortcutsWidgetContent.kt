@@ -40,7 +40,7 @@ internal fun NowPlayingShortcutsWidgetContent(content: WidgetContent) {
                 WidgetArtworkImage(
                     artwork = content.songArtwork,
                     size = artworkSize,
-                    contentDescription = state.song?.title,
+                    contentDescription = null,
                 )
                 Spacer(modifier = GlanceModifier.width(artworkSpacing))
                 Column(modifier = GlanceModifier.defaultWeight()) {

@@ -1,6 +1,8 @@
 package com.pierre.tunescout.core.playback.internal
 
+import androidx.annotation.OptIn
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.ContentMetadata
 import com.pierre.tunescout.core.model.Song
@@ -11,6 +13,7 @@ import com.pierre.tunescout.core.model.Song
  *
  * @property cache the preview bytes the player downloaded.
  */
+@OptIn(UnstableApi::class)
 internal class MediaCachePreviewCache(
     private val cache: Cache,
 ) : PreviewCache {

@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
+import com.pierre.tunescout.ui.utils.animation.rememberReduceMotion
 
 private const val BREATH_DURATION_MILLIS = 900
 private const val BREATH_SCALE = 0.08f
@@ -38,7 +39,8 @@ private val iconSize = 36.dp
 
 /**
  * The microphone with two halos that swell with the voice. While nothing is said the halos still
- * breathe a little, so the sheet reads as listening rather than as stuck.
+ * breathe a little, so the sheet reads as listening rather than as stuck. With motion reduced they
+ * only answer the voice: that movement is feedback, the breathing is decoration.
  *
  * @param level how loud the voice is right now, from 0 (silence) to 1.
  * @param isActive whether the microphone is open; a closed one is drawn muted and still.
@@ -54,7 +56,7 @@ internal fun VoicePulseIcon(
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         label = "voiceLevel",
     )
-    val breath = if (isActive) breath() else remember { mutableFloatStateOf(0f) }
+    val breath = if (isActive && !rememberReduceMotion()) breath() else remember { mutableFloatStateOf(0f) }
     val coreColor = if (isActive) TuneScoutColors.accent else TuneScoutColors.elementMuted
     Box(
         modifier = modifier.size(pulseSize),

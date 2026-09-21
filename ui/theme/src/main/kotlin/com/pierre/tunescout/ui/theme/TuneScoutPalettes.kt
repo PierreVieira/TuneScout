@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
  * surface the accent tinted rather than as the accent itself.
  */
 private val darkAccent = Color(0xFF22C39B)
-private val lightAccent = Color(0xFF008060)
+private val lightAccent = Color(0xFF007558)
 private val darkAccentContainer = Color(0xFF334D46)
 private val lightAccentContainer = Color(0xFFCDE4DE)
 
@@ -26,14 +26,14 @@ val darkColorPalette = TuneScoutColorPalette(
     textEmphasis = Color(0xB3FFFFFF),
     textTertiary = Color(0x99FFFFFF),
     textPlaceholder = Color(0xFFA8A8A8),
-    textSecondary = Color(0xFF737373),
+    textSecondary = Color(0xFF8E8E8E),
     elementMuted = Color(0xFF545454),
     elementPlaceholder = Color(0xFFBFBFBF),
     elementSubtle = Color(0x40FFFFFF),
     accent = darkAccent,
     accentContainer = darkAccentContainer,
     trackActive = Color(0x99FFFFFF),
-    error = Color(0xFFFF453A),
+    error = Color(0xFFFF5A50),
 )
 
 val lightColorPalette = TuneScoutColorPalette(
@@ -45,8 +45,8 @@ val lightColorPalette = TuneScoutColorPalette(
     textPrimary = Color(0xFF000000),
     textEmphasis = Color(0xB3000000),
     textTertiary = Color(0x99000000),
-    textPlaceholder = Color(0xFF6B6B6B),
-    textSecondary = Color(0xFF8C8C8C),
+    textPlaceholder = Color(0xFF616161),
+    textSecondary = Color(0xFF696969),
     elementMuted = Color(0xFFABABAB),
     elementPlaceholder = Color(0xFF595959),
     elementSubtle = Color(0x40000000),

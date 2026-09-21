@@ -111,8 +111,8 @@ private fun navigationItemColors(): NavigationItemColors = NavigationItemColors(
     selectedIconColor = TuneScoutColors.textPrimary,
     selectedTextColor = TuneScoutColors.textPrimary,
     selectedIndicatorColor = TuneScoutColors.accentContainer,
-    unselectedIconColor = TuneScoutColors.elementMuted,
-    unselectedTextColor = TuneScoutColors.elementMuted,
+    unselectedIconColor = TuneScoutColors.textTertiary,
+    unselectedTextColor = TuneScoutColors.textTertiary,
     disabledIconColor = TuneScoutColors.elementSubtle,
     disabledTextColor = TuneScoutColors.elementSubtle,
 )

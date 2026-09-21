@@ -6,6 +6,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
@@ -20,8 +21,9 @@ import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import sh.calvin.reorderable.ReorderableCollectionItemScope
 
-private val handleSize = 36.dp
+private val handleSize = 48.dp
 private val handleIconSize = 20.dp
+private const val QUEUE_ENTRY_TAG = "queue_entry"
 
 @Composable
 internal fun ReorderableCollectionItemScope.QueueRow(
@@ -40,7 +42,7 @@ internal fun ReorderableCollectionItemScope.QueueRow(
         artworkUrl = entry.song.artwork.thumbnailUrl,
         onClick = { onEvent(QueueUiEvent.OnEntryClicked(entry.id)) },
         isUnavailable = isUnavailable,
-        modifier = modifier.semantics {
+        modifier = modifier.testTag(QUEUE_ENTRY_TAG).semantics {
             customActions = buildList {
                 previousEntryId?.let { target -> add(createMoveAction(moveUp, entry.id, target, onEvent)) }
                 nextEntryId?.let { target -> add(createMoveAction(moveDown, entry.id, target, onEvent)) }
@@ -52,13 +54,18 @@ internal fun ReorderableCollectionItemScope.QueueRow(
                 contentDescription = stringResource(R.string.queue_remove),
                 onClick = { onEvent(QueueUiEvent.OnRemoveClicked(entry.id)) },
             )
-            DragHandle(contentDescription = stringResource(R.string.queue_reorder, entry.song.title))
+            DragHandle()
         },
     )
 }
 
+/**
+ * The handle is for a finger and says nothing: a drag is not something a screen reader can do, and
+ * the row already offers "Move up" and "Move down" as actions. Named, it was read at the end of
+ * every row as a control that then did nothing.
+ */
 @Composable
-private fun ReorderableCollectionItemScope.DragHandle(contentDescription: String) {
+private fun ReorderableCollectionItemScope.DragHandle() {
     Box(
         modifier = Modifier
             .size(handleSize)
@@ -67,8 +74,8 @@ private fun ReorderableCollectionItemScope.DragHandle(contentDescription: String
     ) {
         Icon(
             imageVector = TuneScoutIcons.dragHandle,
-            contentDescription = contentDescription,
-            tint = TuneScoutColors.elementMuted,
+            contentDescription = null,
+            tint = TuneScoutColors.textTertiary,
             modifier = Modifier.size(handleIconSize),
         )
     }

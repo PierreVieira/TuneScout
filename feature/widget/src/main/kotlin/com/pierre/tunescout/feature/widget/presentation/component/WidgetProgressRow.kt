@@ -19,7 +19,7 @@ import com.pierre.tunescout.feature.widget.domain.model.WidgetState
 
 private val barHeight = 4.dp
 private val barSpacing = 6.dp
-private val clockFontSize = 10.sp
+private val clockFontSize = 12.sp
 
 /**
  * How far into the song the player is: the clock on either side and the bar between them.

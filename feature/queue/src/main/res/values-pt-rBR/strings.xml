@@ -9,7 +9,6 @@
     <string name="queue_empty_title">A fila está vazia</string>
     <string name="queue_empty_description">Adicione uma música ou um álbum inteiro à fila e eles aparecem aqui.</string>
     <string name="queue_remove">Remover da fila</string>
-    <string name="queue_reorder">Reordenar %1$s</string>
     <string name="queue_move_up">Mover para cima</string>
     <string name="queue_move_down">Mover para baixo</string>
 </resources>

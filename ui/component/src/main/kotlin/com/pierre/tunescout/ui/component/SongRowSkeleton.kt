@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -21,7 +23,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 private val titleHeight = 16.dp
 private val subtitleHeight = 12.dp
-private val moreActionSize = 36.dp
+private val moreActionSize = 48.dp
 private val moreDotSize = 3.5.dp
 private val moreDotSpacing = 1.dp
 private const val TITLE_WIDTH_FRACTION = 0.6f
@@ -77,7 +79,12 @@ fun SongListSkeleton(
     hasMoreAction: Boolean = false,
 ) {
     val description = stringResource(R.string.ui_loading)
-    Column(modifier = modifier.semantics { contentDescription = description }) {
+    Column(
+        modifier = modifier.semantics {
+            contentDescription = description
+            liveRegion = LiveRegionMode.Polite
+        },
+    ) {
         repeat(rows) {
             SongRowSkeleton(artworkSize = artworkSize, hasMoreAction = hasMoreAction)
         }

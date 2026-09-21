@@ -5,5 +5,19 @@
     <string name="player_not_found_description">Puede que la hayan quitado del catálogo. Vuelve atrás y elige otra.</string>
     <string name="player_failed">No se pudo reproducir esta vista previa. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="player_remaining_time">-%1$s</string>
+    <string name="player_position_description">%1$s de %2$s</string>
+    <string name="player_elapsed_description">Transcurrido: %1$s</string>
+    <string name="player_remaining_description">Restante: %1$s</string>
+    <string name="player_minutes_and_seconds">%1$s y %2$s</string>
     <string name="player_open_queue">Abrir la cola</string>
+    <plurals name="player_minutes">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="many">%1$d minutos</item>
+        <item quantity="other">%1$d minutos</item>
+    </plurals>
+    <plurals name="player_seconds">
+        <item quantity="one">%1$d segundo</item>
+        <item quantity="many">%1$d segundos</item>
+        <item quantity="other">%1$d segundos</item>
+    </plurals>
 </resources>

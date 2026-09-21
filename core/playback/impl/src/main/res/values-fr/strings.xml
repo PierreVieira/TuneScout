@@ -2,4 +2,9 @@
 <resources>
     <string name="playback_favorite">J\'aime</string>
     <string name="playback_unfavorite">Retirer des titres likés</string>
+    <string name="playback_shuffle_turn_on">Activer la lecture aléatoire</string>
+    <string name="playback_shuffle_turn_off">Désactiver la lecture aléatoire</string>
+    <string name="playback_repeat_queue">Répéter la file d\'attente</string>
+    <string name="playback_repeat_song">Répéter ce titre</string>
+    <string name="playback_repeat_turn_off">Désactiver la répétition</string>
 </resources>

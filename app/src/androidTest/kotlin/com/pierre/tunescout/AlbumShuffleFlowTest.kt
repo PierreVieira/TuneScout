@@ -5,8 +5,10 @@ import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollToNodeAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
+import androidx.compose.ui.test.isOn
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -76,14 +78,14 @@ class AlbumShuffleFlowTest {
         waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
 
         openTheAlbumOfTheFirstResult()
-        onNodeWithContentDescription("Shuffle is off").performClick()
-        waitUntilAtLeastOneExists(hasContentDescription("Shuffle is on"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithContentDescription("Shuffle").performClick()
+        waitUntilAtLeastOneExists(hasContentDescription("Shuffle") and isOn(), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("Play the album").performClick()
 
         waitUntilAtLeastOneExists(hasContentDescription("Open the queue"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("Open the queue").performClick()
 
-        waitUntilAtLeastOneExists(hasContentDescription(REORDER, substring = true), SCREEN_TIMEOUT_MILLIS)
+        waitUntilAtLeastOneExists(hasTestTag(QUEUE_ENTRY_TAG), SCREEN_TIMEOUT_MILLIS)
         assertThat(countQueuedTracks()).isEqualTo(albumTracks.size - 1)
     }
 
@@ -96,10 +98,14 @@ class AlbumShuffleFlowTest {
      */
     private fun ComposeContext.countQueuedTracks(): Int {
         val queueList = onAllNodes(
-            hasScrollToNodeAction() and hasAnyDescendant(hasContentDescription(REORDER, substring = true)),
+            hasScrollToNodeAction() and hasAnyDescendant(hasTestTag(QUEUE_ENTRY_TAG)),
         )[0]
         return albumTracks.count { track ->
-            runCatching { queueList.performScrollToNode(hasContentDescription("$REORDER${track.title}")) }.isSuccess
+            runCatching {
+                queueList.performScrollToNode(
+                    hasTestTag(QUEUE_ENTRY_TAG) and hasText(track.title),
+                )
+            }.isSuccess
         }
     }
 
@@ -122,7 +128,7 @@ class AlbumShuffleFlowTest {
 
     private companion object {
         const val SCREEN_TIMEOUT_MILLIS = 10_000L
-        const val REORDER = "Reorder "
+        const val QUEUE_ENTRY_TAG = "queue_entry"
     }
 }
 

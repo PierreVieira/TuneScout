@@ -16,7 +16,6 @@ import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Row
-import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.unit.ColorProvider
 import com.pierre.tunescout.feature.widget.R
@@ -27,11 +26,16 @@ import com.pierre.tunescout.feature.widget.presentation.widget.TogglePlayPauseAc
 
 private val controlIconSize = 24.dp
 private val playIconSize = 30.dp
-private val controlTouchPadding = 6.dp
+private val controlTargetSize = 48.dp
 
 /**
  * Previous, play or pause, and next. A skip the queue cannot honour is drawn muted, the same way
- * the player's own controls behave.
+ * the player's own controls behave — and, like them, it stops answering: `RemoteViews` has no
+ * disabled state to announce, so the button loses its click and its description says it is
+ * unavailable, instead of a screen reader offering a button that does nothing.
+ *
+ * Each button is a full touch target around a smaller glyph. Where a launcher gives the row less
+ * height than that, the target is clipped and the glyph, centred in it, is not.
  */
 @Composable
 internal fun WidgetControlsRow(
@@ -75,15 +79,22 @@ private fun WidgetControlButton(
     action: Action,
 ) {
     val context = LocalContext.current
+    val label = context.getString(contentDescriptionRes)
+    val target = GlanceModifier.size(controlTargetSize)
     Box(
-        modifier = GlanceModifier
-            .padding(controlTouchPadding)
-            .clickable(action),
+        modifier = if (isEnabled) target.clickable(action) else target,
         contentAlignment = Alignment.Center,
     ) {
         Image(
             provider = ImageProvider(iconRes),
-            contentDescription = context.getString(contentDescriptionRes),
+            contentDescription = if (isEnabled) {
+                label
+            } else {
+                context.getString(
+                    R.string.widget_control_unavailable,
+                    label,
+                )
+            },
             modifier = GlanceModifier.size(size),
             colorFilter = ColorFilter.tint(getControlTint(isEnabled)),
         )

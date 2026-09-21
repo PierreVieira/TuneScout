@@ -5,11 +5,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.isRoot
+import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import coil3.SingletonImageLoader
+import com.github.takahirom.roborazzi.ExperimentalRoborazziApi
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
+import com.github.takahirom.roborazzi.RoborazziATFAccessibilityCheckOptions
+import com.github.takahirom.roborazzi.RoborazziATFAccessibilityChecker
 import com.github.takahirom.roborazzi.captureRoboImage
+import com.github.takahirom.roborazzi.checkRoboAccessibility
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityCheckPreset
 import com.pierre.tunescout.screenshotfixtures.createArtworkImageLoader
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutTheme
@@ -30,10 +37,22 @@ import org.robolectric.annotation.GraphicsMode
  * It renders on Android 16 rather than the compileSdk: booting 37 needs extra JDK flags, and nothing
  * the app draws differs between the two.
  */
+@OptIn(ExperimentalRoborazziApi::class)
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [36], qualifiers = RobolectricDeviceQualifiers.Pixel7)
 internal abstract class ScreenshotTest {
+    /**
+     * Every capture is also run through the Accessibility Test Framework — the checks behind
+     * Accessibility Scanner: touch target size, text and image contrast, missing or duplicated
+     * labels. An error fails the test like a pixel difference does; warnings are only logged, since
+     * they include judgement calls (a contrast measured over artwork) that no screen can settle.
+     */
+    private val accessibilityCheckOptions = RoborazziATFAccessibilityCheckOptions(
+        checker = RoborazziATFAccessibilityChecker(preset = AccessibilityCheckPreset.LATEST),
+        failureLevel = RoborazziATFAccessibilityChecker.CheckLevel.Error,
+    )
+
     @Before
     fun setUpArtwork() {
         SingletonImageLoader.setSafe(::createArtworkImageLoader)
@@ -89,9 +108,18 @@ internal abstract class ScreenshotTest {
                 }
                 composeRule.waitForIdle()
                 composeRule.onRoot().captureRoboImage(filePath = filePath)
+                composeRule.checkAccessibility()
             }
         }
         statement.runWithin(composeRule, filePath)
+    }
+
+    /** A dialog is a second root over the screen that opened it, and each root is checked. */
+    private fun ComposeContentTestRule.checkAccessibility() {
+        val roots = onAllNodes(isRoot())
+        repeat(roots.fetchSemanticsNodes().size) { index ->
+            roots[index].checkRoboAccessibility(accessibilityCheckOptions)
+        }
     }
 
     private fun applyConfiguration(

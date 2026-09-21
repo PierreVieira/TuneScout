@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
@@ -38,6 +40,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
+import com.pierre.tunescout.ui.utils.semantics.screenPane
 
 private val titleHeight = 48.dp
 private val minCellWidth = 160.dp
@@ -51,6 +54,7 @@ fun LibraryContent(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .screenPane(stringResource(R.string.library_title))
             .safeDrawingPadding()
             .hidesBarsOnScroll(),
         contentAlignment = Alignment.TopCenter,
@@ -107,7 +111,9 @@ private fun TitleRow(onEvent: (LibraryUiEvent) -> Unit) {
             text = stringResource(R.string.library_title),
             style = MaterialTheme.typography.headlineMedium,
             color = TuneScoutColors.textPrimary,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .semantics { heading() },
         )
         TopBarAction(
             icon = TuneScoutIcons.search,
@@ -137,7 +143,9 @@ private fun SectionBar(
             text = stringResource(R.string.library_recents),
             style = MaterialTheme.typography.bodySmall,
             color = TuneScoutColors.textSecondary,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .semantics { heading() },
         )
         LibraryViewModeToggle(
             viewMode = viewMode,

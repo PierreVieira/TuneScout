@@ -22,4 +22,9 @@
     <string name="songs_remove_recent_confirm_title">¿Quitar de escuchado recientemente?</string>
     <string name="songs_remove_recent_confirm_message">%1$s sale de tu historial. Siempre puedes volver a buscarla.</string>
     <string name="songs_remove_recent_confirm_action">Quitar</string>
+    <plurals name="songs_results_loaded">
+        <item quantity="one">%1$d resultado cargado</item>
+        <item quantity="many">%1$d resultados cargados</item>
+        <item quantity="other">%1$d resultados cargados</item>
+    </plurals>
 </resources>

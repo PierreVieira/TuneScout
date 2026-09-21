@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -59,6 +60,7 @@ private fun ListeningContent(uiState: AudioSearchUiState.Listening) {
         text = stringResource(R.string.audio_search_listening_title),
         style = MaterialTheme.typography.titleMedium,
         color = TuneScoutColors.textPrimary,
+        modifier = Modifier.semantics { heading() },
     )
     TranscriptText(transcript = uiState.transcript)
     VoicePulseIcon(level = uiState.level, isActive = true)
@@ -67,6 +69,10 @@ private fun ListeningContent(uiState: AudioSearchUiState.Listening) {
 /**
  * The hint gives way to the words as they arrive, in the same box: the sheet keeps its height
  * instead of jumping on the first word.
+ *
+ * It is not a live region on purpose. The microphone is open while this is on screen, so a screen
+ * reader speaking each word back would be heard as the next one; the search the words end in
+ * announces its own outcome instead.
  */
 @Composable
 private fun TranscriptText(transcript: String) {
@@ -80,8 +86,7 @@ private fun TranscriptText(transcript: String) {
         overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = transcriptMinHeight)
-            .semantics { liveRegion = LiveRegionMode.Polite },
+            .heightIn(min = transcriptMinHeight),
     )
 }
 
@@ -94,6 +99,7 @@ private fun FailedContent(
         text = stringResource(R.string.audio_search_failed_title),
         style = MaterialTheme.typography.titleMedium,
         color = TuneScoutColors.textPrimary,
+        modifier = Modifier.semantics { heading() },
     )
     Text(
         text = failureMessage(uiState.failure),
@@ -102,7 +108,8 @@ private fun FailedContent(
         textAlign = TextAlign.Center,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = transcriptMinHeight),
+            .heightIn(min = transcriptMinHeight)
+            .semantics { liveRegion = LiveRegionMode.Assertive },
     )
     VoicePulseIcon(level = 0f, isActive = false)
     Button(onClick = { onEvent(AudioSearchUiEvent.OnRetryClicked) }) {

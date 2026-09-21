@@ -12,23 +12,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 
-private val buttonSize = 72.dp
-private val playIconSize = 54.dp
-private val pauseIconSize = 28.dp
-private val replayIconSize = 34.dp
+private val defaultButtonSize = 72.dp
+private const val PLAY_ICON_FRACTION = 0.75f
+private const val PAUSE_ICON_FRACTION = 0.39f
+private const val REPLAY_ICON_FRACTION = 0.47f
 
+/**
+ * @param size the diameter of the button. Each glyph is a fraction of it, since the three do not
+ * fill their frame alike: a play triangle drawn at the size of a pause would look small.
+ */
 @Composable
 fun PlayPauseButton(
     state: PlayButtonState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    size: Dp = defaultButtonSize,
 ) {
     Box(
         modifier = modifier
-            .size(buttonSize)
+            .size(size)
             .clip(CircleShape)
             .background(TuneScoutColors.surfaceRaised)
             .clickable(onClick = onClick, role = Role.Button),
@@ -39,10 +45,10 @@ fun PlayPauseButton(
             contentDescription = stringResource(state.contentDescription),
             tint = TuneScoutColors.textPrimary,
             modifier = Modifier.size(
-                when (state) {
-                    PlayButtonState.Play -> playIconSize
-                    PlayButtonState.Pause -> pauseIconSize
-                    PlayButtonState.Replay -> replayIconSize
+                size * when (state) {
+                    PlayButtonState.Play -> PLAY_ICON_FRACTION
+                    PlayButtonState.Pause -> PAUSE_ICON_FRACTION
+                    PlayButtonState.Replay -> REPLAY_ICON_FRACTION
                 },
             ),
         )

@@ -38,7 +38,7 @@ internal fun ColorScheme.toColorPalette(): TuneScoutColorPalette = TuneScoutColo
     textEmphasis = onSurface.copy(alpha = EMPHASIS_ALPHA),
     textTertiary = onSurface.copy(alpha = TERTIARY_ALPHA),
     textPlaceholder = onSurfaceVariant,
-    textSecondary = outline,
+    textSecondary = onSurfaceVariant,
     elementMuted = outline,
     elementPlaceholder = onSurfaceVariant,
     elementSubtle = onSurface.copy(alpha = SUBTLE_ELEMENT_ALPHA),

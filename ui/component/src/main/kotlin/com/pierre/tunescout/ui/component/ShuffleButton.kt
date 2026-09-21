@@ -1,32 +1,29 @@
 package com.pierre.tunescout.ui.component
 
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.pierre.tunescout.ui.theme.TuneScoutColors
+import androidx.compose.ui.semantics.Role
 
-private val buttonSize = 48.dp
-private val iconSize = 24.dp
-
+/**
+ * Shuffle is a switch: the label stays "Shuffle" and the role carries whether it is on, so a screen
+ * reader says the state the way it says every other switch's instead of reading it out of the name.
+ */
 @Composable
 fun ShuffleButton(
     isEnabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier.size(buttonSize),
-    ) {
-        Icon(
-            imageVector = TuneScoutIcons.shuffle,
-            contentDescription = stringResource(if (isEnabled) R.string.ui_shuffle_on else R.string.ui_shuffle_off),
-            tint = if (isEnabled) TuneScoutColors.textPrimary else TuneScoutColors.elementSubtle,
-            modifier = Modifier.size(iconSize),
-        )
-    }
+    PlaybackModeIcon(
+        icon = TuneScoutIcons.shuffle,
+        contentDescription = stringResource(R.string.ui_shuffle),
+        isOn = isEnabled,
+        modifier = modifier
+            .clip(CircleShape)
+            .toggleable(value = isEnabled, role = Role.Switch, onValueChange = { onClick() }),
+    )
 }

@@ -141,7 +141,7 @@ private fun SwipeActionBackgroundBox(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (isArmed) TuneScoutColors.textPrimary else TuneScoutColors.elementMuted,
+            tint = if (isArmed) TuneScoutColors.textPrimary else TuneScoutColors.textTertiary,
             modifier = Modifier.size(actionIconSize),
         )
     }

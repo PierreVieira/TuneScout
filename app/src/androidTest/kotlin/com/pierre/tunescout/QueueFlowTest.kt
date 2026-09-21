@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isEnabled
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -94,13 +95,13 @@ class QueueFlowTest {
 
     /**
      * Both tiers are on screen: what plays, and what was queued by hand. The results are still behind
-     * the sheet, so the queued song is taken by its row's reorder handle rather than by a title the
-     * list under it also carries.
+     * the sheet, so the queued song is taken by its queue row's tag rather than by a title the list
+     * under it also carries.
      */
     private fun ComposeContext.assertBothQueueTiersAreOnScreen() {
         waitUntilAtLeastOneExists(hasText("Next in queue"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Queue").assertExists()
-        onNodeWithContentDescription("Reorder Instant Crush").assertExists()
+        onNode(hasTestTag("queue_entry") and hasText("Instant Crush")).assertExists()
     }
 
     private companion object {

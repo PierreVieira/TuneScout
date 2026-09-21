@@ -22,4 +22,9 @@
     <string name="songs_remove_recent_confirm_title">Remover das tocadas recentemente?</string>
     <string name="songs_remove_recent_confirm_message">%1$s sai do seu histórico. Você sempre pode buscar por ela de novo.</string>
     <string name="songs_remove_recent_confirm_action">Remover</string>
+    <plurals name="songs_results_loaded">
+        <item quantity="one">%1$d resultado carregado</item>
+        <item quantity="many">%1$d resultados carregados</item>
+        <item quantity="other">%1$d resultados carregados</item>
+    </plurals>
 </resources>
