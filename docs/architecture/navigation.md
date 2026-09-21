@@ -126,9 +126,13 @@ or serializer decoding is needed.
 | `TuneScoutDeepLinkMatcher` | a URL back into a route, or `null` when it names none |
 | `SyntheticBackStackFactory` | the route plus its ancestors, root first |
 
-`MainActivity` parses the intent in `onCreate` and in `onNewIntent` — it is `singleTop`, so a widget
-tapped while the app is open lands on the running instance — and sends one `navigateResettingTo` with
-the synthetic back stack. The command is emitted *before* composition starts; the navigator's
+`MainActivity` hands the intent's URL to `MainViewModel.onDeepLinkReceived` in `onCreate` and in
+`onNewIntent` — it is `singleTop`, so a widget tapped while the app is open lands on the running
+instance. The ViewModel matches it and sends one `navigateResettingTo` with the synthetic back stack;
+the activity knows nothing of the matcher or the navigator, so the whole path is unit-tested there.
+`onCreate` only does this on a fresh launch: a recreated activity (rotation, process death) still
+carries its launch intent, but the restored back stack already holds the deep link and whatever the
+user opened after it. The command is emitted *before* composition starts; the navigator's
 unlimited channel holds it until the collector attaches, so the first back stack the app draws is
 already the deep link's and the splash is never shown on top of a screen the user asked for.
 

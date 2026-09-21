@@ -4,12 +4,18 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.deeplink.SyntheticBackStackFactory
+import com.pierre.tunescout.core.navigation.route.HomeRoute
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.presentation.model.MainUiState
 import com.pierre.tunescout.ui.theme.SystemBars
 import com.pierre.tunescout.ui.theme.Theme
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -22,14 +28,19 @@ class MainViewModelTest {
     private lateinit var playbackStateFlow: MutableStateFlow<PlaybackState>
     private lateinit var themeFlow: MutableStateFlow<Theme>
     private lateinit var isOnlineFlow: MutableStateFlow<Boolean>
+    private lateinit var navigator: Navigator
 
     @BeforeEach
     fun setUp() {
         playbackStateFlow = MutableStateFlow(PlaybackState.Idle)
         themeFlow = MutableStateFlow(Theme.SYSTEM)
         isOnlineFlow = MutableStateFlow(true)
+        navigator = mockk(relaxUnitFun = true)
         viewModel = MainViewModel(
             observablePlayback = { playbackStateFlow },
+            deepLinkMatcher = { url -> if (url == PLAYER_DEEP_LINK) PlayerRoute(songId = 7) else null },
+            syntheticBackStackFactory = SyntheticBackStackFactory(),
+            navigator = navigator,
             observeTheme = { themeFlow },
             observeDynamicColorEnabled = { flowOf(false) },
             networkMonitor = { isOnlineFlow },
@@ -127,7 +138,36 @@ class MainViewModelTest {
             }
         }
 
+    @Test
+    fun `WHEN a deep link names a route THEN lands on it with its parents under it`() {
+        // When
+        viewModel.onDeepLinkReceived(PLAYER_DEEP_LINK)
+
+        // Then
+        verify { navigator.navigateResettingTo(listOf(HomeRoute, PlayerRoute(songId = 7))) }
+    }
+
+    @Test
+    fun `WHEN a deep link names no route THEN leaves the app where it normally starts`() {
+        // When
+        viewModel.onDeepLinkReceived("tunescout://unknown")
+
+        // Then
+        verify(exactly = 0) { navigator.navigateResettingTo(any()) }
+    }
+
+    @Test
+    fun `WHEN the app is opened with no deep link THEN leaves the app where it normally starts`() {
+        // When
+        viewModel.onDeepLinkReceived(url = null)
+
+        // Then
+        verify(exactly = 0) { navigator.navigateResettingTo(any()) }
+    }
+
     companion object {
+        private const val PLAYER_DEEP_LINK = "tunescout://player/7"
+
         @JvmField
         @RegisterExtension
         val mainDispatcher = MainDispatcherExtension()

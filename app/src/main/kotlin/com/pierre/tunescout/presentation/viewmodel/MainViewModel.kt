@@ -2,6 +2,9 @@ package com.pierre.tunescout.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.deeplink.DeepLinkMatcher
+import com.pierre.tunescout.core.navigation.deeplink.SyntheticBackStackFactory
 import com.pierre.tunescout.core.network.NetworkMonitor
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveDynamicColorEnabled
@@ -22,6 +25,9 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val observablePlayback: ObservablePlayback,
+    private val deepLinkMatcher: DeepLinkMatcher,
+    private val syntheticBackStackFactory: SyntheticBackStackFactory,
+    private val navigator: Navigator,
     observeTheme: ObserveTheme,
     observeDynamicColorEnabled: ObserveDynamicColorEnabled,
     networkMonitor: NetworkMonitor,
@@ -60,6 +66,19 @@ class MainViewModel(
 
     fun onSystemDarkThemeChanged(isSystemInDarkTheme: Boolean) {
         this.isSystemInDarkTheme.value = isSystemInDarkTheme
+    }
+
+    /**
+     * Sent before composition starts, which the navigator's unlimited channel holds until the
+     * collector attaches: the first back stack the app draws is already the deep link's, so the
+     * splash is never shown on top of a screen the user asked for.
+     *
+     * A [url] that names no route — the launcher icon, a link this version does not know — leaves
+     * the app to start where it normally does.
+     */
+    fun onDeepLinkReceived(url: String?) {
+        val route = deepLinkMatcher.findRouteOrNull(url) ?: return
+        navigator.navigateResettingTo(syntheticBackStackFactory.buildBackStack(route))
     }
 
     private fun requestNotificationPermissionOnPlayback() {
