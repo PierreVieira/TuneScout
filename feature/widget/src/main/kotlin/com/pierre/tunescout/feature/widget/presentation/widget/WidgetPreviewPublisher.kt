@@ -15,9 +15,9 @@ import kotlin.reflect.KClass
  * Hands the widget picker a rendered preview of each widget.
  *
  * Without one the picker falls back to the launcher icon, which says nothing about what the widget
- * does. `AppWidgetManager` only accepts a rendered preview from Android 15 on; below that the icon
- * stays — which is what an `android:previewLayout` would fix, at the cost of a second copy of the
- * layout and of the palette in XML.
+ * does. `AppWidgetManager` only accepts a rendered preview from Android 15 on, so this publishes
+ * nothing below that: the picker shows the `android:previewLayout` of each `appwidget-provider`
+ * instead, a static XML copy of the widget (see docs/architecture/theming.md).
  *
  * @property context the application context the AppWidget host is reached through.
  */
