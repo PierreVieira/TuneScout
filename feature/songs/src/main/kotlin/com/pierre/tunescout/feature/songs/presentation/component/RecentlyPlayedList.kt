@@ -19,8 +19,8 @@ import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowAction
 import com.pierre.tunescout.ui.component.SongRowMoreAction
+import com.pierre.tunescout.ui.component.SongSwipeActionsBox
 import com.pierre.tunescout.ui.component.StateMessage
-import com.pierre.tunescout.ui.component.SwipeToRemoveBox
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -29,7 +29,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 internal fun RecentlyPlayedList(
     songs: List<Song>,
     nowPlaying: NowPlaying?,
-    songPendingRemoval: Song?,
+    favoriteSongIds: Set<Long>,
     unplayableSongIds: Set<Long>,
     onEvent: (SongsUiEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -60,10 +60,11 @@ internal fun RecentlyPlayedList(
             )
         }
         items(items = songs, key = { song -> song.id }) { song ->
-            SwipeToRemoveBox(
-                onRemove = { onEvent(SongsUiEvent.OnRecentSongSwipedAway(song)) },
+            SongSwipeActionsBox(
+                isFavorite = song.id in favoriteSongIds,
+                onAddToQueue = { onEvent(SongsUiEvent.OnSongSwipedToQueue(song)) },
+                onToggleFavorite = { onEvent(SongsUiEvent.OnSongSwipedToFavorite(song)) },
                 modifier = Modifier.animateItem(),
-                isRemovalPending = song == songPendingRemoval,
             ) {
                 SongRow(
                     title = song.title,
@@ -80,7 +81,7 @@ internal fun RecentlyPlayedList(
                         SongRowAction(
                             icon = TuneScoutIcons.removeFromQueue,
                             contentDescription = stringResource(R.string.songs_remove_recent),
-                            onClick = { onEvent(SongsUiEvent.OnRecentSongSwipedAway(song)) },
+                            onClick = { onEvent(SongsUiEvent.OnRemoveRecentClicked(song)) },
                         )
                         SongRowMoreAction { onEvent(SongsUiEvent.OnSongOptionsClicked(song)) }
                     },

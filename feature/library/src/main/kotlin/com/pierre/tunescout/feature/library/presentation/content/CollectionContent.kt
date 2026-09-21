@@ -14,19 +14,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CollectionTitle
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
 import com.pierre.tunescout.ui.component.CollectionPlaybackRow
-import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
+import com.pierre.tunescout.ui.component.SongSwipeActionsBox
 import com.pierre.tunescout.ui.component.StateMessage
-import com.pierre.tunescout.ui.component.SwipeToRemoveBox
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -90,24 +88,6 @@ private fun CollectionLoadedContent(
             )
         }
     }
-    uiState.songPendingRemoval?.let { song ->
-        RemoveSongDialog(song = song, onEvent = onEvent)
-    }
-}
-
-@Composable
-private fun RemoveSongDialog(
-    song: Song,
-    onEvent: (CollectionUiEvent) -> Unit,
-) {
-    ConfirmationDialog(
-        title = stringResource(R.string.library_remove_song_confirm_title),
-        message = stringResource(R.string.library_remove_song_confirm_message, song.title),
-        confirmLabel = stringResource(R.string.library_remove_song_confirm_action),
-        cancelLabel = stringResource(R.string.library_confirm_cancel),
-        onConfirm = { onEvent(CollectionUiEvent.OnRemovalConfirmed) },
-        onCancel = { onEvent(CollectionUiEvent.OnRemovalDismissed) },
-    )
 }
 
 @Composable
@@ -135,10 +115,11 @@ private fun SongList(
             )
         }
         items(items = uiState.songs, key = { song -> song.id }) { song ->
-            SwipeToRemoveBox(
-                onRemove = { onEvent(CollectionUiEvent.OnSongSwipedAway(song)) },
+            SongSwipeActionsBox(
+                isFavorite = song.id in uiState.favoriteSongIds,
+                onAddToQueue = { onEvent(CollectionUiEvent.OnSongSwipedToQueue(song)) },
+                onToggleFavorite = { onEvent(CollectionUiEvent.OnSongSwipedToFavorite(song)) },
                 modifier = Modifier.animateItem(),
-                isRemovalPending = song == uiState.songPendingRemoval,
             ) {
                 SongRow(
                     title = song.title,

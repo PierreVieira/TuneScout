@@ -18,6 +18,8 @@ sealed interface AlbumUiState {
      * @property unplayableSongIds which of the tracks the player cannot reach right now — offline,
      * the ones whose preview never reached the device. Their rows are drawn dimmer, so a tap that
      * is refused is seen coming.
+     * @property favoriteSongIds which of the tracks are liked, which is what a swipe toward the
+     * start of a row would take back.
      * @property isPlaying whether the album is what the player is playing, which turns its play
      * button into a pause button.
      * @property isShuffleEnabled whether the player shuffles, which is also how the album starts.
@@ -28,6 +30,7 @@ sealed interface AlbumUiState {
         val isFavorite: Boolean,
         val isStale: Boolean,
         val unplayableSongIds: Set<Long>,
+        val favoriteSongIds: Set<Long>,
         val isPlaying: Boolean,
         val isShuffleEnabled: Boolean,
     ) : AlbumUiState

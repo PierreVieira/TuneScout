@@ -17,6 +17,10 @@ class CollectionStreams(
         is CollectionKey.Playlist -> useCases.observePlaylistSongs(key.playlistId)
     }
 
+    fun observeFavoriteSongIds(): Flow<Set<Long>> = useCases
+        .observeFavorites()
+        .map { songs -> songs.mapTo(mutableSetOf()) { song -> song.id } }
+
     fun observeTitle(key: CollectionKey): Flow<CollectionTitle?> = when (key) {
         CollectionKey.Favorites -> flowOf(CollectionTitle.Favorites)
 

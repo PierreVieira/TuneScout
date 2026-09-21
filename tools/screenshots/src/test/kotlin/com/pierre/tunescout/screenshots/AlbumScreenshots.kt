@@ -11,6 +11,7 @@ internal class AlbumScreenshots : ReadmeScreenshotsTest() {
         nowPlaying = null,
         isFavorite = true,
         isStale = false,
+        favoriteSongIds = emptySet(),
         unplayableSongIds = emptySet(),
         isPlaying = false,
         isShuffleEnabled = false,

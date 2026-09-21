@@ -5,4 +5,6 @@ data class SongsUseCases(
     val observeRecentlyPlayed: ObserveRecentlyPlayed,
     val removeFromRecentlyPlayed: RemoveFromRecentlyPlayed,
     val observeIsOnline: ObserveIsOnline,
+    val observeFavoriteSongIds: ObserveFavoriteSongIds,
+    val toggleSongFavorite: ToggleSongFavorite,
 )

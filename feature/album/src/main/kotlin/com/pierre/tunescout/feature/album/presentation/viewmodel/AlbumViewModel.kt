@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.ContextStarter
+import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -39,6 +40,7 @@ class AlbumViewModel(
     private val useCases: AlbumUseCases,
     private val songPlayback: SongPlayback,
     private val contextStarter: ContextStarter,
+    private val enqueuer: Enqueuer,
     private val transportControls: TransportControls,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
@@ -56,12 +58,13 @@ class AlbumViewModel(
     private val showsPartialAlbum = MutableStateFlow(false)
 
     /**
-     * The album and the reach the player has over its tracks arrive as one, so the rows are never
-     * drawn against the reach of a connection the monitor has already replaced.
+     * The album, the reach the player has over its tracks and which of them are liked arrive as one,
+     * so the rows are never drawn against the reach of a connection the monitor has already replaced.
      */
     private val albumReach: Flow<AlbumReach> = combine(
         useCases.observeAlbum(route.albumId),
         observablePlayableSongs.observePlayableSongs(),
+        useCases.observeFavoriteSongIds(),
         ::AlbumReach,
     )
 
@@ -95,6 +98,8 @@ class AlbumViewModel(
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> play(event.song)
         is AlbumUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
+        is AlbumUiEvent.OnSongSwipedToQueue -> addToQueue(event.song)
+        is AlbumUiEvent.OnSongSwipedToFavorite -> toggleSongFavorite(event.song)
         AlbumUiEvent.OnPlayPauseClicked -> togglePlayback()
         AlbumUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
         AlbumUiEvent.OnFavoriteClicked -> toggleFavorite()
@@ -159,6 +164,22 @@ class AlbumViewModel(
         }
     }
 
+    /** A song the player cannot reach never enters the queue, so it does not stall on it. */
+    private fun addToQueue(song: Song) {
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        enqueuer.addToQueue(listOf(song))
+        emitAction(AlbumUiAction.ShowSnackBar(R.string.ui_added_to_queue))
+    }
+
+    private fun toggleSongFavorite(song: Song) {
+        val isFavorite = (uiState.value as? AlbumUiState.Loaded)?.favoriteSongIds?.contains(song.id) ?: return
+        viewModelScope.launch {
+            useCases.toggleSongFavorite(song = song, isFavorite = isFavorite)
+            val message = if (isFavorite) R.string.ui_removed_from_favorites else R.string.ui_added_to_favorites
+            emitAction(AlbumUiAction.ShowSnackBar(message))
+        }
+    }
+
     private fun play(song: Song) {
         val loaded = uiState.value as? AlbumUiState.Loaded ?: return
         val album = loaded.album
@@ -194,6 +215,7 @@ class AlbumViewModel(
                 isFavorite = isFavorite,
                 isStale = refreshFailed,
                 unplayableSongIds = reach.playableSongs.findUnplayableIds(album.songs),
+                favoriteSongIds = reach.favoriteSongIds,
                 isPlaying = playback.isPlaying && playback.isOnAlbum(album.id),
                 isShuffleEnabled = playback.isShuffleEnabled,
             )
@@ -209,9 +231,11 @@ class AlbumViewModel(
     /**
      * @property album the album as the device has it, or null before it has one.
      * @property playableSongs which of its tracks the player can reach with the connection it has.
+     * @property favoriteSongIds the songs the user liked, from this album or any other.
      */
     private data class AlbumReach(
         val album: Album?,
         val playableSongs: PlayableSongs,
+        val favoriteSongIds: Set<Long>,
     )
 }

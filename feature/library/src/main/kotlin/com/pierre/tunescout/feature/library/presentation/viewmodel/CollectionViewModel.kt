@@ -23,7 +23,6 @@ import com.pierre.tunescout.feature.library.presentation.model.CollectionUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.utils.ActionViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -42,15 +41,13 @@ class CollectionViewModel(
     collectionStreams: CollectionStreams,
     observablePlayableSongs: ObservablePlayableSongs,
 ) : ActionViewModel<CollectionUiAction>() {
-    private val songPendingRemoval = MutableStateFlow<Song?>(null)
-
     val uiState: StateFlow<CollectionUiState> = combine(
         collectionStreams.observeTitle(key),
         collectionStreams.observeSongs(key),
         observablePlayback.observePlaybackState(),
-        songPendingRemoval,
+        collectionStreams.observeFavoriteSongIds(),
         observablePlayableSongs.observePlayableSongs(),
-    ) { title, songs, playback, pendingRemoval, playable ->
+    ) { title, songs, playback, favoriteSongIds, playable ->
         if (title == null) {
             CollectionUiState.Loading
         } else {
@@ -59,7 +56,7 @@ class CollectionViewModel(
                 songs = songs,
                 nowPlaying = playback.nowPlaying,
                 isDeletable = key is CollectionKey.Playlist,
-                songPendingRemoval = pendingRemoval,
+                favoriteSongIds = favoriteSongIds,
                 unplayableSongIds = playable.findUnplayableIds(songs),
                 isPlaying = playback.isPlaying && playback.isOnOneOf(songs),
                 isShuffleEnabled = playback.isShuffleEnabled,
@@ -73,10 +70,9 @@ class CollectionViewModel(
 
     fun onEvent(event: CollectionUiEvent) = when (event) {
         is CollectionUiEvent.OnSongClicked -> play(event.song)
-        is CollectionUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
-        is CollectionUiEvent.OnSongSwipedAway -> requestRemoval(event.song)
-        CollectionUiEvent.OnRemovalConfirmed -> confirmRemoval()
-        CollectionUiEvent.OnRemovalDismissed -> songPendingRemoval.value = null
+        is CollectionUiEvent.OnSongOptionsClicked -> openSongOptions(event.song)
+        is CollectionUiEvent.OnSongSwipedToQueue -> addToQueue(event.song)
+        is CollectionUiEvent.OnSongSwipedToFavorite -> toggleFavorite(event.song)
         CollectionUiEvent.OnPlayPauseClicked -> togglePlayback()
         CollectionUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
         CollectionUiEvent.OnMoreClicked -> navigator.navigate(key.toOptionsRoute())
@@ -126,27 +122,26 @@ class CollectionViewModel(
         emitAction(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
     }
 
-    private fun requestRemoval(song: Song) {
-        when (key) {
-            CollectionKey.Favorites -> removeSong(song)
-            is CollectionKey.Playlist -> songPendingRemoval.value = song
-        }
+    /** A song opened from a playlist is offered its way out of it; the liked songs have the like for that. */
+    private fun openSongOptions(song: Song) {
+        val playlistId = (key as? CollectionKey.Playlist)?.playlistId
+        navigator.navigate(SongOptionsRoute(songId = song.id, playlistId = playlistId))
     }
 
-    private fun confirmRemoval() {
-        val song = songPendingRemoval.value ?: return
-        songPendingRemoval.value = null
-        removeSong(song)
+    /** A song the player cannot reach never enters the queue, so it does not stall on it. */
+    private fun addToQueue(song: Song) {
+        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        enqueuer.addToQueue(listOf(song))
+        emitAction(CollectionUiAction.ShowSnackBar(R.string.ui_added_to_queue))
     }
 
-    private fun removeSong(song: Song) {
+    /** Taking the like back from the liked songs is what takes the song out of them. */
+    private fun toggleFavorite(song: Song) {
+        val isFavorite = (uiState.value as? CollectionUiState.Loaded)?.favoriteSongIds?.contains(song.id) ?: return
         viewModelScope.launch {
-            when (key) {
-                CollectionKey.Favorites -> useCases.removeFavorite(song.id)
-
-                is CollectionKey.Playlist ->
-                    useCases.removeSongFromPlaylist(playlistId = key.playlistId, songId = song.id)
-            }
+            useCases.toggleSongFavorite(song = song, isFavorite = isFavorite)
+            val message = if (isFavorite) R.string.ui_removed_from_favorites else R.string.ui_added_to_favorites
+            emitAction(CollectionUiAction.ShowSnackBar(message))
         }
     }
 }

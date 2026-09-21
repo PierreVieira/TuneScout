@@ -28,10 +28,7 @@ interface LibraryRepository {
 
     suspend fun deletePlaylist(playlistId: Long)
 
-    suspend fun removeSongFromPlaylist(
-        playlistId: Long,
-        songId: Long,
-    )
+    suspend fun addFavorite(song: Song)
 
     suspend fun removeFavorite(songId: Long)
 

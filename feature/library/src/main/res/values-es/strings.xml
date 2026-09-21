@@ -31,9 +31,6 @@
     <string name="library_delete_playlist_confirm_title">¿Eliminar esta playlist?</string>
     <string name="library_delete_playlist_confirm_message">%1$s se eliminará para siempre. Las canciones siguen en tu biblioteca.</string>
     <string name="library_delete_playlist_confirm_action">Eliminar</string>
-    <string name="library_remove_song_confirm_title">¿Quitar esta canción?</string>
-    <string name="library_remove_song_confirm_message">%1$s sale de esta playlist. Sigue en tu biblioteca.</string>
-    <string name="library_remove_song_confirm_action">Quitar</string>
     <plurals name="library_song_count">
         <item quantity="one">%1$d canción</item>
         <item quantity="other">%1$d canciones</item>

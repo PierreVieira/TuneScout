@@ -1,7 +1,6 @@
 package com.pierre.tunescout.feature.songs.presentation.content
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -91,30 +90,38 @@ class SongsContentTest {
 
         onAllNodesWithContentDescription("Remove from recently played")[0].performClick()
 
-        assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[0]))
+        assertThat(events).containsExactly(SongsUiEvent.OnRemoveRecentClicked(recents[0]))
     }
 
     @Test
-    fun givenRecentSongsSwipingOneToTheRightEmitsRemoveForThatSong() = compose.use {
+    fun givenRecentSongsSwipingOneToTheRightEmitsAddToQueueForThatSong() = compose.use {
         val recents = listOf(song(id = 1, title = "One More Time"), song(id = 2, title = "Get Lucky"))
         setContent { Content(uiState = state(recentlyPlayed = recents)) }
 
         onNodeWithText("Get Lucky").performTouchInput { swipeRight() }
         waitForTheSwipeCallback()
 
-        assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[1]))
+        assertThat(events).containsExactly(SongsUiEvent.OnSongSwipedToQueue(recents[1]))
     }
 
     @Test
-    fun givenASwipedRowWaitingOnConfirmationTheRowStaysInPlace() = compose.use {
+    fun givenRecentSongsSwipingOneToTheLeftEmitsFavoriteForThatSong() = compose.use {
         val recents = listOf(song(id = 1, title = "One More Time"))
-        val uiState = mutableStateOf(state(recentlyPlayed = recents))
-        setContent { Content(uiState = uiState.value) }
+        setContent { Content(uiState = state(recentlyPlayed = recents)) }
+
+        onNodeWithText("One More Time").performTouchInput { swipeLeft() }
+        waitForTheSwipeCallback()
+
+        assertThat(events).containsExactly(SongsUiEvent.OnSongSwipedToFavorite(recents[0]))
+    }
+
+    @Test
+    fun givenASwipedRowItSpringsBackInPlace() = compose.use {
+        val recents = listOf(song(id = 1, title = "One More Time"))
+        setContent { Content(uiState = state(recentlyPlayed = recents)) }
 
         onNodeWithText("One More Time").performTouchInput { swipeRight() }
         waitForTheSwipeCallback()
-        uiState.value = state(recentlyPlayed = recents, songPendingRemoval = recents[0])
-        waitForIdle()
 
         onNodeWithText("One More Time").assertIsDisplayed()
         onNodeWithText("One More Time").performClick()
@@ -122,25 +129,14 @@ class SongsContentTest {
     }
 
     @Test
-    fun givenRecentSongsSwipingOneToTheLeftEmitsRemoveForThatSong() = compose.use {
-        val recents = listOf(song(id = 1, title = "One More Time"))
-        setContent { Content(uiState = state(recentlyPlayed = recents)) }
-
-        onNodeWithText("One More Time").performTouchInput { swipeLeft() }
-        waitForTheSwipeCallback()
-
-        assertThat(events).containsExactly(SongsUiEvent.OnRecentSongSwipedAway(recents[0]))
-    }
-
-    @Test
-    fun givenSearchResultsSwipingOneRemovesNothing() = compose.use {
+    fun givenSearchResultsSwipingOneToTheRightEmitsAddToQueueForThatSong() = compose.use {
         val results = listOf(song(id = 3, title = "Around the World"))
         setContent { Content(uiState = state(query = "daft"), results = results) }
 
         onNodeWithText("Around the World").performTouchInput { swipeRight() }
         waitForTheSwipeCallback()
 
-        assertThat(events.filterIsInstance<SongsUiEvent.OnRecentSongSwipedAway>()).isEmpty()
+        assertThat(events).contains(SongsUiEvent.OnSongSwipedToQueue(results[0]))
     }
 
     @Test
@@ -257,6 +253,7 @@ class SongsContentTest {
         recentlyPlayed = recentlyPlayed,
         nowPlaying = nowPlaying,
         songPendingRemoval = songPendingRemoval,
+        favoriteSongIds = emptySet(),
         isOffline = isOffline,
         unplayableSongIds = unplayableSongIds,
     )

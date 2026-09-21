@@ -12,7 +12,8 @@ sealed interface CollectionUiState {
      * @property nowPlaying which song is playing, when one is.
      * @property isDeletable whether the collection itself can be deleted — a playlist can, the
      * liked songs cannot.
-     * @property songPendingRemoval the song swiped away, while the removal can still be undone.
+     * @property favoriteSongIds which of [songs] are liked, which is what a swipe toward the start
+     * of a row would take back.
      * @property unplayableSongIds which of [songs] the player cannot reach right now — offline, the
      * ones whose preview never reached the device. Their rows are drawn dimmer, so a tap that is
      * refused is seen coming.
@@ -27,7 +28,7 @@ sealed interface CollectionUiState {
         val songs: List<Song>,
         val nowPlaying: NowPlaying?,
         val isDeletable: Boolean,
-        val songPendingRemoval: Song?,
+        val favoriteSongIds: Set<Long>,
         val unplayableSongIds: Set<Long>,
         val isPlaying: Boolean,
         val isShuffleEnabled: Boolean,

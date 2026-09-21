@@ -45,7 +45,7 @@ the launcher, the lock screen and the notification shade are not composables.
 - **Search as you type**, or **by voice**, over the iTunes catalog, paged as you scroll, and
   **play** any preview.
 - **A queue like Spotify's**: play next or add to queue, reorder by drag, and what you queued
-  survives starting another album.
+  survives starting another album. Swipe a song to queue it one way and like it the other.
 - **Pick up where you left off**: the queue, the song and its position come back, paused, after the
   app is closed.
 - **A library of your own**: liked songs, playlists and liked albums, as a list or a grid.

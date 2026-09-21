@@ -22,4 +22,10 @@
     <string name="ui_now_playing">En cours de lecture</string>
     <string name="ui_song_unavailable_offline">Ce titre n\'est pas enregistré sur cet appareil. Connecte-toi à Internet pour l\'écouter.</string>
     <string name="ui_artwork_unavailable_offline">Pochette indisponible hors connexion</string>
+    <string name="ui_add_to_queue">Ajouter à la file d\'attente</string>
+    <string name="ui_favorite">J\'aime</string>
+    <string name="ui_unfavorite">Retirer des titres likés</string>
+    <string name="ui_added_to_queue">Ajouté à la file d\'attente</string>
+    <string name="ui_added_to_favorites">Ajouté aux titres likés</string>
+    <string name="ui_removed_from_favorites">Retiré des titres likés</string>
 </resources>

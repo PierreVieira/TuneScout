@@ -79,8 +79,10 @@ class SongOptionsContentTest {
     private fun state(
         song: Song?,
         isFavorite: Boolean = false,
+        isRemovableFromPlaylist: Boolean = false,
     ): SongOptionsUiState = SongOptionsUiState(
         song = song,
         isFavorite = isFavorite,
+        isRemovableFromPlaylist = isRemovableFromPlaylist,
     )
 }

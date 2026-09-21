@@ -21,10 +21,9 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistU
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveRecentLibrarySearchesUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RecordLibrarySearchUseCase
-import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveFavoriteUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveLibrarySearchUseCase
-import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveSongFromPlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryViewModeUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleSongFavoriteUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -171,27 +170,29 @@ class LibraryUseCasesTest {
     }
 
     @Test
-    fun `WHEN removing a song from a playlist THEN the playlist drops it`() = runTest {
+    fun `GIVEN a song that is not liked WHEN toggling it THEN it joins the favourites`() = runTest {
         // Given
         prepareScenario()
 
         // When
-        RemoveSongFromPlaylistUseCase(repository)(playlistId = 7, songId = 1)
+        ToggleSongFavoriteUseCase(repository)(song = song(id = 1), isFavorite = false)
 
         // Then
-        assertThat(repository.removedSongs).containsExactly(7L to 1L)
+        assertThat(repository.addedFavorites).containsExactly(song(id = 1))
+        assertThat(repository.removedFavoriteIds).isEmpty()
     }
 
     @Test
-    fun `WHEN unliking a song THEN it leaves the favourites`() = runTest {
+    fun `GIVEN a liked song WHEN toggling it THEN it leaves the favourites`() = runTest {
         // Given
         prepareScenario()
 
         // When
-        RemoveFavoriteUseCase(repository)(songId = 1)
+        ToggleSongFavoriteUseCase(repository)(song = song(id = 1), isFavorite = true)
 
         // Then
         assertThat(repository.removedFavoriteIds).containsExactly(1L)
+        assertThat(repository.addedFavorites).isEmpty()
     }
 
     @Test
@@ -264,7 +265,7 @@ private class FakeLibraryRepository(
     val observedPlaylistSongsIds = mutableListOf<Long>()
     val createdNames = mutableListOf<String>()
     val deletedPlaylistIds = mutableListOf<Long>()
-    val removedSongs = mutableListOf<Pair<Long, Long>>()
+    val addedFavorites = mutableListOf<Song>()
     val removedFavoriteIds = mutableListOf<Long>()
     val storedViewModes = mutableListOf<LibraryViewMode>()
     val recordedSearches = mutableListOf<LibraryItemKey>()
@@ -303,11 +304,8 @@ private class FakeLibraryRepository(
         deletedPlaylistIds += playlistId
     }
 
-    override suspend fun removeSongFromPlaylist(
-        playlistId: Long,
-        songId: Long,
-    ) {
-        removedSongs += playlistId to songId
+    override suspend fun addFavorite(song: Song) {
+        addedFavorites += song
     }
 
     override suspend fun removeFavorite(songId: Long) {

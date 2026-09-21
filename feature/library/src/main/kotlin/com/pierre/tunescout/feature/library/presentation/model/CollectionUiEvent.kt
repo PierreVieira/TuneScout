@@ -11,13 +11,13 @@ sealed interface CollectionUiEvent {
         val song: Song,
     ) : CollectionUiEvent
 
-    data class OnSongSwipedAway(
+    data class OnSongSwipedToQueue(
         val song: Song,
     ) : CollectionUiEvent
 
-    data object OnRemovalConfirmed : CollectionUiEvent
-
-    data object OnRemovalDismissed : CollectionUiEvent
+    data class OnSongSwipedToFavorite(
+        val song: Song,
+    ) : CollectionUiEvent
 
     data object OnPlayPauseClicked : CollectionUiEvent
 
