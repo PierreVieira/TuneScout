@@ -64,4 +64,4 @@ screenshots.
   and next are dimmed when there is no song that way. With nothing to play, the widget says so.
 - Loading, empty, error, offline and rate-limited states on every screen — the device's own
   connectivity decides which one, not the shape of the last failure; pull to refresh on search
-  results; English and Brazilian Portuguese; content descriptions on every control.
+  results; English, Brazilian Portuguese and Spanish; content descriptions on every control.

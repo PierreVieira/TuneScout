@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="songs_title">Canciones</string>
+    <string name="songs_search_placeholder">Buscar</string>
+    <string name="songs_open_theme">Cambiar tema</string>
+    <string name="songs_recently_played">Escuchado recientemente</string>
+    <string name="songs_remove_recent">Quitar de escuchado recientemente</string>
+    <string name="songs_empty_title">Aún no has escuchado nada</string>
+    <string name="songs_empty_description">Busca una canción y tócala para empezar a escuchar. Aparecerá aquí.</string>
+    <string name="songs_no_results_title">No se encontraron canciones</string>
+    <string name="songs_no_results_description">Prueba con otro artista, canción o álbum.</string>
+    <string name="songs_error_title">No se pudieron cargar las canciones</string>
+    <string name="songs_error_offline">Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="songs_error_generic">Algo salió mal por nuestra parte. Inténtalo de nuevo.</string>
+    <string name="songs_offline_notice">No tienes conexión. Se muestran las canciones guardadas en este dispositivo.</string>
+    <string name="songs_error_rate_limited">El catálogo de iTunes está ocupado ahora. Espera un momento e inténtalo de nuevo.</string>
+    <string name="songs_confirm_cancel">Cancelar</string>
+    <string name="songs_remove_recent_confirm_title">¿Quitar de escuchado recientemente?</string>
+    <string name="songs_remove_recent_confirm_message">%1$s sale de tu historial. Siempre puedes volver a buscarla.</string>
+    <string name="songs_remove_recent_confirm_action">Quitar</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="album_favorite">Me gusta este álbum</string>
+    <string name="album_unfavorite">Quitar este álbum de tu biblioteca</string>
+    <string name="album_error_title">No se pudo cargar este álbum</string>
+    <string name="album_error_description">Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="album_stale_notice">No se pudo actualizar este álbum. Se muestra la versión guardada en este dispositivo.</string>
+    <string name="album_partial_notice">No se pudo cargar el álbum completo. Solo se muestran las canciones guardadas en este dispositivo.</string>
+    <string name="album_play">Reproducir el álbum</string>
+    <string name="album_play_next">Reproducir el álbum a continuación</string>
+    <string name="album_add_to_queue">Añadir el álbum a la cola</string>
+    <string name="album_more_options">Más opciones de este álbum</string>
+</resources>
