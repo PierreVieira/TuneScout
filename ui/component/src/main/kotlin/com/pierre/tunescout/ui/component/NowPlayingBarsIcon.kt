@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -37,7 +38,7 @@ private const val CYCLES_PER_SWEEP = 2
  */
 @Composable
 fun NowPlayingBarsIcon(modifier: Modifier = Modifier) {
-    val fractions = barFractions()
+    val phases = barPhases()
     val color = TuneScoutColors.accent
     val label = stringResource(R.string.ui_now_playing)
     Canvas(
@@ -45,7 +46,7 @@ fun NowPlayingBarsIcon(modifier: Modifier = Modifier) {
             .size(barsSize)
             .semantics { contentDescription = label },
     ) {
-        drawBars(fractions = fractions, color = color)
+        drawBars(fractions = phases.map { phase -> phase.value.toBarFraction() }, color = color)
     }
 }
 
@@ -55,23 +56,24 @@ fun NowPlayingBarsIcon(modifier: Modifier = Modifier) {
  * floor, which look like an ellipsis. A frame is drawn before any animation has run (and a screenshot
  * captures exactly that one), so the stagger has to live in the initial value, not in a start offset.
  *
- * @return the height of each bar, as a fraction of the icon, left to right.
+ * The phases come back as states, not values, so only the drawing reads them: read here, every frame
+ * of the animation would recompose the icon for as long as the song plays.
+ *
+ * @return the phase of each bar, left to right.
  */
 @Composable
-private fun barFractions(): List<Float> {
+private fun barPhases(): List<State<Float>> {
     val transition = rememberInfiniteTransition(label = "nowPlayingBars")
     return barDurationsMillis.zip(barStartPhases) { durationMillis, startPhase ->
-        val phase = transition
-            .animateFloat(
-                initialValue = startPhase,
-                targetValue = startPhase + 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = durationMillis * CYCLES_PER_SWEEP, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart,
-                ),
-                label = "nowPlayingBar$durationMillis",
-            ).value
-        phase.toBarFraction()
+        transition.animateFloat(
+            initialValue = startPhase,
+            targetValue = startPhase + 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = durationMillis * CYCLES_PER_SWEEP, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            ),
+            label = "nowPlayingBar$durationMillis",
+        )
     }
 }
 

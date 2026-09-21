@@ -14,6 +14,8 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import com.pierre.tunescout.core.navigation.BackStackController
 import com.pierre.tunescout.core.navigation.NavigationCommandCollector
+import com.pierre.tunescout.core.navigation.animation.FadeSceneDecoratorStrategy
+import com.pierre.tunescout.core.navigation.animation.createSceneFadeTransform
 import com.pierre.tunescout.core.navigation.animation.rememberSharedElementNavEntryDecorator
 import com.pierre.tunescout.core.navigation.route.SplashRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
@@ -58,6 +60,7 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
     val backStackController = remember { BackStackController(backStack = backStack) }
     val bottomSheetStrategy = remember { BottomSheetSceneStrategy<NavKey>(containerColor = { TuneScoutColors.sheet }) }
     val dialogStrategy = remember { DialogSceneStrategy<NavKey>() }
+    val fadeStrategy = remember { FadeSceneDecoratorStrategy<NavKey>() }
     val tabsState = rememberHomeTabsState()
 
     NavigationCommandCollector(backStackController = backStackController)
@@ -84,9 +87,10 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
                             rememberSharedElementNavEntryDecorator(),
                         ),
                         sceneStrategies = listOf(bottomSheetStrategy, dialogStrategy),
-                        transitionSpec = { createFadeTransform() },
-                        popTransitionSpec = { createFadeTransform() },
-                        predictivePopTransitionSpec = { createFadeTransform() },
+                        sceneDecoratorStrategies = listOf(fadeStrategy),
+                        transitionSpec = { createSceneFadeTransform() },
+                        popTransitionSpec = { createSceneFadeTransform() },
+                        predictivePopTransitionSpec = { createSceneFadeTransform() },
                         entryProvider = entryProvider {
                             splashEntry()
                             homeEntry(tabsState = tabsState)
