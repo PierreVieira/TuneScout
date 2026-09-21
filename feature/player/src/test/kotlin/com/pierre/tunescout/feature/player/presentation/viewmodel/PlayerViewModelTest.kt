@@ -27,6 +27,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class PlayerViewModelTest {
@@ -208,6 +209,70 @@ class PlayerViewModelTest {
             verify(exactly = 0) { transportControls.skipToNext() }
         }
 
+    @Test
+    fun `GIVEN the song before this one cannot be reached WHEN going back THEN says so instead`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 2),
+                playback = playing(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 1), song(id = 2)),
+                    position = Duration.ZERO,
+                ),
+                playableSongIds = setOf(2),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnSkipPreviousClicked)
+
+            // Then
+            assertThat(actions).containsExactly(PlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+            verify(exactly = 0) { transportControls.skipToPrevious() }
+        }
+
+    @Test
+    fun `GIVEN the song is past the window WHEN going back THEN starts it over, whatever came before it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 2),
+                playback = playing(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 1), song(id = 2)),
+                    position = PlaybackState.previousSongWindow + 1.seconds,
+                ),
+                playableSongIds = setOf(2),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnSkipPreviousClicked)
+
+            // Then
+            assertThat(actions).isEmpty()
+            verify { transportControls.skipToPrevious() }
+        }
+
+    @Test
+    fun `GIVEN the song before this one can be reached WHEN going back THEN goes back to it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 2),
+                playback = playing(
+                    song = song(id = 2),
+                    songs = listOf(song(id = 1), song(id = 2)),
+                    position = Duration.ZERO,
+                ),
+            )
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnSkipPreviousClicked)
+
+            // Then
+            verify { transportControls.skipToPrevious() }
+        }
+
     private fun TestScope.prepareScenario(
         routeSong: Song?,
         playback: PlaybackState = PlaybackState.Idle,
@@ -235,10 +300,11 @@ class PlayerViewModelTest {
     private fun playing(
         song: Song,
         songs: List<Song> = listOf(song),
+        position: Duration = 5.seconds,
     ): PlaybackState = playbackState(
         songs = songs,
         currentIndex = songs.indexOfFirst { queued -> queued.id == song.id },
-        position = 5.seconds,
+        position = position,
         duration = 30.seconds,
     )
 
