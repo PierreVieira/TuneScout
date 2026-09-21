@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -61,7 +62,7 @@ class SearchToAlbumFlowTest {
         waitUntilAtLeastOneExists(hasText("Now playing"), SCREEN_TIMEOUT_MILLIS)
         onNodeWithContentDescription("More options").performClick()
         waitUntilAtLeastOneExists(hasText("View album") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
-        onNodeWithText("View album").performClick()
+        onNodeWithText("View album").performScrollTo().performClick()
 
         waitUntilAtLeastOneExists(hasText("Give Life Back to Music"), SCREEN_TIMEOUT_MILLIS)
     }

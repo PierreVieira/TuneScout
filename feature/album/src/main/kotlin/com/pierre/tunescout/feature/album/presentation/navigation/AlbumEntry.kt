@@ -5,11 +5,12 @@ import androidx.navigation3.runtime.NavKey
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
+import com.pierre.tunescout.core.navigation.scene.ListDetailSceneStrategy
 import com.pierre.tunescout.feature.album.presentation.content.AlbumOptionsScreen
 import com.pierre.tunescout.feature.album.presentation.content.AlbumScreen
 
 fun EntryProviderScope<NavKey>.albumEntry() {
-    entry<AlbumRoute> { route ->
+    entry<AlbumRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         AlbumScreen(route = route)
     }
 }

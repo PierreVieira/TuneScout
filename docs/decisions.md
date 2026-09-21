@@ -2,6 +2,33 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — An album beside the songs on a wide window
+
+**On an expanded width, an album opens beside the tabs instead of over them.**
+[`ListDetailSceneStrategy`](../core/navigation/src/main/kotlin/com/pierre/tunescout/core/navigation/scene/ListDetailSceneStrategy.kt)
+turns `[HomeRoute, AlbumRoute]` into one scene: the tab host on the left, the album on a raised card
+on the right, the way the design lays the queue beside the player. The list is the whole tab host,
+not the songs tab alone, so an album opened from the library's liked albums sits beside the library
+the same way. A tablet in either orientation and most phones on their side reach the 840dp Material
+calls expanded; a narrower window keeps one pane.
+
+**The back stack does not depend on the window.** The same two entries are drawn side by side or one
+over the other, so a rotation only changes the scene and Back always pops the same entry. An album
+opened from the list while another is open is pushed like any other route and replaces it in the
+right pane; Back walks back through them in that pane. Cost: several albums opened in a row pile up
+in the back stack on a wide window as they do on a phone, where each one covers the last anyway.
+
+**The tab host's own back handling stands aside while an album is open beside it.** Back handlers
+are asked most recent first, and the tab host was composed before the album was pushed, so from the
+library tab Back switched to the songs and left the album open. Moving the tab host into the two
+panes does not re-register its handler either — an entry is movable content — so it runs under a
+dispatcher of its own from the start (`DeferBackToDetailPaneScaffold`), turned off while a detail is
+open. The root `NavDisplay` keeps Back, and with it the predictive back animation.
+
+**Only the album is a detail.** A playlist or the liked songs still cover the tabs on every width,
+and so does the player, even when it is opened from the album pane: it is a screen of its own, and
+the queue beside it is its own layout ([#67](https://github.com/PierreVieira/TuneScout/issues/67)).
+
 ## 2026-09-21 — Reordering an album or a playlist
 
 **The screen reorders in place; there is no edit screen.** An album and a playlist enter a reorder

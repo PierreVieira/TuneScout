@@ -89,6 +89,7 @@ the repository. `isLandscape = true` covers the layouts that switch on width (`i
 | `MiniPlayerScreenshotTest` | playing, paused, ended |
 | `AudioSearchScreenshotTest` | waiting for speech, hearing with a transcript, failed |
 | `ThemeSelectionScreenshotTest` | the three themes, dynamic colour on, dynamic colour unsupported, its info dialog |
+| `ListDetailScreenshotTest` | the songs beside an album: recently played, and search results in every variant |
 | `ComponentScreenshotTest` | the `:ui:component` pieces on their own: rows and skeletons, bars and inputs, play button, state messages, name prompt, confirmation dialog |
 
 The components have a test of their own on purpose: a change to `SongRow` shows up as one diff
