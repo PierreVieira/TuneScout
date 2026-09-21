@@ -37,4 +37,11 @@ internal class AlbumRepositoryImpl(
     }
 
     override fun observeIsOnline(): Flow<Boolean> = networkMonitor.observeIsOnline()
+
+    override suspend fun saveTrackOrder(
+        albumId: Long,
+        songIds: List<Long>,
+    ) {
+        albumLocalDataSource.saveTrackOrder(albumId = albumId, songIds = songIds)
+    }
 }

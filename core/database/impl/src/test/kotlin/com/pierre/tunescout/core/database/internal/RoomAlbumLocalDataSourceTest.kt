@@ -5,6 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.dao.AlbumDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.entity.AlbumEntity
+import com.pierre.tunescout.core.database.entity.AlbumTrackOrderEntity
 import com.pierre.tunescout.core.database.entity.SongEntity
 import com.pierre.tunescout.core.database.mapper.toEntity
 import com.pierre.tunescout.core.database.relation.AlbumWithSongs
@@ -81,6 +82,59 @@ class RoomAlbumLocalDataSourceTest {
             val album = expectMostRecentItem()
             assertThat(album?.isComplete).isTrue()
             assertThat(album?.songs?.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
+        }
+    }
+
+    @Test
+    fun `GIVEN a saved album WHEN saving a track order THEN its tracks come back in that order`() = runTest {
+        // Given
+        prepareScenario()
+        localDataSource.save(album(id = 10, songs = listOf(song(id = 1), song(id = 2, trackNumber = 2))))
+
+        // When
+        localDataSource.saveTrackOrder(albumId = 10, songIds = listOf(2, 1))
+
+        // Then
+        localDataSource.observe(albumId = 10).test {
+            assertThat(awaitItem()?.songs?.map { song -> song.id }).containsExactly(2L, 1L).inOrder()
+        }
+    }
+
+    @Test
+    fun `GIVEN a reordered album WHEN it is saved again THEN keeps the order the user chose`() = runTest {
+        // Given
+        prepareScenario()
+        localDataSource.save(album(id = 10, songs = listOf(song(id = 1), song(id = 2, trackNumber = 2))))
+        localDataSource.saveTrackOrder(albumId = 10, songIds = listOf(2, 1))
+
+        // When
+        localDataSource.save(
+            album(id = 10, songs = listOf(song(id = 1), song(id = 2, trackNumber = 2), song(id = 3, trackNumber = 3))),
+        )
+
+        // Then
+        localDataSource.observe(albumId = 10).test {
+            assertThat(awaitItem()?.songs?.map { song -> song.id }).containsExactly(2L, 1L, 3L).inOrder()
+        }
+    }
+
+    @Test
+    fun `GIVEN only some tracks of an album WHEN saving a track order THEN the partial album follows it`() = runTest {
+        // Given
+        prepareScenario()
+        songDao.upsertAll(
+            listOf(
+                song(id = 1, albumId = 10, trackNumber = 1).toEntity(cachedAt = 0),
+                song(id = 3, albumId = 10, trackNumber = 3).toEntity(cachedAt = 0),
+            ),
+        )
+
+        // When
+        localDataSource.saveTrackOrder(albumId = 10, songIds = listOf(3, 1))
+
+        // Then
+        localDataSource.observe(albumId = 10).test {
+            assertThat(awaitItem()?.songs?.map { song -> song.id }).containsExactly(3L, 1L).inOrder()
         }
     }
 
@@ -200,4 +254,17 @@ private class FakeAlbumDao(
         songs.map { current -> current.values.filter { song -> song.albumId == albumId } }
 
     override suspend fun findCachedAt(albumId: Long): Long? = albums.value[albumId]?.cachedAt
+
+    private val trackOrder = MutableStateFlow(emptyList<AlbumTrackOrderEntity>())
+
+    override fun observeTrackOrder(albumId: Long): Flow<List<AlbumTrackOrderEntity>> =
+        trackOrder.map { entries -> entries.filter { entry -> entry.albumId == albumId } }
+
+    override suspend fun deleteTrackOrder(albumId: Long) {
+        trackOrder.value = trackOrder.value.filterNot { entry -> entry.albumId == albumId }
+    }
+
+    override suspend fun insertTrackOrder(entries: List<AlbumTrackOrderEntity>) {
+        trackOrder.value += entries
+    }
 }

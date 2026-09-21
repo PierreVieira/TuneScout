@@ -96,4 +96,22 @@ internal interface PlaylistDao {
             ),
         )
     }
+
+    @Query("UPDATE playlist_songs SET position = :position WHERE playlistId = :playlistId AND songId = :songId")
+    suspend fun updatePosition(
+        playlistId: Long,
+        songId: Long,
+        position: Int,
+    )
+
+    /** A song of the playlist left out of [songIds] keeps the position it had. */
+    @Transaction
+    suspend fun reorderSongs(
+        playlistId: Long,
+        songIds: List<Long>,
+    ) {
+        songIds.forEachIndexed { position, songId ->
+            updatePosition(playlistId = playlistId, songId = songId, position = position)
+        }
+    }
 }

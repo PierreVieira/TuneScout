@@ -3,6 +3,8 @@ package com.pierre.tunescout.feature.songoptions.presentation.viewmodel
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
@@ -32,6 +34,7 @@ class SongOptionsViewModelTest {
     private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
     private lateinit var actions: MutableList<SongOptionsUiAction>
     private lateinit var playlistRemovals: MutableList<Pair<Long, Long>>
+    private lateinit var reorderRequests: ReorderRequests
 
     @Test
     fun `GIVEN a cached song WHEN observing THEN exposes it`() = runTest(mainDispatcher.dispatcher) {
@@ -243,19 +246,65 @@ class SongOptionsViewModelTest {
             verify(exactly = 0) { navigator.navigateBack() }
         }
 
+    @Test
+    fun `GIVEN the sheet was opened from a list the user can reorder WHEN observing THEN offers to reorder it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), reorderTarget = ReorderTarget.Album(albumId = 10))
+
+            // When
+            val state = viewModel.uiState.value
+
+            // Then
+            assertThat(state.isReorderable).isTrue()
+        }
+
+    @Test
+    fun `GIVEN the sheet was opened from a playlist WHEN clicking reorder THEN asks it to reorder and closes`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), reorderTarget = ReorderTarget.Playlist(playlistId = 7))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnReorderClicked)
+
+            // Then
+            verifyOrder {
+                reorderRequests.request(ReorderTarget.Playlist(playlistId = 7))
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
+    fun `GIVEN the sheet was not opened from a list the user can reorder WHEN asked to reorder THEN does nothing`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnReorderClicked)
+
+            // Then
+            assertThat(viewModel.uiState.value.isReorderable).isFalse()
+            verify(exactly = 0) { reorderRequests.request(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
     private fun TestScope.prepareScenario(
         song: Song?,
         isFavorite: Boolean = false,
         isPlayable: Boolean = true,
         playlistId: Long? = null,
+        reorderTarget: ReorderTarget? = null,
     ) {
+        reorderRequests = mockk(relaxUnitFun = true)
         favoriteToggles = mutableListOf()
         playlistRemovals = mutableListOf()
         actions = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongOptionsViewModel(
-            route = SongOptionsRoute(songId = 1, playlistId = playlistId),
+            route = SongOptionsRoute(songId = 1, playlistId = playlistId, reorderTarget = reorderTarget),
             useCases = SongOptionsUseCases(
                 observeSong = { flowOf(song) },
                 isFavorite = { flowOf(isFavorite) },
@@ -265,6 +314,7 @@ class SongOptionsViewModelTest {
             enqueuer = enqueuer,
             playableSongs = PlayableSongs { isPlayable },
             navigator = navigator,
+            reorderRequests = reorderRequests,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

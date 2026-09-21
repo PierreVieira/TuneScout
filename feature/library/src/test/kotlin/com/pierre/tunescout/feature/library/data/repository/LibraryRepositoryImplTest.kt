@@ -191,6 +191,18 @@ class LibraryRepositoryImplTest {
     }
 
     @Test
+    fun `WHEN reordering a playlist THEN hands the new order to the playlist store`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        repository.reorderPlaylistSongs(playlistId = 7, songIds = listOf(3, 1, 2))
+
+        // Then
+        assertThat(playlistLocalDataSource.reorders).containsExactly(7L to listOf(3L, 1L, 2L))
+    }
+
+    @Test
     fun `WHEN liking a song THEN it joins the favourites`() = runTest {
         // Given
         prepareScenario()
@@ -286,6 +298,7 @@ private class FakePlaylistLocalDataSource(
 ) : PlaylistLocalDataSource {
     val createdNames = mutableListOf<String>()
     val deletedPlaylistIds = mutableListOf<Long>()
+    val reorders = mutableListOf<Pair<Long, List<Long>>>()
 
     override fun observeAll(): Flow<List<Playlist>> = flowOf(playlists)
 
@@ -328,6 +341,13 @@ private class FakePlaylistLocalDataSource(
         songId: Long,
     ) {
         error("unused")
+    }
+
+    override suspend fun reorderSongs(
+        playlistId: Long,
+        songIds: List<Long>,
+    ) {
+        reorders += playlistId to songIds
     }
 }
 

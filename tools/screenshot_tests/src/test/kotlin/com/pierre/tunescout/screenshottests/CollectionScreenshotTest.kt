@@ -18,6 +18,8 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         unplayableSongIds = emptySet(),
         isPlaying = true,
         isShuffleEnabled = false,
+        isReorderable = true,
+        isReordering = false,
     )
 
     @Test
@@ -58,6 +60,14 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
                 uiState = loaded.copy(songs = emptyList(), nowPlaying = null, isPlaying = false),
                 onEvent = {},
             )
+        }
+    }
+
+    /** Reordering: a handle on every song instead of its options, and done in place of the overflow. */
+    @Test
+    fun reordering() {
+        snapshot(name = "reordering", variants = ScreenshotVariant.all) {
+            CollectionContent(uiState = loaded.copy(isReordering = true), onEvent = {})
         }
     }
 }

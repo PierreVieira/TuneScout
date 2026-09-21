@@ -9,6 +9,7 @@ import com.pierre.tunescout.feature.album.presentation.model.AlbumOptionsUiState
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.R as ComponentR
 
 @Composable
 fun AlbumOptionsContent(
@@ -33,6 +34,12 @@ fun AlbumOptionsContent(
             label = stringResource(R.string.album_add_to_queue),
             isEnabled = isEnabled,
             onClick = { onEvent(AlbumOptionsUiEvent.OnAddToQueueClicked) },
+        )
+        OptionRow(
+            icon = TuneScoutIcons.reorder,
+            label = stringResource(ComponentR.string.ui_reorder_songs),
+            isEnabled = (uiState.album?.songs?.size ?: 0) > 1,
+            onClick = { onEvent(AlbumOptionsUiEvent.OnReorderClicked) },
         )
     }
 }

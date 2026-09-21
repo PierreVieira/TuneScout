@@ -25,5 +25,21 @@ sealed interface CollectionUiEvent {
 
     data object OnMoreClicked : CollectionUiEvent
 
+    /** A long press on a row started dragging it, which is also how the reordering starts. */
+    data object OnReorderStarted : CollectionUiEvent
+
+    data object OnReorderFinished : CollectionUiEvent
+
+    /**
+     * A song takes the place of another, by drag or by the moves a screen reader offers.
+     *
+     * @property fromSongId the song that moves.
+     * @property toSongId the song whose place it takes.
+     */
+    data class OnSongMoved(
+        val fromSongId: Long,
+        val toSongId: Long,
+    ) : CollectionUiEvent
+
     data object OnBackClicked : CollectionUiEvent
 }

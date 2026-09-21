@@ -9,6 +9,4 @@
     <string name="queue_empty_title">The queue is empty</string>
     <string name="queue_empty_description">Add a song or a whole album to the queue and it will show up here.</string>
     <string name="queue_remove">Remove from the queue</string>
-    <string name="queue_move_up">Move up</string>
-    <string name="queue_move_down">Move down</string>
 </resources>

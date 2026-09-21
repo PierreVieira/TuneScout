@@ -9,6 +9,7 @@ import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUi
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.R as ComponentR
 
 @Composable
 fun SongOptionsContent(
@@ -42,6 +43,14 @@ fun SongOptionsContent(
                 label = stringResource(R.string.song_options_remove_from_playlist),
                 isEnabled = isEnabled,
                 onClick = { onEvent(SongOptionsUiEvent.OnRemoveFromPlaylistClicked) },
+            )
+        }
+        if (uiState.isReorderable) {
+            OptionRow(
+                icon = TuneScoutIcons.reorder,
+                label = stringResource(ComponentR.string.ui_reorder_songs),
+                isEnabled = isEnabled,
+                onClick = { onEvent(SongOptionsUiEvent.OnReorderClicked) },
             )
         }
         OptionRow(

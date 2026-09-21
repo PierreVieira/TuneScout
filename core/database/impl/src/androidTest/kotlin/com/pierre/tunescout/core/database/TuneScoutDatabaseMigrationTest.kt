@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_2_3
 import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
 import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
+import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -219,6 +220,27 @@ class TuneScoutDatabaseMigrationTest {
             assertThat(
                 connection.selectCount("SELECT COUNT(*) FROM playback_queue WHERE unshuffledPosition IS NULL"),
             ).isEqualTo(1)
+        }
+    }
+
+    @Test
+    fun givenAVersionSixDatabaseTheMigrationKeepsTheSongsAndAcceptsAnAlbumTrackOrder() = runBlocking {
+        // Given
+        helper.createDatabase(version = 6).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8, 0)",
+            )
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 7, migrations = listOf(MIGRATION_6_7))
+
+        // Then
+        migrated.use { connection ->
+            connection.execSQL("INSERT INTO album_track_order VALUES (10, 1, 0)")
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM album_track_order")).isEqualTo(1)
         }
     }
 

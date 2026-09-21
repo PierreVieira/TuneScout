@@ -76,13 +76,39 @@ class SongOptionsContentTest {
         assertThat(events).isEmpty()
     }
 
+    @Test
+    fun givenAListTheUserCanReorderReorderSongsEmitsEvent() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                SongOptionsContent(uiState = state(song = song(), isReorderable = true), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Reorder songs").performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnReorderClicked)
+    }
+
+    @Test
+    fun givenAListTheUserCannotReorderReorderSongsIsNotOffered() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                SongOptionsContent(uiState = state(song = song()), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Reorder songs").assertDoesNotExist()
+    }
+
     private fun state(
         song: Song?,
         isFavorite: Boolean = false,
         isRemovableFromPlaylist: Boolean = false,
+        isReorderable: Boolean = false,
     ): SongOptionsUiState = SongOptionsUiState(
         song = song,
         isFavorite = isFavorite,
         isRemovableFromPlaylist = isRemovableFromPlaylist,
+        isReorderable = isReorderable,
     )
 }

@@ -6,6 +6,8 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
@@ -24,6 +26,7 @@ import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.utils.ActionViewModel
+import com.pierre.tunescout.ui.utils.reorder.ListReorder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,8 +48,17 @@ class AlbumViewModel(
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     private val observablePlayback: ObservablePlayback,
+    private val reorderRequests: ReorderRequests,
     observablePlayableSongs: ObservablePlayableSongs,
 ) : ActionViewModel<AlbumUiAction>() {
+    private val reorderTarget = ReorderTarget.Album(albumId = route.albumId)
+
+    private val reorder = ListReorder<Song, Long>(
+        keyOf = { song -> song.id },
+        scope = viewModelScope,
+        persist = { songIds -> useCases.saveTrackOrder(albumId = route.albumId, songIds = songIds) },
+    )
+
     private val refreshFailed = MutableStateFlow(false)
 
     /**
@@ -60,11 +72,15 @@ class AlbumViewModel(
     /**
      * The album, the reach the player has over its tracks and which of them are liked arrive as one,
      * so the rows are never drawn against the reach of a connection the monitor has already replaced.
+     * Its tracks come in the order the user is dragging them into, so the play button follows it too.
      */
     private val albumReach: Flow<AlbumReach> = combine(
-        useCases.observeAlbum(route.albumId),
+        reorder.observeArranged(useCases.observeAlbum(route.albumId)) { album, arrange ->
+            album?.copy(songs = arrange(album.songs))
+        },
         observablePlayableSongs.observePlayableSongs(),
         useCases.observeFavoriteSongIds(),
+        reorder.isReordering,
         ::AlbumReach,
     )
 
@@ -93,11 +109,12 @@ class AlbumViewModel(
     init {
         refresh()
         retryOnReconnection()
+        startReorderingOnRequest()
     }
 
     fun onEvent(event: AlbumUiEvent) = when (event) {
         is AlbumUiEvent.OnSongClicked -> play(event.song)
-        is AlbumUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
+        is AlbumUiEvent.OnSongOptionsClicked -> openSongOptions(event.song)
         is AlbumUiEvent.OnSongSwipedToQueue -> addToQueue(event.song)
         is AlbumUiEvent.OnSongSwipedToFavorite -> toggleSongFavorite(event.song)
         AlbumUiEvent.OnPlayPauseClicked -> togglePlayback()
@@ -105,7 +122,35 @@ class AlbumViewModel(
         AlbumUiEvent.OnFavoriteClicked -> toggleFavorite()
         AlbumUiEvent.OnMoreClicked -> navigator.navigate(AlbumOptionsRoute(albumId = route.albumId))
         AlbumUiEvent.OnRetryClicked -> refresh()
-        AlbumUiEvent.OnBackClicked -> navigator.navigateBack()
+        AlbumUiEvent.OnReorderStarted -> reorder.start()
+        AlbumUiEvent.OnReorderFinished -> reorder.finish()
+        is AlbumUiEvent.OnSongMoved -> moveSong(fromSongId = event.fromSongId, toSongId = event.toSongId)
+        AlbumUiEvent.OnBackClicked -> goBack()
+    }
+
+    /** Back leaves the reordering first, and the album only once the rows are back to normal. */
+    private fun goBack() {
+        if (reorder.isReordering.value) return reorder.finish()
+        navigator.navigateBack()
+    }
+
+    private fun openSongOptions(song: Song) {
+        navigator.navigate(SongOptionsRoute(songId = song.id, reorderTarget = reorderTarget))
+    }
+
+    private fun moveSong(
+        fromSongId: Long,
+        toSongId: Long,
+    ) {
+        val songs = (uiState.value as? AlbumUiState.Loaded)?.album?.songs ?: return
+        reorder.move(items = songs, from = fromSongId, to = toSongId)
+    }
+
+    /** The song options sheet and the album's own ask for it, and close as they do. */
+    private fun startReorderingOnRequest() {
+        viewModelScope.launch {
+            reorderRequests.observe(reorderTarget).collect { reorder.start() }
+        }
     }
 
     private fun refresh() {
@@ -218,6 +263,7 @@ class AlbumViewModel(
                 favoriteSongIds = reach.favoriteSongIds,
                 isPlaying = playback.isPlaying && playback.isOnAlbum(album.id),
                 isShuffleEnabled = playback.isShuffleEnabled,
+                isReordering = reach.isReordering,
             )
 
             refreshFailed -> AlbumUiState.Error
@@ -232,10 +278,12 @@ class AlbumViewModel(
      * @property album the album as the device has it, or null before it has one.
      * @property playableSongs which of its tracks the player can reach with the connection it has.
      * @property favoriteSongIds the songs the user liked, from this album or any other.
+     * @property isReordering whether the rows are there to be dragged into a new order.
      */
     private data class AlbumReach(
         val album: Album?,
         val playableSongs: PlayableSongs,
         val favoriteSongIds: Set<Long>,
+        val isReordering: Boolean,
     )
 }

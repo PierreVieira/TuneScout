@@ -59,4 +59,11 @@ internal class RoomPlaylistLocalDataSource(
     ) {
         playlistDao.deleteSong(playlistId = playlistId, songId = songId)
     }
+
+    override suspend fun reorderSongs(
+        playlistId: Long,
+        songIds: List<Long>,
+    ) {
+        playlistDao.reorderSongs(playlistId = playlistId, songIds = songIds)
+    }
 }

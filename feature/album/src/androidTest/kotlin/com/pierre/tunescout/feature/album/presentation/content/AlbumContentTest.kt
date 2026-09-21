@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.song
@@ -78,6 +79,7 @@ class AlbumContentTest {
                         unplayableSongIds = emptySet(),
                         isPlaying = false,
                         isShuffleEnabled = false,
+                        isReordering = false,
                     ),
                     onEvent = events::add,
                 )
@@ -110,6 +112,7 @@ class AlbumContentTest {
                         unplayableSongIds = emptySet(),
                         isPlaying = false,
                         isShuffleEnabled = false,
+                        isReordering = false,
                     ),
                     onEvent = events::add,
                 )
@@ -216,13 +219,62 @@ class AlbumContentTest {
         onNodeWithContentDescription(STALE_NOTICE).assertDoesNotExist()
     }
 
+    @Test
+    fun givenAnAlbumBeingReorderedItsTracksOfferNoOptionsAndDoneFinishes() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(isHeaderInline = false, uiState = loaded(isReordering = true), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("More options").assertDoesNotExist()
+        onNodeWithContentDescription("More options for this album").assertDoesNotExist()
+        onNodeWithText("Give Life Back to Music").performClick()
+        onNodeWithContentDescription("Done reordering").performClick()
+
+        assertThat(events).containsExactly(AlbumUiEvent.OnReorderFinished)
+    }
+
+    @Test
+    fun givenAnAlbumBeingReorderedATrackMovesThroughItsAccessibilityActions() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(isHeaderInline = false, uiState = loaded(isReordering = true), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Give Life Back to Music").performCustomAccessibilityActionWithLabel("Move down")
+        onNodeWithText("The Game of Love").performCustomAccessibilityActionWithLabel("Move up")
+
+        assertThat(events)
+            .containsExactly(
+                AlbumUiEvent.OnSongMoved(fromSongId = 1, toSongId = 2),
+                AlbumUiEvent.OnSongMoved(fromSongId = 2, toSongId = 1),
+            ).inOrder()
+    }
+
+    @Test
+    fun givenAnAlbumNotBeingReorderedATrackOffersNoMoves() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                AlbumContent(isHeaderInline = false, uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Give Life Back to Music").performClick()
+
+        assertThat(events).containsExactly(AlbumUiEvent.OnSongClicked(reorderableAlbum.songs.first()))
+        onNodeWithContentDescription("Done reordering").assertDoesNotExist()
+    }
+
     private fun loaded(
         isFavorite: Boolean = false,
         isStale: Boolean = false,
         isPlaying: Boolean = false,
         isShuffleEnabled: Boolean = false,
+        isReordering: Boolean = false,
     ): AlbumUiState.Loaded = AlbumUiState.Loaded(
-        album = album(),
+        album = reorderableAlbum,
         nowPlaying = null,
         isFavorite = isFavorite,
         isStale = isStale,
@@ -230,6 +282,14 @@ class AlbumContentTest {
         unplayableSongIds = emptySet(),
         isPlaying = isPlaying,
         isShuffleEnabled = isShuffleEnabled,
+        isReordering = isReordering,
+    )
+
+    private val reorderableAlbum = album(
+        songs = listOf(
+            song(id = 1, title = "Give Life Back to Music", trackNumber = 1),
+            song(id = 2, title = "The Game of Love", trackNumber = 2),
+        ),
     )
 
     private companion object {

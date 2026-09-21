@@ -56,6 +56,13 @@ class LibraryRepositoryImpl(
         librarySearchLocalDataSource.remove(LibraryItemKey.Playlist(playlistId))
     }
 
+    override suspend fun reorderPlaylistSongs(
+        playlistId: Long,
+        songIds: List<Long>,
+    ) {
+        playlistLocalDataSource.reorderSongs(playlistId = playlistId, songIds = songIds)
+    }
+
     override suspend fun addFavorite(song: Song) {
         favoriteSongLocalDataSource.add(song)
     }

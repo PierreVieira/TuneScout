@@ -11,6 +11,7 @@ import com.pierre.tunescout.core.database.dao.PlaylistDao
 import com.pierre.tunescout.core.database.dao.RecentlyPlayedDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.entity.AlbumEntity
+import com.pierre.tunescout.core.database.entity.AlbumTrackOrderEntity
 import com.pierre.tunescout.core.database.entity.FavoriteAlbumEntity
 import com.pierre.tunescout.core.database.entity.FavoriteSongEntity
 import com.pierre.tunescout.core.database.entity.LibrarySearchEntity
@@ -33,8 +34,9 @@ import com.pierre.tunescout.core.database.entity.SongEntity
         FavoriteSongEntity::class,
         FavoriteAlbumEntity::class,
         LibrarySearchEntity::class,
+        AlbumTrackOrderEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = true,
 )
 internal abstract class TuneScoutDatabase : RoomDatabase() {

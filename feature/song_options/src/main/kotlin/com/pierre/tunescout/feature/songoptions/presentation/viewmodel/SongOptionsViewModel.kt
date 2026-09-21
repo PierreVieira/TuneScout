@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.songoptions.presentation.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
 import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
@@ -25,21 +26,21 @@ class SongOptionsViewModel(
     private val enqueuer: Enqueuer,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
+    private val reorderRequests: ReorderRequests,
     private val route: SongOptionsRoute,
 ) : ActionViewModel<SongOptionsUiAction>() {
-    private val isRemovableFromPlaylist = route.playlistId != null
-
     private val emptyUiState = SongOptionsUiState(
         song = null,
         isFavorite = false,
-        isRemovableFromPlaylist = isRemovableFromPlaylist,
+        isRemovableFromPlaylist = route.playlistId != null,
+        isReorderable = route.reorderTarget != null,
     )
 
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
         useCases.isFavorite(route.songId),
     ) { song, isFavorite ->
-        SongOptionsUiState(song = song, isFavorite = isFavorite, isRemovableFromPlaylist = isRemovableFromPlaylist)
+        emptyUiState.copy(song = song, isFavorite = isFavorite)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
@@ -50,6 +51,7 @@ class SongOptionsViewModel(
         SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()
         SongOptionsUiEvent.OnRemoveFromPlaylistClicked -> removeFromPlaylist()
+        SongOptionsUiEvent.OnReorderClicked -> startReordering()
         SongOptionsUiEvent.OnDismissed -> navigator.navigateBack()
     }
 
@@ -93,5 +95,12 @@ class SongOptionsViewModel(
             useCases.removeFromPlaylist(playlistId = playlistId, songId = route.songId)
             navigator.navigateBack()
         }
+    }
+
+    /** The sheet closes as it asks, so the list under it is what the user sees reordering start on. */
+    private fun startReordering() {
+        val target = route.reorderTarget ?: return
+        reorderRequests.request(target)
+        navigator.navigateBack()
     }
 }

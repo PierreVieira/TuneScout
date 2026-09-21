@@ -4,6 +4,8 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
@@ -34,6 +36,7 @@ class CollectionOptionsViewModelTest {
     private lateinit var navigator: Navigator
     private lateinit var actions: MutableList<CollectionOptionsUiAction>
     private lateinit var deletedPlaylistIds: MutableList<Long>
+    private lateinit var reorderRequests: ReorderRequests
 
     @Test
     fun `GIVEN a playlist WHEN observing THEN shows its name and its songs`() = runTest(mainDispatcher.dispatcher) {
@@ -217,6 +220,37 @@ class CollectionOptionsViewModelTest {
             verify(exactly = 0) { navigator.navigateBack() }
         }
 
+    @Test
+    fun `GIVEN a playlist WHEN clicking reorder THEN asks the playlist to reorder and closes the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+
+            // When
+            viewModel.onEvent(CollectionOptionsUiEvent.OnReorderClicked)
+
+            // Then
+            assertThat(viewModel.uiState.value.isReorderable).isTrue()
+            verifyOrder {
+                reorderRequests.request(ReorderTarget.Playlist(playlistId = 7))
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
+    fun `GIVEN the favourites WHEN clicking reorder THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1), song(id = 2)))
+
+        // When
+        viewModel.onEvent(CollectionOptionsUiEvent.OnReorderClicked)
+
+        // Then
+        assertThat(viewModel.uiState.value.isReorderable).isFalse()
+        verify(exactly = 0) { reorderRequests.request(any()) }
+        verify(exactly = 0) { navigator.navigateBack() }
+    }
+
     private fun TestScope.prepareScenario(
         key: CollectionKey,
         favorites: List<Song> = emptyList(),
@@ -225,6 +259,7 @@ class CollectionOptionsViewModelTest {
         playableSongIds: Set<Long>? = null,
     ) {
         deletedPlaylistIds = mutableListOf()
+        reorderRequests = mockk(relaxUnitFun = true)
         actions = mutableListOf()
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
@@ -234,6 +269,7 @@ class CollectionOptionsViewModelTest {
             observeFavorites = { flowOf(favorites) },
             toggleSongFavorite = { _, _ -> },
             deletePlaylist = { playlistId -> deletedPlaylistIds += playlistId },
+            reorderPlaylistSongs = { _, _ -> },
         )
         viewModel = CollectionOptionsViewModel(
             key = key,
@@ -242,6 +278,7 @@ class CollectionOptionsViewModelTest {
             enqueuer = enqueuer,
             playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
+            reorderRequests = reorderRequests,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

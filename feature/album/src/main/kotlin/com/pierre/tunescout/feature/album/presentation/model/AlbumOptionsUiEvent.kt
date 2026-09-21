@@ -4,4 +4,6 @@ sealed interface AlbumOptionsUiEvent {
     data object OnPlayNextClicked : AlbumOptionsUiEvent
 
     data object OnAddToQueueClicked : AlbumOptionsUiEvent
+
+    data object OnReorderClicked : AlbumOptionsUiEvent
 }

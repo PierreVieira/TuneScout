@@ -110,6 +110,42 @@ class RoomPlaylistLocalDataSourceTest {
     }
 
     @Test
+    fun `GIVEN a playlist with songs WHEN reordering them THEN they come back in the new order`() = runTest {
+        // Given
+        prepareScenario()
+        val playlistId = localDataSource.create(name = "Road trip")
+        localDataSource.addSong(playlistId = playlistId, song = song(id = 1))
+        localDataSource.addSong(playlistId = playlistId, song = song(id = 2))
+        localDataSource.addSong(playlistId = playlistId, song = song(id = 3))
+
+        // When
+        localDataSource.reorderSongs(playlistId = playlistId, songIds = listOf(3, 1, 2))
+
+        // Then
+        localDataSource.observeSongs(playlistId).test {
+            assertThat(awaitItem().map { song -> song.id }).containsExactly(3L, 1L, 2L).inOrder()
+        }
+    }
+
+    @Test
+    fun `GIVEN a reordered playlist WHEN adding a song THEN it goes after the others`() = runTest {
+        // Given
+        prepareScenario()
+        val playlistId = localDataSource.create(name = "Road trip")
+        localDataSource.addSong(playlistId = playlistId, song = song(id = 1))
+        localDataSource.addSong(playlistId = playlistId, song = song(id = 2))
+        localDataSource.reorderSongs(playlistId = playlistId, songIds = listOf(2, 1))
+
+        // When
+        localDataSource.addSong(playlistId = playlistId, song = song(id = 3))
+
+        // Then
+        localDataSource.observeSongs(playlistId).test {
+            assertThat(awaitItem().map { song -> song.id }).containsExactly(2L, 1L, 3L).inOrder()
+        }
+    }
+
+    @Test
     fun `GIVEN a song in a playlist WHEN asking whether it is there THEN only that song is`() = runTest {
         // Given
         prepareScenario()
@@ -185,8 +221,8 @@ private class FakePlaylistSongDao : SongDao {
 }
 
 /**
- * Implements only the members the DAO declares, so `appendSong` — the one with a body of its own,
- * and the guard against adding the same song twice — runs for real.
+ * Implements only the members the DAO declares, so `appendSong` and `reorderSongs` — the ones with
+ * a body of their own, and the guard against adding the same song twice — run for real.
  *
  * @property songs the song table the fake reads from, by song id.
  */
@@ -257,6 +293,16 @@ private class FakePlaylistDao(
         songId: Long,
     ) {
         entries.value = entries.value.filterNot { entry -> entry.isFor(playlistId = playlistId, songId = songId) }
+    }
+
+    override suspend fun updatePosition(
+        playlistId: Long,
+        songId: Long,
+        position: Int,
+    ) {
+        entries.value = entries.value.map { entry ->
+            if (entry.isFor(playlistId = playlistId, songId = songId)) entry.copy(position = position) else entry
+        }
     }
 
     private fun PlaylistEntity.toRows(entries: List<PlaylistSongEntity>): List<PlaylistRow> {

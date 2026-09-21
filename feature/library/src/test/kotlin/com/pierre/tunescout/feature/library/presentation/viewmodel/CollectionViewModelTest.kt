@@ -8,6 +8,8 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
+import com.pierre.tunescout.core.navigation.reorder.SharedFlowReorderRequests
 import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
@@ -51,6 +53,8 @@ class CollectionViewModelTest {
     private lateinit var enqueuer: Enqueuer
     private lateinit var transportControls: TransportControls
     private lateinit var favoriteSongs: MutableStateFlow<List<Song>>
+    private lateinit var reorderRequests: SharedFlowReorderRequests
+    private lateinit var playlistReorders: MutableList<Pair<Long, List<Long>>>
 
     @Test
     fun `GIVEN the favourites WHEN observing THEN titles itself with the liked songs and cannot be deleted`() =
@@ -305,7 +309,15 @@ class CollectionViewModelTest {
             viewModel.onEvent(CollectionUiEvent.OnSongOptionsClicked(song(id = 2)))
 
             // Then
-            verify { navigator.navigate(SongOptionsRoute(songId = 2, playlistId = 7)) }
+            verify {
+                navigator.navigate(
+                    SongOptionsRoute(
+                        songId = 2,
+                        playlistId = 7,
+                        reorderTarget = ReorderTarget.Playlist(playlistId = 7),
+                    ),
+                )
+            }
         }
 
     @Test
@@ -474,6 +486,115 @@ class CollectionViewModelTest {
             assertThat(state.unplayableSongIds).containsExactly(2L)
         }
 
+    @Test
+    fun `GIVEN a playlist WHEN a sheet asks to reorder it THEN its rows turn into ones to drag`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+
+            // When
+            reorderRequests.request(ReorderTarget.Playlist(playlistId = 7))
+            runCurrent()
+
+            // Then
+            assertThat(loadedState().isReorderable).isTrue()
+            assertThat(loadedState().isReordering).isTrue()
+        }
+
+    @Test
+    fun `GIVEN a playlist WHEN a sheet asks to reorder another THEN stays as it is`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+
+            // When
+            reorderRequests.request(ReorderTarget.Playlist(playlistId = 8))
+            runCurrent()
+
+            // Then
+            assertThat(loadedState().isReordering).isFalse()
+        }
+
+    @Test
+    fun `GIVEN the favourites WHEN a long press starts a drag THEN they cannot be reordered`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1), song(id = 2)))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnReorderStarted)
+            viewModel.onEvent(CollectionUiEvent.OnSongMoved(fromSongId = 1, toSongId = 2))
+            runCurrent()
+
+            // Then
+            assertThat(loadedState().isReorderable).isFalse()
+            assertThat(loadedState().isReordering).isFalse()
+            assertThat(loadedState().songs.map { song -> song.id }).containsExactly(1L, 2L).inOrder()
+            assertThat(playlistReorders).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN a playlist being reordered WHEN moving a song THEN the rows follow and the order is stored`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 1), song(id = 2), song(id = 3)),
+            )
+            viewModel.onEvent(CollectionUiEvent.OnReorderStarted)
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongMoved(fromSongId = 1, toSongId = 3))
+            runCurrent()
+
+            // Then
+            assertThat(loadedState().songs.map { song -> song.id }).containsExactly(2L, 3L, 1L).inOrder()
+            assertThat(playlistReorders).containsExactly(7L to listOf(2L, 3L, 1L))
+        }
+
+    @Test
+    fun `GIVEN a playlist being reordered WHEN pressing back THEN finishes reordering and stays`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+            viewModel.onEvent(CollectionUiEvent.OnReorderStarted)
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnBackClicked)
+
+            // Then
+            assertThat(loadedState().isReordering).isFalse()
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN a playlist being reordered WHEN clicking done THEN the rows go back to normal`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+            viewModel.onEvent(CollectionUiEvent.OnReorderStarted)
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnReorderFinished)
+
+            // Then
+            assertThat(loadedState().isReordering).isFalse()
+        }
+
+    @Test
+    fun `GIVEN a playlist not being reordered WHEN pressing back THEN leaves it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.Playlist(playlistId = 7), playlist = playlist(id = 7))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnBackClicked)
+
+            // Then
+            verify { navigator.navigateBack() }
+        }
+
     private fun TestScope.prepareScenario(
         key: CollectionKey,
         favorites: List<Song> = emptyList(),
@@ -483,6 +604,8 @@ class CollectionViewModelTest {
         playback: PlaybackState = PlaybackState.Idle,
     ) {
         favoriteSongs = MutableStateFlow(favorites)
+        reorderRequests = SharedFlowReorderRequests()
+        playlistReorders = mutableListOf()
         actions = mutableListOf()
         navigator = mockk(relaxUnitFun = true)
         songPlayback = FakeSongPlayback()
@@ -500,6 +623,7 @@ class CollectionViewModelTest {
                 }
             },
             deletePlaylist = { },
+            reorderPlaylistSongs = { playlistId, songIds -> playlistReorders += playlistId to songIds },
         )
         val playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true }
         viewModel = CollectionViewModel(
@@ -512,6 +636,7 @@ class CollectionViewModelTest {
             transportControls = transportControls,
             playableSongs = playableSongs,
             navigator = navigator,
+            reorderRequests = reorderRequests,
             observablePlayableSongs = { flowOf(playableSongs) },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
