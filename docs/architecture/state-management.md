@@ -113,13 +113,10 @@ class PlayerViewModel(
     route: PlayerRoute,
     private val useCases: PlayerUseCases,
     private val navigator: Navigator,
-) : ViewModel() {
+) : ActionViewModel<PlayerUiAction>() {
 
     val uiState: StateFlow<PlayerUiState>
         field = MutableStateFlow<PlayerUiState>(PlayerUiState.Loading)
-
-    val uiAction: SharedFlow<PlayerUiAction>
-        field = MutableSharedFlow<PlayerUiAction>()
 
     init {
         observeSong(route.songId)
@@ -137,8 +134,26 @@ class PlayerViewModel(
             .launchIn(viewModelScope)
     }
 
-    private fun emitAction(action: PlayerUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
+    private fun showSongUnavailableOffline() {
+        emitAction(PlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
+    }
+}
+```
+
+A ViewModel that has one-shot actions extends `ActionViewModel<A>` (`:ui:utils`) instead of
+`ViewModel`, and inherits the `uiAction` flow and the `protected emitAction`. The flow replays
+nothing, so an action reaches whoever is collecting the moment it is emitted and a screen that
+subscribes later never sees it — that is what makes it one-shot, and why emitting rides
+`viewModelScope`. `ActionViewModel` is generic in the action type precisely so the type itself stays
+the feature's own: the plumbing is shared, the vocabulary is not. A ViewModel with no one-shot
+action extends `ViewModel` directly.
+
+`ActionCollector` (`:ui:utils`) is the other half, and the screen collects the same flow:
+
+```kotlin
+ActionCollector(viewModel.uiAction) { action ->
+    when (action) {
+        is PlayerUiAction.ShowSnackBar -> snackbarHostState.showSnackbar(resources.getString(action.message))
     }
 }
 ```

@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.player.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
@@ -18,13 +17,11 @@ import com.pierre.tunescout.feature.player.presentation.model.PlayerUiAction
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.ui.component.R
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class PlayerViewModel(
     private val route: PlayerRoute,
@@ -34,7 +31,7 @@ class PlayerViewModel(
     private val transportControls: TransportControls,
     private val navigator: Navigator,
     observeSong: ObserveSong,
-) : ViewModel() {
+) : ActionViewModel<PlayerUiAction>() {
     private val playback: PlaybackState
         get() = observablePlayback.observePlaybackState().value
 
@@ -48,9 +45,6 @@ class PlayerViewModel(
     /** The song the player would go back to, and nothing while it would start this one over. */
     private val previousSong: Song?
         get() = playback.previousEntry?.song
-
-    val uiAction: SharedFlow<PlayerUiAction>
-        field = MutableSharedFlow<PlayerUiAction>()
 
     val uiState: StateFlow<PlayerUiState> = combine(
         observeSong(route.songId),
@@ -107,10 +101,6 @@ class PlayerViewModel(
 
     private fun showSongUnavailableOffline() {
         emitAction(PlayerUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-    }
-
-    private fun emitAction(action: PlayerUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun navigateToOptions() {

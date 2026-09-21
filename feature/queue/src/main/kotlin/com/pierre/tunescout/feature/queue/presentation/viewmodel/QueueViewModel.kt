@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.queue.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
@@ -17,13 +16,11 @@ import com.pierre.tunescout.feature.queue.presentation.model.QueueUiAction
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.ui.component.R
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class QueueViewModel(
     private val observablePlayback: ObservablePlayback,
@@ -31,7 +28,7 @@ class QueueViewModel(
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     observablePlayableSongs: ObservablePlayableSongs,
-) : ViewModel() {
+) : ActionViewModel<QueueUiAction>() {
     private val emptyUiState = QueueUiState(
         contextTitle = null,
         nowPlaying = null,
@@ -40,9 +37,6 @@ class QueueViewModel(
         upNext = emptyList(),
         unplayableSongIds = emptySet(),
     )
-
-    val uiAction: SharedFlow<QueueUiAction>
-        field = MutableSharedFlow<QueueUiAction>()
 
     val uiState: StateFlow<QueueUiState> = combine(
         observablePlayback.observePlaybackState(),
@@ -73,10 +67,6 @@ class QueueViewModel(
 
     private fun showSongUnavailableOffline() {
         emitAction(QueueUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-    }
-
-    private fun emitAction(action: QueueUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun openPlayer() {

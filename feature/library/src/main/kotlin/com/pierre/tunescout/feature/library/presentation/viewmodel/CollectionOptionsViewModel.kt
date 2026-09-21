@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.library.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
@@ -13,9 +12,8 @@ import com.pierre.tunescout.feature.library.presentation.model.CollectionOptions
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiState
 import com.pierre.tunescout.ui.component.R
-import kotlinx.coroutines.flow.MutableSharedFlow
+import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -29,7 +27,7 @@ class CollectionOptionsViewModel(
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     collectionStreams: CollectionStreams,
-) : ViewModel() {
+) : ActionViewModel<CollectionOptionsUiAction>() {
     private val isDeletable = key is CollectionKey.Playlist
     private val emptyUiState = CollectionOptionsUiState(
         title = null,
@@ -38,9 +36,6 @@ class CollectionOptionsViewModel(
         isConfirmingDelete = false,
     )
     private val isConfirmingDelete = MutableStateFlow(false)
-
-    val uiAction: SharedFlow<CollectionOptionsUiAction>
-        field = MutableSharedFlow<CollectionOptionsUiAction>()
 
     val uiState: StateFlow<CollectionOptionsUiState> = combine(
         collectionStreams.observeTitle(key),
@@ -78,10 +73,6 @@ class CollectionOptionsViewModel(
 
     private fun showSongUnavailableOffline() {
         emitAction(CollectionOptionsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-    }
-
-    private fun emitAction(action: CollectionOptionsUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun askForDeleteConfirmation() {

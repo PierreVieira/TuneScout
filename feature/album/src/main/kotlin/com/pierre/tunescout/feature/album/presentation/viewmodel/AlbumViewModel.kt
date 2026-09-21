@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.album.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.PlaybackContext
@@ -22,10 +21,9 @@ import com.pierre.tunescout.feature.album.presentation.model.AlbumUiAction
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
 import com.pierre.tunescout.ui.component.R
+import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -44,7 +42,7 @@ class AlbumViewModel(
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
-) : ViewModel() {
+) : ActionViewModel<AlbumUiAction>() {
     private val refreshFailed = MutableStateFlow(false)
 
     /**
@@ -73,9 +71,6 @@ class AlbumViewModel(
         useCases.isAlbumFavorite(route.albumId),
         ::toUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), AlbumUiState.Loading)
-
-    val uiAction: SharedFlow<AlbumUiAction>
-        field = MutableSharedFlow<AlbumUiAction>()
 
     /**
      * Started optimistically, like the search screen: the monitor reports the real state as soon as
@@ -160,10 +155,6 @@ class AlbumViewModel(
 
     private fun showSongUnavailableOffline() {
         emitAction(AlbumUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-    }
-
-    private fun emitAction(action: AlbumUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun toUiState(

@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.songoptions.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
@@ -14,8 +13,7 @@ import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUi
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
 import com.pierre.tunescout.ui.component.R
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -28,14 +26,11 @@ class SongOptionsViewModel(
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     route: SongOptionsRoute,
-) : ViewModel() {
+) : ActionViewModel<SongOptionsUiAction>() {
     private val emptyUiState = SongOptionsUiState(
         song = null,
         isFavorite = false,
     )
-
-    val uiAction: SharedFlow<SongOptionsUiAction>
-        field = MutableSharedFlow<SongOptionsUiAction>()
 
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
@@ -66,10 +61,6 @@ class SongOptionsViewModel(
 
     private fun showSongUnavailableOffline() {
         emitAction(SongOptionsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-    }
-
-    private fun emitAction(action: SongOptionsUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun toggleFavorite() {

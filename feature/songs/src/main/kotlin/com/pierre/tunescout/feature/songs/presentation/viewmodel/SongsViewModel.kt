@@ -1,6 +1,5 @@
 package com.pierre.tunescout.feature.songs.presentation.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
@@ -24,12 +23,11 @@ import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.R
+import com.pierre.tunescout.ui.utils.ActionViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -52,7 +50,7 @@ class SongsViewModel(
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
-) : ViewModel() {
+) : ActionViewModel<SongsUiAction>() {
     private val searchDebounce = 300.milliseconds
     private val idleLoadStates = LoadStates(
         refresh = LoadState.NotLoading(endOfPaginationReached = true),
@@ -111,9 +109,6 @@ class SongsViewModel(
         ),
     )
 
-    val uiAction: SharedFlow<SongsUiAction>
-        field = MutableSharedFlow<SongsUiAction>()
-
     /** Emits every time the connection comes back, and never for the state the screen opened on. */
     private val reconnections: Flow<Unit>
         get() = isOnline.drop(1).filter { isOnline -> isOnline }.map { }
@@ -161,10 +156,6 @@ class SongsViewModel(
 
     private fun showSongUnavailableOffline() {
         emitAction(SongsUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-    }
-
-    private fun emitAction(action: SongsUiAction) {
-        viewModelScope.launch { uiAction.emit(action) }
     }
 
     private fun removeFromRecentlyPlayed() {
