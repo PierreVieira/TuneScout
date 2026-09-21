@@ -3,8 +3,8 @@
 """
 Check that every translatable string resource exists in all supported locales.
 
-For each `values/strings.xml` in the repository, the matching `values-pt-rBR/strings.xml`
-must declare exactly the same set of `<string>` and `<plurals>` names. Entries marked
+For each `values/strings.xml` in the repository, the matching `strings.xml` of every locale in
+`REQUIRED_LOCALES` must declare exactly the same set of `<string>` and `<plurals>` names. Entries marked
 `translatable="false"` are ignored everywhere.
 
 Exits with a non-zero status when anything is missing, so it can gate CI.
@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 # Locale folders every module must provide alongside the default `values`
-REQUIRED_LOCALES = ('values-pt-rBR',)
+REQUIRED_LOCALES = ('values-pt-rBR', 'values-es')
 
 # Directories that never contain source resources
 EXCLUDE_DIRS = {

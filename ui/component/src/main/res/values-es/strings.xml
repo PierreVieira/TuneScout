@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ui_back">Atrás</string>
+    <string name="ui_more_options">Más opciones</string>
+    <string name="ui_play">Reproducir</string>
+    <string name="ui_pause">Pausar</string>
+    <string name="ui_replay">Volver a reproducir</string>
+    <string name="ui_skip_next">Siguiente canción</string>
+    <string name="ui_skip_previous">Canción anterior</string>
+    <string name="ui_repeat_off">Repetición desactivada</string>
+    <string name="ui_repeat_all">Repitiendo la cola</string>
+    <string name="ui_repeat_one">Repitiendo esta canción</string>
+    <string name="ui_shuffle_on">Orden aleatorio activado</string>
+    <string name="ui_shuffle_off">Orden aleatorio desactivado</string>
+    <string name="ui_clear_search">Borrar búsqueda</string>
+    <string name="ui_search">Buscar</string>
+    <string name="ui_artwork_of">Portada de %1$s</string>
+    <string name="ui_seek_bar">Posición de la reproducción</string>
+    <string name="ui_retry">Intentar de nuevo</string>
+    <string name="ui_loading">Cargando</string>
+    <string name="ui_close">Cerrar</string>
+    <string name="ui_now_playing">Reproduciendo ahora</string>
+    <string name="ui_song_unavailable_offline">Esta canción no está guardada en este dispositivo. Conéctate a internet para escucharla.</string>
+    <string name="ui_artwork_unavailable_offline">Portada no disponible sin conexión</string>
+</resources>

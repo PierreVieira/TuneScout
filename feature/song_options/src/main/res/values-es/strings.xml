@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_options_favorite">Me gusta</string>
+    <string name="song_options_unfavorite">Quitar de canciones que te gustan</string>
+    <string name="song_options_add_to_playlist">Añadir a playlist</string>
+    <string name="song_options_view_album">Ver álbum</string>
+    <string name="song_options_play_now">Reproducir ahora</string>
+    <string name="song_options_play_next">Reproducir a continuación</string>
+    <string name="song_options_add_to_queue">Añadir a la cola</string>
+</resources>
