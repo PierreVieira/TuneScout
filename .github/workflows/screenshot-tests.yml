@@ -71,6 +71,11 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    # This job never runs on main, so it has no Gradle cache entry of its own to restore. It
+    # compiles and renders exactly what verify does, so it restores verify's. See
+    # .github/actions/gradle.
+    env:
+      GRADLE_BUILD_ACTION_CACHE_KEY_JOB: verify
     steps:
       - name: Checkout the pull request's branch
         uses: actions/checkout@v5

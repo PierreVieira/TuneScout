@@ -38,6 +38,19 @@ runs:
           ${{ env.GRADLE_CACHE_READ_ONLY == 'true'
           || (env.GRADLE_CACHE_WRITE_ON_PULL_REQUESTS != 'true' && github.event.repository != null
           && github.ref_name != github.event.repository.default_branch) }}
+        # GitHub looks every restore key up in the pull request's own scope before it falls back to
+        # main, and setup-gradle's broadest key matches the most recent entry of any job. From the
+        # second push on, that is an entry one of the pull request's writers saved, so a read-only
+        # job restored it instead of main's entry for that same job and compiled everything the
+        # writer never builds: unit-tests took 4m09s instead of 52s. Strict matching leaves only the
+        # key of the job itself, which a read-only job finds on main and a writer in the pull
+        # request. Two kinds of job have no entry of their own and would start cold on every push:
+        # the GRADLE_CACHE_READ_ONLY ones, which keep the fallback, and one that never runs on main,
+        # which borrows a job's entries by setting GRADLE_BUILD_ACTION_CACHE_KEY_JOB to its id.
+        # Main keeps the fallback too: its scope has no other entries to get in the way, and the
+        # first run of a new job starts from another job's entry instead of from nothing.
+        gradle-home-cache-strict-match: >-
+          ${{ env.GRADLE_CACHE_READ_ONLY != 'true' && github.event_name == 'pull_request' }}
         # Cleanup drops whatever a build did not touch, and a warm build touches fewer dependencies
         # and transforms than a cold one, so each push would save new 250-550 MB entries that differ
         # only by what is missing. Pull request entries are deleted when it closes instead.
