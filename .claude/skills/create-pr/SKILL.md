@@ -83,7 +83,13 @@ git checkout -b <type>/<short-description>
 
 Examples: `fix/seek-bar-jumps-on-drag`, `feature/album-screen`, `chore/ci-unit-tests`.
 
-### 6. Run the unit tests
+### 6. Run the unit tests (if needed)
+
+If every file the branch changes is Markdown (`.md`), as gathered in step 1 (commits ahead of
+`main` and uncommitted changes alike), skip this step. No test can read those files, and the run
+takes minutes.
+
+Otherwise, run:
 
 ```bash
 ./gradlew testDebugUnitTest test
