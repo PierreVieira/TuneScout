@@ -9,12 +9,14 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
-import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.SongPlayOutcome
+import com.pierre.tunescout.core.playback.SongPlayback
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiAction
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiEvent
@@ -36,7 +38,7 @@ import kotlinx.coroutines.launch
 class AlbumViewModel(
     private val route: AlbumRoute,
     private val useCases: AlbumUseCases,
-    private val playbackStarter: PlaybackStarter,
+    private val songPlayback: SongPlayback,
     private val enqueuer: Enqueuer,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
@@ -128,8 +130,7 @@ class AlbumViewModel(
 
     private fun playNow() {
         val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        val songs = playableSongs.filterPlayable(album.songs)
-        if (songs.isEmpty()) return showSongUnavailableOffline()
+        val songs = playableSongs.findPlayableOrNull(album.songs) ?: return showSongUnavailableOffline()
         enqueuer.playNow(songs)
     }
 
@@ -141,19 +142,20 @@ class AlbumViewModel(
         }
     }
 
-    /**
-     * A track the player cannot reach is refused with a message before it gets there, and the queue
-     * behind one it can reach keeps only the tracks it can reach too. Playing the whole album follows
-     * the same rule.
-     */
     private fun play(song: Song) {
-        val album = (uiState.value as? AlbumUiState.Loaded)?.album ?: return
-        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
-        playbackStarter.play(
+        val loaded = uiState.value as? AlbumUiState.Loaded ?: return
+        val album = loaded.album
+        val outcome = songPlayback.request(
             song = song,
-            songs = playableSongs.filterPlayable(album.songs),
+            nowPlaying = loaded.nowPlaying,
+            queue = album.songs,
             context = PlaybackContext.Album(id = album.id, title = album.title),
         )
+        when (outcome) {
+            SongPlayOutcome.AlreadyPlaying -> navigator.navigate(PlayerRoute(songId = song.id))
+            SongPlayOutcome.Unavailable -> showSongUnavailableOffline()
+            SongPlayOutcome.Started -> Unit
+        }
     }
 
     private fun showSongUnavailableOffline() {

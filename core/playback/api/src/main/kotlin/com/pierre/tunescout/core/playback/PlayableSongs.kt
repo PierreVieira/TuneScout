@@ -19,6 +19,14 @@ fun interface PlayableSongs {
     fun filterPlayable(songs: List<Song>): List<Song> = songs.filter(::isPlayable)
 
     /**
+     * The whole of a list handed to the player at once — a "play now" — is worth nothing when the
+     * player can reach none of it, and the screen says so instead of queuing silence.
+     *
+     * @return the songs of [songs] that [isPlayable], or null when that is none of them.
+     */
+    fun findPlayableOrNull(songs: List<Song>): List<Song>? = filterPlayable(songs).ifEmpty { null }
+
+    /**
      * A list draws the songs it cannot play dimmer, so the ones a tap would refuse are told apart
      * before the tap.
      *

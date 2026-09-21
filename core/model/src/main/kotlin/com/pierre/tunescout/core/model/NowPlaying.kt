@@ -11,3 +11,9 @@ data class NowPlaying(
     val songId: Long,
     val isPlaying: Boolean,
 )
+
+/**
+ * @return whether the player is on the song with [songId]. A list with nothing to mark is on no song
+ * at all.
+ */
+fun NowPlaying?.isOn(songId: Long): Boolean = this?.songId == songId

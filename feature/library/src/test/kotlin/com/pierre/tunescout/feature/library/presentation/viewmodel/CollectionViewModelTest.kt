@@ -1,18 +1,23 @@
 package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
+import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
-import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.SongPlayOutcome
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
+import com.pierre.tunescout.core.testing.fake.SongPlayRequest
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
@@ -39,7 +44,7 @@ class CollectionViewModelTest {
     private lateinit var viewModel: CollectionViewModel
     private lateinit var navigator: Navigator
     private lateinit var actions: MutableList<CollectionUiAction>
-    private lateinit var playbackStarter: PlaybackStarter
+    private lateinit var songPlayback: FakeSongPlayback
     private lateinit var enqueuer: Enqueuer
     private lateinit var removedFavoriteIds: MutableList<Long>
     private lateinit var removedFromPlaylist: MutableList<Pair<Long, Long>>
@@ -48,7 +53,11 @@ class CollectionViewModelTest {
     fun `GIVEN the favourites WHEN observing THEN titles itself with the liked songs and cannot be deleted`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 1))),
+            )
 
             // When
             val state = viewModel.uiState.value as CollectionUiState.Loaded
@@ -93,22 +102,27 @@ class CollectionViewModelTest {
         }
 
     @Test
-    fun `GIVEN a song WHEN clicking it THEN plays it alone and stays on the collection`() =
+    fun `GIVEN a song WHEN clicking it THEN asks for it alone and stays on the collection`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(key = CollectionKey.Favorites, favorites = listOf(song(id = 1)))
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 9))),
+            )
 
             // When
             viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
 
             // Then
-            verify {
-                playbackStarter.play(
+            assertThat(songPlayback.requests).containsExactly(
+                SongPlayRequest(
                     song = song(id = 1),
-                    songs = listOf(song(id = 1)),
+                    nowPlaying = NowPlaying(songId = 9, isPlaying = true),
+                    queue = listOf(song(id = 1)),
                     context = PlaybackContext.SingleSong,
-                )
-            }
+                ),
+            )
             verify(exactly = 0) { navigator.navigate(any()) }
         }
 
@@ -282,13 +296,14 @@ class CollectionViewModelTest {
                 favorites = listOf(song(id = 1)),
                 playableSongIds = emptySet(),
             )
+            songPlayback.outcome = SongPlayOutcome.Unavailable
 
             // When
             viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
 
             // Then
             assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_song_unavailable_offline))
-            verify(exactly = 0) { playbackStarter.play(any(), any(), any()) }
+            verify(exactly = 0) { navigator.navigate(any()) }
         }
 
     @Test
@@ -326,6 +341,25 @@ class CollectionViewModelTest {
             verify(exactly = 0) { enqueuer.playNow(any()) }
         }
 
+    @Test
+    fun `GIVEN the song the player is already on WHEN clicking its row THEN opens the player`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Favorites,
+                favorites = listOf(song(id = 1)),
+                playback = playbackState(songs = listOf(song(id = 1))),
+            )
+            songPlayback.outcome = SongPlayOutcome.AlreadyPlaying
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongClicked(song(id = 1)))
+
+            // Then
+            verify { navigator.navigate(PlayerRoute(songId = 1L)) }
+            assertThat(actions).isEmpty()
+        }
+
     private fun loadedState(): CollectionUiState.Loaded = viewModel.uiState.value as CollectionUiState.Loaded
 
     @Test
@@ -351,12 +385,13 @@ class CollectionViewModelTest {
         playlist: Playlist? = null,
         playlistSongs: List<Song> = emptyList(),
         playableSongIds: Set<Long>? = null,
+        playback: PlaybackState = PlaybackState.Idle,
     ) {
         removedFavoriteIds = mutableListOf()
         actions = mutableListOf()
         removedFromPlaylist = mutableListOf()
         navigator = mockk(relaxUnitFun = true)
-        playbackStarter = mockk(relaxUnitFun = true)
+        songPlayback = FakeSongPlayback()
         enqueuer = mockk(relaxUnitFun = true)
         val useCases = CollectionUseCases(
             observePlaylist = { flowOf(playlist) },
@@ -371,8 +406,8 @@ class CollectionViewModelTest {
             key = key,
             useCases = useCases,
             collectionStreams = CollectionStreams(useCases),
-            observablePlayback = ObservablePlayback { MutableStateFlow(playbackState()) },
-            playbackStarter = playbackStarter,
+            observablePlayback = ObservablePlayback { MutableStateFlow(playback) },
+            songPlayback = songPlayback,
             enqueuer = enqueuer,
             playableSongs = playableSongs,
             navigator = navigator,
