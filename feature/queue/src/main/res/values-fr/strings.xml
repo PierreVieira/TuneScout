@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="queue_title">File d\'attente</string>
+    <string name="queue_playing_from">Lecture depuis %1$s</string>
+    <string name="queue_now_playing">En cours de lecture</string>
+    <string name="queue_next_in_queue">Ensuite dans la file d\'attente</string>
+    <string name="queue_next_from">Ensuite depuis %1$s</string>
+    <string name="queue_next_up">À suivre</string>
+    <string name="queue_empty_title">La file d\'attente est vide</string>
+    <string name="queue_empty_description">Ajoute un titre ou un album entier à la file d\'attente et il apparaîtra ici.</string>
+    <string name="queue_remove">Retirer de la file d\'attente</string>
+    <string name="queue_reorder">Déplacer %1$s</string>
+    <string name="queue_move_up">Monter</string>
+    <string name="queue_move_down">Descendre</string>
+</resources>
