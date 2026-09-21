@@ -77,9 +77,7 @@ class MiniPlayerViewModel(
     }
 
     private fun getProgress(playback: PlaybackState): Float {
-        val duration = playback.duration.takeIf { value -> value > Duration.ZERO }
-            ?: playback.currentSong?.duration
-            ?: return 0f
+        val duration = playback.totalDuration
         if (duration <= Duration.ZERO) return 0f
         return (playback.position / duration).toFloat().coerceIn(0f, 1f)
     }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.ui.component.NowPlayingState
@@ -69,7 +70,7 @@ internal fun RecentlyPlayedList(
                     subtitle = song.artistName,
                     artworkUrl = song.artwork.thumbnailUrl,
                     nowPlaying = NowPlayingState.of(
-                        isCurrentSong = song.id == nowPlaying?.songId,
+                        isCurrentSong = nowPlaying.isOn(song.id),
                         isPlaying = nowPlaying?.isPlaying == true,
                     ),
                     isUnavailable = song.id in unplayableSongIds,

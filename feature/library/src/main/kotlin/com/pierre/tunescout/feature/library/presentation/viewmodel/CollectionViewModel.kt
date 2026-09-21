@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
-import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.SongPlayOutcome
+import com.pierre.tunescout.core.playback.SongPlayback
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
@@ -31,7 +33,7 @@ import kotlinx.coroutines.launch
 class CollectionViewModel(
     private val key: CollectionKey,
     private val useCases: CollectionUseCases,
-    private val playbackStarter: PlaybackStarter,
+    private val songPlayback: SongPlayback,
     private val playableSongs: PlayableSongs,
     private val enqueuer: Enqueuer,
     private val navigator: Navigator,
@@ -80,20 +82,24 @@ class CollectionViewModel(
         CollectionUiEvent.OnBackClicked -> navigator.navigateBack()
     }
 
-    /**
-     * A song the player cannot reach is refused with a message before it gets there, and playing the
-     * whole collection keeps only the songs it can reach.
-     */
     private fun play(song: Song) {
-        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
-        playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
+        val outcome = songPlayback.request(
+            song = song,
+            nowPlaying = (uiState.value as? CollectionUiState.Loaded)?.nowPlaying,
+            queue = listOf(song),
+            context = PlaybackContext.SingleSong,
+        )
+        when (outcome) {
+            SongPlayOutcome.AlreadyPlaying -> navigator.navigate(PlayerRoute(songId = song.id))
+            SongPlayOutcome.Unavailable -> showSongUnavailableOffline()
+            SongPlayOutcome.Started -> Unit
+        }
     }
 
     private fun playNow() {
         val songs = (uiState.value as? CollectionUiState.Loaded)?.songs.orEmpty()
         if (songs.isEmpty()) return
-        val playable = playableSongs.filterPlayable(songs)
-        if (playable.isEmpty()) return showSongUnavailableOffline()
+        val playable = playableSongs.findPlayableOrNull(songs) ?: return showSongUnavailableOffline()
         enqueuer.playNow(playable)
     }
 

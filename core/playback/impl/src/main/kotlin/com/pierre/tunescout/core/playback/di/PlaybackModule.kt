@@ -18,6 +18,7 @@ import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.playback.QueueControls
+import com.pierre.tunescout.core.playback.SongPlayback
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.playback.internal.AndroidMediaItemFactory
 import com.pierre.tunescout.core.playback.internal.ConnectivityPlayableSongs
@@ -32,6 +33,7 @@ import com.pierre.tunescout.core.playback.internal.PlaybackServiceLauncher
 import com.pierre.tunescout.core.playback.internal.PlaybackSessionKeeper
 import com.pierre.tunescout.core.playback.internal.PreviewCache
 import com.pierre.tunescout.core.playback.internal.QueueTimelineFactory
+import com.pierre.tunescout.core.playback.internal.ReachableSongPlayback
 import com.pierre.tunescout.core.playback.internal.RecentlyPlayedRecorder
 import com.pierre.tunescout.core.playback.internal.RestorablePlayback
 import kotlinx.coroutines.CoroutineScope
@@ -106,6 +108,7 @@ val playbackModule: Module = module {
     single<QueueControls> { get<ExoPlayerPlaybackController>() }
     single<TransportControls> { get<ExoPlayerPlaybackController>() }
     single<RestorablePlayback> { get<ExoPlayerPlaybackController>() }
+    single<SongPlayback> { ReachableSongPlayback(playbackStarter = get(), playableSongs = get()) }
     single(createdAtStart = true) {
         PlaybackSessionKeeper(
             observablePlayback = get(),

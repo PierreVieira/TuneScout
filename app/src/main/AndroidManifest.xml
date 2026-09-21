@@ -16,11 +16,21 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.TuneScout.Splash"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!--
+              The home screen widgets open the app on a screen of its own. The scheme is the app's
+              and has no BROWSABLE category, so only something that already knows it can send one.
+            -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="tunescout" />
             </intent-filter>
         </activity>
     </application>

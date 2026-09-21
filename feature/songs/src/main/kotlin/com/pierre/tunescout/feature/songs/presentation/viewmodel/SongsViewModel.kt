@@ -10,12 +10,14 @@ import androidx.paging.map
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.navigation.route.ThemeSelectionRoute
 import com.pierre.tunescout.core.playback.ObservablePlayableSongs
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
-import com.pierre.tunescout.core.playback.PlaybackStarter
+import com.pierre.tunescout.core.playback.SongPlayOutcome
+import com.pierre.tunescout.core.playback.SongPlayback
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
 import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiAction
@@ -46,8 +48,7 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class SongsViewModel(
     private val useCases: SongsUseCases,
-    private val playbackStarter: PlaybackStarter,
-    private val playableSongs: PlayableSongs,
+    private val songPlayback: SongPlayback,
     private val navigator: Navigator,
     observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
@@ -145,8 +146,17 @@ class SongsViewModel(
     }
 
     private fun play(song: Song) {
-        if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
-        playbackStarter.play(song = song, songs = listOf(song), context = PlaybackContext.SingleSong)
+        val outcome = songPlayback.request(
+            song = song,
+            nowPlaying = uiState.value.nowPlaying,
+            queue = listOf(song),
+            context = PlaybackContext.SingleSong,
+        )
+        when (outcome) {
+            SongPlayOutcome.AlreadyPlaying -> navigator.navigate(PlayerRoute(songId = song.id))
+            SongPlayOutcome.Unavailable -> showSongUnavailableOffline()
+            SongPlayOutcome.Started -> Unit
+        }
     }
 
     private fun showSongUnavailableOffline() {
