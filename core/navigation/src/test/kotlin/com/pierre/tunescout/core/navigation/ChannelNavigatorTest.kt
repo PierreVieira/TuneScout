@@ -75,4 +75,19 @@ class ChannelNavigatorTest {
             assertThat(awaitItem()).isEqualTo(NavigationCommand.Back)
         }
     }
+
+    @Test
+    fun `GIVEN more commands than a bounded buffer holds WHEN collecting late THEN delivers all`() = runTest {
+        // Given
+        val routes = List(1_000) { PlayerRoute(songId = it.toLong()) }
+        routes.forEach(navigator::navigate)
+
+        // When / Then
+        navigator.commands.test {
+            routes.forEach { route ->
+                assertThat(awaitItem()).isEqualTo(NavigationCommand.Navigate(route))
+            }
+            expectNoEvents()
+        }
+    }
 }
