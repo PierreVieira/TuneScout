@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
         ) {
             MainContent(
                 requestNotificationPermissionsUiAction = viewModel.requestNotificationPermissionsUiAction,
+                isOffline = state.isOffline,
             )
         }
     }

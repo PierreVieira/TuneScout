@@ -3,15 +3,18 @@ package com.pierre.tunescout.presentation.content
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import com.pierre.tunescout.navigation.TuneScoutNavigationContent
 import com.pierre.tunescout.permission.rememberNotificationPermissionRequest
 import com.pierre.tunescout.ui.utils.ActionCollector
+import com.pierre.tunescout.ui.utils.network.LocalIsOffline
 import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun MainContent(
     requestNotificationPermissionsUiAction: Flow<Unit>,
+    isOffline: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val requestNotificationPermission = rememberNotificationPermissionRequest()
@@ -19,6 +22,8 @@ fun MainContent(
         requestNotificationPermission()
     }
     Surface(modifier = modifier.fillMaxSize()) {
-        TuneScoutNavigationContent()
+        CompositionLocalProvider(LocalIsOffline provides isOffline) {
+            TuneScoutNavigationContent()
+        }
     }
 }

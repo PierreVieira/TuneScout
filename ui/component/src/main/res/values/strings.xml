@@ -18,4 +18,5 @@
     <string name="ui_close">Close</string>
     <string name="ui_now_playing">Now playing</string>
     <string name="ui_song_unavailable_offline">This song isn\'t saved on this device. Connect to the internet to play it.</string>
+    <string name="ui_artwork_unavailable_offline">Artwork unavailable offline</string>
 </resources>

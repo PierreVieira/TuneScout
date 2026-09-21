@@ -2,6 +2,7 @@ package com.pierre.tunescout.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pierre.tunescout.core.network.NetworkMonitor
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveDynamicColorEnabled
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveTheme
@@ -23,18 +24,30 @@ class MainViewModel(
     private val observablePlayback: ObservablePlayback,
     observeTheme: ObserveTheme,
     observeDynamicColorEnabled: ObserveDynamicColorEnabled,
+    networkMonitor: NetworkMonitor,
 ) : ViewModel() {
     private val isSystemInDarkTheme = MutableStateFlow<Boolean?>(null)
+
+    /**
+     * Started optimistically, and never part of what the splash waits on: the monitor reports the
+     * real state as soon as it is collected, and one frame drawn as if online is better than a
+     * launch held back for it.
+     */
+    private val isOnline: StateFlow<Boolean> = networkMonitor
+        .observeIsOnline()
+        .stateIn(scope = viewModelScope, started = SharingStarted.Eagerly, initialValue = true)
 
     val uiState: StateFlow<MainUiState> = combine(
         observeTheme(),
         observeDynamicColorEnabled(),
         isSystemInDarkTheme.filterNotNull(),
-    ) { theme, isDynamicColorEnabled, isSystemInDarkTheme ->
+        isOnline,
+    ) { theme, isDynamicColorEnabled, isSystemInDarkTheme, isOnline ->
         MainUiState.Ready(
             theme = theme,
             isDynamicColorEnabled = isDynamicColorEnabled,
             systemBars = SystemBars.of(isDark = theme.isDark(isSystemInDarkTheme)),
+            isOffline = !isOnline,
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, MainUiState.Loading)
 

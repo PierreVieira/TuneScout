@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
 import com.pierre.tunescout.ui.component.shimmer.ShimmerBox
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.utils.animation.sharedArtwork
@@ -34,7 +32,7 @@ fun Artwork(
     sharedKey: SongSharedKey? = null,
 ) {
     val shape = RoundedCornerShape(percent = cornerPercent)
-    var state by remember(url) { mutableStateOf(getInitialArtworkState(url)) }
+    var state by remember(url) { mutableStateOf(ArtworkState.of(url)) }
     Box(
         modifier = modifier
             .sharedArtwork(sharedKey)
@@ -47,39 +45,18 @@ fun Artwork(
             model = url,
             contentDescription = contentDescription,
             contentScale = ContentScale.Crop,
-            onState = { newState -> state = newState.toArtworkState(url) },
+            onState = { newState -> state = ArtworkState.of(painterState = newState, url = url) },
             modifier = Modifier.fillMaxSize(),
         )
         when (state) {
             ArtworkState.LOADING -> ShimmerBox(shape = shape, modifier = Modifier.fillMaxSize())
-            ArtworkState.EMPTY -> PlaceholderIcon()
+
+            ArtworkState.EMPTY, ArtworkState.FAILED -> ArtworkPlaceholderIcon(
+                hasFailed = state == ArtworkState.FAILED,
+                modifier = Modifier.size(placeholderIconSize),
+            )
+
             ArtworkState.LOADED -> Unit
         }
     }
-}
-
-@Composable
-private fun PlaceholderIcon() {
-    Icon(
-        imageVector = TuneScoutIcons.musicList,
-        contentDescription = null,
-        tint = TuneScoutColors.elementPlaceholder,
-        modifier = Modifier.size(placeholderIconSize),
-    )
-}
-
-private enum class ArtworkState {
-    LOADING,
-    LOADED,
-    EMPTY,
-}
-
-private fun getInitialArtworkState(url: String): ArtworkState =
-    if (url.isBlank()) ArtworkState.EMPTY else ArtworkState.LOADING
-
-private fun AsyncImagePainter.State.toArtworkState(url: String): ArtworkState = when (this) {
-    is AsyncImagePainter.State.Loading -> ArtworkState.LOADING
-    is AsyncImagePainter.State.Success -> ArtworkState.LOADED
-    is AsyncImagePainter.State.Error -> ArtworkState.EMPTY
-    AsyncImagePainter.State.Empty -> getInitialArtworkState(url)
 }
