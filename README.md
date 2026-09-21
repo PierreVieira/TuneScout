@@ -30,7 +30,7 @@ native Android app written for the Music AI Android code challenge.
 
 | Lock screen | Lock screen, expanded | Notification shade |
 | :--: | :--: | :--: |
-| <img src="docs/screenshots/lock_screen.png" width="260" alt="The media controls on the locked screen, with the cover, previous, pause and next"> | <img src="docs/screenshots/lock_screen_expanded.png" width="260" alt="The lock screen controls expanded: the cover, title, timeline, like, previous and pause"> | <img src="docs/screenshots/notification.png" width="300" alt="Media controls in the notification shade, with the like button beside the timeline"> |
+| <img src="docs/screenshots/lock_screen.png" width="260" alt="The media controls on the locked screen, with the cover, previous, pause and next"> | <img src="docs/screenshots/lock_screen_expanded.png" width="260" alt="The lock screen controls expanded: the cover, title, timeline, like, previous and pause"> | <img src="docs/screenshots/notification.png" width="360" alt="Media controls in the notification shade, with the like button beside the timeline"> |
 
 | Widget, 4×2: now playing with shortcuts | Widget, 4×1: now playing |
 | :--: | :--: |
