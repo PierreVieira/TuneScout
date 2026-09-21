@@ -25,7 +25,6 @@ ui/
 ├── component/           # Shared composables (Artwork, song rows, buttons)
 └── utils/               # Presentation helpers (ActionViewModel and ActionCollector, the shared-element scopes and modifiers)
 feature/
-├── splash/
 ├── songs/
 ├── library/           # The library tab, its search, a playlist and the create dialog
 ├── song_options/

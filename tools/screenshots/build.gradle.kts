@@ -17,7 +17,6 @@ dependencies {
     testImplementation(projects.feature.queue)
     testImplementation(projects.feature.songOptions)
     testImplementation(projects.feature.songs)
-    testImplementation(projects.feature.splash)
     testImplementation(projects.feature.themeSelection)
     testImplementation(projects.tools.screenshotFixtures)
     testImplementation(projects.ui.component)

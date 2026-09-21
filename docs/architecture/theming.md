@@ -42,10 +42,10 @@ Box(modifier = Modifier.drawBehind { drawRect(color = trackColor) })
 Box(modifier = Modifier.drawBehind { drawRect(color = TuneScoutColors.surfaceSubtle) })
 ```
 
-`TuneScoutBrandColors` is the exception that needs no composable scope: it holds the two splash
-colors, which are fixed. The splash continues the system splash window, whose background is
-declared in `res/values/colors.xml` and drawn before any preference can be read, so it cannot
-follow the theme and does not try to.
+The splash is the one surface outside the palette. Its colours are resources in
+`ui/theme/src/main/res/values/colors.xml`, read by the splash window's theme and by the gradient
+drawable of its exit animation. That window is drawn before any preference can be read, so it
+cannot follow the theme and does not try to.
 
 ### The widget picker's preview layouts
 

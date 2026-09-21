@@ -155,7 +155,7 @@ fun navigate(route: NavKey, animated: Boolean = true) { ... }
 navigate(SongsRoute)
 navigate(PlayerRoute(songId))
 navigate(AlbumRoute(albumId))
-navigate(SplashRoute, animated = false) // exception is visible
+navigate(QueueRoute, animated = false) // exception is visible
 ```
 
 ---

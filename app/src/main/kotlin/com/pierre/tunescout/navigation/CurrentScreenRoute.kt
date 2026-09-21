@@ -5,7 +5,6 @@ import com.pierre.tunescout.core.navigation.route.DetailPaneRoute
 import com.pierre.tunescout.core.navigation.route.HomeRoute
 import com.pierre.tunescout.core.navigation.route.OverlayRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
-import com.pierre.tunescout.core.navigation.route.SplashRoute
 import com.pierre.tunescout.core.navigation.scene.findListPaneIndexOrNull
 
 /**
@@ -17,14 +16,12 @@ import com.pierre.tunescout.core.navigation.scene.findListPaneIndexOrNull
 internal fun List<NavKey>.findCurrentScreenRouteOrNull(): NavKey? = lastOrNull { route -> route !is OverlayRoute }
 
 /**
- * The mini player is a shortcut back to the player, so it is hidden on the player itself and on the
- * splash.
+ * The mini player is a shortcut back to the player, so it is hidden on the player itself.
  *
  * @return whether the current screen may show the mini player.
  */
 internal fun List<NavKey>.isMiniPlayerAllowed(): Boolean = when (findCurrentScreenRouteOrNull()) {
-    null, SplashRoute -> false
-    is PlayerRoute -> false
+    null, is PlayerRoute -> false
     else -> true
 }
 

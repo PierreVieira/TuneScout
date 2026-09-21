@@ -56,7 +56,6 @@ dependencies {
     implementation(projects.ui.component)
     implementation(projects.ui.utils)
 
-    implementation(projects.feature.splash)
     implementation(projects.feature.songs)
     implementation(projects.feature.library)
     implementation(projects.feature.songOptions)

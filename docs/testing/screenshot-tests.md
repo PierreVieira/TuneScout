@@ -95,7 +95,7 @@ the repository. `isLandscape = true` covers the layouts that switch on width (`i
 The components have a test of their own on purpose: a change to `SongRow` shows up as one diff
 instead of the same diff repeated across every screen that draws it.
 
-Left out: the splash screen (one static gradient), the options sheets (`OptionsSheet` is covered by
+Left out: the splash (a system window and its exit animation, not a composable), the options sheets (`OptionsSheet` is covered by
 its own components) and anything that only exists mid-animation.
 
 ## Accessibility checks
