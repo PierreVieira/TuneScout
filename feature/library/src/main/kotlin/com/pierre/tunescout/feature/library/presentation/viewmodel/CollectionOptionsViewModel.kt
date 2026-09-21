@@ -3,6 +3,8 @@ package com.pierre.tunescout.feature.library.presentation.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
@@ -26,6 +28,7 @@ class CollectionOptionsViewModel(
     private val enqueuer: Enqueuer,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
+    private val reorderRequests: ReorderRequests,
     collectionStreams: CollectionStreams,
 ) : ActionViewModel<CollectionOptionsUiAction>() {
     private val isDeletable = key is CollectionKey.Playlist
@@ -33,6 +36,7 @@ class CollectionOptionsViewModel(
         title = null,
         songs = emptyList(),
         isDeletable = isDeletable,
+        isReorderable = key is CollectionKey.Playlist,
         isConfirmingDelete = false,
     )
     private val isConfirmingDelete = MutableStateFlow(false)
@@ -42,17 +46,13 @@ class CollectionOptionsViewModel(
         collectionStreams.observeSongs(key),
         isConfirmingDelete,
     ) { title, songs, isConfirming ->
-        CollectionOptionsUiState(
-            title = title,
-            songs = songs,
-            isDeletable = isDeletable,
-            isConfirmingDelete = isConfirming,
-        )
+        emptyUiState.copy(title = title, songs = songs, isConfirmingDelete = isConfirming)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: CollectionOptionsUiEvent) = when (event) {
         CollectionOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         CollectionOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
+        CollectionOptionsUiEvent.OnReorderClicked -> startReordering()
         CollectionOptionsUiEvent.OnDeleteClicked -> askForDeleteConfirmation()
         CollectionOptionsUiEvent.OnDeleteConfirmed -> deleteCollection()
         CollectionOptionsUiEvent.OnDeleteDismissed -> isConfirmingDelete.value = false
@@ -68,6 +68,13 @@ class CollectionOptionsViewModel(
         val playable = playableSongs.filterPlayable(songs)
         if (playable.isEmpty()) return showSongUnavailableOffline()
         enqueue(playable)
+        navigator.navigateBack()
+    }
+
+    /** The sheet closes as it asks, so the playlist under it is what the user sees reordering start on. */
+    private fun startReordering() {
+        if (key !is CollectionKey.Playlist) return
+        reorderRequests.request(ReorderTarget.Playlist(playlistId = key.playlistId))
         navigator.navigateBack()
     }
 

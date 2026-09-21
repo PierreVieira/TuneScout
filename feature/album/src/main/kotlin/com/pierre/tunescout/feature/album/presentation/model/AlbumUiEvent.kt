@@ -29,5 +29,21 @@ sealed interface AlbumUiEvent {
 
     data object OnRetryClicked : AlbumUiEvent
 
+    /** A long press on a row started dragging it, which is also how the reordering starts. */
+    data object OnReorderStarted : AlbumUiEvent
+
+    data object OnReorderFinished : AlbumUiEvent
+
+    /**
+     * A song takes the place of another, by drag or by the moves a screen reader offers.
+     *
+     * @property fromSongId the song that moves.
+     * @property toSongId the song whose place it takes.
+     */
+    data class OnSongMoved(
+        val fromSongId: Long,
+        val toSongId: Long,
+    ) : AlbumUiEvent
+
     data object OnBackClicked : AlbumUiEvent
 }

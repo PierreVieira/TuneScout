@@ -29,4 +29,8 @@
     <string name="ui_added_to_queue">Ajouté à la file d\'attente</string>
     <string name="ui_added_to_favorites">Ajouté aux titres likés</string>
     <string name="ui_removed_from_favorites">Retiré des titres likés</string>
+    <string name="ui_move_up">Monter</string>
+    <string name="ui_move_down">Descendre</string>
+    <string name="ui_reorder_songs">Réorganiser les titres</string>
+    <string name="ui_reorder_done">Terminer la réorganisation</string>
 </resources>

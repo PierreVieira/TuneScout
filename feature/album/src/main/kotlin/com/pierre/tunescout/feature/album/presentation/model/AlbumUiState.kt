@@ -23,6 +23,8 @@ sealed interface AlbumUiState {
      * @property isPlaying whether the album is what the player is playing, which turns its play
      * button into a pause button.
      * @property isShuffleEnabled whether the player shuffles, which is also how the album starts.
+     * @property isReordering whether the tracks are there to be dragged into an order of the user's
+     * own: each row shows a handle instead of its options, and a tap no longer plays it.
      */
     data class Loaded(
         val album: Album,
@@ -33,5 +35,6 @@ sealed interface AlbumUiState {
         val favoriteSongIds: Set<Long>,
         val isPlaying: Boolean,
         val isShuffleEnabled: Boolean,
+        val isReordering: Boolean,
     ) : AlbumUiState
 }

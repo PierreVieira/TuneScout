@@ -11,6 +11,4 @@
     <string name="queue_empty_title">La file d\'attente est vide</string>
     <string name="queue_empty_description">Ajoute un titre ou un album entier à la file d\'attente et il apparaîtra ici.</string>
     <string name="queue_remove">Retirer de la file d\'attente</string>
-    <string name="queue_move_up">Monter</string>
-    <string name="queue_move_down">Descendre</string>
 </resources>

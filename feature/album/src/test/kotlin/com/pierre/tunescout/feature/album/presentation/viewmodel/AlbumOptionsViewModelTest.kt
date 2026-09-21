@@ -3,6 +3,8 @@ package com.pierre.tunescout.feature.album.presentation.viewmodel
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -14,6 +16,7 @@ import com.pierre.tunescout.feature.album.presentation.model.AlbumOptionsUiEvent
 import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -27,6 +30,7 @@ class AlbumOptionsViewModelTest {
     private lateinit var enqueuer: Enqueuer
     private lateinit var navigator: Navigator
     private lateinit var actions: MutableList<AlbumOptionsUiAction>
+    private lateinit var reorderRequests: ReorderRequests
 
     @Test
     fun `GIVEN a cached album WHEN adding it to the queue THEN queues every track and dismisses`() =
@@ -101,12 +105,42 @@ class AlbumOptionsViewModelTest {
             verify(exactly = 0) { navigator.navigateBack() }
         }
 
+    @Test
+    fun `GIVEN an album WHEN clicking reorder THEN asks the album to reorder and closes the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+
+            // When
+            viewModel.onEvent(AlbumOptionsUiEvent.OnReorderClicked)
+
+            // Then
+            verifyOrder {
+                reorderRequests.request(ReorderTarget.Album(albumId = 10))
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
+    fun `GIVEN no album yet WHEN clicking reorder THEN does nothing`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(cached = null)
+
+        // When
+        viewModel.onEvent(AlbumOptionsUiEvent.OnReorderClicked)
+
+        // Then
+        verify(exactly = 0) { reorderRequests.request(any()) }
+        verify(exactly = 0) { navigator.navigateBack() }
+    }
+
     private fun TestScope.prepareScenario(
         cached: Album?,
         playableSongIds: Set<Long>? = null,
     ) {
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
+        reorderRequests = mockk(relaxUnitFun = true)
         actions = mutableListOf()
         viewModel = AlbumOptionsViewModel(
             route = AlbumOptionsRoute(albumId = 10),
@@ -114,6 +148,7 @@ class AlbumOptionsViewModelTest {
             enqueuer = enqueuer,
             playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
+            reorderRequests = reorderRequests,
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }

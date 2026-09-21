@@ -2,6 +2,42 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — Reordering an album or a playlist
+
+**The screen reorders in place; there is no edit screen.** An album and a playlist enter a reorder
+mode from three places: "Reorder songs" in a track's options sheet, the same option in the album's
+or playlist's own sheet, and a long press anywhere on a row, which picks the row up and drags it at
+once. In the mode every row shows a handle that drags on touch instead of its overflow, the swipe is
+off, a tap plays nothing, and a check in the top bar — or Back — ends it. Every row also offers
+"Move up" and "Move down" to a screen reader, and merges its title and artist into one item while
+the mode lasts, since a row a tap does nothing on stops merging them by itself. The liked songs are
+not reorderable: they are kept in the order they were liked.
+
+**Every move is stored as it happens, and the rows are drawn from the order the screen keeps.**
+[`ListReorder`](../ui/utils/src/main/kotlin/com/pierre/tunescout/ui/utils/reorder/ListReorder.kt)
+holds the dragged order, writes it one write at a time — skipping one that falls behind for the
+order that replaced it — and arranges what the database emits by it. A drag moves a row many times
+before it is let go; drawing from the database would make the row jump back under the finger while
+a write is on its way. There is no save step to forget, so leaving the mode by Back loses nothing.
+
+**An album's order is a table of its own.** `album_track_order` (migration 7→8) keeps where the user
+put each track, apart from the tracks: they come from the API and are rewritten on every refresh, the
+order is not. A track the album gains after it was reordered goes after the ordered ones, in the
+album's own order. The table has no key to `albums`, because a partial album — put together from the
+saved tracks — has no row there and can be reordered all the same. Playing the album follows the new
+order, since the screen hands the player the tracks it draws. A playlist already had a `position`
+per song, so reordering it rewrites those.
+
+**A sheet asks the screen under it through
+[`ReorderRequests`](../core/navigation/src/main/kotlin/com/pierre/tunescout/core/navigation/reorder/ReorderRequests.kt).**
+The sheet closes as it asks, so the request cannot be a route: it is heard by the screen already
+there, which starts collecting in its ViewModel. It lives in `core/navigation` because the song
+options sheet is its own feature and reaches the screens of two others. It replays nothing: a screen
+opened later must not start reordering over a request it was never on screen for. `SongOptionsRoute`
+carries a `ReorderTarget` — an album or a playlist — so the sheet only offers the option where there
+is a list to reorder. Cost: the drag handle and the move actions moved to `:ui:component`, which now
+exposes the reorderable library as `api`; the queue uses the same handle and the same actions.
+
 ## 2026-09-21 — Playlists and liked songs as the queue's context
 
 **Any ordered collection is a context, not only an album.** `PlaybackContext` gained `Playlist`,

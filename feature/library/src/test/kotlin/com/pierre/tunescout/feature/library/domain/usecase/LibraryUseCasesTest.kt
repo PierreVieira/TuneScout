@@ -22,6 +22,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylists
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveRecentLibrarySearchesUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RecordLibrarySearchUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveLibrarySearchUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ReorderPlaylistSongsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryViewModeUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleSongFavoriteUseCase
 import kotlinx.coroutines.flow.Flow
@@ -170,6 +171,18 @@ class LibraryUseCasesTest {
     }
 
     @Test
+    fun `WHEN reordering a playlist THEN hands the new order to the repository`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        ReorderPlaylistSongsUseCase(repository)(playlistId = 7, songIds = listOf(2, 1))
+
+        // Then
+        assertThat(repository.reorders).containsExactly(7L to listOf(2L, 1L))
+    }
+
+    @Test
     fun `GIVEN a song that is not liked WHEN toggling it THEN it joins the favourites`() = runTest {
         // Given
         prepareScenario()
@@ -265,6 +278,7 @@ private class FakeLibraryRepository(
     val observedPlaylistSongsIds = mutableListOf<Long>()
     val createdNames = mutableListOf<String>()
     val deletedPlaylistIds = mutableListOf<Long>()
+    val reorders = mutableListOf<Pair<Long, List<Long>>>()
     val addedFavorites = mutableListOf<Song>()
     val removedFavoriteIds = mutableListOf<Long>()
     val storedViewModes = mutableListOf<LibraryViewMode>()
@@ -302,6 +316,13 @@ private class FakeLibraryRepository(
 
     override suspend fun deletePlaylist(playlistId: Long) {
         deletedPlaylistIds += playlistId
+    }
+
+    override suspend fun reorderPlaylistSongs(
+        playlistId: Long,
+        songIds: List<Long>,
+    ) {
+        reorders += playlistId to songIds
     }
 
     override suspend fun addFavorite(song: Song) {

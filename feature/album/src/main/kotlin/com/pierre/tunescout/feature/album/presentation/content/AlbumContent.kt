@@ -12,7 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,7 +29,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.isOn
 import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.presentation.component.AlbumSkeleton
@@ -38,9 +43,10 @@ import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.CollectionPlaybackRow
 import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
+import com.pierre.tunescout.ui.component.ReorderableSongSwipeBox
+import com.pierre.tunescout.ui.component.SongDragHandle
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.SongRowMoreAction
-import com.pierre.tunescout.ui.component.SongSwipeActionsBox
 import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
@@ -50,6 +56,8 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.utils.semantics.screenPane
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val artworkSize = 120.dp
@@ -80,7 +88,9 @@ fun AlbumContent(
             modifier = Modifier.hideableTopBar(),
             onBackClick = { onEvent(AlbumUiEvent.OnBackClicked) },
             actions = {
-                if (uiState is AlbumUiState.Loaded) {
+                if (uiState is AlbumUiState.Loaded && uiState.isReordering) {
+                    ReorderDoneAction(onEvent = onEvent)
+                } else if (uiState is AlbumUiState.Loaded) {
                     if (uiState.album.isComplete) {
                         FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
                     }
@@ -107,6 +117,11 @@ fun AlbumContent(
             )
 
             is AlbumUiState.Loaded -> {
+                NavigationBackHandler(
+                    state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
+                    isBackEnabled = uiState.isReordering,
+                    onBackCompleted = { onEvent(AlbumUiEvent.OnReorderFinished) },
+                )
                 LoadedNoticeBar(uiState = uiState)
                 Box(contentAlignment = Alignment.TopCenter) {
                     LoadedContent(
@@ -154,13 +169,31 @@ private fun FavoriteAction(
 }
 
 @Composable
+private fun ReorderDoneAction(onEvent: (AlbumUiEvent) -> Unit) {
+    TopBarAction(
+        icon = TuneScoutIcons.check,
+        contentDescription = stringResource(ComponentR.string.ui_reorder_done),
+        onClick = { onEvent(AlbumUiEvent.OnReorderFinished) },
+    )
+}
+
+@Composable
 private fun LoadedContent(
     uiState: AlbumUiState.Loaded,
     isHeaderInline: Boolean,
     onEvent: (AlbumUiEvent) -> Unit,
 ) {
     val album = uiState.album
+    val lazyListState = rememberLazyListState()
+    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
+        val fromSongId = from.key as? Long
+        val toSongId = to.key as? Long
+        if (fromSongId != null && toSongId != null) {
+            onEvent(AlbumUiEvent.OnSongMoved(fromSongId = fromSongId, toSongId = toSongId))
+        }
+    }
     LazyColumn(
+        state = lazyListState,
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
@@ -189,26 +222,41 @@ private fun LoadedContent(
                 },
             )
         }
-        items(items = album.songs, key = { song -> song.id }) { song ->
-            SongSwipeActionsBox(
-                isFavorite = song.id in uiState.favoriteSongIds,
-                onAddToQueue = { onEvent(AlbumUiEvent.OnSongSwipedToQueue(song)) },
-                onToggleFavorite = { onEvent(AlbumUiEvent.OnSongSwipedToFavorite(song)) },
-            ) {
-                SongRow(
-                    title = song.title,
-                    subtitle = song.artistName,
-                    artworkUrl = song.artwork.thumbnailUrl,
-                    artworkSize = rowArtworkSize,
-                    nowPlaying = NowPlayingState.of(
-                        isCurrentSong = uiState.nowPlaying.isOn(song.id),
-                        isPlaying = uiState.nowPlaying?.isPlaying == true,
-                    ),
-                    isUnavailable = song.id in uiState.unplayableSongIds,
-                    sharedSongId = song.id,
-                    onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) },
-                    trailing = { SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) } },
-                )
+        itemsIndexed(items = album.songs, key = { _, song -> song.id }) { index, song ->
+            val moveTo: (Song) -> () -> Unit = { target ->
+                { onEvent(AlbumUiEvent.OnSongMoved(fromSongId = song.id, toSongId = target.id)) }
+            }
+            ReorderableItem(reorderableState, key = song.id) {
+                ReorderableSongSwipeBox(
+                    isReordering = uiState.isReordering,
+                    isFavorite = song.id in uiState.favoriteSongIds,
+                    onAddToQueue = { onEvent(AlbumUiEvent.OnSongSwipedToQueue(song)) },
+                    onToggleFavorite = { onEvent(AlbumUiEvent.OnSongSwipedToFavorite(song)) },
+                    onReorderStarted = { onEvent(AlbumUiEvent.OnReorderStarted) },
+                    onMoveUp = album.songs.getOrNull(index - 1)?.let(moveTo),
+                    onMoveDown = album.songs.getOrNull(index + 1)?.let(moveTo),
+                ) {
+                    SongRow(
+                        title = song.title,
+                        subtitle = song.artistName,
+                        artworkUrl = song.artwork.thumbnailUrl,
+                        artworkSize = rowArtworkSize,
+                        nowPlaying = NowPlayingState.of(
+                            isCurrentSong = uiState.nowPlaying.isOn(song.id),
+                            isPlaying = uiState.nowPlaying?.isPlaying == true,
+                        ),
+                        isUnavailable = song.id in uiState.unplayableSongIds,
+                        sharedSongId = song.id,
+                        onClick = { onEvent(AlbumUiEvent.OnSongClicked(song)) }.takeUnless { uiState.isReordering },
+                        trailing = {
+                            if (uiState.isReordering) {
+                                SongDragHandle(dragsOnPress = true)
+                            } else {
+                                SongRowMoreAction { onEvent(AlbumUiEvent.OnSongOptionsClicked(song)) }
+                            }
+                        },
+                    )
+                }
             }
         }
     }

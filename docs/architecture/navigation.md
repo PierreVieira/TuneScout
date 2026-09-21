@@ -145,6 +145,18 @@ implements `DeepLinkKey`, names its `parent`, and gets a branch in the matcher.
 The scheme is declared in `app`'s manifest without the `BROWSABLE` category: these links are for the
 app's own surfaces, not for the browser.
 
+## Asking the screen under a sheet
+
+A sheet sometimes needs the screen it was opened over to do something as it closes — the song
+options sheet asking an album or a playlist to start reordering, for one. That cannot travel as a
+route: nothing is pushed, the sheet is popped. It goes through a small request channel in
+`core/navigation` instead, injected like the `Navigator`:
+[`ReorderRequests`](../../core/navigation/src/main/kotlin/com/pierre/tunescout/core/navigation/reorder/ReorderRequests.kt).
+The sheet calls `request(target)` and then `navigateBack()`; the screen's ViewModel collects
+`observe(target)` in its `viewModelScope` from `init`, so it hears the request while the sheet is
+still on top of it. The channel replays nothing, and a route that needs one carries the target the
+sheet should offer to act on (`SongOptionsRoute.reorderTarget`).
+
 ## The tab host
 
 `HomeRoute` is one entry of the root back stack, and it renders a **second `NavDisplay`** with one

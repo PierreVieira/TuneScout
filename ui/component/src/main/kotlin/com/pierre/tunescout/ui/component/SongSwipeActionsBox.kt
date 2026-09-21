@@ -51,6 +51,10 @@ private const val MAX_DRAG_FRACTION = 1.5f
  * row always springs back into place: nothing leaves the list.
  *
  * Both actions are also offered to accessibility services, so they do not depend on the gesture.
+ *
+ * @param isEnabled whether the row answers the swipe at all. A list being reordered turns it off: the
+ * row is there to be moved then, and neither action is offered — not even to accessibility services,
+ * so the ones for moving the row are all that is read.
  */
 @Composable
 fun SongSwipeActionsBox(
@@ -58,6 +62,7 @@ fun SongSwipeActionsBox(
     onAddToQueue: () -> Unit,
     onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val triggerPx = with(LocalDensity.current) { triggerDistance.toPx() }
@@ -80,10 +85,12 @@ fun SongSwipeActionsBox(
             .fillMaxWidth()
             .clip(RoundedCornerShape(rowCornerRadius))
             .semantics {
-                customActions = listOf(
-                    CustomAccessibilityAction(queueLabel) { true.also { currentOnAddToQueue() } },
-                    CustomAccessibilityAction(favoriteLabel) { true.also { currentOnToggleFavorite() } },
-                )
+                if (isEnabled) {
+                    customActions = listOf(
+                        CustomAccessibilityAction(queueLabel) { true.also { currentOnAddToQueue() } },
+                        CustomAccessibilityAction(favoriteLabel) { true.also { currentOnToggleFavorite() } },
+                    )
+                }
             },
     ) {
         val dragged = offset
@@ -106,6 +113,7 @@ fun SongSwipeActionsBox(
                 .draggable(
                     state = draggableState,
                     orientation = Orientation.Horizontal,
+                    enabled = isEnabled,
                     reverseDirection = LocalLayoutDirection.current == LayoutDirection.Rtl,
                     onDragStopped = {
                         when {

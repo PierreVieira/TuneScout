@@ -16,6 +16,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.ObservePlaylists
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveRecentLibrarySearches
 import com.pierre.tunescout.feature.library.domain.usecase.RecordLibrarySearch
 import com.pierre.tunescout.feature.library.domain.usecase.RemoveLibrarySearch
+import com.pierre.tunescout.feature.library.domain.usecase.ReorderPlaylistSongs
 import com.pierre.tunescout.feature.library.domain.usecase.SetLibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.ToggleSongFavorite
 import com.pierre.tunescout.feature.library.domain.usecase.impl.CreatePlaylistUseCase
@@ -29,6 +30,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylists
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveRecentLibrarySearchesUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RecordLibrarySearchUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveLibrarySearchUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ReorderPlaylistSongsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryViewModeUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleSongFavoriteUseCase
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
@@ -56,6 +58,7 @@ val libraryModule: Module = module {
     factoryOf(::SetLibraryViewModeUseCase).bind<SetLibraryViewMode>()
     factoryOf(::CreatePlaylistUseCase).bind<CreatePlaylist>()
     factoryOf(::DeletePlaylistUseCase).bind<DeletePlaylist>()
+    factoryOf(::ReorderPlaylistSongsUseCase).bind<ReorderPlaylistSongs>()
     factoryOf(::ToggleSongFavoriteUseCase).bind<ToggleSongFavorite>()
     factoryOf(::RecordLibrarySearchUseCase).bind<RecordLibrarySearch>()
     factoryOf(::RemoveLibrarySearchUseCase).bind<RemoveLibrarySearch>()

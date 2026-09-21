@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
 import com.pierre.tunescout.core.playback.PlayableSongs
@@ -22,7 +24,8 @@ class AlbumOptionsViewModel(
     private val enqueuer: Enqueuer,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
-    route: AlbumOptionsRoute,
+    private val reorderRequests: ReorderRequests,
+    private val route: AlbumOptionsRoute,
     observeAlbum: ObserveAlbum,
 ) : ActionViewModel<AlbumOptionsUiAction>() {
     val uiState: StateFlow<AlbumOptionsUiState> = observeAlbum(route.albumId)
@@ -32,6 +35,14 @@ class AlbumOptionsViewModel(
     fun onEvent(event: AlbumOptionsUiEvent) = when (event) {
         AlbumOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
         AlbumOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
+        AlbumOptionsUiEvent.OnReorderClicked -> startReordering()
+    }
+
+    /** The sheet closes as it asks, so the album under it is what the user sees reordering start on. */
+    private fun startReordering() {
+        if (uiState.value.album == null) return
+        reorderRequests.request(ReorderTarget.Album(albumId = route.albumId))
+        navigator.navigateBack()
     }
 
     /**

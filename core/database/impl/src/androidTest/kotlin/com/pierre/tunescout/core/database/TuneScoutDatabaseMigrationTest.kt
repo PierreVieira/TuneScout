@@ -12,6 +12,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_3_4
 import com.pierre.tunescout.core.database.internal.MIGRATION_4_5
 import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
 import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
+import com.pierre.tunescout.core.database.internal.MIGRATION_7_8
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -287,6 +288,27 @@ class TuneScoutDatabaseMigrationTest {
             )
             assertThat(connection.selectText("SELECT contextType FROM playback_session")).isEqualTo("Playlist")
             assertThat(connection.selectText("SELECT contextTitle FROM playback_session")).isEqualTo("Road trip")
+        }
+    }
+
+    @Test
+    fun givenAVersionSevenDatabaseTheMigrationKeepsTheSongsAndAcceptsAnAlbumTrackOrder() = runBlocking {
+        // Given
+        helper.createDatabase(version = 7).use { connection ->
+            connection.execSQL(
+                "INSERT INTO songs VALUES (1, 'Get Lucky', 'Daft Punk', 10, " +
+                    "'Random Access Memories', 'https://art/100x100bb.jpg', 'https://preview.m4a', 29000, 8, 0)",
+            )
+        }
+
+        // When
+        val migrated = helper.runMigrationsAndValidate(version = 8, migrations = listOf(MIGRATION_7_8))
+
+        // Then
+        migrated.use { connection ->
+            connection.execSQL("INSERT INTO album_track_order VALUES (10, 1, 0)")
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM songs")).isEqualTo(1)
+            assertThat(connection.selectCount("SELECT COUNT(*) FROM album_track_order")).isEqualTo(1)
         }
     }
 

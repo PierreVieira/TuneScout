@@ -22,6 +22,10 @@ sealed interface CollectionUiState {
      * all there is to tell it by.
      * @property isShuffleEnabled whether the player shuffles, which is also the order the collection
      * is handed over in.
+     * @property isReorderable whether the user can put [songs] in an order of their own — a playlist
+     * can, the liked songs are kept in the order they were liked.
+     * @property isReordering whether [songs] are there to be dragged into a new order: each row shows
+     * a handle instead of its options, and a tap no longer plays it.
      */
     data class Loaded(
         val title: CollectionTitle,
@@ -32,5 +36,7 @@ sealed interface CollectionUiState {
         val unplayableSongIds: Set<Long>,
         val isPlaying: Boolean,
         val isShuffleEnabled: Boolean,
+        val isReorderable: Boolean,
+        val isReordering: Boolean,
     ) : CollectionUiState
 }

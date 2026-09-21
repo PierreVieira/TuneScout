@@ -34,4 +34,14 @@ interface PlaylistLocalDataSource {
         playlistId: Long,
         songId: Long,
     )
+
+    /**
+     * Puts the playlist's songs in a new order, which [observeSongs] returns from then on.
+     *
+     * @param songIds every song of the playlist, in the order to keep.
+     */
+    suspend fun reorderSongs(
+        playlistId: Long,
+        songIds: List<Long>,
+    )
 }

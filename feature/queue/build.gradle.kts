@@ -8,5 +8,4 @@ android {
 
 dependencies {
     implementation(projects.core.playback.api)
-    implementation(libs.reorderable)
 }

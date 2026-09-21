@@ -8,6 +8,8 @@ import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
+import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
+import com.pierre.tunescout.core.navigation.reorder.SharedFlowReorderRequests
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
@@ -56,6 +58,8 @@ class AlbumViewModelTest {
     private lateinit var actions: MutableList<AlbumUiAction>
     private lateinit var enqueuer: Enqueuer
     private lateinit var favoriteSongIds: MutableStateFlow<Set<Long>>
+    private lateinit var reorderRequests: SharedFlowReorderRequests
+    private lateinit var savedTrackOrders: MutableList<Pair<Long, List<Long>>>
 
     @Test
     fun `GIVEN no cached album WHEN starting THEN refreshes it and shows loading meanwhile`() =
@@ -636,7 +640,105 @@ class AlbumViewModelTest {
             viewModel.onEvent(AlbumUiEvent.OnSongOptionsClicked(album.songs.first()))
 
             // Then
-            verify { navigator.navigate(SongOptionsRoute(songId = album.songs.first().id)) }
+            verify {
+                navigator.navigate(
+                    SongOptionsRoute(
+                        songId = album.songs.first().id,
+                        reorderTarget = ReorderTarget.Album(albumId = 10),
+                    ),
+                )
+            }
+        }
+
+    @Test
+    fun `GIVEN an album WHEN a sheet asks to reorder it THEN its rows turn into ones to drag`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+
+            // When
+            reorderRequests.request(ReorderTarget.Album(albumId = 10))
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).isReordering).isTrue()
+        }
+
+    @Test
+    fun `GIVEN an album WHEN a sheet asks to reorder another THEN stays as it is`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+
+            // When
+            reorderRequests.request(ReorderTarget.Album(albumId = 11))
+            reorderRequests.request(ReorderTarget.Playlist(playlistId = 10))
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).isReordering).isFalse()
+        }
+
+    @Test
+    fun `GIVEN an album being reordered WHEN moving a track THEN the rows follow and the order is stored`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+            viewModel.onEvent(AlbumUiEvent.OnReorderStarted)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongMoved(fromSongId = 2, toSongId = 1))
+            runCurrent()
+
+            // Then
+            val state = viewModel.uiState.value as AlbumUiState.Loaded
+            assertThat(state.isReordering).isTrue()
+            assertThat(state.album.songs.map { song -> song.id }).containsExactly(2L, 1L).inOrder()
+            assertThat(savedTrackOrders).containsExactly(10L to listOf(2L, 1L))
+        }
+
+    @Test
+    fun `GIVEN a reordered album WHEN pressing play THEN starts it in the new order`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+            viewModel.onEvent(AlbumUiEvent.OnSongMoved(fromSongId = 2, toSongId = 1))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(contextStarts.single().first.map { song -> song.id }).containsExactly(2L, 1L).inOrder()
+        }
+
+    @Test
+    fun `GIVEN an album being reordered WHEN pressing back THEN finishes reordering and stays`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+            viewModel.onEvent(AlbumUiEvent.OnReorderStarted)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnBackClicked)
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).isReordering).isFalse()
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN an album being reordered WHEN clicking done THEN the rows go back to normal`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(cached = album(id = 10))
+            viewModel.onEvent(AlbumUiEvent.OnReorderStarted)
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnReorderFinished)
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).isReordering).isFalse()
         }
 
     @Test
@@ -688,6 +790,8 @@ class AlbumViewModelTest {
         navigator = mockk(relaxUnitFun = true)
         enqueuer = mockk(relaxUnitFun = true)
         favoriteSongIds = MutableStateFlow(likedSongIds)
+        reorderRequests = SharedFlowReorderRequests()
+        savedTrackOrders = mutableListOf()
         viewModel = AlbumViewModel(
             route = AlbumRoute(albumId = 10),
             useCases = AlbumUseCases(
@@ -707,6 +811,7 @@ class AlbumViewModelTest {
                         favoriteSongIds.value + song.id
                     }
                 },
+                saveTrackOrder = { albumId, songIds -> savedTrackOrders += albumId to songIds },
             ),
             observablePlayback = { playbackStateFlow },
             songPlayback = songPlayback,
@@ -715,6 +820,7 @@ class AlbumViewModelTest {
             transportControls = transportControls,
             playableSongs = PlayableSongs { song -> isOnline.value || song.id in cachedPreviews },
             navigator = navigator,
+            reorderRequests = reorderRequests,
             observablePlayableSongs = {
                 isOnline.map { isOnline -> PlayableSongs { song -> isOnline || song.id in cachedPreviews } }
             },

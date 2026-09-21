@@ -9,4 +9,9 @@ interface AlbumRepository {
     suspend fun refreshAlbum(albumId: Long): Result<Unit>
 
     fun observeIsOnline(): Flow<Boolean>
+
+    suspend fun saveTrackOrder(
+        albumId: Long,
+        songIds: List<Long>,
+    )
 }

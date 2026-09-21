@@ -136,6 +136,13 @@ private class FakePlaylistLocalDataSource(
     ) {
         error("unused")
     }
+
+    override suspend fun reorderSongs(
+        playlistId: Long,
+        songIds: List<Long>,
+    ) {
+        error("unused")
+    }
 }
 
 private class FakeSongLocalDataSource(

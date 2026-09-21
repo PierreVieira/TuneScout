@@ -132,3 +132,17 @@ internal val MIGRATION_6_7 = object : Migration(6, 7) {
         connection.execSQL("ALTER TABLE `playback_session_new` RENAME TO `playback_session`")
     }
 }
+
+/** Reordering an album's tracks keeps the order apart from them, so a refresh cannot undo it. */
+internal val MIGRATION_7_8 = object : Migration(7, 8) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `album_track_order` (`albumId` INTEGER NOT NULL, " +
+                "`songId` INTEGER NOT NULL, `position` INTEGER NOT NULL, PRIMARY KEY(`albumId`, `songId`), " +
+                "FOREIGN KEY(`songId`) REFERENCES `songs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        )
+        connection.execSQL(
+            "CREATE INDEX IF NOT EXISTS `index_album_track_order_songId` ON `album_track_order` (`songId`)",
+        )
+    }
+}

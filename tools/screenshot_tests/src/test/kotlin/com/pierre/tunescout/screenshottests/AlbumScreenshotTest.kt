@@ -17,6 +17,7 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
         unplayableSongIds = emptySet(),
         isPlaying = false,
         isShuffleEnabled = false,
+        isReordering = false,
     )
 
     @Test
@@ -84,6 +85,14 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
     fun loadedInlineHeader() {
         snapshot(name = "loaded_inline_header") {
             AlbumContent(uiState = loaded, isHeaderInline = true, onEvent = {})
+        }
+    }
+
+    /** Reordering: a handle on every track instead of its options, and done in place of the overflow. */
+    @Test
+    fun reordering() {
+        snapshot(name = "reordering", variants = ScreenshotVariant.all) {
+            AlbumContent(uiState = loaded.copy(isReordering = true), isHeaderInline = false, onEvent = {})
         }
     }
 }

@@ -84,5 +84,6 @@ class CollectionStreamsTest {
         observeFavorites = { flowOf(favorites) },
         toggleSongFavorite = { _, _ -> },
         deletePlaylist = { },
+        reorderPlaylistSongs = { _, _ -> },
     )
 }

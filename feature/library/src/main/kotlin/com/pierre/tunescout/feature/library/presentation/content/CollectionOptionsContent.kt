@@ -11,6 +11,7 @@ import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.component.R as ComponentR
 
 @Composable
 fun CollectionOptionsContent(
@@ -37,6 +38,14 @@ fun CollectionOptionsContent(
             isEnabled = isEnabled,
             onClick = { onEvent(CollectionOptionsUiEvent.OnAddToQueueClicked) },
         )
+        if (uiState.isReorderable) {
+            OptionRow(
+                icon = TuneScoutIcons.reorder,
+                label = stringResource(ComponentR.string.ui_reorder_songs),
+                isEnabled = uiState.songs.size > 1,
+                onClick = { onEvent(CollectionOptionsUiEvent.OnReorderClicked) },
+            )
+        }
         if (uiState.isDeletable) {
             OptionRow(
                 icon = TuneScoutIcons.delete,

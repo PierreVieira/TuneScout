@@ -26,4 +26,15 @@ interface AlbumLocalDataSource {
         albumId: Long,
         maxAge: Duration,
     ): Boolean
+
+    /**
+     * Keeps the album's tracks in the order the user dragged them into, ahead of the album's own.
+     * [observe] returns them in it from then on, through every refresh.
+     *
+     * @param songIds every track of the album, in the order to keep.
+     */
+    suspend fun saveTrackOrder(
+        albumId: Long,
+        songIds: List<Long>,
+    )
 }

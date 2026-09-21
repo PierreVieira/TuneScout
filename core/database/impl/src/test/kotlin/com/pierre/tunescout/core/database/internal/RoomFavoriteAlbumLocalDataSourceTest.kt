@@ -120,6 +120,13 @@ private class FakeAlbumLocalDataSource : AlbumLocalDataSource {
         albumId: Long,
         maxAge: Duration,
     ): Boolean = error("unused")
+
+    override suspend fun saveTrackOrder(
+        albumId: Long,
+        songIds: List<Long>,
+    ) {
+        error("unused")
+    }
 }
 
 private class FakeFavoriteAlbumDao(

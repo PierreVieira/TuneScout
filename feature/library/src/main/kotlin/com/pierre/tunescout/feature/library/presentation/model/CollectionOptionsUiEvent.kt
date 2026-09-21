@@ -5,6 +5,8 @@ sealed interface CollectionOptionsUiEvent {
 
     data object OnAddToQueueClicked : CollectionOptionsUiEvent
 
+    data object OnReorderClicked : CollectionOptionsUiEvent
+
     data object OnDeleteClicked : CollectionOptionsUiEvent
 
     data object OnDeleteConfirmed : CollectionOptionsUiEvent

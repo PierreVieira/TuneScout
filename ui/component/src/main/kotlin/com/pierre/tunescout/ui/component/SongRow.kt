@@ -50,6 +50,8 @@ private const val UNAVAILABLE_ALPHA = 0.38f
  * Fading and the accent on a paused song are colour alone, so the row also says them: an offline
  * glyph beside the artist of a song that cannot play, and a state a screen reader reads with the row.
  *
+ * @param onClick what a tap on the row does; null for a row a tap does nothing on — one of a list
+ * being reordered, which is there to be moved.
  * @param onClickLabel what a tap on the row does, read by a screen reader in place of "activate";
  * null for a row whose tap does not play the song.
  */
@@ -58,7 +60,7 @@ fun SongRow(
     title: String,
     subtitle: String,
     artworkUrl: String,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     modifier: Modifier = Modifier,
     onClickLabel: String? = stringResource(R.string.ui_play),
     artworkSize: Dp = 52.dp,
@@ -74,8 +76,13 @@ fun SongRow(
             modifier = modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(rowCornerRadius))
-                .clickable(onClickLabel = onClickLabel, onClick = onClick)
-                .semantics { if (state != null) stateDescription = state }
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable(onClickLabel = onClickLabel, onClick = onClick)
+                    } else {
+                        Modifier
+                    },
+                ).semantics { if (state != null) stateDescription = state }
                 .padding(vertical = TuneScoutSpacing.small),
             horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.small),
             verticalAlignment = Alignment.CenterVertically,

@@ -25,7 +25,18 @@ internal class RoomAlbumLocalDataSource(
     override fun observe(albumId: Long): Flow<Album?> = combine(
         albumDao.observeWithSongs(albumId),
         albumDao.observeSavedSongs(albumId),
-    ) { relation, savedSongs -> relation?.toAlbum() ?: savedSongs.toPartialAlbumOrNull() }
+        albumDao.observeTrackOrder(albumId),
+    ) { relation, savedSongs, trackOrder ->
+        val positions = trackOrder.associate { entry -> entry.songId to entry.position }
+        relation?.toAlbum(positions) ?: savedSongs.toPartialAlbumOrNull(positions)
+    }
+
+    override suspend fun saveTrackOrder(
+        albumId: Long,
+        songIds: List<Long>,
+    ) {
+        albumDao.replaceTrackOrder(albumId = albumId, songIds = songIds)
+    }
 
     override suspend fun isFresherThan(
         albumId: Long,

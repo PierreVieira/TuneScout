@@ -29,4 +29,8 @@
     <string name="ui_added_to_queue">Added to queue</string>
     <string name="ui_added_to_favorites">Added to liked songs</string>
     <string name="ui_removed_from_favorites">Removed from liked songs</string>
+    <string name="ui_move_up">Move up</string>
+    <string name="ui_move_down">Move down</string>
+    <string name="ui_reorder_songs">Reorder songs</string>
+    <string name="ui_reorder_done">Done reordering</string>
 </resources>

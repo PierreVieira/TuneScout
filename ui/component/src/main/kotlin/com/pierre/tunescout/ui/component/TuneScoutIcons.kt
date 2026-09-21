@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -76,6 +77,8 @@ object TuneScoutIcons {
     val removeFromQueue: ImageVector get() = Icons.Rounded.Close
 
     val dragHandle: ImageVector get() = Icons.Rounded.DragHandle
+
+    val reorder: ImageVector get() = Icons.Rounded.SwapVert
 
     val delete: ImageVector get() = Icons.Rounded.Delete
 

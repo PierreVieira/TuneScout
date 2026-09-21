@@ -15,6 +15,7 @@ internal class AlbumScreenshots : ReadmeScreenshotsTest() {
         unplayableSongIds = emptySet(),
         isPlaying = false,
         isShuffleEnabled = false,
+        isReordering = false,
     )
 
     @Test

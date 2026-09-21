@@ -38,6 +38,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
                             song = getLucky,
                             isFavorite = false,
                             isRemovableFromPlaylist = false,
+                            isReorderable = false,
                         ),
                         onEvent = {},
                     )

@@ -123,6 +123,18 @@ class AlbumRepositoryImplTest {
         assertThat(isOnline).isFalse()
     }
 
+    @Test
+    fun `WHEN saving a track order THEN hands it to the album store`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        repository.saveTrackOrder(albumId = 10, songIds = listOf(2, 1))
+
+        // Then
+        coVerify { albumLocalDataSource.saveTrackOrder(albumId = 10, songIds = listOf(2L, 1L)) }
+    }
+
     private fun prepareScenario(
         cached: Album? = null,
         remote: Album? = null,

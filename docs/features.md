@@ -37,6 +37,11 @@ screenshots.
   beside it, the way Spotify lays them out. On an album the button starts it from the top — from
   any song with shuffle on — and turns into pause while that album plays. A playlist or your liked
   songs are played now, ahead of the queue, shuffled first while shuffle is on.
+- **Reorder an album or a playlist** in place: "Reorder songs" in a track's options sheet or in the
+  album's or playlist's own, or a long press on a row, which drags it at once. Each row shows a
+  handle while the mode lasts, a check ends it, and every move is kept on the device — an album
+  keeps its order through every refresh, and plays in it. A screen reader gets "Move up" and "Move
+  down" on each row instead of the drag. The liked songs keep the order they were liked in.
 - **Recently played** is the first tab. It is stored locally, so it works offline and survives
   restarts. Playing a song records it once, wherever playback was started from.
 - **Offline**, the app is still the app: a preview that played once plays again from the media
