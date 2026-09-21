@@ -29,9 +29,15 @@ runs:
         # previous one. This is an environment variable and not an input because the ktlint action
         # nests this one, and the runner evaluates a nested action's inputs as empty in the post
         # step, which is exactly where the cache is written.
+        # GRADLE_CACHE_READ_ONLY=true is the opposite switch, for a job that barely uses Gradle. On
+        # main it would still save a few hundred MB of its own dependencies and transforms out of
+        # the 10 GB budget, and setup-gradle falls back to the most recent entry of any job, so a
+        # job without an entry of its own would restore that nearly empty one instead of a useful
+        # one.
         cache-read-only: >-
-          ${{ env.GRADLE_CACHE_WRITE_ON_PULL_REQUESTS != 'true' && github.event.repository != null
-          && github.ref_name != github.event.repository.default_branch }}
+          ${{ env.GRADLE_CACHE_READ_ONLY == 'true'
+          || (env.GRADLE_CACHE_WRITE_ON_PULL_REQUESTS != 'true' && github.event.repository != null
+          && github.ref_name != github.event.repository.default_branch) }}
         # Cleanup drops whatever a build did not touch, and a warm build touches fewer dependencies
         # and transforms than a cold one, so each push would save new 250-550 MB entries that differ
         # only by what is missing. Pull request entries are deleted when it closes instead.
