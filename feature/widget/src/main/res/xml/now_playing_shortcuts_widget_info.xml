@@ -4,6 +4,7 @@
     android:initialLayout="@layout/glance_default_loading_layout"
     android:minHeight="110dp"
     android:minWidth="250dp"
+    android:previewLayout="@layout/widget_preview_now_playing_shortcuts"
     android:resizeMode="horizontal|vertical"
     android:targetCellHeight="2"
     android:targetCellWidth="4"

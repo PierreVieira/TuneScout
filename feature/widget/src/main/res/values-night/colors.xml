@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The same palette as values/colors.xml, copied out of `darkColorPalette`. -->
+<resources>
+    <color name="widget_preview_background">#FF262626</color>
+    <color name="widget_preview_surface">#1AFFFFFF</color>
+    <color name="widget_preview_text_primary">#FFFFFFFF</color>
+    <color name="widget_preview_text_secondary">#B3FFFFFF</color>
+    <color name="widget_preview_element">#FFFFFFFF</color>
+    <color name="widget_preview_element_disabled">#FF545454</color>
+    <color name="widget_preview_accent">#FF22C39B</color>
+</resources>

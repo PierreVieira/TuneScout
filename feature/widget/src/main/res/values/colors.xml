@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    The palette of the widget picker's preview layouts, copied out of `lightColorPalette` for
+    `WidgetColors`. A preview layout is plain XML and cannot read the Compose palette; see
+    "The widget picker's preview layouts" in docs/architecture/theming.md.
+    `WidgetPreviewColorsTest` fails when a value here drifts from the palette.
+-->
+<resources>
+    <color name="widget_preview_background">#FFF2F2F2</color>
+    <color name="widget_preview_surface">#14000000</color>
+    <color name="widget_preview_text_primary">#FF000000</color>
+    <color name="widget_preview_text_secondary">#B3000000</color>
+    <color name="widget_preview_element">#FF000000</color>
+    <color name="widget_preview_element_disabled">#FFABABAB</color>
+    <color name="widget_preview_accent">#FF008060</color>
+</resources>

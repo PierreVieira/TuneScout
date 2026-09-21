@@ -43,6 +43,25 @@ colors, which are fixed. The splash continues the system splash window, whose ba
 declared in `res/values/colors.xml` and drawn before any preference can be read, so it cannot
 follow the theme and does not try to.
 
+### The widget picker's preview layouts
+
+The home screen widgets are the second exception. Their picker preview is rendered by Glance from
+the real widget composables, but only on Android 15+ (`setWidgetPreviews` is API 35). Below that,
+the picker shows the `android:previewLayout` of each `appwidget-provider` instead — a static
+`RemoteViews` layout in `feature/widget/src/main/res/layout/widget_preview_*.xml` that approximates
+the widget, and that is plain XML, so it cannot read the palette.
+
+Those layouts draw with `widget_preview_*` colors in `res/values/colors.xml` and
+`res/values-night/colors.xml` of the same module: one entry per `WidgetColors` token, copied from
+`lightColorPalette` and `darkColorPalette`. They are the only palette values allowed outside
+`ui/theme`, and they are not left to drift: `WidgetPreviewColorsTest` compares every entry with the
+`WidgetColors` token it copies, by day and by night. A new token the widget draws with needs a
+`widget_preview_*` entry in both files and a line in that test.
+
+The layouts themselves are a second copy of `NowPlayingWidgetContent` and
+`NowPlayingShortcutsWidgetContent`, and nothing checks them automatically — a change to the widget's
+layout should be mirrored in its preview layout in the same change.
+
 ## How the palette is resolved
 
 `TuneScoutTheme(theme, isDynamicColorEnabled, content)` does three things:

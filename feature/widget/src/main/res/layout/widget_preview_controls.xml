@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WidgetControlsRow, paused with both skips live. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    tools:ignore="UseAppTint">
+
+    <ImageView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:contentDescription="@string/widget_skip_to_previous"
+        android:padding="6dp"
+        android:src="@drawable/ic_widget_skip_to_previous"
+        android:tint="@color/widget_preview_element" />
+
+    <ImageView
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:contentDescription="@string/widget_play"
+        android:padding="6dp"
+        android:src="@drawable/ic_widget_play"
+        android:tint="@color/widget_preview_element" />
+
+    <ImageView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:contentDescription="@string/widget_skip_to_next"
+        android:padding="6dp"
+        android:src="@drawable/ic_widget_skip_to_next"
+        android:tint="@color/widget_preview_element" />
+</LinearLayout>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- WidgetProgressRow, a third of the way through the sample song. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="@string/widget_preview_elapsed"
+        android:textColor="@color/widget_preview_text_secondary"
+        android:textSize="10sp" />
+
+    <ProgressBar
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="4dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="6dp"
+        android:layout_weight="1"
+        android:max="3"
+        android:progress="1"
+        android:progressDrawable="@drawable/widget_preview_progress" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:text="@string/widget_preview_total"
+        android:textColor="@color/widget_preview_text_secondary"
+        android:textSize="10sp" />
+</LinearLayout>
