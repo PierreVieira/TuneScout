@@ -54,7 +54,7 @@ the launcher, the lock screen and the notification shade are not composables.
 - **Outside the app**: two home screen widgets, and media controls on the lock screen and in the
   notification shade.
 - **Light, dark or the system's**, with dynamic colour on Android 12+, in English, Brazilian
-  Portuguese, Spanish and French.
+  Portuguese, Spanish, French and German.
 
 Every feature, screen by screen, is in [Features](docs/features.md).
 

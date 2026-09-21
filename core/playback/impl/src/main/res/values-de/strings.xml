@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="playback_favorite">Gefällt mir</string>
+    <string name="playback_unfavorite">Aus Lieblingssongs entfernen</string>
+    <string name="playback_shuffle_turn_on">Zufallswiedergabe einschalten</string>
+    <string name="playback_shuffle_turn_off">Zufallswiedergabe ausschalten</string>
+    <string name="playback_repeat_queue">Warteschlange wiederholen</string>
+    <string name="playback_repeat_song">Diesen Song wiederholen</string>
+    <string name="playback_repeat_turn_off">Wiederholen ausschalten</string>
+</resources>

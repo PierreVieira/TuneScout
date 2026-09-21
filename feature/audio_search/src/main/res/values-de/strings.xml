@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="audio_search_listening_title">Hört zu…</string>
+    <string name="audio_search_listening_hint">Sag den Namen eines Songs, eines Künstlers oder eines Albums.</string>
+    <string name="audio_search_failed_title">Das haben wir nicht verstanden</string>
+    <string name="audio_search_failed_nothing_heard">Wir haben nichts gehört. Sprich etwas näher am Mikrofon.</string>
+    <string name="audio_search_failed_no_connection">Die Sprachsuche braucht gerade eine Verbindung. Prüfe dein Internet und versuch es noch mal.</string>
+    <string name="audio_search_failed_unknown">Beim Zuhören ist etwas schiefgelaufen. Versuch es noch mal.</string>
+    <string name="audio_search_retry">Noch mal versuchen</string>
+</resources>

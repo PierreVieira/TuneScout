@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="song_options_favorite">Gefällt mir</string>
+    <string name="song_options_unfavorite">Aus Lieblingssongs entfernen</string>
+    <string name="song_options_add_to_playlist">Zu Playlist hinzufügen</string>
+    <string name="song_options_view_album">Album ansehen</string>
+    <string name="song_options_play_now">Jetzt abspielen</string>
+    <string name="song_options_play_next">Als Nächstes abspielen</string>
+    <string name="song_options_add_to_queue">Zur Warteschlange hinzufügen</string>
+    <string name="song_options_remove_from_playlist">Aus dieser Playlist entfernen</string>
+</resources>
