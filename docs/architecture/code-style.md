@@ -55,10 +55,10 @@ A comment that repeats what the name and the body already say is noise. Leave it
 
 ```kotlin
 // Wrong — the name and the body already say all of this
-/** Sends the deep link's back stack to the navigator when the URL names a route. */
+/** Opens the route the URL names, if it names one. */
 fun onDeepLinkReceived(url: String?) {
     val route = deepLinkMatcher.findRouteOrNull(url) ?: return
-    navigator.navigateResettingTo(syntheticBackStackFactory.buildBackStack(route))
+    navigator.navigateToDeepLink(route)
 }
 
 // Correct — nothing in the body says why the call has to happen before composition

@@ -2,7 +2,9 @@ package com.pierre.tunescout.core.navigation
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.navigation.deeplink.SyntheticBackStackFactory
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
+import com.pierre.tunescout.core.navigation.route.HomeRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -13,7 +15,7 @@ class ChannelNavigatorTest {
 
     @BeforeEach
     fun setUp() {
-        navigator = ChannelNavigator()
+        navigator = ChannelNavigator(syntheticBackStackFactory = SyntheticBackStackFactory())
     }
 
     @Test
@@ -39,16 +41,14 @@ class ChannelNavigatorTest {
     }
 
     @Test
-    fun `GIVEN a back stack WHEN resetting to it THEN emits a ResetTo command with its routes`() = runTest {
-        // Given
-        val routes = listOf(AlbumRoute(albumId = 7), PlayerRoute(songId = 42))
-
+    fun `GIVEN a deep link route WHEN navigating to it THEN resets to it with its parents under it`() = runTest {
         navigator.commands.test {
             // When
-            navigator.navigateResettingTo(routes)
+            navigator.navigateToDeepLink(PlayerRoute(songId = 42))
 
             // Then
-            assertThat(awaitItem()).isEqualTo(NavigationCommand.ResetTo(routes))
+            assertThat(awaitItem())
+                .isEqualTo(NavigationCommand.ResetTo(listOf(HomeRoute, PlayerRoute(songId = 42))))
         }
     }
 

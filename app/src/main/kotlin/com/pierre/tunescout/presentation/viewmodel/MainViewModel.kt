@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.deeplink.DeepLinkMatcher
-import com.pierre.tunescout.core.navigation.deeplink.SyntheticBackStackFactory
 import com.pierre.tunescout.core.network.NetworkMonitor
 import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.feature.themeselection.domain.usecase.ObserveDynamicColorEnabled
@@ -26,7 +25,6 @@ import kotlinx.coroutines.launch
 class MainViewModel(
     private val observablePlayback: ObservablePlayback,
     private val deepLinkMatcher: DeepLinkMatcher,
-    private val syntheticBackStackFactory: SyntheticBackStackFactory,
     private val navigator: Navigator,
     observeTheme: ObserveTheme,
     observeDynamicColorEnabled: ObserveDynamicColorEnabled,
@@ -70,7 +68,7 @@ class MainViewModel(
 
     fun onDeepLinkReceived(url: String?) {
         val route = deepLinkMatcher.findRouteOrNull(url) ?: return
-        navigator.navigateResettingTo(syntheticBackStackFactory.buildBackStack(route))
+        navigator.navigateToDeepLink(route)
     }
 
     private fun requestNotificationPermissionOnPlayback() {

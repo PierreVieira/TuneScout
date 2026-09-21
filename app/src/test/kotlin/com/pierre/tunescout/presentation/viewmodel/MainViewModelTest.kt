@@ -5,8 +5,6 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.navigation.Navigator
-import com.pierre.tunescout.core.navigation.deeplink.SyntheticBackStackFactory
-import com.pierre.tunescout.core.navigation.route.HomeRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.playbackState
@@ -39,7 +37,6 @@ class MainViewModelTest {
         viewModel = MainViewModel(
             observablePlayback = { playbackStateFlow },
             deepLinkMatcher = { url -> if (url == PLAYER_DEEP_LINK) PlayerRoute(songId = 7) else null },
-            syntheticBackStackFactory = SyntheticBackStackFactory(),
             navigator = navigator,
             observeTheme = { themeFlow },
             observeDynamicColorEnabled = { flowOf(false) },
@@ -139,12 +136,12 @@ class MainViewModelTest {
         }
 
     @Test
-    fun `WHEN a deep link names a route THEN lands on it with its parents under it`() {
+    fun `WHEN a deep link names a route THEN navigates to it`() {
         // When
         viewModel.onDeepLinkReceived(PLAYER_DEEP_LINK)
 
         // Then
-        verify { navigator.navigateResettingTo(listOf(HomeRoute, PlayerRoute(songId = 7))) }
+        verify { navigator.navigateToDeepLink(PlayerRoute(songId = 7)) }
     }
 
     @Test
@@ -153,7 +150,7 @@ class MainViewModelTest {
         viewModel.onDeepLinkReceived("tunescout://unknown")
 
         // Then
-        verify(exactly = 0) { navigator.navigateResettingTo(any()) }
+        verify(exactly = 0) { navigator.navigateToDeepLink(any()) }
     }
 
     @Test
@@ -162,7 +159,7 @@ class MainViewModelTest {
         viewModel.onDeepLinkReceived(url = null)
 
         // Then
-        verify(exactly = 0) { navigator.navigateResettingTo(any()) }
+        verify(exactly = 0) { navigator.navigateToDeepLink(any()) }
     }
 
     companion object {
