@@ -39,6 +39,20 @@ class ChannelNavigatorTest {
     }
 
     @Test
+    fun `GIVEN a back stack WHEN resetting to it THEN emits a ResetTo command with its routes`() = runTest {
+        // Given
+        val routes = listOf(AlbumRoute(albumId = 7), PlayerRoute(songId = 42))
+
+        navigator.commands.test {
+            // When
+            navigator.navigateResettingTo(routes)
+
+            // Then
+            assertThat(awaitItem()).isEqualTo(NavigationCommand.ResetTo(routes))
+        }
+    }
+
+    @Test
     fun `WHEN navigating back THEN emits a Back command`() = runTest {
         navigator.commands.test {
             // When

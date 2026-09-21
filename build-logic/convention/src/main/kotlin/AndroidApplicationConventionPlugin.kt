@@ -14,6 +14,11 @@ import org.gradle.kotlin.dsl.dependencies
 
 /**
  * The single :app module: Compose, Koin and Navigation 3 wiring plus the test stack.
+ *
+ * Its end-to-end flows run through the Android Test Orchestrator with `clearPackageData`, so each
+ * one starts from a fresh process and empty storage. They drive the whole app — playback keeps
+ * running, Koin's singletons live in the process and the library is on disk — so sharing one would
+ * let a test that leaves a song playing decide what the next one sees.
  */
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
@@ -31,6 +36,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 minSdk = minSdkVersion
                 targetSdk = libs.requireVersion("android-targetSdk").toInt()
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                testInstrumentationRunnerArguments["clearPackageData"] = "true"
             }
 
             buildFeatures {
@@ -39,6 +45,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             testOptions {
                 unitTests.isIncludeAndroidResources = true
+                execution = "ANDROIDX_TEST_ORCHESTRATOR"
             }
         }
 
@@ -66,6 +73,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             add("debugImplementation", libs.findLibrary("androidx-compose-ui-test-manifest").get())
 
             add("androidTestImplementation", libs.findLibrary("androidx-compose-ui-test-android").get())
+            add("androidTestUtil", libs.findLibrary("androidx-test-orchestrator").get())
         }
         addUnitTestDependencies()
         addInstrumentedTestDependencies()

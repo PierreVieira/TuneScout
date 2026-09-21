@@ -33,7 +33,8 @@ feature/
 ├── queue/
 ├── mini_player/
 ├── album/
-└── theme_selection/
+├── theme_selection/
+└── widget/            # The home screen widgets (Glance), not a route
 tools/
 ├── ktlint_custom_rules/ # The tunescout-style ktlint ruleset
 └── screenshots/         # Renders the README's screenshots (test-only, see docs/screenshots.md)
@@ -170,6 +171,13 @@ The tab host itself lives in `app`, not in a `feature/home`: it composes `songs`
 a feature may never depend on a feature. It is the same reason `MiniPlayerScaffold` is composed
 there. `app` is also where the navigation bar and rail are placed, so the mini player can sit
 between the content and the bar.
+
+`feature/widget` is the other feature that is not a route: nothing in the app composes it at all.
+It contributes two `GlanceAppWidgetReceiver`s to the manifest and the AppWidget host draws them,
+which is why its Glance widgets, receivers and action callbacks sit in `presentation/widget` — the
+one package the coverage filters leave out, since no JVM test can reach `RemoteViews` plumbing (see
+[code-quality.md](../code-quality.md#what-is-measured)). What they delegate to is measured like any
+other use case. `app` depends on it only to put `widgetModule` in the graph.
 
 `feature/mini_player` is the one feature that is not a route. It exposes `MiniPlayerScaffold`, which
 `app` wraps around the `NavDisplay`: the bar is laid out below every screen and owns the bottom

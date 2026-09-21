@@ -36,6 +36,14 @@ data class PlaybackState(
     val nowPlaying: NowPlaying?
         get() = nowPlayingSong?.let { song -> NowPlaying(songId = song.id, isPlaying = isPlaying) }
 
+    /**
+     * The player only learns how long a song is once it has buffered it, so the song's own
+     * duration stands in until then — which is what keeps a progress bar from starting at zero
+     * length every time a song begins.
+     */
+    val totalDuration: Duration
+        get() = duration.takeIf { value -> value > Duration.ZERO } ?: currentSong?.duration ?: Duration.ZERO
+
     val hasPrevious: Boolean
         get() = currentIndex > 0
 

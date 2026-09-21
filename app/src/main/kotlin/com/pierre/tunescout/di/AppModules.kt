@@ -16,6 +16,7 @@ import com.pierre.tunescout.feature.songoptions.di.songOptionsModule
 import com.pierre.tunescout.feature.songs.di.songsModule
 import com.pierre.tunescout.feature.splash.di.splashModule
 import com.pierre.tunescout.feature.themeselection.di.themeSelectionModule
+import com.pierre.tunescout.feature.widget.di.widgetModule
 import org.koin.core.module.Module
 
 val appModules: List<Module> = listOf(
@@ -36,4 +37,5 @@ val appModules: List<Module> = listOf(
     queueModule,
     albumModule,
     themeSelectionModule,
+    widgetModule,
 )

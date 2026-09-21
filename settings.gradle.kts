@@ -62,6 +62,7 @@ include(":feature:player")
 include(":feature:mini_player")
 include(":feature:queue")
 include(":feature:theme_selection")
+include(":feature:widget")
 include(":feature:add_to_playlist")
 
 include(":tools:ktlint_custom_rules")
