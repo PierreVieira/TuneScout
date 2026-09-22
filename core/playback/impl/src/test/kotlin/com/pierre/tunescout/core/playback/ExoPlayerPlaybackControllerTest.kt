@@ -19,6 +19,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -478,6 +479,31 @@ class ExoPlayerPlaybackControllerTest {
         assertThat(currentState.currentSong?.id).isEqualTo(songId)
         assertThat(currentState.currentIndex).isEqualTo(songId.toInt() - 1)
         assertThat(currentState.entries.map { entry -> entry.id }).isEqualTo(fakeExoPlayer.mediaIds)
+    }
+
+    /**
+     * Told first, the player would hand the change to the queue from inside its own callback, and
+     * the media session would hear of the queue's edits late, paired with where the player ended up:
+     * on the eighth song of a timeline it had been told holds one, which it refuses.
+     */
+    @Test
+    fun `GIVEN shuffle is on WHEN turning it off THEN the queue is put back before the player is told`() = runTest {
+        // Given
+        prepareScenario()
+        controller.toggleShuffle()
+        playAlbum(startingAt = 8, songCount = 8)
+
+        // When
+        controller.toggleShuffle()
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L).inOrder()
+        assertThat(currentState.currentIndex).isEqualTo(7)
+        assertThat(currentState.isShuffleEnabled).isFalse()
+        verifyOrder {
+            fakeExoPlayer.player.replaceMediaItems(0, 0, match { items -> items.size == 7 })
+            fakeExoPlayer.player.shuffleModeEnabled = false
+        }
     }
 
     @Test

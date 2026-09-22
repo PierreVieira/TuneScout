@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.playback.internal.QueueTimelineFactory
 import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import io.mockk.verify
+import io.mockk.verifyOrder
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.random.Random
@@ -314,6 +315,31 @@ internal class PlaybackQueueTest {
         assertThat(queuedSongIds()).containsExactlyElementsIn(listOf(90L) + album).inOrder()
         assertThat(queue.currentIndex).isEqualTo(playingPosition + 1)
         assertThat(entryIds()).isEqualTo(fakeExoPlayer.mediaIds)
+    }
+
+    /**
+     * The media session hears of each edit paired with where the player is once both are in. Had
+     * the songs after the current one gone in first, the session would have heard of a one-song
+     * timeline for a player sitting on its eighth song, and refused it. The other way round, the
+     * timeline grows to fifteen songs before the seven stale ones after the current are dropped.
+     */
+    @Test
+    fun `GIVEN a shuffled album started at its last song WHEN unshuffling THEN what has played goes back in first`() {
+        // Given
+        queue.shuffle()
+        startAlbum(startingAt = 8, songCount = 8)
+
+        // When
+        queue.unshuffle()
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L).inOrder()
+        assertThat(queue.currentIndex).isEqualTo(7)
+        assertThat(entryIds()).isEqualTo(fakeExoPlayer.mediaIds)
+        verifyOrder {
+            fakeExoPlayer.player.replaceMediaItems(0, 0, match { items -> items.size == 7 })
+            fakeExoPlayer.player.replaceMediaItems(8, 15, emptyList())
+        }
     }
 
     @Test

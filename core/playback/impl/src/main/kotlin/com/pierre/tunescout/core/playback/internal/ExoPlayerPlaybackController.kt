@@ -160,9 +160,18 @@ internal class ExoPlayerPlaybackController(
         publish()
     }
 
+    /**
+     * The queue is rearranged before the player is told, not after. Told first, the player would
+     * hand the change to the queue from inside its own callback, and the edits the queue made there
+     * would reach the media session late, each paired with where the player ended up — past the end
+     * of a timeline that was shortened halfway through putting an album back, which the session
+     * refuses. Told last, the player finds the queue already in the order it announces.
+     */
     override fun toggleShuffle() {
-        player.shuffleModeEnabled = !player.shuffleModeEnabled
-        syncShuffle()
+        val isShuffled = !player.shuffleModeEnabled
+        arrangeQueue(isShuffled)
+        player.shuffleModeEnabled = isShuffled
+        publish()
     }
 
     /**
@@ -171,8 +180,12 @@ internal class ExoPlayerPlaybackController(
      * player itself never reorders anything — it is built with an order that keeps the queue's.
      */
     private fun syncShuffle() {
-        if (player.shuffleModeEnabled) queue.shuffle() else queue.unshuffle()
+        arrangeQueue(player.shuffleModeEnabled)
         publish()
+    }
+
+    private fun arrangeQueue(isShuffled: Boolean) {
+        if (isShuffled) queue.shuffle() else queue.unshuffle()
     }
 
     private fun insert(
