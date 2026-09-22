@@ -62,7 +62,9 @@ until [ "$(adb -s "emulator-$CONSOLE_PORT" shell getprop sys.boot_completed | tr
 
 Always pass `-s emulator-<port>`. Even a private adb server finds the user's emulators on the usual
 ports, and without `-s` an `adb install` fails on "more than one device", or lands on the wrong one.
-Drop `-no-window` when the user wants to watch.
+Drop `-no-window` when the user wants to watch. Add `-gpu host` for anything that measures frames
+— the macrobenchmarks of the `baseline-profile` skill — since a headless emulator otherwise
+renders in software and the numbers measure that instead of the app.
 
 ## Run tests on it
 

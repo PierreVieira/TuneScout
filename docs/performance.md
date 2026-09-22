@@ -158,6 +158,12 @@ runs on CI: they take tens of minutes and need a device nothing else is using. A
 running its connected tests at the same time installs its own build over the app and fails the run
 — `connectedAndroidTest` without `ANDROID_SERIAL` uses every connected device.
 
+The Gradle tasks below reach a device through the default adb server, which is the one every
+checkout shares. To run them on a task's own emulator — on a private adb server, with the host's
+GPU, pulling each class's traces before the next one deletes them — follow the `baseline-profile`
+skill in [`.claude/skills/baseline-profile`](../.claude/skills/baseline-profile/SKILL.md), which
+installs the same APKs by hand and runs `am instrument` directly.
+
 **Regenerate the profile** after a change to a journey or to the code it runs, and commit what it
 writes. The two files run to tens of thousands of lines; `.gitattributes` marks them generated, so
 a pull request's diff collapses them:
