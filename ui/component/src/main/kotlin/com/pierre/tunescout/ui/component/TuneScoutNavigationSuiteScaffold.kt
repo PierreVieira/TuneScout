@@ -101,8 +101,8 @@ private fun FollowHideableBarsEffect(
 /**
  * The selected tab sits on the accent's container rather than on the accent, so the bar reads as
  * navigation and the accent itself stays for the things that should pull the eye. Both tokens
- * follow the wallpaper when dynamic colours are on, so nothing here has to know which palette is
- * in force.
+ * follow the system colors when dynamic colours are on, so nothing here has to know which palette
+ * is in force.
  *
  * @return the colours of a navigation item, selected or not, in the palette in force.
  */
