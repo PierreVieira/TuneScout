@@ -12,8 +12,6 @@ larger ones is in [Decisions and trade-offs](decisions.md).
   appears as that splash leaves, fading in before it dissolves into the home screen. The splash is
   always dark, whatever the theme: its window is declared in resources, before the preference can
   be read.
-- The light palette is derived from the Figma dark one rather than designed: the file only
-  specifies dark.
 
 ## Search and playback
 
