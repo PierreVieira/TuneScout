@@ -144,6 +144,19 @@ class ExoPlayerPlaybackControllerTest {
     }
 
     @Test
+    fun `WHEN clearing the queue THEN only the entry playing survives and it is published`() = runTest {
+        // Given
+        prepareScenario()
+        playAlbum(startingAt = 1)
+
+        // When
+        controller.clearQueue()
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L)
+    }
+
+    @Test
     fun `WHEN moving an entry THEN the reordered queue is published`() = runTest {
         // Given
         prepareScenario()

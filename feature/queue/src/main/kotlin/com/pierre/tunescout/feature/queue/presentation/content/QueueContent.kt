@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.queue.presentation.content
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -12,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
@@ -23,9 +25,12 @@ import com.pierre.tunescout.feature.queue.presentation.component.QueueRow
 import com.pierre.tunescout.feature.queue.presentation.model.QueueContextTitle
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
+import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.SongRow
 import com.pierre.tunescout.ui.component.StateMessage
+import com.pierre.tunescout.ui.component.TopBarAction
+import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import sh.calvin.reorderable.ReorderableItem
@@ -43,7 +48,10 @@ fun QueueContent(
             .fillMaxWidth()
             .navigationBarsPadding(),
     ) {
-        SheetHeading(contextTitle = uiState.contextTitle?.resolve())
+        SheetHeading(
+            contextTitle = uiState.contextTitle?.resolve(),
+            onClearClick = { onEvent(QueueUiEvent.OnClearQueueClicked) }.takeIf { uiState.canClear },
+        )
         if (uiState.isEmpty) {
             StateMessage(
                 title = stringResource(R.string.queue_empty_title),
@@ -52,6 +60,16 @@ fun QueueContent(
         } else {
             QueueList(uiState = uiState, onEvent = onEvent)
         }
+    }
+    if (uiState.isConfirmingClear) {
+        ConfirmationDialog(
+            title = stringResource(R.string.queue_clear_confirm_title),
+            message = stringResource(R.string.queue_clear_confirm_message),
+            confirmLabel = stringResource(R.string.queue_clear_confirm_action),
+            cancelLabel = stringResource(R.string.queue_confirm_cancel),
+            onConfirm = { onEvent(QueueUiEvent.OnClearQueueConfirmed) },
+            onCancel = { onEvent(QueueUiEvent.OnClearQueueDismissed) },
+        )
     }
 }
 
@@ -64,18 +82,32 @@ private fun QueueContextTitle.resolve(): String = when (this) {
 }
 
 @Composable
-private fun SheetHeading(contextTitle: String?) {
+private fun SheetHeading(
+    contextTitle: String?,
+    onClearClick: (() -> Unit)?,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = TuneScoutSpacing.screen, vertical = TuneScoutSpacing.small),
     ) {
-        Text(
-            text = stringResource(R.string.queue_title),
-            style = MaterialTheme.typography.titleLarge,
-            color = TuneScoutColors.textPrimary,
-            modifier = Modifier.semantics { heading() },
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.queue_title),
+                style = MaterialTheme.typography.titleLarge,
+                color = TuneScoutColors.textPrimary,
+                modifier = Modifier
+                    .weight(1f)
+                    .semantics { heading() },
+            )
+            if (onClearClick != null) {
+                TopBarAction(
+                    icon = TuneScoutIcons.delete,
+                    contentDescription = stringResource(R.string.queue_clear),
+                    onClick = onClearClick,
+                )
+            }
+        }
         if (contextTitle != null) {
             Text(
                 text = stringResource(R.string.queue_playing_from, contextTitle),

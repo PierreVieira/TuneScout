@@ -12,4 +12,9 @@
     <string name="queue_empty_title">Die Warteschlange ist leer</string>
     <string name="queue_empty_description">Füge einen Song oder ein ganzes Album zur Warteschlange hinzu, dann erscheint es hier.</string>
     <string name="queue_remove">Aus der Warteschlange entfernen</string>
+    <string name="queue_clear">Warteschlange leeren</string>
+    <string name="queue_clear_confirm_title">Warteschlange leeren?</string>
+    <string name="queue_clear_confirm_message">Dadurch wird alles entfernt außer dem aktuell laufenden Song.</string>
+    <string name="queue_clear_confirm_action">Leeren</string>
+    <string name="queue_confirm_cancel">Abbrechen</string>
 </resources>

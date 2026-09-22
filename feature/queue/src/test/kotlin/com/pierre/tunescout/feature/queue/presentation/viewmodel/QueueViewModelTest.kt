@@ -200,6 +200,52 @@ class QueueViewModelTest {
     }
 
     @Test
+    fun `WHEN clicking clear queue THEN only asks for confirmation`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = queuedOverAlbum())
+
+        // When
+        viewModel.onEvent(QueueUiEvent.OnClearQueueClicked)
+        runCurrent()
+
+        // Then
+        assertThat(viewModel.uiState.value.isConfirmingClear).isTrue()
+        verify(exactly = 0) { queueControls.clearQueue() }
+    }
+
+    @Test
+    fun `GIVEN a pending clear WHEN confirming it THEN clears the queue and closes the prompt`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playback = queuedOverAlbum())
+            viewModel.onEvent(QueueUiEvent.OnClearQueueClicked)
+
+            // When
+            viewModel.onEvent(QueueUiEvent.OnClearQueueConfirmed)
+            runCurrent()
+
+            // Then
+            verify { queueControls.clearQueue() }
+            assertThat(viewModel.uiState.value.isConfirmingClear).isFalse()
+        }
+
+    @Test
+    fun `GIVEN a pending clear WHEN dismissing it THEN keeps the queue and closes the prompt`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playback = queuedOverAlbum())
+            viewModel.onEvent(QueueUiEvent.OnClearQueueClicked)
+
+            // When
+            viewModel.onEvent(QueueUiEvent.OnClearQueueDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.isConfirmingClear).isFalse()
+            verify(exactly = 0) { queueControls.clearQueue() }
+        }
+
+    @Test
     fun `WHEN dragging an entry onto another THEN moves it to that position`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(playback = queuedOverAlbum())

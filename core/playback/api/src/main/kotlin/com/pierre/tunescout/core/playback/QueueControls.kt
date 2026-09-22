@@ -5,6 +5,9 @@ interface QueueControls {
 
     fun removeFromQueue(entryId: String)
 
+    /** Drops every entry but the one playing now, which keeps playing undisturbed. */
+    fun clearQueue()
+
     fun moveInQueue(
         fromIndex: Int,
         toIndex: Int,

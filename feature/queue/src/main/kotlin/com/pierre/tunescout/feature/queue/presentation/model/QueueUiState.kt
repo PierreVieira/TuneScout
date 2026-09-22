@@ -12,6 +12,7 @@ import com.pierre.tunescout.core.model.QueueEntry
  * @property unplayableSongIds which of the queued songs the player cannot reach right now — an
  * entry queued while online whose preview never reached the device. Their rows are drawn dimmer,
  * so a tap that is refused is seen coming.
+ * @property isConfirmingClear whether the user asked to clear the queue and is being asked to confirm it.
  */
 data class QueueUiState(
     val contextTitle: QueueContextTitle?,
@@ -20,6 +21,7 @@ data class QueueUiState(
     val queuedByUser: List<QueueEntry>,
     val upNext: List<QueueEntry>,
     val unplayableSongIds: Set<Long>,
+    val isConfirmingClear: Boolean = false,
 ) {
     val isPlaying: Boolean
         get() = status == PlaybackStatus.Playing
@@ -29,4 +31,7 @@ data class QueueUiState(
 
     val isEmpty: Boolean
         get() = nowPlaying == null && queuedByUser.isEmpty() && upNext.isEmpty()
+
+    val canClear: Boolean
+        get() = queuedByUser.isNotEmpty() || upNext.isNotEmpty()
 }

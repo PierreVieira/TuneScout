@@ -108,6 +108,11 @@ internal class ExoPlayerPlaybackController(
         publish()
     }
 
+    override fun clearQueue() {
+        queue.clear()
+        publish()
+    }
+
     override fun moveInQueue(
         fromIndex: Int,
         toIndex: Int,

@@ -12,4 +12,9 @@
     <string name="queue_empty_title">La file d\'attente est vide</string>
     <string name="queue_empty_description">Ajoute un titre ou un album entier à la file d\'attente et il apparaîtra ici.</string>
     <string name="queue_remove">Retirer de la file d\'attente</string>
+    <string name="queue_clear">Vider la file d\'attente</string>
+    <string name="queue_clear_confirm_title">Vider la file d\'attente ?</string>
+    <string name="queue_clear_confirm_message">Cela supprime tout, sauf ce qui est en cours de lecture.</string>
+    <string name="queue_clear_confirm_action">Vider</string>
+    <string name="queue_confirm_cancel">Annuler</string>
 </resources>

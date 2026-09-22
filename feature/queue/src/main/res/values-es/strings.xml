@@ -12,4 +12,9 @@
     <string name="queue_empty_title">La cola está vacía</string>
     <string name="queue_empty_description">Añade una canción o un álbum completo a la cola y aparecerá aquí.</string>
     <string name="queue_remove">Quitar de la cola</string>
+    <string name="queue_clear">Vaciar cola</string>
+    <string name="queue_clear_confirm_title">¿Vaciar la cola?</string>
+    <string name="queue_clear_confirm_message">Esto quita todo excepto lo que se está reproduciendo ahora.</string>
+    <string name="queue_clear_confirm_action">Vaciar</string>
+    <string name="queue_confirm_cancel">Cancelar</string>
 </resources>
