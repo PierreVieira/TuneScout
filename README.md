@@ -26,6 +26,16 @@ native Android app built with Kotlin and Jetpack Compose.
 | :--: | :--: |
 | <img src="docs/screenshots/library.png" width="260" alt="The library tab listing liked songs and playlists as a list"> | <img src="docs/screenshots/library_grid.png" width="260" alt="The same library drawn as a grid of covers"> |
 
+### Responsive: two panes on a wide tablet
+
+From 800dp wide — a tablet in landscape, a foldable unfolded — a list keeps what it opens beside it
+instead of losing it under a full-screen detail. The same list-detail layout applies wherever a
+list opens a detail: the player from the songs list, an album from the library.
+
+| Songs, with the player beside it | Library, with an album beside it |
+| :--: | :--: |
+| <img src="docs/screenshots/two_pane_songs.png" width="420" alt="Landscape tablet, 1280dp wide: the songs list beside the player it opened, side by side instead of full-screen"> | <img src="docs/screenshots/two_pane_library.png" width="420" alt="Landscape tablet, 1280dp wide: the library beside an album opened from it, side by side instead of full-screen"> |
+
 ### Outside the app
 
 | Lock screen | Lock screen, expanded | Notification shade |
