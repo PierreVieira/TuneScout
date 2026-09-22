@@ -77,15 +77,28 @@ class ListDetailFlowTest {
         try {
             pressBack()
         } catch (e: RuntimeException) {
-            val uiAutomation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation
-            fun shell(command: String) = android.os.ParcelFileDescriptor.AutoCloseInputStream(
-                uiAutomation.executeShellCommand(command),
-            ).bufferedReader().readText()
-            val windows = shell("dumpsys window windows").lines()
-                .filter { line -> "Window #" in line || "mCurrentFocus" in line || "mFocusedApp" in line || "mHasSurface" in line }
-            val activities = shell("dumpsys activity activities").lines()
+            val uiAutomation = androidx.test.platform.app.InstrumentationRegistry
+                .getInstrumentation()
+                .uiAutomation
+
+            fun shell(command: String) = android.os.ParcelFileDescriptor
+                .AutoCloseInputStream(
+                    uiAutomation.executeShellCommand(command),
+                ).bufferedReader()
+                .readText()
+            val windows = shell("dumpsys window windows")
+                .lines()
+                .filter { line ->
+                    "Window #" in line || "mCurrentFocus" in line || "mFocusedApp" in line ||
+                        "mHasSurface" in line
+                }
+            val activities = shell("dumpsys activity activities")
+                .lines()
                 .filter { line -> "ResumedActivity" in line || "* Task{" in line || "* ActivityRecord{" in line }
-            throw AssertionError("DIAG windows:\n${windows.joinToString("\n")}\nDIAG activities:\n${activities.joinToString("\n")}", e)
+            throw AssertionError(
+                "DIAG windows:\n${windows.joinToString("\n")}\nDIAG activities:\n${activities.joinToString("\n")}",
+                e,
+            )
         }
 
         waitUntilDoesNotExist(hasText(ALBUM_ONLY_TRACK), SCREEN_TIMEOUT_MILLIS)
