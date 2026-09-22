@@ -9,6 +9,8 @@
     <string name="library_downloaded_songs_empty_description">Les titres que tu télécharges un par un apparaissent ici.</string>
     <string name="library_downloaded_empty_title">Rien de téléchargé pour l\'instant</string>
     <string name="library_downloaded_empty_description">Télécharge des titres, des albums et des playlists pour les écouter hors connexion.</string>
+    <string name="library_albums_empty_title">Pas encore d\'albums</string>
+    <string name="library_albums_empty_description">Les albums que tu ajoutes à ta bibliothèque apparaissent ici.</string>
     <string name="library_title">Ta bibliothèque</string>
     <string name="library_favorites">Titres likés</string>
     <string name="library_playlist">Playlist</string>

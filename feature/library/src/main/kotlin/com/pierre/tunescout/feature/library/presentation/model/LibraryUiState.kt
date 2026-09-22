@@ -44,6 +44,10 @@ data class LibraryUiState(
     val isDownloadedEmpty: Boolean
         get() = LibraryFilter.DOWNLOADED in filters && filteredItems.isEmpty()
 
+    /** Whether the albums chip is on and the user has no albums, which the screen says in words. */
+    val isAlbumsEmpty: Boolean
+        get() = LibraryFilter.ALBUMS in filters && filteredItems.isEmpty()
+
     /**
      * @return whether the user asked to keep [item] as a whole. The songs downloaded one by one are
      * downloaded by definition, whatever the collections say.

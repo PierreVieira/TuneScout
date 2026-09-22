@@ -9,6 +9,8 @@
     <string name="library_downloaded_songs_empty_description">Las canciones que descargues una a una aparecen aquí.</string>
     <string name="library_downloaded_empty_title">Aún no has descargado nada</string>
     <string name="library_downloaded_empty_description">Descarga canciones, álbumes y playlists para escucharlos sin conexión.</string>
+    <string name="library_albums_empty_title">Aún no tienes álbumes</string>
+    <string name="library_albums_empty_description">Los álbumes que agregues a tu biblioteca aparecen aquí.</string>
     <string name="library_title">Tu biblioteca</string>
     <string name="library_favorites">Canciones que te gustan</string>
     <string name="library_playlist">Playlist</string>

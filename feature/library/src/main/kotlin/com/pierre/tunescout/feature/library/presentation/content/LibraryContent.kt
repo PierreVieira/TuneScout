@@ -95,6 +95,12 @@ fun LibraryContent(
                         isAnnounced = true,
                     )
 
+                    uiState.isAlbumsEmpty -> StateMessage(
+                        title = stringResource(R.string.library_albums_empty_title),
+                        description = stringResource(R.string.library_albums_empty_description),
+                        isAnnounced = true,
+                    )
+
                     uiState.viewMode == LibraryViewMode.LIST ->
                         LibraryList(uiState = uiState, isTwoPane = isTwoPane, onEvent = onEvent)
 

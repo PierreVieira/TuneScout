@@ -9,6 +9,8 @@
     <string name="library_downloaded_songs_empty_description">I brani che scarichi uno alla volta compaiono qui.</string>
     <string name="library_downloaded_empty_title">Ancora niente di scaricato</string>
     <string name="library_downloaded_empty_description">Scarica brani, album e playlist per ascoltarli senza connessione.</string>
+    <string name="library_albums_empty_title">Ancora nessun album</string>
+    <string name="library_albums_empty_description">Gli album che aggiungi alla tua libreria compaiono qui.</string>
     <string name="library_title">La tua libreria</string>
     <string name="library_favorites">Brani preferiti</string>
     <string name="library_playlist">Playlist</string>

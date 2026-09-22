@@ -9,6 +9,8 @@
     <string name="library_downloaded_songs_empty_description">Songs you download one by one show up here.</string>
     <string name="library_downloaded_empty_title">Nothing downloaded yet</string>
     <string name="library_downloaded_empty_description">Download songs, albums and playlists to listen without a connection.</string>
+    <string name="library_albums_empty_title">No albums yet</string>
+    <string name="library_albums_empty_description">Albums you add to your library show up here.</string>
     <string name="library_title">Your Library</string>
     <string name="library_favorites">Liked songs</string>
     <string name="library_playlist">Playlist</string>
