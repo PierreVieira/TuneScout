@@ -1,7 +1,8 @@
 # Theming
 
 The app renders in a light or a dark palette, and on Android 12+ it can take its colors from the
-wallpaper instead. The user picks between the three modes in the theme sheet
+system instead: the dynamic palette the user set in the device settings, drawn from the wallpaper
+or from a color they picked. The user picks between the three modes in the theme sheet
 (`feature/theme_selection`); the choice is a `Theme` (`LIGHT`, `DARK`, `SYSTEM`, default `SYSTEM`)
 stored in the Preferences DataStore.
 

@@ -61,9 +61,10 @@ screenshots.
   and cached, so it opens offline afterwards — and is not fetched again for an hour. A refresh that
   fails keeps the cached tracks on screen and says it could not update them.
 - **Theme** picked from a sheet on the songs screen: light, dark, or whatever the system says.
-  On Android 12+ the palette can follow the wallpaper instead, explained by a dialog behind the
-  (i) next to the toggle. The choice is stored on the device with DataStore, and the splash holds
-  until it is read, so the first frame is already in the chosen theme.
+  On Android 12+ the palette can follow the system colors instead (drawn from the wallpaper or
+  picked by the user in the device settings), explained by a dialog behind the (i) next to the
+  toggle. The choice is stored on the device with DataStore, and the splash holds until it is read,
+  so the first frame is already in the chosen theme.
 - **Media controls** in the notification shade and on the lock screen, backed by a media session,
   with like, shuffle and repeat buttons beside the transport controls wherever the surface has room
   for them — a car or a watch included.

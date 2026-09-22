@@ -127,7 +127,7 @@ private fun TuneScoutColorPalette.toPreviewColors(accentAlpha: Float): ThemePrev
 
 /**
  * The static accent is loud at this size, so it is mixed into the background to calm it down. The
- * dynamic one keeps [alpha] at 1: the wallpaper already picked how loud it is.
+ * dynamic one keeps [alpha] at 1: the system palette already picked how loud it is.
  *
  * @return the accent at [alpha], made opaque over this palette's background.
  */
