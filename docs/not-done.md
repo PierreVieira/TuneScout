@@ -14,8 +14,6 @@ larger ones is in [Decisions and trade-offs](decisions.md).
   be read.
 - The light palette is derived from the Figma dark one rather than designed: the file only
   specifies dark.
-- A wide window puts the player, or an album, beside the tabs, and nothing else: a playlist and the
-  liked songs still cover them, and the player does not put its queue beside it yet.
 
 ## Search and playback
 
@@ -24,15 +22,10 @@ larger ones is in [Decisions and trade-offs](decisions.md).
   to them, or taken out, afterwards does not reach a queue already playing, and a renamed playlist
   keeps its old name in the queue until it is played again.
 - Repeating the whole queue starts it over in the same shuffled order instead of shuffling again.
-- The notification and the lock screen show the shuffle and repeat modes the player is in, but have
-  no buttons of their own to change them.
 
 ## Library
 
 - A playlist holds a song once: adding it again leaves it where it already is.
-- The songs in a playlist cannot be reordered.
-- A liked album is the album screen, not a screen of its own: the library row opens the same album
-  it would from search.
 
 ## Widgets
 
