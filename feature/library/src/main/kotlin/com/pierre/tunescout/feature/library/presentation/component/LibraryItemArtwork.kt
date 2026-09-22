@@ -24,7 +24,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.compose.AsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
 import com.pierre.tunescout.core.model.Artwork
+import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.ui.component.ArtworkPlaceholderIcon
 import com.pierre.tunescout.ui.component.ArtworkState
@@ -47,6 +50,14 @@ internal enum class LibraryArtworkSize {
     fun getUrl(artwork: Artwork): String = when (this) {
         ROW -> artwork.thumbnailUrl
         CELL -> artwork.mediumUrl
+    }
+
+    companion object {
+        /** @return the size the items of [viewMode] draw their covers at. */
+        fun of(viewMode: LibraryViewMode): LibraryArtworkSize = when (viewMode) {
+            LibraryViewMode.LIST -> ROW
+            LibraryViewMode.GRID -> CELL
+        }
     }
 }
 
@@ -144,6 +155,9 @@ private fun QuadrantGrid(
 /**
  * A cover that did not arrive leaves the tile to the placeholder, which says whether the image is
  * simply missing or one connection away.
+ *
+ * A cover the tile showed before, at the other size, stays up until the one for this size arrives:
+ * the tile grows or shrinks between the row and the cell, and would go blank halfway otherwise.
  */
 @Composable
 private fun CoverImage(
@@ -152,11 +166,19 @@ private fun CoverImage(
     modifier: Modifier = Modifier,
 ) {
     val url = size.getUrl(artwork)
+    val previousCover = rememberPreviousUrl(url)?.let { previousUrl -> rememberAsyncImagePainter(model = previousUrl) }
     var state by remember(url) { mutableStateOf(ArtworkState.of(url)) }
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         AsyncImage(
             model = url,
             contentDescription = null,
+            transform = { painterState ->
+                if (painterState is AsyncImagePainter.State.Loading && previousCover != null) {
+                    painterState.copy(painter = previousCover)
+                } else {
+                    painterState
+                }
+            },
             contentScale = ContentScale.Crop,
             onState = { newState -> state = ArtworkState.of(painterState = newState, url = url) },
             modifier = Modifier.fillMaxSize(),
@@ -167,6 +189,33 @@ private fun CoverImage(
                 modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
             )
         }
+    }
+}
+
+/** @return the url this tile drew before [url] became its own, or null while [url] is its first. */
+@Composable
+private fun rememberPreviousUrl(url: String): String? {
+    val urls = remember { CoverUrls(url) }
+    urls.update(url)
+    return urls.previous
+}
+
+/**
+ * The url a tile draws and the one it drew before, kept outside the snapshot: both are only read
+ * while the tile composes, and a change of [current] is what recomposes it.
+ *
+ * @property current the url the tile draws now.
+ */
+private class CoverUrls(
+    private var current: String,
+) {
+    var previous: String? = null
+        private set
+
+    fun update(url: String) {
+        if (url == current) return
+        previous = current
+        current = url
     }
 }
 
