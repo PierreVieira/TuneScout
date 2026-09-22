@@ -92,9 +92,24 @@ are, and they are the macrobenchmarks, which run by hand on a device nothing els
 
 `verify` uploads `screenshot-differences` when it fails: the reference, the render and the diff
 side by side. When a screen changed on purpose, label the pull request **`record-screenshots`**.
-`record` then renders the references on Linux, commits them to the branch as `github-actions[bot]`
-and removes the label, so the next push verifies again. The whole flow is in
+`record` then removes the label, renders the references on Linux and commits them to the branch as
+`github-actions[bot]`, so the push it makes verifies them. The whole flow is in
 [Screenshot tests](testing/screenshot-tests.md).
+
+That push is made with the secret `SCREENSHOTS_PUSH_TOKEN`, not the workflow's `GITHUB_TOKEN`. Since
+June 2026 GitHub holds every run a `GITHUB_TOKEN` push triggers for approval, even on a branch of
+this repository, so the recorded commit would sit with no check run until someone approved each
+workflow by hand. The secret is a fine-grained personal access token restricted to this repository,
+with **Contents: Read and write** and nothing else. It expires, and when it does (or is missing) the
+checkout falls back to `GITHUB_TOKEN`: the recording still lands, and its runs wait for approval
+again. Renew it with:
+
+```bash
+gh secret set SCREENSHOTS_PUSH_TOKEN
+```
+
+The recording runs in a concurrency group of its own, `…-record`, so the verifying run its push
+starts does not cancel it while it finishes.
 
 ### release
 
