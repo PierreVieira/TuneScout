@@ -175,6 +175,10 @@ gh secret set RELEASE_KEY_ALIAS --body tunescout
 gh secret set RELEASE_KEY_PASSWORD
 ```
 
+`keytool` writes a PKCS12 keystore, which has no key password of its own: it ignores a different
+`-keypass`, so `RELEASE_KEY_PASSWORD` is the keystore password again. A key password of its own
+fails the build with "Given final block not properly padded".
+
 The same variables sign a local build the way the workflow does:
 
 ```bash
