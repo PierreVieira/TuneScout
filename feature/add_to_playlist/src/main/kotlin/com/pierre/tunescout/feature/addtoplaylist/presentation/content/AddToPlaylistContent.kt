@@ -2,8 +2,10 @@ package com.pierre.tunescout.feature.addtoplaylist.presentation.content
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -25,17 +27,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.feature.addtoplaylist.R
 import com.pierre.tunescout.feature.addtoplaylist.presentation.model.AddToPlaylistUiEvent
 import com.pierre.tunescout.feature.addtoplaylist.presentation.model.AddToPlaylistUiState
 import com.pierre.tunescout.ui.component.NamePromptCard
+import com.pierre.tunescout.ui.component.PlaylistCover
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 private val rowHeight = 56.dp
 private val rowIconSize = 24.dp
+private val rowLeadingSize = 48.dp
 private val bottomPadding = 32.dp
 
 @Composable
@@ -67,7 +72,14 @@ fun AddToPlaylistContent(
             isEnabled = uiState.song != null,
             onClick = { onEvent(AddToPlaylistUiEvent.OnNewPlaylistClicked) },
             modifier = Modifier.padding(top = TuneScoutSpacing.large),
-        )
+        ) {
+            Icon(
+                imageVector = TuneScoutIcons.add,
+                contentDescription = null,
+                tint = TuneScoutColors.textPrimary,
+                modifier = Modifier.size(rowIconSize),
+            )
+        }
         if (uiState.playlists.isEmpty()) {
             Text(
                 text = stringResource(R.string.add_to_playlist_empty),
@@ -86,7 +98,12 @@ fun AddToPlaylistContent(
                 supporting = songCountText(playlist),
                 isEnabled = uiState.song != null,
                 onClick = { onEvent(AddToPlaylistUiEvent.OnPlaylistClicked(playlistId = playlist.id)) },
-            )
+            ) {
+                PlaylistCover(
+                    artworkUrls = playlist.artworks.map(Artwork::thumbnailUrl),
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
         }
     }
     if (uiState.isPromptOpen) {
@@ -121,22 +138,23 @@ private fun OptionRow(
     isEnabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    leading: @Composable () -> Unit,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = rowHeight)
             .clickable(enabled = isEnabled, onClick = onClick)
-            .padding(horizontal = TuneScoutSpacing.large + TuneScoutSpacing.small),
+            .padding(
+                horizontal = TuneScoutSpacing.large + TuneScoutSpacing.small,
+                vertical = TuneScoutSpacing.extraSmall,
+            ),
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(
-            imageVector = if (supporting == null) TuneScoutIcons.add else TuneScoutIcons.musicList,
-            contentDescription = null,
-            tint = TuneScoutColors.textPrimary,
-            modifier = Modifier.size(rowIconSize),
-        )
+        Box(modifier = Modifier.size(rowLeadingSize), contentAlignment = Alignment.Center) {
+            leading()
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,

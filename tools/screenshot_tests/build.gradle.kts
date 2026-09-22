@@ -10,6 +10,7 @@ android {
 dependencies {
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(projects.core.model)
+    testImplementation(projects.feature.addToPlaylist)
     testImplementation(projects.feature.album)
     testImplementation(projects.feature.audioSearch)
     testImplementation(projects.feature.library)
