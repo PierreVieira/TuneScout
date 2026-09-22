@@ -87,5 +87,6 @@ class CollectionContentTest {
         isDownloadable = true,
         download = CollectionDownloadState.NotDownloaded,
         downloadStatuses = emptyMap(),
+        songAlreadyQueued = null,
     )
 }

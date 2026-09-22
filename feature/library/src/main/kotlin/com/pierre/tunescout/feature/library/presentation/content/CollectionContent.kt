@@ -28,6 +28,7 @@ import com.pierre.tunescout.feature.library.presentation.model.CollectionUiState
 import com.pierre.tunescout.ui.component.CollectionDownloadButton
 import com.pierre.tunescout.ui.component.CollectionPlaybackRow
 import com.pierre.tunescout.ui.component.DownloadIndicator
+import com.pierre.tunescout.ui.component.DuplicateInQueueDialog
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.ReorderableSongSwipeBox
 import com.pierre.tunescout.ui.component.SongDragHandle
@@ -116,6 +117,13 @@ private fun CollectionLoadedContent(
                 onEvent = onEvent,
             )
         }
+    }
+    uiState.songAlreadyQueued?.let { song ->
+        DuplicateInQueueDialog(
+            songTitle = song.title,
+            onConfirm = { onEvent(CollectionUiEvent.OnDuplicateInQueueConfirmed) },
+            onCancel = { onEvent(CollectionUiEvent.OnDuplicateInQueueDismissed) },
+        )
     }
 }
 

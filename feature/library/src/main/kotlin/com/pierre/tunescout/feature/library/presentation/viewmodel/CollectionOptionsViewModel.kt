@@ -5,8 +5,12 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
+import com.pierre.tunescout.core.playback.DuplicatesInQueue
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
+import com.pierre.tunescout.core.playback.QueuePlacement
+import com.pierre.tunescout.core.playback.enqueue
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.CollectionStreams
@@ -26,6 +30,7 @@ class CollectionOptionsViewModel(
     private val key: CollectionKey,
     private val useCases: CollectionUseCases,
     private val enqueuer: Enqueuer,
+    private val observablePlayback: ObservablePlayback,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     private val reorderRequests: ReorderRequests,
@@ -38,20 +43,25 @@ class CollectionOptionsViewModel(
         isDeletable = isDeletable,
         isReorderable = key is CollectionKey.Playlist,
         isConfirmingDelete = false,
+        duplicates = null,
     )
     private val isConfirmingDelete = MutableStateFlow(false)
+    private val duplicates = MutableStateFlow<DuplicatesInQueue?>(null)
 
     val uiState: StateFlow<CollectionOptionsUiState> = combine(
         collectionStreams.observeTitle(key),
         collectionStreams.observeSongs(key),
         isConfirmingDelete,
-    ) { title, songs, isConfirming ->
-        emptyUiState.copy(title = title, songs = songs, isConfirmingDelete = isConfirming)
+        duplicates,
+    ) { title, songs, isConfirming, duplicates ->
+        emptyUiState.copy(title = title, songs = songs, isConfirmingDelete = isConfirming, duplicates = duplicates)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: CollectionOptionsUiEvent) = when (event) {
-        CollectionOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
-        CollectionOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
+        CollectionOptionsUiEvent.OnPlayNextClicked -> queueUnlessQueued(QueuePlacement.Next)
+        CollectionOptionsUiEvent.OnAddToQueueClicked -> queueUnlessQueued(QueuePlacement.End)
+        CollectionOptionsUiEvent.OnDuplicatesInQueueConfirmed -> queueAgain()
+        CollectionOptionsUiEvent.OnDuplicatesInQueueDismissed -> duplicates.value = null
         CollectionOptionsUiEvent.OnReorderClicked -> startReordering()
         CollectionOptionsUiEvent.OnDeleteClicked -> askForDeleteConfirmation()
         CollectionOptionsUiEvent.OnDeleteConfirmed -> deleteCollection()
@@ -60,14 +70,43 @@ class CollectionOptionsViewModel(
 
     /**
      * Only the songs the player can reach are queued, so the queue does not stall on one it cannot.
-     * With none of them left the sheet stays open, with the message saying why.
+     * With none of them left the sheet stays open, with the message saying why. When the user
+     * already queued some of them, the sheet asks before adding those again.
      */
-    private fun queue(enqueue: (List<Song>) -> Unit) {
+    private fun queueUnlessQueued(placement: QueuePlacement) {
+        val playable = findPlayableSongs() ?: return
+        val playback = observablePlayback.observePlaybackState().value
+        val queuedCount = playable.count { song -> playback.isQueuedByUser(song.id) }
+        if (queuedCount > 0) {
+            duplicates.value = DuplicatesInQueue(placement = placement, count = queuedCount)
+        } else {
+            queue(playable, placement)
+        }
+    }
+
+    private fun queueAgain() {
+        val placement = duplicates.value?.placement ?: return
+        duplicates.value = null
+        val playable = findPlayableSongs() ?: return
+        queue(playable, placement)
+    }
+
+    private fun findPlayableSongs(): List<Song>? {
         val songs = uiState.value.songs
-        if (songs.isEmpty()) return
+        if (songs.isEmpty()) return null
         val playable = playableSongs.filterPlayable(songs)
-        if (playable.isEmpty()) return showSongUnavailableOffline()
-        enqueue(playable)
+        if (playable.isEmpty()) {
+            showSongUnavailableOffline()
+            return null
+        }
+        return playable
+    }
+
+    private fun queue(
+        songs: List<Song>,
+        placement: QueuePlacement,
+    ) {
+        enqueuer.enqueue(songs, placement)
         navigator.navigateBack()
     }
 

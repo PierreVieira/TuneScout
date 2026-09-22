@@ -13,6 +13,10 @@ sealed interface SongOptionsUiEvent {
 
     data object OnAddToQueueClicked : SongOptionsUiEvent
 
+    data object OnDuplicateInQueueConfirmed : SongOptionsUiEvent
+
+    data object OnDuplicateInQueueDismissed : SongOptionsUiEvent
+
     data object OnViewAlbumClicked : SongOptionsUiEvent
 
     data object OnRemoveFromPlaylistClicked : SongOptionsUiEvent

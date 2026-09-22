@@ -1,15 +1,22 @@
 package com.pierre.tunescout.feature.library.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Playlist
+import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
+import com.pierre.tunescout.core.playback.DuplicatesInQueue
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
+import com.pierre.tunescout.core.playback.QueuePlacement
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.playlist
+import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
@@ -22,6 +29,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import io.mockk.verifySequence
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -251,12 +259,98 @@ class CollectionOptionsViewModelTest {
         verify(exactly = 0) { navigator.navigateBack() }
     }
 
+    @Test
+    fun `GIVEN the user already queued some of the playlist WHEN adding it to the queue THEN asks first`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2), song(id = 3)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 3), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+
+            // When
+            viewModel.onEvent(CollectionOptionsUiEvent.OnAddToQueueClicked)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicates)
+                .isEqualTo(DuplicatesInQueue(placement = QueuePlacement.End, count = 1))
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN the user already queued some of the playlist WHEN confirming play next THEN queues all of it next`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2), song(id = 3)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 3), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(CollectionOptionsUiEvent.OnPlayNextClicked)
+            runCurrent()
+
+            // When
+            viewModel.onEvent(CollectionOptionsUiEvent.OnDuplicatesInQueueConfirmed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicates).isNull()
+            verifyOrder {
+                enqueuer.queueNext(listOf(song(id = 2), song(id = 3)))
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
+    fun `GIVEN the user already queued some of the playlist WHEN cancelling THEN nothing is queued`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2), song(id = 3)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 3), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(CollectionOptionsUiEvent.OnAddToQueueClicked)
+            runCurrent()
+
+            // When
+            viewModel.onEvent(CollectionOptionsUiEvent.OnDuplicatesInQueueDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicates).isNull()
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
     private fun TestScope.prepareScenario(
         key: CollectionKey,
         favorites: List<Song> = emptyList(),
         playlist: Playlist? = null,
         playlistSongs: List<Song> = emptyList(),
         playableSongIds: Set<Long>? = null,
+        playback: PlaybackState = PlaybackState.Idle,
     ) {
         deletedPlaylistIds = mutableListOf()
         reorderRequests = mockk(relaxUnitFun = true)
@@ -279,6 +373,7 @@ class CollectionOptionsViewModelTest {
             useCases = useCases,
             collectionStreams = CollectionStreams(useCases),
             enqueuer = enqueuer,
+            observablePlayback = ObservablePlayback { MutableStateFlow(playback) },
             playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
             reorderRequests = reorderRequests,

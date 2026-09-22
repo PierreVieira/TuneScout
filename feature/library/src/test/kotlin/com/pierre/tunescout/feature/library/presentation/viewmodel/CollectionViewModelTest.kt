@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.Playlist
+import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
@@ -28,6 +29,7 @@ import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
 import com.pierre.tunescout.core.testing.fake.SongPlayRequest
 import com.pierre.tunescout.core.testing.fixture.playbackState
 import com.pierre.tunescout.core.testing.fixture.playlist
+import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.domain.usecase.CollectionUseCases
@@ -603,6 +605,87 @@ class CollectionViewModelTest {
             // Then
             verify { enqueuer.addToQueue(listOf(song(id = 2))) }
             assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN swiping it toward the end THEN asks before adding it again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 2), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedToQueue(song(id = 2)))
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as CollectionUiState.Loaded).songAlreadyQueued).isEqualTo(song(id = 2))
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            assertThat(actions).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN confirming THEN it is queued again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 2), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedToQueue(song(id = 2)))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnDuplicateInQueueConfirmed)
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as CollectionUiState.Loaded).songAlreadyQueued).isNull()
+            verify { enqueuer.addToQueue(listOf(song(id = 2))) }
+            assertThat(actions).containsExactly(CollectionUiAction.ShowSnackBar(R.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN cancelling THEN the queue is left alone`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                key = CollectionKey.Playlist(playlistId = 7),
+                playlist = playlist(id = 7),
+                playlistSongs = listOf(song(id = 2)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 2), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(CollectionUiEvent.OnSongSwipedToQueue(song(id = 2)))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnDuplicateInQueueDismissed)
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as CollectionUiState.Loaded).songAlreadyQueued).isNull()
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
         }
 
     @Test

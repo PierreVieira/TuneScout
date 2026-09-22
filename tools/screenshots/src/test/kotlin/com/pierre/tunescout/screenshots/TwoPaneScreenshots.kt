@@ -55,6 +55,7 @@ internal class TwoPaneScreenshots : ReadmeTabletScreenshotsTest() {
                             isOffline = false,
                             unplayableSongIds = emptySet(),
                             downloadStatuses = emptyMap(),
+                            songAlreadyQueued = null,
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},
@@ -140,6 +141,7 @@ internal class TwoPaneScreenshots : ReadmeTabletScreenshotsTest() {
                             isReordering = false,
                             download = CollectionDownloadState.NotDownloaded,
                             downloadStatuses = emptyMap(),
+                            songAlreadyQueued = null,
                         ),
                         onEvent = {},
                     )

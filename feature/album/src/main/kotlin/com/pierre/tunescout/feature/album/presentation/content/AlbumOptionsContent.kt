@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.pierre.tunescout.feature.album.R
 import com.pierre.tunescout.feature.album.presentation.model.AlbumOptionsUiEvent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumOptionsUiState
+import com.pierre.tunescout.ui.component.DuplicatesInQueueDialog
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -40,6 +41,13 @@ fun AlbumOptionsContent(
             label = stringResource(ComponentR.string.ui_reorder_songs),
             isEnabled = (uiState.album?.songs?.size ?: 0) > 1,
             onClick = { onEvent(AlbumOptionsUiEvent.OnReorderClicked) },
+        )
+    }
+    uiState.duplicates?.let { duplicates ->
+        DuplicatesInQueueDialog(
+            queuedCount = duplicates.count,
+            onConfirm = { onEvent(AlbumOptionsUiEvent.OnDuplicatesInQueueConfirmed) },
+            onCancel = { onEvent(AlbumOptionsUiEvent.OnDuplicatesInQueueDismissed) },
         )
     }
 }

@@ -43,6 +43,7 @@ import com.pierre.tunescout.feature.songs.presentation.model.SearchResultUiModel
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiEvent
 import com.pierre.tunescout.feature.songs.presentation.model.SongsUiState
 import com.pierre.tunescout.ui.component.ConfirmationDialog
+import com.pierre.tunescout.ui.component.DuplicateInQueueDialog
 import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.SearchField
 import com.pierre.tunescout.ui.component.TopBarAction
@@ -119,6 +120,13 @@ fun SongsContent(
         }
         uiState.songPendingRemoval?.let { song ->
             RemoveRecentDialog(song = song, onEvent = onEvent)
+        }
+        uiState.songAlreadyQueued?.let { song ->
+            DuplicateInQueueDialog(
+                songTitle = song.title,
+                onConfirm = { onEvent(SongsUiEvent.OnDuplicateInQueueConfirmed) },
+                onCancel = { onEvent(SongsUiEvent.OnDuplicateInQueueDismissed) },
+            )
         }
     }
 }

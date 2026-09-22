@@ -130,6 +130,33 @@ class PlaybackStateTest {
     }
 
     @Test
+    fun `GIVEN the user queued a song that has yet to play WHEN asking whether it is queued THEN it is`() {
+        // Given
+        val state = stateOf(currentIndex = 0).withUserQueued(songOf(id = 7), atIndex = 1)
+
+        // When / Then
+        assertThat(state.isQueuedByUser(songId = 7)).isTrue()
+    }
+
+    @Test
+    fun `GIVEN a song only the context brings up again WHEN asking whether it is queued THEN it is not`() {
+        // Given
+        val state = stateOf(currentIndex = 0)
+
+        // When / Then
+        assertThat(state.isQueuedByUser(songId = 2)).isFalse()
+    }
+
+    @Test
+    fun `GIVEN a song the user queued already played WHEN asking whether it is queued THEN it is not`() {
+        // Given
+        val state = stateOf(currentIndex = 1).withUserQueued(songOf(id = 7), atIndex = 0)
+
+        // When / Then
+        assertThat(state.isQueuedByUser(songId = 7)).isFalse()
+    }
+
+    @Test
     fun `WHEN stepping through the repeat modes THEN they go off, all, one and back to off`() {
         // When / Then
         assertThat(RepeatMode.Off.next).isEqualTo(RepeatMode.All)
@@ -151,6 +178,14 @@ class PlaybackStateTest {
         position = position,
         repeatMode = repeatMode,
     )
+
+    private fun PlaybackState.withUserQueued(
+        song: Song,
+        atIndex: Int,
+    ): PlaybackState {
+        val entry = QueueEntry(id = "queued-${song.id}", song = song, source = QueueSource.UserQueue)
+        return copy(entries = entries.toMutableList().apply { add(atIndex, entry) })
+    }
 
     private fun songOf(id: Long): Song = Song(
         id = id,

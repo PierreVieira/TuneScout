@@ -27,6 +27,15 @@
     <string name="ui_favorite">Curtir</string>
     <string name="ui_unfavorite">Remover das curtidas</string>
     <string name="ui_added_to_queue">Adicionada à fila</string>
+    <string name="ui_duplicate_in_queue_title">Já está na fila</string>
+    <string name="ui_duplicate_in_queue_message">“%1$s” já está na sua fila. Adicionar de novo?</string>
+    <string name="ui_duplicate_in_queue_confirm">Adicionar de novo</string>
+    <string name="ui_duplicate_in_queue_cancel">Cancelar</string>
+    <plurals name="ui_duplicates_in_queue_message">
+        <item quantity="one">%1$d destas músicas já está na sua fila. Adicionar todas mesmo assim?</item>
+        <item quantity="many">%1$d destas músicas já estão na sua fila. Adicionar todas mesmo assim?</item>
+        <item quantity="other">%1$d destas músicas já estão na sua fila. Adicionar todas mesmo assim?</item>
+    </plurals>
     <string name="ui_added_to_favorites">Adicionada às curtidas</string>
     <string name="ui_removed_from_favorites">Removida das curtidas</string>
     <string name="ui_move_up">Mover para cima</string>

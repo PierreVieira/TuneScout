@@ -27,6 +27,14 @@
     <string name="ui_favorite">Aggiungi ai preferiti</string>
     <string name="ui_unfavorite">Rimuovi dai preferiti</string>
     <string name="ui_added_to_queue">Aggiunto alla coda</string>
+    <string name="ui_duplicate_in_queue_title">Già in coda</string>
+    <string name="ui_duplicate_in_queue_message">«%1$s» è già nella tua coda. Aggiungerla di nuovo?</string>
+    <string name="ui_duplicate_in_queue_confirm">Aggiungi di nuovo</string>
+    <string name="ui_duplicate_in_queue_cancel">Annulla</string>
+    <plurals name="ui_duplicates_in_queue_message">
+        <item quantity="one">Uno di questi brani è già nella tua coda. Aggiungerli tutti comunque?</item>
+        <item quantity="other">%1$d di questi brani sono già nella tua coda. Aggiungerli tutti comunque?</item>
+    </plurals>
     <string name="ui_added_to_favorites">Aggiunto ai preferiti</string>
     <string name="ui_removed_from_favorites">Rimosso dai preferiti</string>
     <string name="ui_move_up">Sposta su</string>

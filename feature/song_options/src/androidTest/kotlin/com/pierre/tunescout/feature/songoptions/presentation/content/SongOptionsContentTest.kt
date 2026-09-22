@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.playback.QueuePlacement
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
@@ -121,17 +122,48 @@ class SongOptionsContentTest {
         onNodeWithText("Reorder songs").assertDoesNotExist()
     }
 
+    @Test
+    fun givenASongAlreadyQueuedTheSheetAsksBeforeAddingItAgain() = compose.use {
+        setContent {
+            SongOptionsContent(
+                uiState = state(song = song(), duplicatePlacement = QueuePlacement.End),
+                onEvent = events::add,
+            )
+        }
+
+        onNodeWithText("Already in the queue").assertIsDisplayed()
+        onNodeWithText("Add again").performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnDuplicateInQueueConfirmed)
+    }
+
+    @Test
+    fun givenASongAlreadyQueuedCancellingTheQuestionEmitsEvent() = compose.use {
+        setContent {
+            SongOptionsContent(
+                uiState = state(song = song(), duplicatePlacement = QueuePlacement.Next),
+                onEvent = events::add,
+            )
+        }
+
+        onNodeWithText("Cancel").performClick()
+
+        assertThat(events).containsExactly(SongOptionsUiEvent.OnDuplicateInQueueDismissed)
+    }
+
     private fun state(
         song: Song?,
         isFavorite: Boolean = false,
         isRemovableFromPlaylist: Boolean = false,
         isReorderable: Boolean = false,
         isDownloaded: Boolean = false,
+        duplicatePlacement: QueuePlacement? = null,
     ): SongOptionsUiState = SongOptionsUiState(
         song = song,
         isFavorite = isFavorite,
         isRemovableFromPlaylist = isRemovableFromPlaylist,
         isReorderable = isReorderable,
         isDownloaded = isDownloaded,
+        duplicatePlacement = duplicatePlacement,
     )
 }

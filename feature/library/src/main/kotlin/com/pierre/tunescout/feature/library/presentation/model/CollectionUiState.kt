@@ -34,6 +34,8 @@ sealed interface CollectionUiState {
      * @property download whether the user asked for the whole collection, and how far it has got.
      * @property downloadStatuses how far each of [songs] the user asked to keep has got, whether on
      * its own or with a collection; a song absent from it has no download.
+     * @property songAlreadyQueued the song swiped into the queue while the user already had it
+     * queued there, while the screen asks whether to add it again.
      */
     data class Loaded(
         val title: CollectionTitle,
@@ -49,5 +51,6 @@ sealed interface CollectionUiState {
         val isDownloadable: Boolean,
         val download: CollectionDownloadState,
         val downloadStatuses: Map<Long, SongDownloadStatus>,
+        val songAlreadyQueued: Song?,
     ) : CollectionUiState
 }

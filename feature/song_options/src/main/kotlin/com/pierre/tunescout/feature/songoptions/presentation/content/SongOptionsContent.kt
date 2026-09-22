@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.pierre.tunescout.feature.songoptions.R
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
+import com.pierre.tunescout.ui.component.DuplicateInQueueDialog
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -84,6 +85,13 @@ fun SongOptionsContent(
             label = stringResource(R.string.song_options_view_album),
             isEnabled = isEnabled,
             onClick = { onEvent(SongOptionsUiEvent.OnViewAlbumClicked) },
+        )
+    }
+    if (uiState.duplicatePlacement != null) {
+        DuplicateInQueueDialog(
+            songTitle = uiState.song?.title.orEmpty(),
+            onConfirm = { onEvent(SongOptionsUiEvent.OnDuplicateInQueueConfirmed) },
+            onCancel = { onEvent(SongOptionsUiEvent.OnDuplicateInQueueDismissed) },
         )
     }
 }

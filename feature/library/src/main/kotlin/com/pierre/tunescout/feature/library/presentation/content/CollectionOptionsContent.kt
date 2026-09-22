@@ -8,6 +8,7 @@ import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.CollectionOptionsUiState
 import com.pierre.tunescout.ui.component.ConfirmationDialog
+import com.pierre.tunescout.ui.component.DuplicatesInQueueDialog
 import com.pierre.tunescout.ui.component.OptionRow
 import com.pierre.tunescout.ui.component.OptionsSheet
 import com.pierre.tunescout.ui.component.TuneScoutIcons
@@ -54,6 +55,13 @@ fun CollectionOptionsContent(
                 onClick = { onEvent(CollectionOptionsUiEvent.OnDeleteClicked) },
             )
         }
+    }
+    uiState.duplicates?.let { duplicates ->
+        DuplicatesInQueueDialog(
+            queuedCount = duplicates.count,
+            onConfirm = { onEvent(CollectionOptionsUiEvent.OnDuplicatesInQueueConfirmed) },
+            onCancel = { onEvent(CollectionOptionsUiEvent.OnDuplicatesInQueueDismissed) },
+        )
     }
     if (uiState.isConfirmingDelete) {
         ConfirmationDialog(

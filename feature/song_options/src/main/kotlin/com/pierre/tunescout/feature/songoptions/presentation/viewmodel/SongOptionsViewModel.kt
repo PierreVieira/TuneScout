@@ -8,13 +8,17 @@ import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
+import com.pierre.tunescout.core.playback.QueuePlacement
+import com.pierre.tunescout.core.playback.enqueue
 import com.pierre.tunescout.feature.songoptions.domain.usecase.SongOptionsUseCases
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiAction
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiEvent
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiState
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.utils.ActionViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -24,6 +28,7 @@ import kotlinx.coroutines.launch
 class SongOptionsViewModel(
     private val useCases: SongOptionsUseCases,
     private val enqueuer: Enqueuer,
+    private val observablePlayback: ObservablePlayback,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
     private val reorderRequests: ReorderRequests,
@@ -35,14 +40,22 @@ class SongOptionsViewModel(
         isDownloaded = false,
         isRemovableFromPlaylist = route.playlistId != null,
         isReorderable = route.reorderTarget != null,
+        duplicatePlacement = null,
     )
+    private val duplicatePlacement = MutableStateFlow<QueuePlacement?>(null)
 
     val uiState: StateFlow<SongOptionsUiState> = combine(
         useCases.observeSong(route.songId),
         useCases.isFavorite(route.songId),
         useCases.isDownloaded(route.songId),
-    ) { song, isFavorite, isDownloaded ->
-        emptyUiState.copy(song = song, isFavorite = isFavorite, isDownloaded = isDownloaded)
+        duplicatePlacement,
+    ) { song, isFavorite, isDownloaded, duplicatePlacement ->
+        emptyUiState.copy(
+            song = song,
+            isFavorite = isFavorite,
+            isDownloaded = isDownloaded,
+            duplicatePlacement = duplicatePlacement,
+        )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: SongOptionsUiEvent) = when (event) {
@@ -50,8 +63,10 @@ class SongOptionsViewModel(
         SongOptionsUiEvent.OnAddToPlaylistClicked -> openAddToPlaylist()
         SongOptionsUiEvent.OnDownloadClicked -> toggleDownload()
         SongOptionsUiEvent.OnPlayNowClicked -> queue(enqueuer::playNow)
-        SongOptionsUiEvent.OnPlayNextClicked -> queue(enqueuer::queueNext)
-        SongOptionsUiEvent.OnAddToQueueClicked -> queue(enqueuer::addToQueue)
+        SongOptionsUiEvent.OnPlayNextClicked -> queueUnlessQueued(QueuePlacement.Next)
+        SongOptionsUiEvent.OnAddToQueueClicked -> queueUnlessQueued(QueuePlacement.End)
+        SongOptionsUiEvent.OnDuplicateInQueueConfirmed -> queueAgain()
+        SongOptionsUiEvent.OnDuplicateInQueueDismissed -> duplicatePlacement.value = null
         SongOptionsUiEvent.OnViewAlbumClicked -> openAlbum()
         SongOptionsUiEvent.OnRemoveFromPlaylistClicked -> removeFromPlaylist()
         SongOptionsUiEvent.OnReorderClicked -> startReordering()
@@ -67,6 +82,29 @@ class SongOptionsViewModel(
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
         enqueue(listOf(song))
         navigator.navigateBack()
+    }
+
+    /**
+     * A song the user already queued is only added again once they confirm it. Play now takes over
+     * the player instead of queueing, so it never asks.
+     */
+    private fun queueUnlessQueued(placement: QueuePlacement) {
+        val songId = uiState.value.song?.id ?: return
+        if (observablePlayback.observePlaybackState().value.isQueuedByUser(songId)) {
+            duplicatePlacement.value = placement
+        } else {
+            queue(enqueuerFor(placement))
+        }
+    }
+
+    private fun queueAgain() {
+        val placement = duplicatePlacement.value ?: return
+        duplicatePlacement.value = null
+        queue(enqueuerFor(placement))
+    }
+
+    private fun enqueuerFor(placement: QueuePlacement): (List<Song>) -> Unit = { songs ->
+        enqueuer.enqueue(songs, placement)
     }
 
     private fun showSongUnavailableOffline() {

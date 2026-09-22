@@ -34,6 +34,7 @@ internal class AudioSearchScreenshots : ReadmeScreenshotsTest() {
                             isOffline = false,
                             unplayableSongIds = emptySet(),
                             downloadStatuses = emptyMap(),
+                            songAlreadyQueued = null,
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},

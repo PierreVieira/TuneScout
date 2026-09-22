@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.library.presentation.model
 
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.playback.DuplicatesInQueue
 
 /**
  * @property title what the collection is called, once it is known.
@@ -10,6 +11,8 @@ import com.pierre.tunescout.core.model.Song
  * @property isReorderable whether the collection can be put in an order of the user's own — a
  * playlist can, the liked songs cannot.
  * @property isConfirmingDelete whether the sheet is asking the user to confirm deleting it.
+ * @property duplicates the songs the user already queued, while the sheet asks whether to queue the
+ * whole collection anyway. Null while nothing waits on that answer.
  */
 data class CollectionOptionsUiState(
     val title: CollectionTitle?,
@@ -17,4 +20,5 @@ data class CollectionOptionsUiState(
     val isDeletable: Boolean,
     val isReorderable: Boolean,
     val isConfirmingDelete: Boolean,
+    val duplicates: DuplicatesInQueue?,
 )

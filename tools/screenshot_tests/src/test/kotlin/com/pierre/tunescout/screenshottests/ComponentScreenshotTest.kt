@@ -10,6 +10,8 @@ import com.pierre.tunescout.screenshotfixtures.getLucky
 import com.pierre.tunescout.ui.component.CollectionDownloadButton
 import com.pierre.tunescout.ui.component.ConfirmationDialog
 import com.pierre.tunescout.ui.component.DownloadIndicator
+import com.pierre.tunescout.ui.component.DuplicateInQueueDialog
+import com.pierre.tunescout.ui.component.DuplicatesInQueueDialog
 import com.pierre.tunescout.ui.component.NamePromptCard
 import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
@@ -183,6 +185,20 @@ internal class ComponentScreenshotTest : ScreenshotTest() {
                 onConfirm = {},
                 onCancel = {},
             )
+        }
+    }
+
+    @Test
+    fun duplicateInQueueDialog() {
+        snapshot(name = "duplicate_in_queue_dialog", variants = ScreenshotVariant.all) {
+            DuplicateInQueueDialog(songTitle = "Get Lucky", onConfirm = {}, onCancel = {})
+        }
+    }
+
+    @Test
+    fun duplicatesInQueueDialog() {
+        snapshot(name = "duplicates_in_queue_dialog", variants = ScreenshotVariant.all) {
+            DuplicatesInQueueDialog(queuedCount = 3, onConfirm = {}, onCancel = {})
         }
     }
 

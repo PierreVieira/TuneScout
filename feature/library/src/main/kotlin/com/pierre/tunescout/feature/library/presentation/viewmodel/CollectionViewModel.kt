@@ -33,6 +33,7 @@ import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.utils.ActionViewModel
 import com.pierre.tunescout.ui.utils.reorder.ListReorder
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -69,6 +70,15 @@ class CollectionViewModel(
         },
     )
 
+    private val songAlreadyQueued = MutableStateFlow<Song?>(null)
+
+    /** The dialog asking about a song already queued is read with the player, which answers it. */
+    private val queueing: Flow<Queueing> = combine(
+        observablePlayback.observePlaybackState(),
+        songAlreadyQueued,
+        ::Queueing,
+    )
+
     /**
      * The songs, in the order the user is dragging them into, whether they are being dragged, and
      * where their downloads stand.
@@ -90,11 +100,12 @@ class CollectionViewModel(
     val uiState: StateFlow<CollectionUiState> = combine(
         collectionStreams.observeTitle(key),
         arrangedSongs,
-        observablePlayback.observePlaybackState(),
+        queueing,
         collectionStreams.observeFavoriteSongIds(),
         observablePlayableSongs.observePlayableSongs(),
-    ) { title, arranged, playback, favoriteSongIds, playable ->
+    ) { title, arranged, queueing, favoriteSongIds, playable ->
         val songs = arranged.songs
+        val playback = queueing.playback
         if (title == null) {
             CollectionUiState.Loading
         } else {
@@ -116,6 +127,7 @@ class CollectionViewModel(
                     statuses = arranged.downloadStatuses,
                 ),
                 downloadStatuses = arranged.downloadStatuses,
+                songAlreadyQueued = queueing.songAlreadyQueued,
             )
         }
     }.stateIn(
@@ -132,6 +144,8 @@ class CollectionViewModel(
         is CollectionUiEvent.OnSongClicked -> play(event.song)
         is CollectionUiEvent.OnSongOptionsClicked -> openSongOptions(event.song)
         is CollectionUiEvent.OnSongSwipedToQueue -> addToQueue(event.song)
+        CollectionUiEvent.OnDuplicateInQueueConfirmed -> addToQueueAgain()
+        CollectionUiEvent.OnDuplicateInQueueDismissed -> songAlreadyQueued.value = null
         is CollectionUiEvent.OnSongSwipedToFavorite -> toggleFavorite(event.song)
         CollectionUiEvent.OnPlayPauseClicked -> togglePlayback()
         CollectionUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
@@ -256,9 +270,26 @@ class CollectionViewModel(
         )
     }
 
-    /** A song the player cannot reach never enters the queue, so it does not stall on it. */
+    /**
+     * A song the player cannot reach never enters the queue, so it does not stall on it. One the
+     * user already queued only goes in again once they confirm it.
+     */
     private fun addToQueue(song: Song) {
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        if (observablePlayback.observePlaybackState().value.isQueuedByUser(song.id)) {
+            songAlreadyQueued.value = song
+        } else {
+            enqueue(song)
+        }
+    }
+
+    private fun addToQueueAgain() {
+        val song = songAlreadyQueued.value ?: return
+        songAlreadyQueued.value = null
+        enqueue(song)
+    }
+
+    private fun enqueue(song: Song) {
         enqueuer.addToQueue(listOf(song))
         emitAction(CollectionUiAction.ShowSnackBar(R.string.ui_added_to_queue))
     }
@@ -272,6 +303,16 @@ class CollectionViewModel(
             emitAction(CollectionUiAction.ShowSnackBar(message))
         }
     }
+
+    /**
+     * @property playback what the player holds.
+     * @property songAlreadyQueued the song swiped into the queue while the user already had it
+     * queued, while the screen asks whether to add it again.
+     */
+    private data class Queueing(
+        val playback: PlaybackState,
+        val songAlreadyQueued: Song?,
+    )
 
     /**
      * @property songs the collection's songs, in the order the user is dragging them into.

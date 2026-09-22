@@ -38,6 +38,7 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
                             isOffline = false,
                             unplayableSongIds = emptySet(),
                             downloadStatuses = emptyMap(),
+                            songAlreadyQueued = null,
                         ),
                         searchResults = emptyPagingItems(),
                         onEvent = {},

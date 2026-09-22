@@ -27,6 +27,14 @@
     <string name="ui_favorite">Like</string>
     <string name="ui_unfavorite">Remove from liked songs</string>
     <string name="ui_added_to_queue">Added to queue</string>
+    <string name="ui_duplicate_in_queue_title">Already in the queue</string>
+    <string name="ui_duplicate_in_queue_message">“%1$s” is already in your queue. Add it again?</string>
+    <string name="ui_duplicate_in_queue_confirm">Add again</string>
+    <string name="ui_duplicate_in_queue_cancel">Cancel</string>
+    <plurals name="ui_duplicates_in_queue_message">
+        <item quantity="one">One of these songs is already in your queue. Add them all anyway?</item>
+        <item quantity="other">%1$d of these songs are already in your queue. Add them all anyway?</item>
+    </plurals>
     <string name="ui_added_to_favorites">Added to liked songs</string>
     <string name="ui_removed_from_favorites">Removed from liked songs</string>
     <string name="ui_move_up">Move up</string>

@@ -27,6 +27,15 @@
     <string name="ui_favorite">Me gusta</string>
     <string name="ui_unfavorite">Quitar de canciones que te gustan</string>
     <string name="ui_added_to_queue">Añadida a la cola</string>
+    <string name="ui_duplicate_in_queue_title">Ya está en la cola</string>
+    <string name="ui_duplicate_in_queue_message">«%1$s» ya está en tu cola. ¿Añadirla otra vez?</string>
+    <string name="ui_duplicate_in_queue_confirm">Añadir otra vez</string>
+    <string name="ui_duplicate_in_queue_cancel">Cancelar</string>
+    <plurals name="ui_duplicates_in_queue_message">
+        <item quantity="one">Una de estas canciones ya está en tu cola. ¿Añadirlas todas igualmente?</item>
+        <item quantity="many">%1$d de estas canciones ya están en tu cola. ¿Añadirlas todas igualmente?</item>
+        <item quantity="other">%1$d de estas canciones ya están en tu cola. ¿Añadirlas todas igualmente?</item>
+    </plurals>
     <string name="ui_added_to_favorites">Añadida a canciones que te gustan</string>
     <string name="ui_removed_from_favorites">Quitada de canciones que te gustan</string>
     <string name="ui_move_up">Subir</string>

@@ -15,6 +15,10 @@ sealed interface CollectionUiEvent {
         val song: Song,
     ) : CollectionUiEvent
 
+    data object OnDuplicateInQueueConfirmed : CollectionUiEvent
+
+    data object OnDuplicateInQueueDismissed : CollectionUiEvent
+
     data class OnSongSwipedToFavorite(
         val song: Song,
     ) : CollectionUiEvent

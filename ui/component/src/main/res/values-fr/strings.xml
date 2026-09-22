@@ -27,6 +27,15 @@
     <string name="ui_favorite">J\'aime</string>
     <string name="ui_unfavorite">Retirer des titres likés</string>
     <string name="ui_added_to_queue">Ajouté à la file d\'attente</string>
+    <string name="ui_duplicate_in_queue_title">Déjà dans la file d\'attente</string>
+    <string name="ui_duplicate_in_queue_message">« %1$s » est déjà dans ta file d\'attente. L\'ajouter à nouveau ?</string>
+    <string name="ui_duplicate_in_queue_confirm">Ajouter à nouveau</string>
+    <string name="ui_duplicate_in_queue_cancel">Annuler</string>
+    <plurals name="ui_duplicates_in_queue_message">
+        <item quantity="one">%1$d de ces titres est déjà dans ta file d\'attente. Les ajouter tous quand même ?</item>
+        <item quantity="many">%1$d de ces titres sont déjà dans ta file d\'attente. Les ajouter tous quand même ?</item>
+        <item quantity="other">%1$d de ces titres sont déjà dans ta file d\'attente. Les ajouter tous quand même ?</item>
+    </plurals>
     <string name="ui_added_to_favorites">Ajouté aux titres likés</string>
     <string name="ui_removed_from_favorites">Retiré des titres likés</string>
     <string name="ui_move_up">Monter</string>

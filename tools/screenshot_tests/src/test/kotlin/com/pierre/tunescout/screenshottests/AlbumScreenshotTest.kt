@@ -22,6 +22,7 @@ internal class AlbumScreenshotTest : ScreenshotTest() {
         isReordering = false,
         download = CollectionDownloadState.NotDownloaded,
         downloadStatuses = emptyMap(),
+        songAlreadyQueued = null,
     )
 
     @Test
