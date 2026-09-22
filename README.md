@@ -58,7 +58,7 @@ the launcher, the lock screen and the notification shade are not composables.
   survives starting another album. Swipe a song to queue it one way and like it the other.
 - **Pick up where you left off**: the queue, the song and its position come back, paused, after the
   app is closed.
-- **A library of your own**: liked songs, playlists and liked albums, as a list or a grid.
+- **A library of your own**: liked songs, playlists and liked albums, as a list or a grid of two, three or four covers per row.
 - **Offline**: previews that played once play again, search answers from what is on the device,
   and every screen says where its rows come from.
 - **Outside the app**: two home screen widgets, and media controls on the lock screen and in the

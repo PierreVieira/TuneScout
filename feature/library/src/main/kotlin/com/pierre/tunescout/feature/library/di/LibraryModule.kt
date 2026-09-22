@@ -11,6 +11,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.ObserveCollectionDown
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveDownloadedSongs
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveFavoriteAlbums
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveFavorites
+import com.pierre.tunescout.feature.library.domain.usecase.ObserveLibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveLibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.ObservePlaylist
 import com.pierre.tunescout.feature.library.domain.usecase.ObservePlaylistSongs
@@ -19,6 +20,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.ObserveRecentLibraryS
 import com.pierre.tunescout.feature.library.domain.usecase.RecordLibrarySearch
 import com.pierre.tunescout.feature.library.domain.usecase.RemoveLibrarySearch
 import com.pierre.tunescout.feature.library.domain.usecase.ReorderPlaylistSongs
+import com.pierre.tunescout.feature.library.domain.usecase.SetLibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.usecase.SetLibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.ToggleCollectionDownload
 import com.pierre.tunescout.feature.library.domain.usecase.ToggleSongFavorite
@@ -28,6 +30,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveCollectio
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveDownloadedSongsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveFavoriteAlbumsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveFavoritesUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveLibraryGridColumnsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveLibraryViewModeUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistSongsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistUseCase
@@ -36,6 +39,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveRecentLib
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RecordLibrarySearchUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveLibrarySearchUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ReorderPlaylistSongsUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryGridColumnsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryViewModeUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleCollectionDownloadUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleSongFavoriteUseCase
@@ -60,8 +64,10 @@ val libraryModule: Module = module {
     factoryOf(::ObserveFavoritesUseCase).bind<ObserveFavorites>()
     factoryOf(::ObserveFavoriteAlbumsUseCase).bind<ObserveFavoriteAlbums>()
     factoryOf(::ObserveLibraryViewModeUseCase).bind<ObserveLibraryViewMode>()
+    factoryOf(::ObserveLibraryGridColumnsUseCase).bind<ObserveLibraryGridColumns>()
     factoryOf(::ObserveRecentLibrarySearchesUseCase).bind<ObserveRecentLibrarySearches>()
     factoryOf(::SetLibraryViewModeUseCase).bind<SetLibraryViewMode>()
+    factoryOf(::SetLibraryGridColumnsUseCase).bind<SetLibraryGridColumns>()
     factoryOf(::CreatePlaylistUseCase).bind<CreatePlaylist>()
     factoryOf(::DeletePlaylistUseCase).bind<DeletePlaylist>()
     factoryOf(::ReorderPlaylistSongsUseCase).bind<ReorderPlaylistSongs>()

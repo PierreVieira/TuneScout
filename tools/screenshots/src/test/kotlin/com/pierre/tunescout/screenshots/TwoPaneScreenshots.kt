@@ -6,6 +6,7 @@ import com.pierre.tunescout.core.model.PlaybackStatus
 import com.pierre.tunescout.core.model.RepeatMode
 import com.pierre.tunescout.feature.album.presentation.content.AlbumContent
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiState
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.content.LibraryContent
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
@@ -120,6 +121,7 @@ internal class TwoPaneScreenshots : ReadmeTabletScreenshotsTest() {
                                 ),
                             ),
                             viewMode = LibraryViewMode.LIST,
+                            gridColumns = LibraryGridColumns.TWO,
                             filters = emptySet(),
                             downloadedKeys = emptySet(),
                         ),

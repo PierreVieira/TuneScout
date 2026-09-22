@@ -1,14 +1,21 @@
 package com.pierre.tunescout.feature.library.presentation.content
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,7 +29,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,9 +44,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.library.R
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.component.LibraryArtworkSize
 import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChipRow
+import com.pierre.tunescout.feature.library.presentation.component.LibraryGridColumnsButton
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemCell
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemWidths
 import com.pierre.tunescout.feature.library.presentation.component.LibraryViewModeToggle
@@ -52,15 +64,15 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.utils.semantics.screenPane
+import kotlin.math.roundToInt
 
-private val minCellWidth = 160.dp
-private val gridColumns = GridCells.Adaptive(minSize = minCellWidth)
 private val gridColumnSpacing = TuneScoutSpacing.medium
 private val fabSize = 56.dp
 private val fabListBottomPadding = fabSize + TuneScoutSpacing.screen * 2
 private const val LIST_COLUMNS = 1
 private const val LIST_FRACTION = 0f
 private const val GRID_FRACTION = 1f
+private const val TEXT_HIDDEN_FRACTION = 0.5f
 
 /**
  * The create-playlist action is a FAB on a single pane, where the list has the whole width to spare.
@@ -162,7 +174,7 @@ private fun Header(
             horizontalPadding = TuneScoutSpacing.large,
             modifier = Modifier.padding(vertical = TuneScoutSpacing.small),
         )
-        SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
+        SectionBar(viewMode = uiState.viewMode, gridColumns = uiState.gridColumns, onEvent = onEvent)
     }
 }
 
@@ -203,6 +215,7 @@ private fun TitleRow(
 @Composable
 private fun SectionBar(
     viewMode: LibraryViewMode,
+    gridColumns: LibraryGridColumns,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     Row(
@@ -219,6 +232,11 @@ private fun SectionBar(
                 .weight(1f)
                 .semantics { heading() },
         )
+        GridColumnsAction(
+            isVisible = viewMode == LibraryViewMode.GRID,
+            columns = gridColumns,
+            onClick = { onEvent(LibraryUiEvent.OnGridColumnsClicked) },
+        )
         LibraryViewModeToggle(
             viewMode = viewMode,
             onViewModeClick = { mode -> onEvent(LibraryUiEvent.OnViewModeSelected(mode)) },
@@ -227,7 +245,27 @@ private fun SectionBar(
 }
 
 /**
- * The list and the grid are one grid, of one column or of as many as fit, so a change of view mode
+ * The size of the grid is only offered while there is a grid: a list has one column and nothing to
+ * size. The button slides out from beside the toggle as the grid is picked and back behind it as the
+ * list is, so the list's bar stays as bare as it was.
+ */
+@Composable
+private fun RowScope.GridColumnsAction(
+    isVisible: Boolean,
+    columns: LibraryGridColumns,
+    onClick: () -> Unit,
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn() + expandHorizontally(),
+        exit = fadeOut() + shrinkHorizontally(),
+    ) {
+        LibraryGridColumnsButton(columns = columns, onClick = onClick)
+    }
+}
+
+/**
+ * The list and the grid are one grid, of one column or of as many as the user picked, so a change of view mode
  * keeps every item in the composition and moves it instead of replacing it: each cell morphs between
  * its row and its cell shape at the pace of [rememberGridFraction] while `animateItem` slides it to
  * its new place, and the scroll position carries over.
@@ -241,9 +279,18 @@ private fun LibraryItemGrid(
     val gridFraction = rememberGridFraction(uiState.viewMode)
     val artworkSize = LibraryArtworkSize.of(uiState.viewMode)
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val widths = rememberItemWidths(availableWidth = maxWidth)
+        val columns = remember(uiState.viewMode, uiState.gridColumns) {
+            columnsOf(viewMode = uiState.viewMode, gridColumns = uiState.gridColumns)
+        }
+        val listWidth = with(LocalDensity.current) { maxWidth.roundToPx() }
+        val reflow = rememberCellReflow(
+            columns = uiState.gridColumns,
+            cellWidth = rememberCellWidth(listWidth = listWidth, gridColumns = uiState.gridColumns),
+        )
+        val widths = remember(listWidth, reflow) { LibraryItemWidths(list = listWidth, cell = reflow.cellWidth) }
+        val isDense by rememberIsDense(reflow = reflow, gridFraction = gridFraction)
         LazyVerticalGrid(
-            columns = columnsOf(uiState.viewMode),
+            columns = columns,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = TuneScoutSpacing.small,
@@ -262,9 +309,11 @@ private fun LibraryItemGrid(
                     widths = widths,
                     artworkSize = artworkSize,
                     gridFraction = gridFraction,
+                    reflowFraction = reflow.fraction,
                     onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
                     modifier = Modifier.animateItem(),
                     isDownloaded = uiState.isDownloaded(item),
+                    isDense = isDense,
                 )
             }
         }
@@ -272,19 +321,85 @@ private fun LibraryItemGrid(
 }
 
 /**
- * The widths an item rests at, from the width the grid has: the whole of it as a row, and as a
- * cell the first of the columns [gridColumns] cuts it into, the way the grid itself cuts it.
+ * The width a cell rests at: the first of the [gridColumns] the grid cuts [listWidth] into, the way
+ * the grid itself cuts it.
  *
- * @return the widths for every item of a grid [availableWidth] wide.
+ * @return the width of a cell of a grid [listWidth] wide, in pixels.
  */
 @Composable
-private fun rememberItemWidths(availableWidth: Dp): LibraryItemWidths {
+private fun rememberCellWidth(
+    listWidth: Int,
+    gridColumns: LibraryGridColumns,
+): Int {
     val density = LocalDensity.current
-    return remember(availableWidth, density) {
-        val listWidth = with(density) { availableWidth.roundToPx() }
+    return remember(listWidth, gridColumns, density) {
         val spacing = with(density) { gridColumnSpacing.roundToPx() }
-        val cellWidths = with(gridColumns) { density.calculateCrossAxisCellSizes(listWidth, spacing) }
-        LibraryItemWidths(list = listWidth, cell = cellWidths.first())
+        with(GridCells.Fixed(gridColumns.count)) { density.calculateCrossAxisCellSizes(listWidth, spacing) }.first()
+    }
+}
+
+/**
+ * @return the move of the cells to [cellWidth], started over whenever [columns] gives them a new one.
+ */
+@Composable
+private fun rememberCellReflow(
+    columns: LibraryGridColumns,
+    cellWidth: Int,
+): CellReflow {
+    val reflow = remember { CellReflow(columns = columns, cellWidth = cellWidth) }
+    LaunchedEffect(columns, cellWidth) { reflow.animateTo(columns = columns, cellWidth = cellWidth) }
+    return reflow
+}
+
+/**
+ * The width the cells are at on their way from the columns the grid had to the ones it has now, and
+ * how far along they are. The grid hands its cells their new column the moment the columns change;
+ * the cells take the new width at this pace instead, so a cover grows or shrinks while the grid
+ * slides it into place rather than jumping, and the texts fade through the move the way they do
+ * between the list and the grid.
+ *
+ * @param columns the columns the grid opens with.
+ * @param cellWidth the width of a cell of those columns, in pixels.
+ */
+private class CellReflow(
+    columns: LibraryGridColumns,
+    cellWidth: Int,
+) {
+    private val width = Animatable(cellWidth.toFloat())
+    private var fromColumns = columns
+    private var toColumns = columns
+    private var fromWidth = cellWidth.toFloat()
+    private var toWidth = cellWidth.toFloat()
+
+    val cellWidth: () -> Int = { width.value.roundToInt() }
+
+    /** 0 as a move starts, 1 once the cells have their new width, and 1 at rest. */
+    val fraction: () -> Float = {
+        if (toWidth ==
+            fromWidth
+        ) {
+            GRID_FRACTION
+        } else {
+            ((width.value - fromWidth) / (toWidth - fromWidth)).coerceIn(LIST_FRACTION, GRID_FRACTION)
+        }
+    }
+
+    /**
+     * The columns the cells are drawn for: the ones the grid had until the texts have faded out, the
+     * new ones from there, so nothing set for the new columns is seen while a text is still readable.
+     */
+    val settledColumns: LibraryGridColumns
+        get() = if (fraction() > TEXT_HIDDEN_FRACTION) toColumns else fromColumns
+
+    suspend fun animateTo(
+        columns: LibraryGridColumns,
+        cellWidth: Int,
+    ) {
+        fromColumns = settledColumns
+        fromWidth = width.value
+        toColumns = columns
+        toWidth = cellWidth.toFloat()
+        width.animateTo(targetValue = toWidth, animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
     }
 }
 
@@ -305,9 +420,28 @@ private fun rememberGridFraction(viewMode: LibraryViewMode): () -> Float {
     return remember(fraction) { { fraction.value } }
 }
 
-private fun columnsOf(viewMode: LibraryViewMode): GridCells = when (viewMode) {
+/**
+ * Whether the items are the narrow cells of the four-column grid, which set their name a size
+ * smaller. The size only switches once the texts have faded out, halfway through the move between
+ * the list and the grid or between two column counts, so a name is never seen changing size; and it
+ * is derived, so the frames of a move recompose nothing until that one crossing.
+ *
+ * @return whether the cells are dense, following [gridFraction] and [reflow] as they cross the fade.
+ */
+@Composable
+private fun rememberIsDense(
+    reflow: CellReflow,
+    gridFraction: () -> Float,
+): State<Boolean> = remember(reflow, gridFraction) {
+    derivedStateOf { reflow.settledColumns == LibraryGridColumns.FOUR && gridFraction() > TEXT_HIDDEN_FRACTION }
+}
+
+private fun columnsOf(
+    viewMode: LibraryViewMode,
+    gridColumns: LibraryGridColumns,
+): GridCells = when (viewMode) {
     LibraryViewMode.LIST -> GridCells.Fixed(LIST_COLUMNS)
-    LibraryViewMode.GRID -> gridColumns
+    LibraryViewMode.GRID -> GridCells.Fixed(gridColumns.count)
 }
 
 /**
