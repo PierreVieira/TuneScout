@@ -46,21 +46,33 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
     @Test
     fun list() {
         snapshot(name = "list", variants = ScreenshotVariant.all) {
-            LibraryContent(uiState = library, onEvent = {})
+            LibraryContent(uiState = library, isTwoPane = false, onEvent = {})
         }
     }
 
     @Test
     fun grid() {
         snapshot(name = "grid") {
-            LibraryContent(uiState = library.copy(viewMode = LibraryViewMode.GRID), onEvent = {})
+            LibraryContent(uiState = library.copy(viewMode = LibraryViewMode.GRID), isTwoPane = false, onEvent = {})
+        }
+    }
+
+    /** On a wide window the create-playlist action moves off the FAB, into the top bar beside search. */
+    @Test
+    fun listTwoPane() {
+        snapshot(name = "list_two_pane", isLandscape = true) {
+            LibraryContent(uiState = library, isTwoPane = true, onEvent = {})
         }
     }
 
     @Test
     fun filteredByAlbums() {
         snapshot(name = "filtered_by_albums") {
-            LibraryContent(uiState = library.copy(filters = setOf(LibraryFilter.ALBUMS)), onEvent = {})
+            LibraryContent(
+                uiState = library.copy(filters = setOf(LibraryFilter.ALBUMS)),
+                isTwoPane = false,
+                onEvent = {},
+            )
         }
     }
 
@@ -78,6 +90,7 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
                     filters = setOf(LibraryFilter.DOWNLOADED),
                     downloadedKeys = setOf(LibraryItemKey.Album(albumId = randomAccessMemories.id)),
                 ),
+                isTwoPane = false,
                 onEvent = {},
             )
         }
@@ -86,14 +99,18 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
     @Test
     fun filteredByDownloadedWithNothingDownloaded() {
         snapshot(name = "filtered_by_downloaded_empty") {
-            LibraryContent(uiState = library.copy(filters = setOf(LibraryFilter.DOWNLOADED)), onEvent = {})
+            LibraryContent(
+                uiState = library.copy(filters = setOf(LibraryFilter.DOWNLOADED)),
+                isTwoPane = false,
+                onEvent = {},
+            )
         }
     }
 
     @Test
     fun empty() {
         snapshot(name = "empty") {
-            LibraryContent(uiState = library.copy(items = emptyList()), onEvent = {})
+            LibraryContent(uiState = library.copy(items = emptyList()), isTwoPane = false, onEvent = {})
         }
     }
 

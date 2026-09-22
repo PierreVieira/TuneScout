@@ -53,7 +53,7 @@ internal class LibraryScreenshots : ReadmeScreenshotsTest() {
             title = "Keep what you like",
             description = "Liked songs, the playlists you make and the albums you keep",
         ) {
-            LibraryContent(uiState = library, onEvent = {})
+            LibraryContent(uiState = library, isTwoPane = false, onEvent = {})
         }
     }
 
@@ -64,7 +64,7 @@ internal class LibraryScreenshots : ReadmeScreenshotsTest() {
             title = "Or see them as covers",
             description = "The same library in a grid, remembered between launches",
         ) {
-            LibraryContent(uiState = library.copy(viewMode = LibraryViewMode.GRID), onEvent = {})
+            LibraryContent(uiState = library.copy(viewMode = LibraryViewMode.GRID), isTwoPane = false, onEvent = {})
         }
     }
 }

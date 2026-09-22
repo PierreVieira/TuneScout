@@ -47,11 +47,19 @@ import com.pierre.tunescout.ui.utils.semantics.screenPane
 
 private val minCellWidth = 160.dp
 private val fabSize = 56.dp
-private val listBottomPadding = fabSize + TuneScoutSpacing.screen * 2
+private val fabListBottomPadding = fabSize + TuneScoutSpacing.screen * 2
 
+/**
+ * The create-playlist action is a FAB on a single pane, where the list has the whole width to spare.
+ * On a wide window the library sits in a narrower list pane beside a detail, so the action moves into
+ * the top bar next to search instead of floating over the list.
+ *
+ * @param isTwoPane whether the window lays a pane beside the tabs, narrowing the library's own pane.
+ */
 @Composable
 fun LibraryContent(
     uiState: LibraryUiState,
+    isTwoPane: Boolean,
     onEvent: (LibraryUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,6 +78,7 @@ fun LibraryContent(
         ) {
             Header(
                 uiState = uiState,
+                isTwoPane = isTwoPane,
                 onEvent = onEvent,
                 modifier = Modifier.hideableTopBar(),
             )
@@ -84,18 +93,21 @@ fun LibraryContent(
                         isAnnounced = true,
                     )
 
-                    uiState.viewMode == LibraryViewMode.LIST -> LibraryList(uiState = uiState, onEvent = onEvent)
+                    uiState.viewMode == LibraryViewMode.LIST ->
+                        LibraryList(uiState = uiState, isTwoPane = isTwoPane, onEvent = onEvent)
 
-                    else -> LibraryGrid(uiState = uiState, onEvent = onEvent)
+                    else -> LibraryGrid(uiState = uiState, isTwoPane = isTwoPane, onEvent = onEvent)
                 }
             }
         }
-        CreatePlaylistButton(
-            onClick = { onEvent(LibraryUiEvent.OnCreatePlaylistClicked) },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(TuneScoutSpacing.screen),
-        )
+        if (!isTwoPane) {
+            CreatePlaylistButton(
+                onClick = { onEvent(LibraryUiEvent.OnCreatePlaylistClicked) },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(TuneScoutSpacing.screen),
+            )
+        }
     }
 }
 
@@ -120,11 +132,12 @@ private fun CreatePlaylistButton(
 @Composable
 private fun Header(
     uiState: LibraryUiState,
+    isTwoPane: Boolean,
     onEvent: (LibraryUiEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        TitleRow(onEvent = onEvent)
+        TitleRow(isTwoPane = isTwoPane, onEvent = onEvent)
         LibraryFilterChipRow(
             filters = uiState.visibleFilters,
             selected = uiState.filters,
@@ -138,7 +151,10 @@ private fun Header(
 }
 
 @Composable
-private fun TitleRow(onEvent: (LibraryUiEvent) -> Unit) {
+private fun TitleRow(
+    isTwoPane: Boolean,
+    onEvent: (LibraryUiEvent) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -153,6 +169,13 @@ private fun TitleRow(onEvent: (LibraryUiEvent) -> Unit) {
                 .weight(1f)
                 .semantics { heading() },
         )
+        if (isTwoPane) {
+            TopBarAction(
+                icon = TuneScoutIcons.add,
+                contentDescription = stringResource(R.string.library_create_playlist),
+                onClick = { onEvent(LibraryUiEvent.OnCreatePlaylistClicked) },
+            )
+        }
         TopBarAction(
             icon = TuneScoutIcons.search,
             contentDescription = stringResource(R.string.library_open_search),
@@ -190,13 +213,17 @@ private fun SectionBar(
 @Composable
 private fun LibraryList(
     uiState: LibraryUiState,
+    isTwoPane: Boolean,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(),
-        contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = listBottomPadding),
+        contentPadding = PaddingValues(
+            top = TuneScoutSpacing.small,
+            bottom = if (isTwoPane) TuneScoutSpacing.extraLarge else fabListBottomPadding,
+        ),
     ) {
         items(items = uiState.filteredItems, key = { item -> item.key.toString() }) { item ->
             LibraryItemRow(
@@ -213,12 +240,16 @@ private fun LibraryList(
 @Composable
 private fun LibraryGrid(
     uiState: LibraryUiState,
+    isTwoPane: Boolean,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = minCellWidth),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = listBottomPadding),
+        contentPadding = PaddingValues(
+            top = TuneScoutSpacing.small,
+            bottom = if (isTwoPane) TuneScoutSpacing.extraLarge else fabListBottomPadding,
+        ),
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
     ) {
