@@ -17,7 +17,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
-import androidx.test.espresso.Espresso.pressBack
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -74,32 +73,7 @@ class ListDetailFlowTest {
             assertThat(onAllNodes(hasSetTextAction()).fetchSemanticsNodes()).isEmpty()
         }
 
-        try {
-            pressBack()
-        } catch (e: RuntimeException) {
-            val uiAutomation = androidx.test.platform.app.InstrumentationRegistry
-                .getInstrumentation()
-                .uiAutomation
-
-            fun shell(command: String) = android.os.ParcelFileDescriptor
-                .AutoCloseInputStream(
-                    uiAutomation.executeShellCommand(command),
-                ).bufferedReader()
-                .readText()
-            val windows = shell("dumpsys window windows")
-                .lines()
-                .filter { line ->
-                    "Window #" in line || "mCurrentFocus" in line || "mFocusedApp" in line ||
-                        "mHasSurface" in line
-                }
-            val activities = shell("dumpsys activity activities")
-                .lines()
-                .filter { line -> "ResumedActivity" in line || "* Task{" in line || "* ActivityRecord{" in line }
-            throw AssertionError(
-                "DIAG windows:\n${windows.joinToString("\n")}\nDIAG activities:\n${activities.joinToString("\n")}",
-                e,
-            )
-        }
+        compose.activity.pressBack()
 
         waitUntilDoesNotExist(hasText(ALBUM_ONLY_TRACK), SCREEN_TIMEOUT_MILLIS)
         onNode(hasSetTextAction()).assertIsDisplayed()
@@ -118,12 +92,12 @@ class ListDetailFlowTest {
 
         onNodeWithText("Library").performClick()
         waitUntilAtLeastOneExists(hasText("Your Library"), SCREEN_TIMEOUT_MILLIS)
-        pressBack()
+        compose.activity.pressBack()
 
         waitUntilDoesNotExist(hasText(ALBUM_ONLY_TRACK), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Your Library").assertIsDisplayed()
 
-        pressBack()
+        compose.activity.pressBack()
 
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
     }
@@ -146,7 +120,7 @@ class ListDetailFlowTest {
         openTheAlbumOfTheFirstResult()
         waitUntilDoesNotExist(isPlayerPane, SCREEN_TIMEOUT_MILLIS)
 
-        pressBack()
+        compose.activity.pressBack()
 
         waitUntilAtLeastOneExists(isPlayerPane, SCREEN_TIMEOUT_MILLIS)
         onNode(hasSetTextAction()).assertIsDisplayed()

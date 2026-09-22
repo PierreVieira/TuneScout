@@ -17,7 +17,6 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
-import androidx.test.espresso.Espresso.pressBack
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -96,7 +95,7 @@ class AlbumShuffleFlowTest {
      * wide window has the player itself beside the tabs, and the album is open over it.
      */
     private fun closeTheAlbumCoveringThePlayer() {
-        if (isTwoPaneWindow) pressBack()
+        if (isTwoPaneWindow) compose.activity.pressBack()
     }
 
     /**
