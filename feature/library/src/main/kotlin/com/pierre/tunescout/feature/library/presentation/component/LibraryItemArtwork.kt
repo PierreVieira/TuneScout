@@ -1,41 +1,27 @@
 package com.pierre.tunescout.feature.library.presentation.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
-import coil3.compose.rememberAsyncImagePainter
 import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
-import com.pierre.tunescout.ui.component.ArtworkPlaceholderIcon
-import com.pierre.tunescout.ui.component.ArtworkState
+import com.pierre.tunescout.ui.component.COVER_CORNER_PERCENT
+import com.pierre.tunescout.ui.component.CoverImage
+import com.pierre.tunescout.ui.component.PlaylistCover
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 
-private const val ARTWORK_CORNER_PERCENT = 8
-private const val QUADRANT_COUNT = 4
 private const val ICON_FRACTION = 0.4f
 
 /**
@@ -61,162 +47,50 @@ internal enum class LibraryArtworkSize {
     }
 }
 
-/**
- * A playlist has no cover of its own, so it wears the first four songs' artwork as a quadrant grid,
- * the way Spotify does. One song fills the tile, none falls back to the placeholder note.
- */
 @Composable
 internal fun LibraryItemArtwork(
     item: LibraryItemUiModel,
     size: LibraryArtworkSize,
     modifier: Modifier = Modifier,
 ) {
+    when (item) {
+        is LibraryItemUiModel.Favorites -> TileBox(background = TuneScoutColors.accentContainer, modifier = modifier) {
+            CollectionIcon(icon = TuneScoutIcons.favoriteFilled)
+        }
+
+        is LibraryItemUiModel.DownloadedSongs -> TileBox(
+            background = TuneScoutColors.accentContainer,
+            modifier = modifier,
+        ) {
+            CollectionIcon(icon = TuneScoutIcons.downloaded)
+        }
+
+        is LibraryItemUiModel.Playlist -> PlaylistCover(
+            artworkUrls = item.artworks.map(size::getUrl),
+            modifier = modifier,
+        )
+
+        is LibraryItemUiModel.Album -> TileBox(background = TuneScoutColors.surfaceSubtle, modifier = modifier) {
+            CoverImage(url = size.getUrl(item.artwork))
+        }
+    }
+}
+
+/** The square every item's artwork sits in, shaped like a playlist's cover so the list lines up. */
+@Composable
+private fun TileBox(
+    background: Color,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
     Box(
         modifier = modifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(percent = ARTWORK_CORNER_PERCENT))
-            .background(backgroundOf(item)),
+            .clip(RoundedCornerShape(percent = COVER_CORNER_PERCENT))
+            .background(background),
         contentAlignment = Alignment.Center,
-    ) {
-        when (item) {
-            is LibraryItemUiModel.Favorites -> CollectionIcon(icon = TuneScoutIcons.favoriteFilled)
-
-            is LibraryItemUiModel.DownloadedSongs -> CollectionIcon(icon = TuneScoutIcons.downloaded)
-
-            is LibraryItemUiModel.Playlist -> PlaylistCover(artworks = item.artworks, size = size)
-
-            is LibraryItemUiModel.Album -> CoverImage(
-                artwork = item.artwork,
-                size = size,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
-    }
-}
-
-@Composable
-private fun backgroundOf(item: LibraryItemUiModel): Color = when (item) {
-    is LibraryItemUiModel.Favorites, is LibraryItemUiModel.DownloadedSongs -> TuneScoutColors.accentContainer
-    is LibraryItemUiModel.Playlist, is LibraryItemUiModel.Album -> TuneScoutColors.surfaceSubtle
-}
-
-@Composable
-private fun PlaylistCover(
-    artworks: List<Artwork>,
-    size: LibraryArtworkSize,
-) {
-    when {
-        artworks.isEmpty() -> PlaceholderIcon()
-
-        artworks.size < QUADRANT_COUNT -> CoverImage(
-            artwork = artworks.first(),
-            size = size,
-            modifier = Modifier.fillMaxSize(),
-        )
-
-        else -> QuadrantGrid(artworks = artworks, size = size)
-    }
-}
-
-/**
- * Only the first tile speaks. Offline, each of the four would say its artwork is unavailable, and a
- * playlist's cover would be read as the same sentence four times over.
- */
-@Composable
-private fun QuadrantGrid(
-    artworks: List<Artwork>,
-    size: LibraryArtworkSize,
-) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
-    ) {
-        artworks.take(QUADRANT_COUNT).withIndex().chunked(2).forEach { pair ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            ) {
-                pair.forEach { (index, artwork) ->
-                    val isFirst = index == 0
-                    CoverImage(
-                        artwork = artwork,
-                        size = size,
-                        modifier = Modifier
-                            .weight(1f)
-                            .then(if (isFirst) Modifier else Modifier.clearAndSetSemantics {}),
-                    )
-                }
-            }
-        }
-    }
-}
-
-/**
- * A cover that did not arrive leaves the tile to the placeholder, which says whether the image is
- * simply missing or one connection away.
- *
- * A cover the tile showed before, at the other size, stays up until the one for this size arrives:
- * the tile grows or shrinks between the row and the cell, and would go blank halfway otherwise.
- */
-@Composable
-private fun CoverImage(
-    artwork: Artwork,
-    size: LibraryArtworkSize,
-    modifier: Modifier = Modifier,
-) {
-    val url = size.getUrl(artwork)
-    val previousCover = rememberPreviousUrl(url)?.let { previousUrl -> rememberAsyncImagePainter(model = previousUrl) }
-    var state by remember(url) { mutableStateOf(ArtworkState.of(url)) }
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        AsyncImage(
-            model = url,
-            contentDescription = null,
-            transform = { painterState ->
-                if (painterState is AsyncImagePainter.State.Loading && previousCover != null) {
-                    painterState.copy(painter = previousCover)
-                } else {
-                    painterState
-                }
-            },
-            contentScale = ContentScale.Crop,
-            onState = { newState -> state = ArtworkState.of(painterState = newState, url = url) },
-            modifier = Modifier.fillMaxSize(),
-        )
-        if (state == ArtworkState.FAILED || state == ArtworkState.EMPTY) {
-            ArtworkPlaceholderIcon(
-                hasFailed = state == ArtworkState.FAILED,
-                modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
-            )
-        }
-    }
-}
-
-/** @return the url this tile drew before [url] became its own, or null while [url] is its first. */
-@Composable
-private fun rememberPreviousUrl(url: String): String? {
-    val urls = remember { CoverUrls(url) }
-    urls.update(url)
-    return urls.previous
-}
-
-/**
- * The url a tile draws and the one it drew before, kept outside the snapshot: both are only read
- * while the tile composes, and a change of [current] is what recomposes it.
- *
- * @property current the url the tile draws now.
- */
-private class CoverUrls(
-    private var current: String,
-) {
-    var previous: String? = null
-        private set
-
-    fun update(url: String) {
-        if (url == current) return
-        previous = current
-        current = url
-    }
+        content = content,
+    )
 }
 
 /** The lists the app keeps for the user wear a glyph of what they hold rather than their songs' covers. */
@@ -226,14 +100,6 @@ private fun CollectionIcon(icon: ImageVector) {
         imageVector = icon,
         contentDescription = null,
         tint = TuneScoutColors.accent,
-        modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
-    )
-}
-
-@Composable
-private fun PlaceholderIcon() {
-    ArtworkPlaceholderIcon(
-        hasFailed = false,
         modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),
     )
 }

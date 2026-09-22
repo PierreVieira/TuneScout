@@ -9,8 +9,8 @@ android {
     // Edited by scripts/bump_version.py, which the release workflow runs. See docs/ci.md#release.
     defaultConfig {
         applicationId = "com.pierre.tunescout"
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     // The release workflow signs with the project's key, handed over through the environment so

@@ -22,6 +22,18 @@ renders every screen and catches a screen that stops composing without comparing
 ./gradlew :tools:screenshot_tests:testDebugUnitTest
 ```
 
+The failure does not look like a platform difference, which is why it is worth naming. Roborazzi
+compares with no tolerance at all — a pixel counts as changed once a channel is about 2/255 off, and
+one changed pixel fails the image — so macOS fails a handful of tests, at times a single one, while
+the other seventy pass. `ThemeSelectionScreenshotTest.themes` is the current example: one pixel of
+`themes_largest-font.png`, an antialiased grey on a glyph's edge, comes out 131 on Linux and 150
+here. The `_compare.png` then shows a reference and a render the eye cannot tell apart, over an
+empty difference panel, and the reference looks stale.
+
+It is not. Before touching a reference, check whether the `screenshot-tests` workflow is green on
+`main` for the commit in hand: if it is, that image matches what the code renders on Linux and
+re-recording it here would only swap one platform's rounding for another's and turn CI red.
+
 CI verifies on every pull request and uploads `screenshot-differences` when it fails — one
 `<name>_compare.png` per failure, holding the reference, the new render and the difference between
 them side by side.
@@ -86,6 +98,7 @@ the repository. `isLandscape = true` covers the layouts that switch on width (`i
 | `SongsScreenshotTest` | recently played, empty, searching, searching scrolled under the header's shadow, searching with the header hidden, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header, no audio search |
 | `LibraryScreenshotTest` | list, grid, two-pane (top-bar create action), filtered, empty, search: recent, results and no results |
 | `CollectionScreenshotTest` | loading, loaded, favourites, empty, remove confirmation |
+| `AddToPlaylistScreenshotTest` | the playlists with each kind of cover (four songs, one, none), no playlists yet |
 | `QueueScreenshotTest` | playing, paused, context only, clear confirmation, empty |
 | `MiniPlayerScreenshotTest` | playing, paused, ended |
 | `AudioSearchScreenshotTest` | waiting for speech, hearing with a transcript, failed |
