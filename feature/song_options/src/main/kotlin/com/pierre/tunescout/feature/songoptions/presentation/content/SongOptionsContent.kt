@@ -24,14 +24,16 @@ fun SongOptionsContent(
         modifier = modifier,
     ) {
         val isEnabled = uiState.song != null
-        OptionRow(
-            icon = if (uiState.isFavorite) TuneScoutIcons.favoriteFilled else TuneScoutIcons.favorite,
-            label = stringResource(
-                if (uiState.isFavorite) R.string.song_options_unfavorite else R.string.song_options_favorite,
-            ),
-            isEnabled = isEnabled,
-            onClick = { onEvent(SongOptionsUiEvent.OnFavoriteClicked) },
-        )
+        if (uiState.isFavoriteVisible) {
+            OptionRow(
+                icon = if (uiState.isFavorite) TuneScoutIcons.favoriteFilled else TuneScoutIcons.favorite,
+                label = stringResource(
+                    if (uiState.isFavorite) R.string.song_options_unfavorite else R.string.song_options_favorite,
+                ),
+                isEnabled = isEnabled,
+                onClick = { onEvent(SongOptionsUiEvent.OnFavoriteClicked) },
+            )
+        }
         OptionRow(
             icon = TuneScoutIcons.addToPlaylist,
             label = stringResource(R.string.song_options_add_to_playlist),

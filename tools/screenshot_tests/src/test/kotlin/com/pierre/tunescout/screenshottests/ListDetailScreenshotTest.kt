@@ -65,6 +65,7 @@ internal class ListDetailScreenshotTest : ScreenshotTest() {
         isShuffleEnabled = false,
         hasPrevious = true,
         hasNext = true,
+        isFavorite = false,
     )
 
     @Test

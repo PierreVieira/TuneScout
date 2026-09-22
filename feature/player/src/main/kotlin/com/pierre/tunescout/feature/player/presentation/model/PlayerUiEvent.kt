@@ -22,4 +22,6 @@ sealed interface PlayerUiEvent {
     data object OnBackClicked : PlayerUiEvent
 
     data object OnMoreClicked : PlayerUiEvent
+
+    data object OnFavoriteClicked : PlayerUiEvent
 }

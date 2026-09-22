@@ -19,6 +19,7 @@ internal class PlayerScreenshots : ReadmeScreenshotsTest() {
         isShuffleEnabled = false,
         hasPrevious = true,
         hasNext = true,
+        isFavorite = true,
     )
 
     @Test
@@ -26,7 +27,7 @@ internal class PlayerScreenshots : ReadmeScreenshotsTest() {
         capture(
             fileName = "player",
             title = "A player, and the queue behind it",
-            description = "Scrub, repeat, skip, and open the queue from the button on the right",
+            description = "Scrub, repeat, skip, like, and open the queue from the button on the right",
         ) {
             PlayerContent(layout = PlayerLayout.Stacked, uiState = nowPlaying, onEvent = {})
         }

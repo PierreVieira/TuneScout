@@ -26,6 +26,7 @@ internal class PlayerScreenshotTest : ScreenshotTest() {
         isShuffleEnabled = false,
         hasPrevious = true,
         hasNext = true,
+        isFavorite = true,
     )
 
     @Test
@@ -46,6 +47,13 @@ internal class PlayerScreenshotTest : ScreenshotTest() {
     fun loaded() {
         snapshot(name = "loaded", variants = ScreenshotVariant.all) {
             PlayerContent(uiState = loaded, layout = PlayerLayout.Stacked, onEvent = {})
+        }
+    }
+
+    @Test
+    fun loadedNotFavorite() {
+        snapshot(name = "loaded_not_favorite") {
+            PlayerContent(uiState = loaded.copy(isFavorite = false), layout = PlayerLayout.Stacked, onEvent = {})
         }
     }
 

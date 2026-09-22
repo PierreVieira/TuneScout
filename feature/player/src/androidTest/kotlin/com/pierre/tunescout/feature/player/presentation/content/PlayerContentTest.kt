@@ -120,6 +120,34 @@ class PlayerContentTest {
     }
 
     @Test
+    fun givenASongThatIsNotLikedTheTopBarOffersToLikeIt() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                PlayerContent(
+                    layout = PlayerLayout.Stacked,
+                    uiState = loaded(isFavorite = false),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Like").performClick()
+
+        assertThat(events).containsExactly(PlayerUiEvent.OnFavoriteClicked)
+    }
+
+    @Test
+    fun givenALikedSongTheTopBarOffersToRemoveIt() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                PlayerContent(layout = PlayerLayout.Stacked, uiState = loaded(isFavorite = true), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Remove from liked songs").assertIsDisplayed()
+    }
+
+    @Test
     fun givenAFinishedSongShowsReplayAndClickingItEmitsPlayPause() = compose.use {
         setContent {
             TuneScoutTheme {
@@ -212,6 +240,7 @@ class PlayerContentTest {
         position: Duration = 5.seconds,
         repeatMode: RepeatMode = RepeatMode.Off,
         isShuffleEnabled: Boolean = false,
+        isFavorite: Boolean = false,
     ): PlayerUiState.Loaded = PlayerUiState.Loaded(
         song = song,
         status = status,
@@ -221,5 +250,6 @@ class PlayerContentTest {
         isShuffleEnabled = isShuffleEnabled,
         hasPrevious = hasPrevious,
         hasNext = hasNext,
+        isFavorite = isFavorite,
     )
 }

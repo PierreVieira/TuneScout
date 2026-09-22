@@ -11,17 +11,23 @@ import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
 import com.pierre.tunescout.core.playback.PlaybackStarter
 import com.pierre.tunescout.core.playback.TransportControls
+import com.pierre.tunescout.feature.player.domain.usecase.IsFavorite
 import com.pierre.tunescout.feature.player.domain.usecase.ObserveSong
+import com.pierre.tunescout.feature.player.domain.usecase.ToggleFavorite
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiAction
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiEvent
 import com.pierre.tunescout.feature.player.presentation.model.PlayerUiState
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.utils.ActionViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 /**
  * The player of one song, or of whatever is playing.
@@ -33,7 +39,9 @@ import kotlinx.coroutines.flow.stateIn
  * @property playableSongs whether a song can be reached right now.
  * @property transportControls the controls of what is playing.
  * @property navigator opens the queue and the song's options, and closes the player.
+ * @property toggleFavorite likes or unlikes the song shown right now.
  * @param observeSong the song the player was opened on, as the library knows it.
+ * @param isFavorite whether the song shown right now is liked.
  */
 class PlayerViewModel(
     private val songId: Long?,
@@ -42,7 +50,9 @@ class PlayerViewModel(
     private val playableSongs: PlayableSongs,
     private val transportControls: TransportControls,
     private val navigator: Navigator,
+    private val toggleFavorite: ToggleFavorite,
     observeSong: ObserveSong,
+    isFavorite: IsFavorite,
 ) : ActionViewModel<PlayerUiAction>() {
     private val playback: PlaybackState
         get() = observablePlayback.observePlaybackState().value
@@ -58,9 +68,21 @@ class PlayerViewModel(
     private val previousSong: Song?
         get() = playback.previousEntry?.song
 
-    val uiState: StateFlow<PlayerUiState> = combine(
+    /** The song shown right now: whatever is playing, or the one the player was opened on. */
+    private val shownSongFlow: Flow<Song?> = combine(
         songId?.let(observeSong::invoke) ?: flowOf(null),
         observablePlayback.observePlaybackState(),
+    ) { routeSong, playback -> playback.currentSong ?: routeSong }
+
+    /** Re-checked only when the shown song itself changes, not on every playback update. */
+    private val isShownSongFavorite: Flow<Boolean> = shownSongFlow
+        .distinctUntilChanged { previous, next -> previous?.id == next?.id }
+        .flatMapLatest { song -> song?.let { isFavorite(it.id) } ?: flowOf(false) }
+
+    val uiState: StateFlow<PlayerUiState> = combine(
+        shownSongFlow,
+        observablePlayback.observePlaybackState(),
+        isShownSongFavorite,
         ::toUiState,
     ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlayerUiState.Loading)
 
@@ -74,6 +96,7 @@ class PlayerViewModel(
         PlayerUiEvent.OnQueueClicked -> navigator.navigate(QueueRoute)
         PlayerUiEvent.OnBackClicked -> navigator.navigateBack()
         PlayerUiEvent.OnMoreClicked -> navigateToOptions()
+        PlayerUiEvent.OnFavoriteClicked -> toggleShownSongFavorite()
     }
 
     /**
@@ -118,16 +141,26 @@ class PlayerViewModel(
 
     private fun navigateToOptions() {
         val shownSongId = (uiState.value as? PlayerUiState.Loaded)?.song?.id ?: songId ?: return
-        navigator.navigate(SongOptionsRoute(songId = shownSongId))
+        navigator.navigate(SongOptionsRoute(songId = shownSongId, hidesFavorite = true))
+    }
+
+    private fun toggleShownSongFavorite() {
+        val state = uiState.value as? PlayerUiState.Loaded ?: return
+        viewModelScope.launch {
+            toggleFavorite(song = state.song, isFavorite = state.isFavorite)
+        }
     }
 
     private fun toUiState(
-        routeSong: Song?,
+        song: Song?,
         playback: PlaybackState,
+        isFavorite: Boolean,
     ): PlayerUiState {
-        val song = playback.currentSong ?: routeSong ?: return when (songId) {
-            null -> PlayerUiState.NothingPlaying
-            else -> PlayerUiState.NotFound
+        if (song == null) {
+            return when (songId) {
+                null -> PlayerUiState.NothingPlaying
+                else -> PlayerUiState.NotFound
+            }
         }
         val isCurrent = playback.currentSong?.id == song.id
         return PlayerUiState.Loaded(
@@ -145,6 +178,7 @@ class PlayerViewModel(
             isShuffleEnabled = playback.isShuffleEnabled,
             hasPrevious = playback.hasPrevious,
             hasNext = playback.hasNext,
+            isFavorite = isFavorite,
         )
     }
 }

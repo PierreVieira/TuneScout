@@ -38,6 +38,7 @@ import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBar
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
+import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.semantics.screenPane
 import com.pierre.tunescout.ui.component.R as ComponentR
@@ -73,6 +74,7 @@ fun PlayerContent(
             },
             actions = {
                 if (uiState is PlayerUiState.Loaded) {
+                    FavoriteAction(isFavorite = uiState.isFavorite, onEvent = onEvent)
                     TopBarAction(
                         icon = TuneScoutIcons.moreMenu,
                         contentDescription = stringResource(ComponentR.string.ui_more_options),
@@ -137,6 +139,25 @@ fun PlayerContent(
             }
         }
     }
+}
+
+/**
+ * Liking is a state, so it stays on the bar where a filled heart can show it, beside the overflow
+ * instead of behind it.
+ */
+@Composable
+private fun FavoriteAction(
+    isFavorite: Boolean,
+    onEvent: (PlayerUiEvent) -> Unit,
+) {
+    TopBarAction(
+        icon = if (isFavorite) TuneScoutIcons.favoriteFilled else TuneScoutIcons.favorite,
+        contentDescription = stringResource(
+            if (isFavorite) ComponentR.string.ui_unfavorite else ComponentR.string.ui_favorite,
+        ),
+        tint = if (isFavorite) TuneScoutColors.accent else TuneScoutColors.textPrimary,
+        onClick = { onEvent(PlayerUiEvent.OnFavoriteClicked) },
+    )
 }
 
 /**
