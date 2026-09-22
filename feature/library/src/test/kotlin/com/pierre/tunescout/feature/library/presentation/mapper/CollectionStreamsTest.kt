@@ -63,6 +63,22 @@ class CollectionStreamsTest {
     }
 
     @Test
+    fun `GIVEN the songs downloaded on their own WHEN observing them THEN they are the collection and its title`() =
+        runTest {
+            // Given
+            val useCases = createUseCases(downloadedSongs = listOf(song(id = 3)))
+            val streams = CollectionStreams(useCases)
+
+            // When
+            val title = streams.observeTitle(CollectionKey.DownloadedSongs).first()
+            val songs = streams.observeSongs(CollectionKey.DownloadedSongs).first()
+
+            // Then
+            assertThat(title).isEqualTo(CollectionTitle.DownloadedSongs)
+            assertThat(songs.map { song -> song.id }).containsExactly(3L)
+        }
+
+    @Test
     fun `GIVEN a playlist that is gone WHEN observing the title THEN there is none`() = runTest {
         // Given
         val useCases = createUseCases(playlist = null)
@@ -78,6 +94,7 @@ class CollectionStreamsTest {
         favorites: List<Song> = emptyList(),
         playlistSongs: List<Song> = emptyList(),
         playlist: Playlist? = null,
+        downloadedSongs: List<Song> = emptyList(),
     ): CollectionUseCases = CollectionUseCases(
         observePlaylist = { flowOf(playlist) },
         observePlaylistSongs = { flowOf(playlistSongs) },
@@ -87,5 +104,6 @@ class CollectionStreamsTest {
         reorderPlaylistSongs = { _, _ -> },
         observeCollectionDownloads = { flowOf(emptySet()) },
         toggleCollectionDownload = { _, _ -> },
+        observeDownloadedSongs = { flowOf(downloadedSongs) },
     )
 }

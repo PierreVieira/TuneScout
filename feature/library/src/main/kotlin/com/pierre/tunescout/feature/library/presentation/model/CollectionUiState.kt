@@ -28,6 +28,9 @@ sealed interface CollectionUiState {
      * can, the liked songs are kept in the order they were liked.
      * @property isReordering whether [songs] are there to be dragged into a new order: each row shows
      * a handle instead of its options, and a tap no longer plays it.
+     * @property isDownloadable whether the collection can be downloaded as a whole. The songs
+     * downloaded one by one cannot: each of them is already kept by its own request, and taking
+     * them back is done song by song.
      * @property download whether the user asked for the whole collection, and how far it has got.
      * @property downloadStatuses how far each of [songs] the user asked to keep has got, whether on
      * its own or with a collection; a song absent from it has no download.
@@ -43,6 +46,7 @@ sealed interface CollectionUiState {
         val isShuffleEnabled: Boolean,
         val isReorderable: Boolean,
         val isReordering: Boolean,
+        val isDownloadable: Boolean,
         val download: CollectionDownloadState,
         val downloadStatuses: Map<Long, SongDownloadStatus>,
     ) : CollectionUiState

@@ -14,4 +14,10 @@ sealed interface LibraryItemKey {
     data class Album(
         val albumId: Long,
     ) : LibraryItemKey
+
+    /**
+     * The songs the user downloaded one by one, rather than with an album or a playlist. It is no
+     * collection of its own: each song in it is there by its own request.
+     */
+    data object DownloadedSongs : LibraryItemKey
 }

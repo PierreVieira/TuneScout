@@ -9,11 +9,18 @@ class CollectionKeyMapperTest {
     @Test
     fun `GIVEN a collection WHEN naming it as a library item THEN it is the same collection`() {
         // When
-        val keys = listOf(CollectionKey.Favorites, CollectionKey.Playlist(playlistId = 7)).map { key ->
-            key.toLibraryItemKey()
-        }
+        val keys = listOf(
+            CollectionKey.Favorites,
+            CollectionKey.Playlist(playlistId = 7),
+            CollectionKey.DownloadedSongs,
+        ).map { key -> key.toLibraryItemKey() }
 
         // Then
-        assertThat(keys).containsExactly(LibraryItemKey.Favorites, LibraryItemKey.Playlist(playlistId = 7)).inOrder()
+        assertThat(keys)
+            .containsExactly(
+                LibraryItemKey.Favorites,
+                LibraryItemKey.Playlist(playlistId = 7),
+                LibraryItemKey.DownloadedSongs,
+            ).inOrder()
     }
 }

@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.library.presentation.mapper
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.navigation.route.DownloadedSongsOptionsRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
@@ -23,5 +24,14 @@ class CollectionRouteMapperTest {
 
         // Then
         assertThat(route).isEqualTo(PlaylistOptionsRoute(playlistId = 7))
+    }
+
+    @Test
+    fun `GIVEN the songs downloaded on their own WHEN mapping to their options route THEN it needs no id`() {
+        // When
+        val route = CollectionKey.DownloadedSongs.toOptionsRoute()
+
+        // Then
+        assertThat(route).isEqualTo(DownloadedSongsOptionsRoute)
     }
 }

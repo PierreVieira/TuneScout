@@ -7,4 +7,5 @@ data class LibraryUseCases(
     val observeViewMode: ObserveLibraryViewMode,
     val setViewMode: SetLibraryViewMode,
     val observeCollectionDownloads: ObserveCollectionDownloads,
+    val observeDownloadedSongs: ObserveDownloadedSongs,
 )

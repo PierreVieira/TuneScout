@@ -7,6 +7,7 @@
     <string name="queue_next_from">Als Nächstes von %1$s</string>
     <string name="queue_next_up">Als Nächstes</string>
     <string name="queue_context_liked_songs">Lieblingssongs</string>
+    <string name="queue_context_downloaded_songs">Einzelne Songs</string>
     <string name="queue_context_recently_played">Zuletzt gehört</string>
     <string name="queue_empty_title">Die Warteschlange ist leer</string>
     <string name="queue_empty_description">Füge einen Song oder ein ganzes Album zur Warteschlange hinzu, dann erscheint es hier.</string>

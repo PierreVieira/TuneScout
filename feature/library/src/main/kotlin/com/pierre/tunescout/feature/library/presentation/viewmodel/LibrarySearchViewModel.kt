@@ -29,8 +29,14 @@ class LibrarySearchViewModel(
         useCases.observeFavorites(),
         useCases.observePlaylists(),
         useCases.observeFavoriteAlbums(),
-        itemMapper::buildLibraryItems,
-    )
+    ) { favorites, playlists, albums ->
+        itemMapper.buildLibraryItems(
+            favorites = favorites,
+            playlists = playlists,
+            albums = albums,
+            downloadedSongs = emptyList(),
+        )
+    }
 
     val uiState: StateFlow<LibrarySearchUiState> = combine(
         query,

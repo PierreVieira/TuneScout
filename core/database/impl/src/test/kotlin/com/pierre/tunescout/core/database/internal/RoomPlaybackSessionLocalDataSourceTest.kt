@@ -126,6 +126,25 @@ class RoomPlaybackSessionLocalDataSourceTest {
     }
 
     @Test
+    fun `GIVEN the downloaded songs context WHEN reading back THEN it is still the downloaded songs`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.save(
+            session(
+                entries = listOf(entry(id = "a", song = song(id = 1))),
+                currentEntryId = "a",
+                context = PlaybackContext.DownloadedSongs,
+            ),
+        )
+        val restored = localDataSource.find()
+
+        // Then
+        assertThat(restored?.context).isEqualTo(PlaybackContext.DownloadedSongs)
+    }
+
+    @Test
     fun `GIVEN the recently played context WHEN reading back THEN it is still the recently played`() = runTest {
         // Given
         prepareScenario()

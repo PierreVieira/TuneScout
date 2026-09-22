@@ -8,6 +8,7 @@ internal fun PlaybackContext?.toQueueContextTitle(): QueueContextTitle? = when (
     is PlaybackContext.Album -> QueueContextTitle.Custom(title)
     is PlaybackContext.Playlist -> QueueContextTitle.Custom(title)
     PlaybackContext.LikedSongs -> QueueContextTitle.LikedSongs
+    PlaybackContext.DownloadedSongs -> QueueContextTitle.DownloadedSongs
     PlaybackContext.RecentlyPlayed -> QueueContextTitle.RecentlyPlayed
     PlaybackContext.SingleSong, null -> null
 }

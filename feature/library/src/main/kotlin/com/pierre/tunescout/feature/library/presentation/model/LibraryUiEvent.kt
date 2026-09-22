@@ -19,4 +19,6 @@ sealed interface LibraryUiEvent {
     data class OnFilterClicked(
         val filter: LibraryFilter,
     ) : LibraryUiEvent
+
+    data object OnClearFiltersClicked : LibraryUiEvent
 }

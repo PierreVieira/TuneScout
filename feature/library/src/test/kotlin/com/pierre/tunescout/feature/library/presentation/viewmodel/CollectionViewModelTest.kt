@@ -13,6 +13,7 @@ import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.reorder.SharedFlowReorderRequests
+import com.pierre.tunescout.core.navigation.route.DownloadedSongsOptionsRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
@@ -131,6 +132,83 @@ class CollectionViewModelTest {
 
             // Then
             assertThat(downloadToggles).containsExactly(LibraryItemKey.Playlist(playlistId = 7) to true)
+        }
+
+    @Test
+    fun `GIVEN the songs downloaded on their own WHEN observing THEN they are listed and not downloadable as one`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.DownloadedSongs, downloadedSongs = listOf(song(id = 2), song(id = 1)))
+
+            // When
+            val state = viewModel.uiState.value as CollectionUiState.Loaded
+
+            // Then
+            assertThat(state.title).isEqualTo(CollectionTitle.DownloadedSongs)
+            assertThat(state.songs.map(Song::id)).containsExactly(2L, 1L).inOrder()
+            assertThat(state.isDeletable).isFalse()
+            assertThat(state.isReorderable).isFalse()
+            assertThat(state.isDownloadable).isFalse()
+        }
+
+    @Test
+    fun `GIVEN the songs downloaded on their own WHEN tapping download THEN nothing is asked for`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.DownloadedSongs, downloadedSongs = listOf(song(id = 1)))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnDownloadClicked)
+            runCurrent()
+
+            // Then
+            assertThat(downloadToggles).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN the songs downloaded on their own WHEN pressing play THEN they start as their own context`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = listOf(song(id = 1), song(id = 2))
+            prepareScenario(key = CollectionKey.DownloadedSongs, downloadedSongs = songs)
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+            // Then
+            assertThat(contextStarts).containsExactly(songs to PlaybackContext.DownloadedSongs)
+        }
+
+    @Test
+    fun `GIVEN one of the downloaded songs is playing from them WHEN pressing their button THEN the player pauses`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val songs = listOf(song(id = 1))
+            prepareScenario(
+                key = CollectionKey.DownloadedSongs,
+                downloadedSongs = songs,
+                playback = playbackState(songs = songs, context = PlaybackContext.DownloadedSongs),
+            )
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnPlayPauseClicked)
+
+            // Then
+            verify { transportControls.togglePlayPause() }
+            assertThat(contextStarts).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN the songs downloaded on their own WHEN clicking the overflow THEN opens their options sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(key = CollectionKey.DownloadedSongs, downloadedSongs = listOf(song(id = 1)))
+
+            // When
+            viewModel.onEvent(CollectionUiEvent.OnMoreClicked)
+
+            // Then
+            verify { navigator.navigate(DownloadedSongsOptionsRoute) }
         }
 
     @Test
@@ -793,6 +871,7 @@ class CollectionViewModelTest {
         playback: PlaybackState = PlaybackState.Idle,
         downloadStatuses: Map<Long, SongDownloadStatus> = emptyMap(),
         downloadedCollections: Set<LibraryItemKey> = emptySet(),
+        downloadedSongs: List<Song> = emptyList(),
     ) {
         favoriteSongs = MutableStateFlow(favorites)
         downloadToggles = mutableListOf()
@@ -819,6 +898,7 @@ class CollectionViewModelTest {
             reorderPlaylistSongs = { playlistId, songIds -> playlistReorders += playlistId to songIds },
             observeCollectionDownloads = { flowOf(downloadedCollections) },
             toggleCollectionDownload = { key, isDownloaded -> downloadToggles += key to isDownloaded },
+            observeDownloadedSongs = { flowOf(downloadedSongs) },
         )
         val playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true }
         viewModel = CollectionViewModel(

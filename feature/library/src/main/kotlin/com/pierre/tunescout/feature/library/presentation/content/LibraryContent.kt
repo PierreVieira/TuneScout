@@ -26,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChipRow
@@ -37,6 +36,7 @@ import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiMode
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiState
 import com.pierre.tunescout.feature.library.presentation.model.getName
+import com.pierre.tunescout.ui.component.StateMessage
 import com.pierre.tunescout.ui.component.TopBarAction
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
@@ -73,19 +73,20 @@ fun LibraryContent(
                 onEvent = onEvent,
                 modifier = Modifier.hideableTopBar(),
             )
-            Box(modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen)) {
-                when (uiState.viewMode) {
-                    LibraryViewMode.LIST -> LibraryList(
-                        items = uiState.filteredItems,
-                        downloadedKeys = uiState.downloadedKeys,
-                        onEvent = onEvent,
+            Box(
+                modifier = Modifier.padding(horizontal = TuneScoutSpacing.screen),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                when {
+                    uiState.isDownloadedEmpty -> StateMessage(
+                        title = stringResource(R.string.library_downloaded_empty_title),
+                        description = stringResource(R.string.library_downloaded_empty_description),
+                        isAnnounced = true,
                     )
 
-                    LibraryViewMode.GRID -> LibraryGrid(
-                        items = uiState.filteredItems,
-                        downloadedKeys = uiState.downloadedKeys,
-                        onEvent = onEvent,
-                    )
+                    uiState.viewMode == LibraryViewMode.LIST -> LibraryList(uiState = uiState, onEvent = onEvent)
+
+                    else -> LibraryGrid(uiState = uiState, onEvent = onEvent)
                 }
             }
         }
@@ -125,12 +126,12 @@ private fun Header(
     Column(modifier = modifier) {
         TitleRow(onEvent = onEvent)
         LibraryFilterChipRow(
-            selected = uiState.filter,
+            filters = uiState.visibleFilters,
+            selected = uiState.filters,
             onFilterClick = { filter -> onEvent(LibraryUiEvent.OnFilterClicked(filter)) },
-            modifier = Modifier.padding(
-                horizontal = TuneScoutSpacing.large,
-                vertical = TuneScoutSpacing.small,
-            ),
+            onClearClick = { onEvent(LibraryUiEvent.OnClearFiltersClicked) },
+            horizontalPadding = TuneScoutSpacing.large,
+            modifier = Modifier.padding(vertical = TuneScoutSpacing.small),
         )
         SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
     }
@@ -188,8 +189,7 @@ private fun SectionBar(
 
 @Composable
 private fun LibraryList(
-    items: List<LibraryItemUiModel>,
-    downloadedKeys: Set<LibraryItemKey>,
+    uiState: LibraryUiState,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     LazyColumn(
@@ -198,13 +198,13 @@ private fun LibraryList(
             .fillMaxHeight(),
         contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = listBottomPadding),
     ) {
-        items(items = items, key = { item -> item.key.toString() }) { item ->
+        items(items = uiState.filteredItems, key = { item -> item.key.toString() }) { item ->
             LibraryItemRow(
                 item = item,
-                name = item.getName(stringResource(R.string.library_favorites)),
+                name = libraryItemName(item),
                 onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
                 modifier = Modifier.animateItem(),
-                isDownloaded = item.key in downloadedKeys,
+                isDownloaded = uiState.isDownloaded(item),
             )
         }
     }
@@ -212,8 +212,7 @@ private fun LibraryList(
 
 @Composable
 private fun LibraryGrid(
-    items: List<LibraryItemUiModel>,
-    downloadedKeys: Set<LibraryItemKey>,
+    uiState: LibraryUiState,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     LazyVerticalGrid(
@@ -223,14 +222,20 @@ private fun LibraryGrid(
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
     ) {
-        items(items = items, key = { item -> item.key.toString() }) { item ->
+        items(items = uiState.filteredItems, key = { item -> item.key.toString() }) { item ->
             LibraryItemCell(
                 item = item,
-                name = item.getName(stringResource(R.string.library_favorites)),
+                name = libraryItemName(item),
                 onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
                 modifier = Modifier.animateItem(),
-                isDownloaded = item.key in downloadedKeys,
+                isDownloaded = uiState.isDownloaded(item),
             )
         }
     }
 }
+
+@Composable
+private fun libraryItemName(item: LibraryItemUiModel): String = item.getName(
+    favoritesName = stringResource(R.string.library_favorites),
+    downloadedSongsName = stringResource(R.string.library_downloaded_songs),
+)

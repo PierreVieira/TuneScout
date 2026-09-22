@@ -4,6 +4,8 @@ import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.scene.DialogSceneStrategy
 import com.pierre.tunescout.core.navigation.route.CreatePlaylistRoute
+import com.pierre.tunescout.core.navigation.route.DownloadedSongsOptionsRoute
+import com.pierre.tunescout.core.navigation.route.DownloadedSongsRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesOptionsRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesRoute
 import com.pierre.tunescout.core.navigation.route.LibraryRoute
@@ -42,6 +44,12 @@ fun EntryProviderScope<NavKey>.playlistEntry() {
     }
 }
 
+fun EntryProviderScope<NavKey>.downloadedSongsEntry() {
+    entry<DownloadedSongsRoute> {
+        CollectionScreen(key = CollectionKey.DownloadedSongs)
+    }
+}
+
 fun EntryProviderScope<NavKey>.favoritesOptionsEntry() {
     entry<FavoritesOptionsRoute>(metadata = BottomSheetSceneStrategy.bottomSheet()) {
         CollectionOptionsScreen(key = CollectionKey.Favorites)
@@ -51,6 +59,12 @@ fun EntryProviderScope<NavKey>.favoritesOptionsEntry() {
 fun EntryProviderScope<NavKey>.playlistOptionsEntry() {
     entry<PlaylistOptionsRoute>(metadata = BottomSheetSceneStrategy.bottomSheet()) { route ->
         CollectionOptionsScreen(key = CollectionKey.Playlist(playlistId = route.playlistId))
+    }
+}
+
+fun EntryProviderScope<NavKey>.downloadedSongsOptionsEntry() {
+    entry<DownloadedSongsOptionsRoute>(metadata = BottomSheetSceneStrategy.bottomSheet()) {
+        CollectionOptionsScreen(key = CollectionKey.DownloadedSongs)
     }
 }
 

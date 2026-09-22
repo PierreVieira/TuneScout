@@ -42,7 +42,7 @@ internal class LibraryScreenshots : ReadmeScreenshotsTest() {
             ),
         ),
         viewMode = LibraryViewMode.LIST,
-        filter = null,
+        filters = emptySet(),
         downloadedKeys = emptySet(),
     )
 

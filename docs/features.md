@@ -28,9 +28,10 @@ screenshots.
   the player sits beside the tabs in place of the mini player, with an empty state until something
   plays. An album opens in that pane, over the player, and Back brings the player back.
 - **Library** of your own: liked songs, the playlists you create and the albums you like, as a list
-  or a grid, with the choice remembered on the device. Chips narrow it to playlists or albums, and
-  its own search screen keeps the items you opened under "Recent searches" and lets you drop them
-  one by one.
+  or a grid, with the choice remembered on the device. Chips narrow it to playlists or albums and to
+  what is downloaded, with an X that clears them; under Downloaded, the songs downloaded one by one
+  gather in an "Individual songs" list of their own. Its own search screen keeps the items you
+  opened under "Recent searches" and lets you drop them one by one.
 - **Like a song** or **add it to a playlist** from the same options sheet every list opens —
   including every track of an album. Adding to a playlist can create one on the spot.
 - **Like an album** from the heart in its top bar; queueing it moved into the overflow beside it,

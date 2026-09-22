@@ -3,8 +3,11 @@ package com.pierre.tunescout.feature.library.domain.usecase
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.LibraryItemKey
+import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fake.FakeDownloadLocalDataSource
+import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveCollectionDownloadsUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveDownloadedSongsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleCollectionDownloadUseCase
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
@@ -47,7 +50,21 @@ class CollectionDownloadUseCasesTest {
         }
     }
 
-    private fun prepareScenario(collections: Set<LibraryItemKey> = emptySet()) {
-        downloads = FakeDownloadLocalDataSource(collections = collections)
+    @Test
+    fun `GIVEN songs downloaded on their own WHEN observing them THEN they come back`() = runTest {
+        // Given
+        prepareScenario(ownSongs = listOf(song(id = 2), song(id = 1)))
+
+        // When / Then
+        ObserveDownloadedSongsUseCase(downloads)().test {
+            assertThat(awaitItem().map { song -> song.id }).containsExactly(2L, 1L).inOrder()
+        }
+    }
+
+    private fun prepareScenario(
+        collections: Set<LibraryItemKey> = emptySet(),
+        ownSongs: List<Song> = emptyList(),
+    ) {
+        downloads = FakeDownloadLocalDataSource(collections = collections, ownSongs = ownSongs)
     }
 }

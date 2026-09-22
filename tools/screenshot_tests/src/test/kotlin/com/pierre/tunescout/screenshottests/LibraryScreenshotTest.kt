@@ -1,5 +1,6 @@
 package com.pierre.tunescout.screenshottests
 
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.content.LibraryContent
@@ -35,7 +36,12 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
         ),
     )
     private val library =
-        LibraryUiState(items = items, viewMode = LibraryViewMode.LIST, filter = null, downloadedKeys = emptySet())
+        LibraryUiState(
+            items = items,
+            viewMode = LibraryViewMode.LIST,
+            filters = emptySet(),
+            downloadedKeys = emptySet(),
+        )
 
     @Test
     fun list() {
@@ -54,7 +60,33 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
     @Test
     fun filteredByAlbums() {
         snapshot(name = "filtered_by_albums") {
-            LibraryContent(uiState = library.copy(filter = LibraryFilter.ALBUMS), onEvent = {})
+            LibraryContent(uiState = library.copy(filters = setOf(LibraryFilter.ALBUMS)), onEvent = {})
+        }
+    }
+
+    @Test
+    fun filteredByDownloaded() {
+        snapshot(name = "filtered_by_downloaded") {
+            LibraryContent(
+                uiState = library.copy(
+                    items = items.take(1) +
+                        LibraryItemUiModel.DownloadedSongs(
+                            songCount = 2,
+                            artworks = listOf(getLucky, touch).map { song -> song.artwork },
+                        ) +
+                        items.drop(1),
+                    filters = setOf(LibraryFilter.DOWNLOADED),
+                    downloadedKeys = setOf(LibraryItemKey.Album(albumId = randomAccessMemories.id)),
+                ),
+                onEvent = {},
+            )
+        }
+    }
+
+    @Test
+    fun filteredByDownloadedWithNothingDownloaded() {
+        snapshot(name = "filtered_by_downloaded_empty") {
+            LibraryContent(uiState = library.copy(filters = setOf(LibraryFilter.DOWNLOADED)), onEvent = {})
         }
     }
 

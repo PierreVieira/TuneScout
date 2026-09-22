@@ -44,8 +44,15 @@ fun LibrarySearchContent(
     modifier: Modifier = Modifier,
 ) {
     val favoritesName = stringResource(R.string.library_favorites)
-    val results = remember(uiState.query, uiState.items, favoritesName) {
-        uiState.items.filter { item -> item.isMatching(query = uiState.query, favoritesName = favoritesName) }
+    val downloadedSongsName = stringResource(R.string.library_downloaded_songs)
+    val results = remember(uiState.query, uiState.items, favoritesName, downloadedSongsName) {
+        uiState.items.filter { item ->
+            item.isMatching(
+                query = uiState.query,
+                favoritesName = favoritesName,
+                downloadedSongsName = downloadedSongsName,
+            )
+        }
     }
     Box(
         modifier = modifier
@@ -154,7 +161,7 @@ private fun ItemList(
         items(items = items, key = { item -> item.key.toString() }) { item ->
             LibraryItemRow(
                 item = item,
-                name = item.getName(favoritesName),
+                name = item.getName(favoritesName, stringResource(R.string.library_downloaded_songs)),
                 onClick = { onEvent(LibrarySearchUiEvent.OnItemClicked(item)) },
                 modifier = Modifier.animateItem(),
                 trailing = {

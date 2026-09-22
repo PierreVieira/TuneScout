@@ -15,6 +15,7 @@ class CollectionStreams(
     fun observeSongs(key: CollectionKey): Flow<List<Song>> = when (key) {
         CollectionKey.Favorites -> useCases.observeFavorites()
         is CollectionKey.Playlist -> useCases.observePlaylistSongs(key.playlistId)
+        CollectionKey.DownloadedSongs -> useCases.observeDownloadedSongs()
     }
 
     fun observeFavoriteSongIds(): Flow<Set<Long>> = useCases
@@ -28,6 +29,8 @@ class CollectionStreams(
             useCases
                 .observePlaylist(key.playlistId)
                 .map { playlist -> playlist?.let(::toCustomTitle) }
+
+        CollectionKey.DownloadedSongs -> flowOf(CollectionTitle.DownloadedSongs)
     }
 
     private fun toCustomTitle(playlist: Playlist): CollectionTitle = CollectionTitle.Custom(playlist.name)

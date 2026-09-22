@@ -9,4 +9,5 @@ data class CollectionUseCases(
     val reorderPlaylistSongs: ReorderPlaylistSongs,
     val observeCollectionDownloads: ObserveCollectionDownloads,
     val toggleCollectionDownload: ToggleCollectionDownload,
+    val observeDownloadedSongs: ObserveDownloadedSongs,
 )

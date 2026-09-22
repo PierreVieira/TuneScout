@@ -8,6 +8,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.DeletePlaylist
 import com.pierre.tunescout.feature.library.domain.usecase.LibrarySearchUseCases
 import com.pierre.tunescout.feature.library.domain.usecase.LibraryUseCases
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveCollectionDownloads
+import com.pierre.tunescout.feature.library.domain.usecase.ObserveDownloadedSongs
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveFavoriteAlbums
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveFavorites
 import com.pierre.tunescout.feature.library.domain.usecase.ObserveLibraryViewMode
@@ -24,6 +25,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.ToggleSongFavorite
 import com.pierre.tunescout.feature.library.domain.usecase.impl.CreatePlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.DeletePlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveCollectionDownloadsUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveDownloadedSongsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveFavoriteAlbumsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveFavoritesUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveLibraryViewModeUseCase
@@ -68,6 +70,7 @@ val libraryModule: Module = module {
     factoryOf(::RemoveLibrarySearchUseCase).bind<RemoveLibrarySearch>()
     factoryOf(::ObserveCollectionDownloadsUseCase).bind<ObserveCollectionDownloads>()
     factoryOf(::ToggleCollectionDownloadUseCase).bind<ToggleCollectionDownload>()
+    factoryOf(::ObserveDownloadedSongsUseCase).bind<ObserveDownloadedSongs>()
     factoryOf(::LibraryUseCases)
     factoryOf(::LibrarySearchUseCases)
     factoryOf(::CollectionUseCases)

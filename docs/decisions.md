@@ -2,6 +2,30 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — A downloaded chip, and where the songs downloaded one by one go
+
+**Downloaded is a chip that combines, not a third kind.** Playlists and albums say what an item is,
+so at most one of them is on and picking the other swaps them; Downloaded narrows whichever is on,
+the way Spotify's library bar reads. The UiState holds the set of chips that are on, and the
+order they are drawn in — the ones on first, the other kind hidden once a kind is picked — is a
+property on it next to the filtering. A round X leads the row while any chip is on and clears them
+all at once. With Downloaded on and nothing that matches it, the library says so instead of drawing
+an empty list, and a screen reader hears it, since it answers the tap.
+
+**The songs downloaded one by one are an item of their own, "Individual songs", shown only under
+Downloaded.** Every other download hangs off something the library already lists; a song downloaded
+from its sheet did not, so the Downloaded chip would have hidden it. It is listed like the liked
+songs, filed under Playlists, and only while there is one at least. Outside the chip it would be a
+second list of songs the user never made. It holds every song with a request of its own, latest
+first, whether or not a downloaded album also keeps it, because that is the request that
+taking the song back from its sheet removes.
+
+**It is a `LibraryItemKey` and a `CollectionKey`, but not a collection to download.** The collection
+screen, its options sheet, the queue's "playing from" and the saved session all handle it like the
+liked songs, with a `PlaybackContext` of its own. It has no download button: each of its songs is
+already kept by its own request, so the database mappers turn a request for it into nothing rather
+than a row.
+
 ## 2026-09-21 — Two panes from 800dp
 
 **The tabs get a pane beside them from 800dp, not from Material's expanded 840dp.** A Galaxy A56 on
@@ -19,7 +43,6 @@ songs header laid its title, search field and actions in one row, which squeezed
 letters: `isTabHeaderInline` now stacks it wherever a pane sits beside the tabs on a short window.
 The compact player needed its six controls on one row in some 330dp: its artwork went down to 64dp
 and its padding and gaps to the tighter steps, or the modes wrapped under the fold.
-
 ## 2026-09-21 — Downloading songs, albums, playlists and the liked songs
 
 **A request is saved with the library, and the files follow it.** Asking to keep a song or a

@@ -272,6 +272,7 @@ class CollectionOptionsViewModelTest {
             reorderPlaylistSongs = { _, _ -> },
             observeCollectionDownloads = { flowOf(emptySet()) },
             toggleCollectionDownload = { _, _ -> },
+            observeDownloadedSongs = { flowOf(emptyList()) },
         )
         viewModel = CollectionOptionsViewModel(
             key = key,

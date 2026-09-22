@@ -22,6 +22,7 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         isShuffleEnabled = false,
         isReorderable = true,
         isReordering = false,
+        isDownloadable = true,
         download = CollectionDownloadState.NotDownloaded,
         downloadStatuses = emptyMap(),
     )
@@ -37,6 +38,25 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
     fun loaded() {
         snapshot(name = "loaded") {
             CollectionContent(uiState = loaded, onEvent = {})
+        }
+    }
+
+    /** The songs downloaded one by one have no download button of their own: each one is already kept. */
+    @Test
+    fun downloadedSongs() {
+        snapshot(name = "downloaded_songs") {
+            CollectionContent(
+                uiState = loaded.copy(
+                    title = CollectionTitle.DownloadedSongs,
+                    isDeletable = false,
+                    isReorderable = false,
+                    isDownloadable = false,
+                    nowPlaying = null,
+                    isPlaying = false,
+                    downloadStatuses = recentlyPlayed.associate { song -> song.id to SongDownloadStatus.Downloaded },
+                ),
+                onEvent = {},
+            )
         }
     }
 

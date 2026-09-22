@@ -9,6 +9,7 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.CreatePlaylistRoute
+import com.pierre.tunescout.core.navigation.route.DownloadedSongsRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesRoute
 import com.pierre.tunescout.core.navigation.route.LibrarySearchRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistRoute
@@ -222,8 +223,238 @@ class LibraryViewModelTest {
             runCurrent()
 
             // Then
-            assertThat(viewModel.uiState.value.filter).isNull()
+            assertThat(viewModel.uiState.value.filters).isEmpty()
             assertThat(viewModel.uiState.value.filteredItems).hasSize(2)
+        }
+
+    @Test
+    fun `GIVEN the downloaded chip WHEN picking it THEN only what was downloaded is left, songs on their own first`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playlists = listOf(playlist(id = 7), playlist(id = 8)),
+                albums = listOf(albumSummary(id = 10), albumSummary(id = 11)),
+                downloadedCollections = setOf(
+                    LibraryItemKey.Playlist(playlistId = 8),
+                    LibraryItemKey.Album(albumId = 10),
+                ),
+                downloadedSongs = listOf(song(id = 1)),
+            )
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+            runCurrent()
+
+            // Then
+            assertThat(
+                viewModel.uiState.value.filteredItems
+                    .map { item -> item.key },
+            ).containsExactly(
+                LibraryItemKey.DownloadedSongs,
+                LibraryItemKey.Playlist(playlistId = 8),
+                LibraryItemKey.Album(albumId = 10),
+            ).inOrder()
+        }
+
+    @Test
+    fun `GIVEN songs downloaded on their own WHEN no chip is picked THEN they are not listed as an item`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(downloadedSongs = listOf(song(id = 1)))
+
+            // When
+            val keys = viewModel.uiState.value.filteredItems
+                .map { item -> item.key }
+
+            // Then
+            assertThat(keys).containsExactly(LibraryItemKey.Favorites)
+        }
+
+    @Test
+    fun `GIVEN no song downloaded on its own WHEN picking the downloaded chip THEN there is no item for them`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                albums = listOf(albumSummary(id = 10)),
+                downloadedCollections = setOf(LibraryItemKey.Album(albumId = 10)),
+            )
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+            runCurrent()
+
+            // Then
+            assertThat(
+                viewModel.uiState.value.filteredItems
+                    .map { item -> item.key },
+            ).containsExactly(LibraryItemKey.Album(albumId = 10))
+            assertThat(viewModel.uiState.value.isDownloadedEmpty).isFalse()
+        }
+
+    @Test
+    fun `GIVEN nothing downloaded WHEN picking the downloaded chip THEN the library says so`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(playlists = listOf(playlist(id = 7)))
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.filteredItems).isEmpty()
+            assertThat(viewModel.uiState.value.isDownloadedEmpty).isTrue()
+        }
+
+    @Test
+    fun `GIVEN the downloaded chip WHEN picking albums too THEN only the downloaded albums are left`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playlists = listOf(playlist(id = 7)),
+                albums = listOf(albumSummary(id = 10), albumSummary(id = 11)),
+                downloadedCollections = setOf(
+                    LibraryItemKey.Playlist(playlistId = 7),
+                    LibraryItemKey.Album(albumId = 11),
+                ),
+                downloadedSongs = listOf(song(id = 1)),
+            )
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+            runCurrent()
+
+            // Then
+            assertThat(
+                viewModel.uiState.value.filteredItems
+                    .map { item -> item.key },
+            ).containsExactly(LibraryItemKey.Album(albumId = 11))
+        }
+
+    @Test
+    fun `GIVEN the downloaded chip WHEN picking playlists too THEN the songs on their own stay with the playlists`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                playlists = listOf(playlist(id = 7)),
+                albums = listOf(albumSummary(id = 10)),
+                downloadedCollections = setOf(
+                    LibraryItemKey.Playlist(playlistId = 7),
+                    LibraryItemKey.Album(albumId = 10),
+                ),
+                downloadedSongs = listOf(song(id = 1)),
+            )
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.PLAYLISTS))
+            runCurrent()
+
+            // Then
+            assertThat(
+                viewModel.uiState.value.filteredItems
+                    .map { item -> item.key },
+            ).containsExactly(LibraryItemKey.DownloadedSongs, LibraryItemKey.Playlist(playlistId = 7)).inOrder()
+        }
+
+    @Test
+    fun `GIVEN a kind picked WHEN picking the other kind THEN it takes its place and downloaded stays on`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario()
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.PLAYLISTS))
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.filters).containsExactly(LibraryFilter.DOWNLOADED, LibraryFilter.ALBUMS)
+        }
+
+    @Test
+    fun `GIVEN chips picked WHEN clearing them THEN none is on and everything is listed`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(albums = listOf(albumSummary(id = 10)))
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnClearFiltersClicked)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.filters).isEmpty()
+            assertThat(viewModel.uiState.value.filteredItems).hasSize(2)
+        }
+
+    @Test
+    fun `GIVEN no chip picked WHEN observing THEN every chip is drawn in its own order`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario()
+
+            // When
+            val visible = viewModel.uiState.value.visibleFilters
+
+            // Then
+            assertThat(visible)
+                .containsExactly(LibraryFilter.PLAYLISTS, LibraryFilter.ALBUMS, LibraryFilter.DOWNLOADED)
+                .inOrder()
+        }
+
+    @Test
+    fun `GIVEN the downloaded chip picked WHEN observing THEN it leads and both kinds follow`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario()
+
+            // When
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.visibleFilters)
+                .containsExactly(LibraryFilter.DOWNLOADED, LibraryFilter.PLAYLISTS, LibraryFilter.ALBUMS)
+                .inOrder()
+        }
+
+    @Test
+    fun `GIVEN a kind picked WHEN observing THEN the other kind steps aside`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario()
+
+        // When
+        viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+        runCurrent()
+
+        // Then
+        assertThat(viewModel.uiState.value.visibleFilters)
+            .containsExactly(LibraryFilter.ALBUMS, LibraryFilter.DOWNLOADED)
+            .inOrder()
+    }
+
+    @Test
+    fun `GIVEN songs downloaded on their own WHEN clicking their item THEN opens them`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(downloadedSongs = listOf(song(id = 1)))
+            viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.DOWNLOADED))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(
+                LibraryUiEvent.OnItemClicked(
+                    viewModel.uiState.value.filteredItems
+                        .first(),
+                ),
+            )
+
+            // Then
+            verify { navigator.navigate(DownloadedSongsRoute) }
         }
 
     @Test
@@ -251,6 +482,7 @@ class LibraryViewModelTest {
         albums: List<AlbumSummary> = emptyList(),
         viewMode: LibraryViewMode = LibraryViewMode.LIST,
         downloadedCollections: Set<LibraryItemKey> = emptySet(),
+        downloadedSongs: List<Song> = emptyList(),
     ) {
         storedViewMode = MutableStateFlow(viewMode)
         navigator = mockk(relaxUnitFun = true)
@@ -262,6 +494,7 @@ class LibraryViewModelTest {
                 observeViewMode = { storedViewMode },
                 setViewMode = { mode -> storedViewMode.value = mode },
                 observeCollectionDownloads = { flowOf(downloadedCollections) },
+                observeDownloadedSongs = { flowOf(downloadedSongs) },
             ),
             itemMapper = LibraryItemUiModelMapper(),
             navigator = navigator,

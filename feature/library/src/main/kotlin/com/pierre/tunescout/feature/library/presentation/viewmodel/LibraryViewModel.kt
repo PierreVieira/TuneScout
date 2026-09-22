@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class LibraryViewModel(
@@ -29,21 +30,22 @@ class LibraryViewModel(
     private val emptyUiState = LibraryUiState(
         items = emptyList(),
         viewMode = LibraryViewMode.LIST,
-        filter = null,
+        filters = emptySet(),
         downloadedKeys = emptySet(),
     )
-    private val filter = MutableStateFlow<LibraryFilter?>(null)
+    private val filters = MutableStateFlow<Set<LibraryFilter>>(emptySet())
     private val items: Flow<List<LibraryItemUiModel>> = combine(
         useCases.observeFavorites(),
         useCases.observePlaylists(),
         useCases.observeFavoriteAlbums(),
+        useCases.observeDownloadedSongs(),
         itemMapper::buildLibraryItems,
     )
 
     val uiState: StateFlow<LibraryUiState> = combine(
         items,
         useCases.observeViewMode(),
-        filter,
+        filters,
         useCases.observeCollectionDownloads(),
         ::LibraryUiState,
     ).stateIn(
@@ -58,14 +60,24 @@ class LibraryViewModel(
         LibraryUiEvent.OnCreatePlaylistClicked -> navigator.navigate(CreatePlaylistRoute)
         is LibraryUiEvent.OnViewModeSelected -> selectViewMode(event.viewMode)
         is LibraryUiEvent.OnFilterClicked -> toggleFilter(event.filter)
+        LibraryUiEvent.OnClearFiltersClicked -> filters.value = emptySet()
     }
 
     private fun selectViewMode(viewMode: LibraryViewMode) {
         viewModelScope.launch { useCases.setViewMode(viewMode) }
     }
 
-    /** Tapping the chip that is already on clears it, which is how the bar reads with none picked. */
+    /**
+     * Tapping a chip that is on turns it off. A kind turned on puts the other kind away, since an
+     * item is only ever one of them; downloaded goes along with either.
+     */
     private fun toggleFilter(clicked: LibraryFilter) {
-        filter.value = clicked.takeIf { it != filter.value }
+        filters.update { current ->
+            when {
+                clicked in current -> current - clicked
+                clicked.isKind -> current.filterNot(LibraryFilter::isKind).toSet() + clicked
+                else -> current + clicked
+            }
+        }
     }
 }
