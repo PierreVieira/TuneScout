@@ -307,6 +307,34 @@ class LibraryViewModelTest {
         }
 
     @Test
+    fun `GIVEN albums WHEN picking the albums chip THEN it is not empty`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(albums = listOf(albumSummary(id = 10)))
+
+        // When
+        viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+        runCurrent()
+
+        // Then
+        assertThat(viewModel.uiState.value.filteredItems).isNotEmpty()
+        assertThat(viewModel.uiState.value.isAlbumsEmpty).isFalse()
+    }
+
+    @Test
+    fun `GIVEN no albums WHEN picking the albums chip THEN the library says so`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playlists = listOf(playlist(id = 7)))
+
+        // When
+        viewModel.onEvent(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+        runCurrent()
+
+        // Then
+        assertThat(viewModel.uiState.value.filteredItems).isEmpty()
+        assertThat(viewModel.uiState.value.isAlbumsEmpty).isTrue()
+    }
+
+    @Test
     fun `GIVEN the downloaded chip WHEN picking albums too THEN only the downloaded albums are left`() =
         runTest(mainDispatcher.dispatcher) {
             // Given

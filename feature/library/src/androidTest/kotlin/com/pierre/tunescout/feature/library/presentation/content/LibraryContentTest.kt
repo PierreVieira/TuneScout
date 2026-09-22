@@ -248,4 +248,19 @@ class LibraryContentTest {
 
         onNodeWithText("Nothing downloaded yet", substring = true).assertIsDisplayed()
     }
+
+    @Test
+    fun noAlbumsSaysSoUnderTheAlbumsChip() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(
+                    uiState = state(filters = setOf(LibraryFilter.ALBUMS), items = listOf(favorites, roadTrip)),
+                    isTwoPane = false,
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithText("No albums yet", substring = true).assertIsDisplayed()
+    }
 }
