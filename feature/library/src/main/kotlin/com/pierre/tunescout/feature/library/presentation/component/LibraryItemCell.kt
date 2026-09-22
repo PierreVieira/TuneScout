@@ -67,6 +67,8 @@ internal data class LibraryItemWidths(
  * @param widths the widths the item rests at, in the list and in the grid.
  * @param artworkSize the cover the item asks for, that of the view mode it is going to.
  * @param gridFraction how far the item is from the row (0) to the cell (1).
+ * @param isDense whether the cell is one of the narrow ones of the densest grid, where the name is set a
+ * size smaller so a word more of it fits under the cover.
  */
 @Composable
 internal fun LibraryItemCell(
@@ -78,6 +80,7 @@ internal fun LibraryItemCell(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isDownloaded: Boolean = false,
+    isDense: Boolean = false,
 ) {
     val textModifier = Modifier.fadingThrough(gridFraction)
     Layout(
@@ -85,7 +88,7 @@ internal fun LibraryItemCell(
             LibraryItemArtwork(item = item, size = artworkSize)
             Text(
                 text = name,
-                style = MaterialTheme.typography.bodyLarge,
+                style = if (isDense) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
                 color = TuneScoutColors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

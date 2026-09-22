@@ -29,6 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +69,7 @@ private val fabListBottomPadding = fabSize + TuneScoutSpacing.screen * 2
 private const val LIST_COLUMNS = 1
 private const val LIST_FRACTION = 0f
 private const val GRID_FRACTION = 1f
+private const val TEXT_HIDDEN_FRACTION = 0.5f
 
 /**
  * The create-playlist action is a FAB on a single pane, where the list has the whole width to spare.
@@ -272,6 +275,7 @@ private fun LibraryItemGrid(
 ) {
     val gridFraction = rememberGridFraction(uiState.viewMode)
     val artworkSize = LibraryArtworkSize.of(uiState.viewMode)
+    val isDense by rememberIsDense(gridColumns = uiState.gridColumns, gridFraction = gridFraction)
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val columns = remember(uiState.viewMode, uiState.gridColumns) {
             columnsOf(viewMode = uiState.viewMode, gridColumns = uiState.gridColumns)
@@ -300,6 +304,7 @@ private fun LibraryItemGrid(
                     onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
                     modifier = Modifier.animateItem(),
                     isDownloaded = uiState.isDownloaded(item),
+                    isDense = isDense,
                 )
             }
         }
@@ -343,6 +348,22 @@ private fun rememberGridFraction(viewMode: LibraryViewMode): () -> Float {
         label = "libraryGridFraction",
     )
     return remember(fraction) { { fraction.value } }
+}
+
+/**
+ * Whether the items are the narrow cells of the four-column grid, which set their name a size
+ * smaller. The size only switches once the texts have faded out, halfway through the move between
+ * the list and the grid, so a name is never seen changing size; and it is derived, so the frames of
+ * the move recompose nothing until that one crossing.
+ *
+ * @return whether the cells are dense, following [gridFraction] as it crosses the fade.
+ */
+@Composable
+private fun rememberIsDense(
+    gridColumns: LibraryGridColumns,
+    gridFraction: () -> Float,
+): State<Boolean> = remember(gridColumns, gridFraction) {
+    derivedStateOf { gridColumns == LibraryGridColumns.FOUR && gridFraction() > TEXT_HIDDEN_FRACTION }
 }
 
 private fun columnsOf(
