@@ -16,15 +16,17 @@ import com.pierre.tunescout.core.navigation.scene.findListPaneIndexOrNull
 internal fun List<NavKey>.findCurrentScreenRouteOrNull(): NavKey? = lastOrNull { route -> route !is OverlayRoute }
 
 /**
- * The mini player is a shortcut back to the player, so it is hidden on the player itself, and
- * wherever the tabs have the player pane beside them on a wide window.
+ * The mini player is a shortcut back to the player, so it is hidden on the player itself, and on a
+ * wide window where the tabs have the implicit player pane beside them — but not when a different
+ * screen (e.g. an album) has replaced that pane, since then nothing else offers playback controls.
  *
  * @param isTwoPane whether the window lays a pane beside the tabs.
  * @return whether the current screen may show the mini player.
  */
 internal fun List<NavKey>.isMiniPlayerAllowed(isTwoPane: Boolean): Boolean = when (findCurrentScreenRouteOrNull()) {
     null, is PlayerRoute -> false
-    else -> !(isTwoPane && isHomeVisible(isTwoPane = true))
+    HomeRoute -> !isTwoPane
+    else -> true
 }
 
 /**
