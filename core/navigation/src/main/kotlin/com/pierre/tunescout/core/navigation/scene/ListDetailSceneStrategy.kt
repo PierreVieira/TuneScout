@@ -29,10 +29,13 @@ import androidx.navigation3.scene.SceneStrategyScope
  * @param T the type of the back stack keys.
  * @property isTwoPane whether the window is wide enough to lay the panes side by side.
  * @property emptyDetailPane what the right pane shows while no detail is open in it.
+ * @property listPaneDecorator what the list pane is wrapped in, for anything that belongs under the list
+ * rather than across both panes — the mini player.
  */
 class ListDetailSceneStrategy<T : Any>(
     private val isTwoPane: Boolean,
     private val emptyDetailPane: @Composable () -> Unit,
+    private val listPaneDecorator: @Composable (content: @Composable () -> Unit) -> Unit = { content -> content() },
 ) : SceneStrategy<T> {
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         if (!isTwoPane) return null
@@ -44,6 +47,7 @@ class ListDetailSceneStrategy<T : Any>(
                 listEntry = topEntry,
                 detailEntry = null,
                 emptyDetailPane = emptyDetailPane,
+                listPaneDecorator = listPaneDecorator,
             )
         }
         val listIndex = entries.findListPaneIndexOrNull(
@@ -57,6 +61,7 @@ class ListDetailSceneStrategy<T : Any>(
             listEntry = listEntry,
             detailEntry = topEntry,
             emptyDetailPane = emptyDetailPane,
+            listPaneDecorator = listPaneDecorator,
         )
     }
 

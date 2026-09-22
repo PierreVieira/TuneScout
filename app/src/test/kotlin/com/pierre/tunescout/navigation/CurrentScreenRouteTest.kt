@@ -5,7 +5,9 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.FavoritesRoute
 import com.pierre.tunescout.core.navigation.route.HomeRoute
+import com.pierre.tunescout.core.navigation.route.LibrarySearchRoute
 import com.pierre.tunescout.core.navigation.route.PlayerRoute
+import com.pierre.tunescout.core.navigation.route.PlaylistRoute
 import com.pierre.tunescout.core.navigation.route.QueueRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import org.junit.jupiter.api.Test
@@ -65,7 +67,7 @@ class CurrentScreenRouteTest {
 
     @Test
     fun `GIVEN two panes and a screen covering the tabs WHEN asking THEN the mini player is allowed`() {
-        assertThat(listOf(HomeRoute, FavoritesRoute).isMiniPlayerAllowed(isTwoPane = true)).isTrue()
+        assertThat(listOf(HomeRoute, LibrarySearchRoute).isMiniPlayerAllowed(isTwoPane = true)).isTrue()
     }
 
     @Test
@@ -99,10 +101,10 @@ class CurrentScreenRouteTest {
     @Test
     fun `GIVEN two panes and a full screen over the album WHEN asking THEN the navigation rail is hidden`() {
         assertThat(
-            listOf(HomeRoute, AlbumRoute(albumId = 10), FavoritesRoute).isHomeVisible(isTwoPane = true),
+            listOf(HomeRoute, AlbumRoute(albumId = 10), LibrarySearchRoute).isHomeVisible(isTwoPane = true),
         ).isFalse()
         assertThat(
-            listOf(HomeRoute, FavoritesRoute, AlbumRoute(albumId = 10)).isHomeVisible(isTwoPane = true),
+            listOf(HomeRoute, LibrarySearchRoute, AlbumRoute(albumId = 10)).isHomeVisible(isTwoPane = true),
         ).isFalse()
     }
 
@@ -111,5 +113,41 @@ class CurrentScreenRouteTest {
         assertThat(
             listOf(HomeRoute, AlbumRoute(albumId = 10), PlayerRoute(songId = 1)).isHomeVisible(isTwoPane = true),
         ).isTrue()
+    }
+
+    @Test
+    fun `GIVEN two panes and a collection over the tab host WHEN asking THEN it opens beside the tabs`() {
+        assertThat(listOf(HomeRoute, PlaylistRoute(playlistId = 7)).isHomeVisible(isTwoPane = true)).isTrue()
+        assertThat(listOf(HomeRoute, FavoritesRoute).isHomeVisible(isTwoPane = true)).isTrue()
+    }
+
+    @Test
+    fun `GIVEN two panes and a detail beside the tabs WHEN asking THEN the mini player sits under the tabs only`() {
+        val backStack = listOf(HomeRoute, PlaylistRoute(playlistId = 7))
+
+        assertThat(backStack.isMiniPlayerInListPaneAllowed(isTwoPane = true)).isTrue()
+        assertThat(backStack.isMiniPlayerAcrossWindowAllowed(isTwoPane = true)).isFalse()
+    }
+
+    @Test
+    fun `GIVEN two panes and a full screen over the tabs WHEN asking THEN the mini player spans the window`() {
+        val backStack = listOf(HomeRoute, LibrarySearchRoute)
+
+        assertThat(backStack.isMiniPlayerInListPaneAllowed(isTwoPane = true)).isFalse()
+        assertThat(backStack.isMiniPlayerAcrossWindowAllowed(isTwoPane = true)).isTrue()
+    }
+
+    @Test
+    fun `GIVEN two panes and the tabs alone WHEN asking THEN the mini player shows nowhere`() {
+        assertThat(listOf(HomeRoute).isMiniPlayerInListPaneAllowed(isTwoPane = true)).isFalse()
+        assertThat(listOf(HomeRoute).isMiniPlayerAcrossWindowAllowed(isTwoPane = true)).isFalse()
+    }
+
+    @Test
+    fun `GIVEN one pane WHEN asking THEN the mini player spans the window`() {
+        val backStack = listOf(HomeRoute, AlbumRoute(albumId = 10))
+
+        assertThat(backStack.isMiniPlayerInListPaneAllowed(isTwoPane = false)).isFalse()
+        assertThat(backStack.isMiniPlayerAcrossWindowAllowed(isTwoPane = false)).isTrue()
     }
 }
