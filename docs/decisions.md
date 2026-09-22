@@ -2,6 +2,20 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-22 — Taking a song's own download back always takes it off the device
+
+**"Remove download" on a song now wins over the album, playlist or liked songs that also want it,**
+instead of leaving the sheet open with a message saying the song stayed. A song kept only by a
+collection had no way to leave the device short of un-downloading that whole collection, which is
+not what tapping "Remove download" on the song itself promises. A new table,
+`downloaded_song_exclusions`, remembers that the song was asked to leave even while a collection
+still wants it; `observeWantedSongs` and `observeIsWanted` both read it. Asking for the song again
+on its own clears the exclusion, since that is a stronger, more specific request than the collection's.
+Cost: a collection whose songs were downloaded one by one before an entire song was excluded no
+longer reports itself fully downloaded — its header switch sits at "downloading" forever for a
+collection missing one song by choice, since [`CollectionDownloadState`](../core/model/src/main/kotlin/com/pierre/tunescout/core/model/CollectionDownloadState.kt)
+only turns "downloaded" once every one of the collection's songs has arrived.
+
 ## 2026-09-21 — A downloaded chip, and where the songs downloaded one by one go
 
 **Downloaded is a chip that combines, not a third kind.** Playlists and albums say what an item is,
@@ -70,9 +84,8 @@ for a connection when the process dies resumes the next time the app starts.
 
 **A collection is downloaded because it was asked for, not because its songs happen to be there.**
 The header switch is on only for a requested album, playlist or the liked songs; its songs all
-downloaded one by one leave it off. Taking back a song's own download while a collection holds it
-leaves it on the device, and the song sheet says so instead of closing as if it were gone.
-Downloading an album also puts it in the library, like Spotify, so it can be found offline.
+downloaded one by one leave it off. Downloading an album also puts it in the library, like Spotify,
+so it can be found offline.
 
 **The played-preview cache is checked against its files.** `SimpleCache` keeps its index in memory,
 and clearing the cache from the system settings deletes the files without telling it: until the

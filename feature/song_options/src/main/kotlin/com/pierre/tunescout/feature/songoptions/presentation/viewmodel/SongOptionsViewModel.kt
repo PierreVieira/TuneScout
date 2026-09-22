@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import com.pierre.tunescout.feature.songoptions.R as FeatureR
 
 class SongOptionsViewModel(
     private val useCases: SongOptionsUseCases,
@@ -83,20 +82,12 @@ class SongOptionsViewModel(
         }
     }
 
-    /**
-     * A song an album or a playlist keeps downloaded stays on the device when its own request is
-     * taken back, so the sheet stays open and says why instead of closing as if it were gone.
-     */
     private fun toggleDownload() {
         val state = uiState.value
         val song = state.song ?: return
         viewModelScope.launch {
-            val isStillDownloaded = useCases.toggleDownload(song = song, isDownloaded = state.isDownloaded)
-            if (state.isDownloaded && isStillDownloaded) {
-                emitAction(SongOptionsUiAction.ShowSnackBar(FeatureR.string.song_options_download_kept_by_collection))
-            } else {
-                navigator.navigateBack()
-            }
+            useCases.toggleDownload(song = song, isDownloaded = state.isDownloaded)
+            navigator.navigateBack()
         }
     }
 

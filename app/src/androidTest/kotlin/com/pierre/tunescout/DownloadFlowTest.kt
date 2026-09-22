@@ -150,6 +150,93 @@ class DownloadFlowTest {
         assertThat(downloadedSongIds()).contains(searchResult.id)
     }
 
+    @Test
+    fun aSongRemovedFromItsOptionsSheetIsNoLongerMarkedDownloadedInTheResults() = compose.use {
+        waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
+        searchFor("daft")
+        waitUntilAtLeastOneExists(hasText(searchResult.title), SCREEN_TIMEOUT_MILLIS)
+
+        onAllNodesWithContentDescription("More options")[0].performClick()
+        waitUntilAtLeastOneExists(hasText("Download") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Download").performScrollTo().performClick()
+        waitUntilAtLeastOneExists(
+            hasText(searchResult.title, substring = true) and hasStateDescription("Downloaded"),
+            DOWNLOAD_TIMEOUT_MILLIS,
+        )
+
+        onAllNodesWithContentDescription("More options")[0].performClick()
+        waitUntilAtLeastOneExists(hasText("Remove download") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Remove download").performScrollTo().performClick()
+
+        waitUntil(DOWNLOAD_TIMEOUT_MILLIS) { searchResult.id !in downloadedSongIds() }
+        waitUntilDoesNotExist(
+            hasText(searchResult.title, substring = true) and hasStateDescription("Downloaded"),
+            DOWNLOAD_TIMEOUT_MILLIS,
+        )
+    }
+
+    /**
+     * A song kept downloaded only because its album is downloaded can still be removed on its own:
+     * the sheet closes as it would for any other song, and the song leaves the device even though
+     * the album is still requested.
+     */
+    @Test
+    fun removingASongKeptDownloadedByItsAlbumTakesItOffTheDeviceAnyway() = compose.use {
+        waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
+        searchFor("daft")
+        waitUntilAtLeastOneExists(hasText(searchResult.title), SCREEN_TIMEOUT_MILLIS)
+        openTheAlbumOfTheFirstResult()
+
+        onNode(downloadSwitch).performClick()
+        waitUntilAtLeastOneExists(downloadSwitch and hasStateDescription("Downloaded"), DOWNLOAD_TIMEOUT_MILLIS)
+        waitUntilAtLeastOneExists(
+            hasText(searchResult.title, substring = true) and hasStateDescription("Downloaded"),
+            DOWNLOAD_TIMEOUT_MILLIS,
+        )
+
+        compose.activity.pressBack()
+        waitUntilAtLeastOneExists(hasText(searchResult.title), SCREEN_TIMEOUT_MILLIS)
+
+        onAllNodesWithContentDescription("More options")[0].performClick()
+        waitUntilAtLeastOneExists(hasText("Remove download") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Remove download").performScrollTo().performClick()
+
+        waitUntil(DOWNLOAD_TIMEOUT_MILLIS) { searchResult.id !in downloadedSongIds() }
+        waitUntilDoesNotExist(
+            hasText(searchResult.title, substring = true) and hasStateDescription("Downloaded"),
+            DOWNLOAD_TIMEOUT_MILLIS,
+        )
+        assertThat(storedCollections()).contains(LibraryItemKey.Album(albumId = ALBUM_ID))
+    }
+
+    @Test
+    fun aSongRemovedFromItsOptionsSheetLeavesTheIndividualSongsCollection() = compose.use {
+        waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
+        searchFor("daft")
+        waitUntilAtLeastOneExists(hasText(searchResult.title), SCREEN_TIMEOUT_MILLIS)
+
+        onAllNodesWithContentDescription("More options")[0].performClick()
+        waitUntilAtLeastOneExists(hasText("Download") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Download").performScrollTo().performClick()
+        waitUntilAtLeastOneExists(
+            hasText(searchResult.title, substring = true) and hasStateDescription("Downloaded"),
+            DOWNLOAD_TIMEOUT_MILLIS,
+        )
+
+        onNodeWithText("Library").performClick()
+        waitUntilAtLeastOneExists(hasText("Your Library"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Downloaded").performClick()
+        waitUntilAtLeastOneExists(hasText("Individual songs"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Individual songs").performClick()
+        waitUntilAtLeastOneExists(hasText(searchResult.title), SCREEN_TIMEOUT_MILLIS)
+
+        onAllNodesWithContentDescription("More options")[0].performClick()
+        waitUntilAtLeastOneExists(hasText("Remove download") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Remove download").performScrollTo().performClick()
+
+        waitUntilDoesNotExist(hasText(searchResult.title), DOWNLOAD_TIMEOUT_MILLIS)
+    }
+
     /**
      * The liked songs are downloaded before the test starts; a song liked afterwards is downloaded
      * with them, without anyone asking for it on its own.

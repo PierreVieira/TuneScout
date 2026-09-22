@@ -162,3 +162,17 @@ internal val MIGRATION_8_9 = object : Migration(8, 9) {
         )
     }
 }
+
+/**
+ * Taking a song's own download back now takes it off the device even while an album, a playlist or
+ * the liked songs still want it, which this table remembers until the song is asked for again.
+ */
+internal val MIGRATION_9_10 = object : Migration(9, 10) {
+    override suspend fun migrate(connection: SQLiteConnection) {
+        connection.execSQL(
+            "CREATE TABLE IF NOT EXISTS `downloaded_song_exclusions` (`songId` INTEGER NOT NULL, " +
+                "`excludedAt` INTEGER NOT NULL, PRIMARY KEY(`songId`), " +
+                "FOREIGN KEY(`songId`) REFERENCES `songs`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        )
+    }
+}

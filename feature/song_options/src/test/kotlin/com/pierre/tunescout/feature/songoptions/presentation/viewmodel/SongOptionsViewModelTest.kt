@@ -26,7 +26,6 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
-import com.pierre.tunescout.feature.songoptions.R as FeatureR
 
 class SongOptionsViewModelTest {
     private lateinit var viewModel: SongOptionsViewModel
@@ -57,7 +56,7 @@ class SongOptionsViewModelTest {
     fun `GIVEN a song downloaded on its own WHEN tapping remove download THEN it is taken back and the sheet closes`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
-            prepareScenario(song = song(id = 1), isDownloaded = true, isKeptByCollection = false)
+            prepareScenario(song = song(id = 1), isDownloaded = true)
 
             // When
             viewModel.onEvent(SongOptionsUiEvent.OnDownloadClicked)
@@ -67,23 +66,6 @@ class SongOptionsViewModelTest {
             assertThat(downloadToggles).containsExactly(1L to true)
             verify { navigator.navigateBack() }
             assertThat(actions).isEmpty()
-        }
-
-    @Test
-    fun `GIVEN a song a downloaded album keeps WHEN tapping remove download THEN the sheet stays open and says why`() =
-        runTest(mainDispatcher.dispatcher) {
-            // Given
-            prepareScenario(song = song(id = 1), isDownloaded = true, isKeptByCollection = true)
-
-            // When
-            viewModel.onEvent(SongOptionsUiEvent.OnDownloadClicked)
-            runCurrent()
-
-            // Then
-            assertThat(actions).containsExactly(
-                SongOptionsUiAction.ShowSnackBar(FeatureR.string.song_options_download_kept_by_collection),
-            )
-            verify(exactly = 0) { navigator.navigateBack() }
         }
 
     @Test
@@ -357,7 +339,6 @@ class SongOptionsViewModelTest {
         playlistId: Long? = null,
         reorderTarget: ReorderTarget? = null,
         isDownloaded: Boolean = false,
-        isKeptByCollection: Boolean = false,
     ) {
         downloadToggles = mutableListOf()
         reorderRequests = mockk(relaxUnitFun = true)
@@ -376,7 +357,7 @@ class SongOptionsViewModelTest {
                 isDownloaded = { flowOf(isDownloaded) },
                 toggleDownload = { toggled, wasDownloaded ->
                     downloadToggles += toggled.id to wasDownloaded
-                    !wasDownloaded || isKeptByCollection
+                    !wasDownloaded
                 },
             ),
             enqueuer = enqueuer,

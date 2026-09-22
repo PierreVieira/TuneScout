@@ -8,5 +8,4 @@
     <string name="song_options_play_next">Als Nächstes abspielen</string>
     <string name="song_options_add_to_queue">Zur Warteschlange hinzufügen</string>
     <string name="song_options_remove_from_playlist">Aus dieser Playlist entfernen</string>
-    <string name="song_options_download_kept_by_collection">Dieser Song bleibt mit einem heruntergeladenen Album oder einer heruntergeladenen Playlist gespeichert.</string>
 </resources>

@@ -41,18 +41,6 @@ class SongDownloadUseCasesTest {
         }
 
     @Test
-    fun `GIVEN a song a downloaded playlist keeps WHEN toggling it THEN it is still downloaded`() = runTest {
-        // Given
-        prepareScenario(wantedIds = listOf(1), heldByCollectionIds = setOf(1))
-
-        // When
-        val isDownloaded = ToggleDownloadUseCase(downloads)(song = song(id = 1), isDownloaded = true)
-
-        // Then
-        assertThat(isDownloaded).isTrue()
-    }
-
-    @Test
     fun `GIVEN a wanted song WHEN asking whether it is downloaded THEN it is`() = runTest {
         // Given
         prepareScenario(wantedIds = listOf(1))
@@ -63,13 +51,7 @@ class SongDownloadUseCasesTest {
         }
     }
 
-    private fun prepareScenario(
-        wantedIds: List<Long> = emptyList(),
-        heldByCollectionIds: Set<Long> = emptySet(),
-    ) {
-        downloads = FakeDownloadLocalDataSource(
-            wanted = wantedIds.map { id -> song(id = id) },
-            heldByCollectionIds = heldByCollectionIds,
-        )
+    private fun prepareScenario(wantedIds: List<Long> = emptyList()) {
+        downloads = FakeDownloadLocalDataSource(wanted = wantedIds.map { id -> song(id = id) })
     }
 }

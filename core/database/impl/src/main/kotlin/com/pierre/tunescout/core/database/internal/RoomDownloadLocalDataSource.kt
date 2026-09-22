@@ -4,6 +4,7 @@ import com.pierre.tunescout.core.database.DownloadLocalDataSource
 import com.pierre.tunescout.core.database.dao.DownloadDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.entity.DownloadedSongEntity
+import com.pierre.tunescout.core.database.entity.DownloadedSongExclusionEntity
 import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionEntityOrNull
 import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionId
 import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionKindOrNull
@@ -42,10 +43,18 @@ internal class RoomDownloadLocalDataSource(
     override suspend fun addSong(song: Song) {
         songDao.upsertAll(listOf(song.toEntity(cachedAt = timestampProvider.provide())))
         downloadDao.upsertSong(DownloadedSongEntity(songId = song.id, requestedAt = timestampProvider.provide()))
+        downloadDao.deleteExclusion(song.id)
     }
 
+    /**
+     * Excluding the song, not just dropping its own request, is what takes it off the device even
+     * while an album, a playlist or the liked songs still want it — otherwise one of them would
+     * still hold it.
+     */
     override suspend fun removeSong(songId: Long) {
         downloadDao.deleteSong(songId)
+        val exclusion = DownloadedSongExclusionEntity(songId = songId, excludedAt = timestampProvider.provide())
+        downloadDao.upsertExclusion(exclusion)
     }
 
     override suspend fun addCollection(key: LibraryItemKey) {

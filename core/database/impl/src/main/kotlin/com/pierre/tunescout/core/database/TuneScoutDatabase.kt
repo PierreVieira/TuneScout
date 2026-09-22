@@ -15,6 +15,7 @@ import com.pierre.tunescout.core.database.entity.AlbumEntity
 import com.pierre.tunescout.core.database.entity.AlbumTrackOrderEntity
 import com.pierre.tunescout.core.database.entity.DownloadedCollectionEntity
 import com.pierre.tunescout.core.database.entity.DownloadedSongEntity
+import com.pierre.tunescout.core.database.entity.DownloadedSongExclusionEntity
 import com.pierre.tunescout.core.database.entity.FavoriteAlbumEntity
 import com.pierre.tunescout.core.database.entity.FavoriteSongEntity
 import com.pierre.tunescout.core.database.entity.LibrarySearchEntity
@@ -40,8 +41,9 @@ import com.pierre.tunescout.core.database.entity.SongEntity
         AlbumTrackOrderEntity::class,
         DownloadedSongEntity::class,
         DownloadedCollectionEntity::class,
+        DownloadedSongExclusionEntity::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = true,
 )
 internal abstract class TuneScoutDatabase : RoomDatabase() {
