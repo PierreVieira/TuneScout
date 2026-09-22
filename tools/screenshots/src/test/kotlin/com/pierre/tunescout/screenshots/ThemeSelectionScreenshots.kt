@@ -22,7 +22,7 @@ internal class ThemeSelectionScreenshots : ReadmeScreenshotsTest() {
         capture(
             fileName = "theme",
             title = "Light, dark, or whatever the phone says",
-            description = "The choice is remembered on the device, and can follow your wallpaper",
+            description = "The choice is remembered on the device, and can follow your system colors",
         ) {
             SheetOverScreen(
                 screen = {

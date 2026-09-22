@@ -5,7 +5,7 @@ import androidx.compose.ui.graphics.Color
 /**
  * The splash gradient ends on a deep teal that is unreadable as a highlight, so the accent keeps
  * its hue and takes the lightness each palette needs. With dynamic colors on, the accent comes
- * from the wallpaper instead — see [toColorPalette].
+ * from the system colors instead — see [toColorPalette].
  *
  * The container is the same hue with most of the chroma taken out, the way Material derives a
  * secondary container: it is what a selected navigation item sits on, which should read as a

@@ -45,8 +45,8 @@ fun Theme.isDark(isSystemInDarkTheme: Boolean): Boolean = when (this) {
  * The palette a theme would render with, independent of the one in force. It is what draws a
  * preview of a theme the user has not picked yet.
  *
- * @return the wallpaper-based palette when [isDynamicColorEnabled] and the device supports it, the static
- * one for [isDark] otherwise.
+ * @return the system's dynamic palette when [isDynamicColorEnabled] and the device supports it, the
+ * static one for [isDark] otherwise.
  */
 @Composable
 fun colorPalette(

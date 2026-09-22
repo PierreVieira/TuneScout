@@ -5,10 +5,10 @@
     <string name="theme_selection_dark">Dunkel</string>
     <string name="theme_selection_system">System</string>
     <string name="theme_selection_dynamic_color">Dynamische Farben</string>
-    <string name="theme_selection_dynamic_color_description">Übernimmt die Farben deines Hintergrundbilds.</string>
+    <string name="theme_selection_dynamic_color_description">Übernimmt die Systemfarben.</string>
     <string name="theme_selection_dynamic_color_info">Über dynamische Farben</string>
     <string name="theme_selection_dynamic_color_toggle">Dynamische Farben verwenden</string>
-    <string name="theme_selection_dynamic_color_explanation">Dynamische Farben übernehmen die Palette der App aus deinem Hintergrundbild. Hintergründe, Blätter und der Wiedergabefortschritt nehmen daraus extrahierte Farben an, und deine Wahl zwischen hell und dunkel oben gilt weiterhin.</string>
+    <string name="theme_selection_dynamic_color_explanation">Dynamische Farben übernehmen die Palette der App aus den Systemfarben, also den in den Geräteeinstellungen festgelegten Farben, ob sie aus deinem Hintergrundbild stammen oder selbst gewählt sind. Hintergründe, Blätter und der Wiedergabefortschritt nehmen diese Farben an, und deine Wahl zwischen hell und dunkel oben gilt weiterhin.</string>
     <string name="theme_selection_dynamic_color_availability">Verfügbar ab Android 12. Ältere Versionen verwenden immer die eigene Palette der App.</string>
     <string name="theme_selection_got_it">Verstanden</string>
 </resources>

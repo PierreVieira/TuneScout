@@ -5,10 +5,10 @@
     <string name="theme_selection_dark">Dark</string>
     <string name="theme_selection_system">System</string>
     <string name="theme_selection_dynamic_color">Dynamic colors</string>
-    <string name="theme_selection_dynamic_color_description">Follow the colors of your wallpaper.</string>
+    <string name="theme_selection_dynamic_color_description">Follow your system\'s colors.</string>
     <string name="theme_selection_dynamic_color_info">About dynamic colors</string>
     <string name="theme_selection_dynamic_color_toggle">Use dynamic colors</string>
-    <string name="theme_selection_dynamic_color_explanation">Dynamic colors take the app\'s palette from your wallpaper. Backgrounds, sheets and the playback progress pick up colors extracted from it, and the light or dark choice above still applies.</string>
+    <string name="theme_selection_dynamic_color_explanation">Dynamic colors take the app\'s palette from your system\'s colors: the ones set in your device\'s settings, whether they come from your wallpaper or from a color you picked. Backgrounds, sheets and the playback progress pick up those colors, and the light or dark choice above still applies.</string>
     <string name="theme_selection_dynamic_color_availability">Available on Android 12 and newer. Older versions always use the app\'s own palette.</string>
     <string name="theme_selection_got_it">Got it</string>
 </resources>

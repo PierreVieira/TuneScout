@@ -5,10 +5,10 @@
     <string name="theme_selection_dark">Escuro</string>
     <string name="theme_selection_system">Sistema</string>
     <string name="theme_selection_dynamic_color">Cores dinâmicas</string>
-    <string name="theme_selection_dynamic_color_description">Seguir as cores do seu papel de parede.</string>
+    <string name="theme_selection_dynamic_color_description">Seguir as cores do sistema.</string>
     <string name="theme_selection_dynamic_color_info">Sobre as cores dinâmicas</string>
     <string name="theme_selection_dynamic_color_toggle">Usar cores dinâmicas</string>
-    <string name="theme_selection_dynamic_color_explanation">As cores dinâmicas tiram a paleta do app do seu papel de parede. Planos de fundo, sheets e o progresso da reprodução passam a usar cores extraídas dele, e a escolha de claro ou escuro acima continua valendo.</string>
+    <string name="theme_selection_dynamic_color_explanation">As cores dinâmicas tiram a paleta do app das cores do sistema: as definidas nas configurações do aparelho, venham elas do seu papel de parede ou de uma cor que você escolheu. Planos de fundo, sheets e o progresso da reprodução passam a usar essas cores, e a escolha de claro ou escuro acima continua valendo.</string>
     <string name="theme_selection_dynamic_color_availability">Disponível no Android 12 ou superior. Versões anteriores sempre usam a paleta do app.</string>
     <string name="theme_selection_got_it">Entendi</string>
 </resources>
