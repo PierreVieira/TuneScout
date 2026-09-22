@@ -28,8 +28,13 @@ permissions:
 # of its own and always finishes: a cancelled run saves no Gradle cache, so when merges came in
 # quick succession main's entries fell several commits behind and the next pull requests
 # recompiled everything from scratch.
+#
+# A recording has a group of its own: the references it pushes start a verifying run of the same
+# pull request, which would otherwise cancel the recording while it is still finishing.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: >-
+    ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}-${{
+    contains(github.event.pull_request.labels.*.name, 'record-screenshots') && 'record' || 'verify' }}
   cancel-in-progress: true
 
 jobs:
@@ -77,11 +82,17 @@ jobs:
     env:
       GRADLE_BUILD_ACTION_CACHE_KEY_JOB: verify
     steps:
+      # The references are pushed with SCREENSHOTS_PUSH_TOKEN, a fine-grained token with write access
+      # to this repository's contents. A push made with the default GITHUB_TOKEN leaves every workflow
+      # it triggers waiting for someone to approve it, so the branch would sit unverified. Without the
+      # secret (a fork, or before it is set) the push falls back to GITHUB_TOKEN and its runs need
+      # that approval again.
       - name: Checkout the pull request's branch
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.SCREENSHOTS_PUSH_TOKEN || github.token }}
           fetch-depth: 1
 
       - name: Setup Gradle
@@ -96,7 +107,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+        # The label goes first: the push starts the next run of this workflow, and that run has to
+        # find it gone to verify the new references instead of recording them again.
         run: |
+          gh pr edit "$PR_NUMBER" --remove-label record-screenshots
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
           git add tools/screenshot_tests/src/test/screenshots
@@ -106,5 +120,3 @@ jobs:
             git commit -m 'chore: record the screenshot references'
             git push
           fi
-          # Dropped so the next push verifies the references instead of recording them again
-          gh pr edit "$PR_NUMBER" --remove-label record-screenshots

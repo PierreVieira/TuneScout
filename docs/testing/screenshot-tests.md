@@ -29,8 +29,9 @@ them side by side.
 ## Changing a screen on purpose
 
 The references are part of the change, but they cannot be recorded on a developer's machine. Label
-the pull request **`record-screenshots`**: the `screenshot-tests` workflow renders them on Linux,
-commits them to the branch and drops the label, so the next push verifies again.
+the pull request **`record-screenshots`**: the `screenshot-tests` workflow drops the label, renders
+them on Linux and commits them to the branch, and that commit is verified like any other push. See
+[CI](../ci.md#screenshot-tests) for the token the push is made with.
 
 `recordRoborazziDebug` is what that workflow runs, and it is also how a new test's first images are
 produced — on CI, through the label.
