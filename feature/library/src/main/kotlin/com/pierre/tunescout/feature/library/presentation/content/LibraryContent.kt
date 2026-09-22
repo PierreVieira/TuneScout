@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.library.presentation.content
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -28,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -62,6 +64,7 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.utils.semantics.screenPane
+import kotlin.math.roundToInt
 
 private val gridColumnSpacing = TuneScoutSpacing.medium
 private val fabSize = 56.dp
@@ -275,12 +278,17 @@ private fun LibraryItemGrid(
 ) {
     val gridFraction = rememberGridFraction(uiState.viewMode)
     val artworkSize = LibraryArtworkSize.of(uiState.viewMode)
-    val isDense by rememberIsDense(gridColumns = uiState.gridColumns, gridFraction = gridFraction)
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val columns = remember(uiState.viewMode, uiState.gridColumns) {
             columnsOf(viewMode = uiState.viewMode, gridColumns = uiState.gridColumns)
         }
-        val widths = rememberItemWidths(availableWidth = maxWidth, gridColumns = uiState.gridColumns)
+        val listWidth = with(LocalDensity.current) { maxWidth.roundToPx() }
+        val reflow = rememberCellReflow(
+            columns = uiState.gridColumns,
+            cellWidth = rememberCellWidth(listWidth = listWidth, gridColumns = uiState.gridColumns),
+        )
+        val widths = remember(listWidth, reflow) { LibraryItemWidths(list = listWidth, cell = reflow.cellWidth) }
+        val isDense by rememberIsDense(reflow = reflow, gridFraction = gridFraction)
         LazyVerticalGrid(
             columns = columns,
             modifier = Modifier.fillMaxSize(),
@@ -301,6 +309,7 @@ private fun LibraryItemGrid(
                     widths = widths,
                     artworkSize = artworkSize,
                     gridFraction = gridFraction,
+                    reflowFraction = reflow.fraction,
                     onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
                     modifier = Modifier.animateItem(),
                     isDownloaded = uiState.isDownloaded(item),
@@ -312,24 +321,85 @@ private fun LibraryItemGrid(
 }
 
 /**
- * The widths an item rests at, from the width the grid has: the whole of it as a row, and as a
- * cell the first of the [gridColumns] the grid cuts it into, the way the grid itself cuts it.
+ * The width a cell rests at: the first of the [gridColumns] the grid cuts [listWidth] into, the way
+ * the grid itself cuts it.
  *
- * @return the widths for every item of a grid [availableWidth] wide.
+ * @return the width of a cell of a grid [listWidth] wide, in pixels.
  */
 @Composable
-private fun rememberItemWidths(
-    availableWidth: Dp,
+private fun rememberCellWidth(
+    listWidth: Int,
     gridColumns: LibraryGridColumns,
-): LibraryItemWidths {
+): Int {
     val density = LocalDensity.current
-    return remember(availableWidth, gridColumns, density) {
-        val listWidth = with(density) { availableWidth.roundToPx() }
+    return remember(listWidth, gridColumns, density) {
         val spacing = with(density) { gridColumnSpacing.roundToPx() }
-        val cellWidths = with(GridCells.Fixed(gridColumns.count)) {
-            density.calculateCrossAxisCellSizes(listWidth, spacing)
+        with(GridCells.Fixed(gridColumns.count)) { density.calculateCrossAxisCellSizes(listWidth, spacing) }.first()
+    }
+}
+
+/**
+ * @return the move of the cells to [cellWidth], started over whenever [columns] gives them a new one.
+ */
+@Composable
+private fun rememberCellReflow(
+    columns: LibraryGridColumns,
+    cellWidth: Int,
+): CellReflow {
+    val reflow = remember { CellReflow(columns = columns, cellWidth = cellWidth) }
+    LaunchedEffect(columns, cellWidth) { reflow.animateTo(columns = columns, cellWidth = cellWidth) }
+    return reflow
+}
+
+/**
+ * The width the cells are at on their way from the columns the grid had to the ones it has now, and
+ * how far along they are. The grid hands its cells their new column the moment the columns change;
+ * the cells take the new width at this pace instead, so a cover grows or shrinks while the grid
+ * slides it into place rather than jumping, and the texts fade through the move the way they do
+ * between the list and the grid.
+ *
+ * @param columns the columns the grid opens with.
+ * @param cellWidth the width of a cell of those columns, in pixels.
+ */
+private class CellReflow(
+    columns: LibraryGridColumns,
+    cellWidth: Int,
+) {
+    private val width = Animatable(cellWidth.toFloat())
+    private var fromColumns = columns
+    private var toColumns = columns
+    private var fromWidth = cellWidth.toFloat()
+    private var toWidth = cellWidth.toFloat()
+
+    val cellWidth: () -> Int = { width.value.roundToInt() }
+
+    /** 0 as a move starts, 1 once the cells have their new width, and 1 at rest. */
+    val fraction: () -> Float = {
+        if (toWidth ==
+            fromWidth
+        ) {
+            GRID_FRACTION
+        } else {
+            ((width.value - fromWidth) / (toWidth - fromWidth)).coerceIn(LIST_FRACTION, GRID_FRACTION)
         }
-        LibraryItemWidths(list = listWidth, cell = cellWidths.first())
+    }
+
+    /**
+     * The columns the cells are drawn for: the ones the grid had until the texts have faded out, the
+     * new ones from there, so nothing set for the new columns is seen while a text is still readable.
+     */
+    val settledColumns: LibraryGridColumns
+        get() = if (fraction() > TEXT_HIDDEN_FRACTION) toColumns else fromColumns
+
+    suspend fun animateTo(
+        columns: LibraryGridColumns,
+        cellWidth: Int,
+    ) {
+        fromColumns = settledColumns
+        fromWidth = width.value
+        toColumns = columns
+        toWidth = cellWidth.toFloat()
+        width.animateTo(targetValue = toWidth, animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
     }
 }
 
@@ -353,17 +423,17 @@ private fun rememberGridFraction(viewMode: LibraryViewMode): () -> Float {
 /**
  * Whether the items are the narrow cells of the four-column grid, which set their name a size
  * smaller. The size only switches once the texts have faded out, halfway through the move between
- * the list and the grid, so a name is never seen changing size; and it is derived, so the frames of
- * the move recompose nothing until that one crossing.
+ * the list and the grid or between two column counts, so a name is never seen changing size; and it
+ * is derived, so the frames of a move recompose nothing until that one crossing.
  *
- * @return whether the cells are dense, following [gridFraction] as it crosses the fade.
+ * @return whether the cells are dense, following [gridFraction] and [reflow] as they cross the fade.
  */
 @Composable
 private fun rememberIsDense(
-    gridColumns: LibraryGridColumns,
+    reflow: CellReflow,
     gridFraction: () -> Float,
-): State<Boolean> = remember(gridColumns, gridFraction) {
-    derivedStateOf { gridColumns == LibraryGridColumns.FOUR && gridFraction() > TEXT_HIDDEN_FRACTION }
+): State<Boolean> = remember(reflow, gridFraction) {
+    derivedStateOf { reflow.settledColumns == LibraryGridColumns.FOUR && gridFraction() > TEXT_HIDDEN_FRACTION }
 }
 
 private fun columnsOf(

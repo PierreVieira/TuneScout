@@ -43,11 +43,12 @@ private const val GRID_FRACTION = 1f
  * moved at all.
  *
  * @property list the width of a row, the whole width of the list.
- * @property cell the width of a cell, one column of the grid.
+ * @property cell the width of a cell, one column of the grid, read on every measure: it moves at its
+ * own pace from the column the grid had to the one it has when the number of columns changes.
  */
 internal data class LibraryItemWidths(
     val list: Int,
-    val cell: Int,
+    val cell: () -> Int,
 )
 
 /**
@@ -60,6 +61,11 @@ internal data class LibraryItemWidths(
  * neither. [gridFraction] is read when the item is measured, so a frame of the transition lays the
  * item out again without recomposing it.
  *
+ * A change in the number of columns is a second move, at [reflowFraction]'s pace: the cell grows or
+ * shrinks from the old column to the new one while the grid slides it into place, and the texts fade
+ * through it the same way. The cell is drawn at the width it is at, past the column it was just
+ * handed while it is still shrinking to it, which is why it is not clipped until it settles.
+ *
  * The item is only clipped to its rounded corners at rest. The grid hands it its new width the
  * moment the columns change, while its content is still the shape of the old one, and a clip would
  * cut a row's name at the edge of the cell it is about to become.
@@ -67,6 +73,7 @@ internal data class LibraryItemWidths(
  * @param widths the widths the item rests at, in the list and in the grid.
  * @param artworkSize the cover the item asks for, that of the view mode it is going to.
  * @param gridFraction how far the item is from the row (0) to the cell (1).
+ * @param reflowFraction how far the cell is from the column it had (0) to the one it has (1), 1 at rest.
  * @param isDense whether the cell is one of the narrow ones of the densest grid, where the name is set a
  * size smaller so a word more of it fits under the cover.
  */
@@ -77,12 +84,13 @@ internal fun LibraryItemCell(
     widths: LibraryItemWidths,
     artworkSize: LibraryArtworkSize,
     gridFraction: () -> Float,
+    reflowFraction: () -> Float,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isDownloaded: Boolean = false,
     isDense: Boolean = false,
 ) {
-    val textModifier = Modifier.fadingThrough(gridFraction)
+    val textModifier = Modifier.fadingThrough(gridFraction = gridFraction, reflowFraction = reflowFraction)
     Layout(
         content = {
             LibraryItemArtwork(item = item, size = artworkSize)
@@ -99,28 +107,33 @@ internal fun LibraryItemCell(
         modifier = modifier
             .graphicsLayer {
                 shape = cellCornerShape
-                clip = isAtRest(gridFraction())
+                clip = isAtRest(gridFraction()) && isAtRest(reflowFraction())
             }.clickable(onClickLabel = stringResource(R.string.library_open_item), onClick = onClick),
-        measurePolicy = remember(widths, gridFraction) { LibraryItemCellMeasurePolicy(widths, gridFraction) },
+        measurePolicy = remember(widths, gridFraction, reflowFraction) {
+            LibraryItemCellMeasurePolicy(widths = widths, gridFraction = gridFraction, reflowFraction = reflowFraction)
+        },
     )
 }
 
 private fun isAtRest(gridFraction: Float): Boolean = gridFraction <= LIST_FRACTION || gridFraction >= GRID_FRACTION
 
 /**
- * Fades the texts out and back in through the move: fully drawn at either end, gone halfway.
+ * Fades the texts out and back in through either move: fully drawn at either end, gone halfway.
  *
  * A `graphicsLayer` would do it, but it draws the text through a layer of its own even at rest, and
  * that rasterizes the glyphs differently from the row they used to be. The layer is only taken while
  * the text is translucent, so the list and the grid draw exactly as they did.
  *
- * @return this modifier, drawing the text at the alpha [gridFraction] gives it.
+ * @return this modifier, drawing the text at the alpha [gridFraction] and [reflowFraction] give it.
  */
-private fun Modifier.fadingThrough(gridFraction: () -> Float): Modifier = drawWithCache {
+private fun Modifier.fadingThrough(
+    gridFraction: () -> Float,
+    reflowFraction: () -> Float,
+): Modifier = drawWithCache {
     val paint = Paint()
     val bounds = Rect(offset = Offset.Zero, size = size)
     onDrawWithContent {
-        val alpha = abs(GRID_FRACTION - 2 * gridFraction())
+        val alpha = fadeAlphaOf(gridFraction()) * fadeAlphaOf(reflowFraction())
         if (alpha >= GRID_FRACTION) {
             drawContent()
         } else {
@@ -128,6 +141,9 @@ private fun Modifier.fadingThrough(gridFraction: () -> Float): Modifier = drawWi
         }
     }
 }
+
+/** @return 1 at either end of a move whose [fraction] this is, 0 halfway through it. */
+private fun fadeAlphaOf(fraction: Float): Float = abs(GRID_FRACTION - 2 * fraction)
 
 private fun ContentDrawScope.drawTranslucent(
     paint: Paint,
@@ -151,14 +167,18 @@ private fun ContentDrawScope.drawTranslucent(
  *
  * The row is laid out at [widths]' list width and the cell at its cell width, whatever width the
  * grid is constraining the item to. At rest the two agree, and the cell takes the width of its own
- * column, which may be a pixel narrower than the first.
+ * column, which may be a pixel narrower than the first. While the columns change, the cell keeps the
+ * width it is at even past the narrower column it was just handed: it is shrinking to it, and the
+ * grid only ever hears the constrained width.
  *
  * @property widths the widths the item rests at, in the list and in the grid.
  * @property gridFraction how far the item is from the row (0) to the cell (1), read on every measure.
+ * @property reflowFraction how far the cell is from the column it had (0) to the one it has (1).
  */
 private class LibraryItemCellMeasurePolicy(
     private val widths: LibraryItemWidths,
     private val gridFraction: () -> Float,
+    private val reflowFraction: () -> Float,
 ) : MeasurePolicy {
     private val rowArtworkSize = 56.dp
     private val rowArtworkGap = TuneScoutSpacing.medium
@@ -172,7 +192,7 @@ private class LibraryItemCellMeasurePolicy(
     ): MeasureResult {
         val fraction = gridFraction().coerceIn(LIST_FRACTION, GRID_FRACTION)
         val rowWidth = if (constraints.hasBoundedWidth) maxOf(widths.list, constraints.maxWidth) else widths.list
-        val cellWidth = minOf(widths.cell, constraints.maxWidth)
+        val cellWidth = if (isAtRest(reflowFraction())) minOf(widths.cell(), constraints.maxWidth) else widths.cell()
         val rowArtwork = rowArtworkSize.roundToPx()
         val rowGap = rowArtworkGap.roundToPx()
         val gap = cellGap.roundToPx()
