@@ -47,7 +47,7 @@ class LibraryContentTest {
     fun theListShowsLikedSongsAndEveryPlaylist() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(), onEvent = events::add)
+                LibraryContent(uiState = state(), isTwoPane = false, onEvent = events::add)
             }
         }
 
@@ -64,7 +64,11 @@ class LibraryContentTest {
     fun theGridShowsTheSameItems() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(viewMode = LibraryViewMode.GRID), onEvent = events::add)
+                LibraryContent(
+                    uiState = state(viewMode = LibraryViewMode.GRID),
+                    isTwoPane = false,
+                    onEvent = events::add,
+                )
             }
         }
 
@@ -76,7 +80,7 @@ class LibraryContentTest {
     fun clickingAPlaylistEmitsItsItem() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(), onEvent = events::add)
+                LibraryContent(uiState = state(), isTwoPane = false, onEvent = events::add)
             }
         }
 
@@ -89,7 +93,7 @@ class LibraryContentTest {
     fun theToggleShowsBothModesAndPicksTheOneTapped() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(), onEvent = events::add)
+                LibraryContent(uiState = state(), isTwoPane = false, onEvent = events::add)
             }
         }
 
@@ -103,7 +107,7 @@ class LibraryContentTest {
     fun theHeaderOpensSearch() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(), onEvent = events::add)
+                LibraryContent(uiState = state(), isTwoPane = false, onEvent = events::add)
             }
         }
 
@@ -117,7 +121,7 @@ class LibraryContentTest {
         var viewMode by mutableStateOf(LibraryViewMode.LIST)
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(viewMode = viewMode), onEvent = events::add)
+                LibraryContent(uiState = state(viewMode = viewMode), isTwoPane = false, onEvent = events::add)
             }
         }
 
@@ -130,6 +134,24 @@ class LibraryContentTest {
                 LibraryUiEvent.OnCreatePlaylistClicked,
                 LibraryUiEvent.OnCreatePlaylistClicked,
             )
+    }
+
+    /**
+     * The library sits in a narrower list pane on a wide window, so the FAB moves into the top bar,
+     * beside search — see [LibraryContent].
+     */
+    @Test
+    fun theCreatePlaylistActionMovesIntoTheTopBarOnTwoPanes() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(uiState = state(), isTwoPane = true, onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Search your library").assertIsDisplayed()
+        onNodeWithContentDescription("Create playlist").performClick()
+
+        assertThat(events).containsExactly(LibraryUiEvent.OnCreatePlaylistClicked)
     }
 
     private fun state(
@@ -148,7 +170,11 @@ class LibraryContentTest {
     fun theAlbumsChipLeavesOnlyTheAlbums() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(filters = setOf(LibraryFilter.ALBUMS)), onEvent = events::add)
+                LibraryContent(
+                    uiState = state(filters = setOf(LibraryFilter.ALBUMS)),
+                    isTwoPane = false,
+                    onEvent = events::add,
+                )
             }
         }
 
@@ -161,7 +187,7 @@ class LibraryContentTest {
     fun tappingAChipEmitsItsFilter() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(), onEvent = events::add)
+                LibraryContent(uiState = state(), isTwoPane = false, onEvent = events::add)
             }
         }
 
@@ -177,6 +203,7 @@ class LibraryContentTest {
             TuneScoutTheme {
                 LibraryContent(
                     uiState = state(filters = filters, downloadedKeys = setOf(LibraryItemKey.Album(albumId = 10))),
+                    isTwoPane = false,
                     onEvent = events::add,
                 )
             }
@@ -196,7 +223,7 @@ class LibraryContentTest {
         var filters by mutableStateOf(emptySet<LibraryFilter>())
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(filters = filters), onEvent = events::add)
+                LibraryContent(uiState = state(filters = filters), isTwoPane = false, onEvent = events::add)
             }
         }
 
@@ -213,6 +240,7 @@ class LibraryContentTest {
             TuneScoutTheme {
                 LibraryContent(
                     uiState = state(filters = setOf(LibraryFilter.DOWNLOADED), items = listOf(favorites, roadTrip)),
+                    isTwoPane = false,
                     onEvent = events::add,
                 )
             }
