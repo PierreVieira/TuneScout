@@ -38,6 +38,7 @@ internal class ListDetailScreenshotTest : ScreenshotTest() {
         isOffline = false,
         unplayableSongIds = emptySet(),
         downloadStatuses = emptyMap(),
+        songAlreadyQueued = null,
     )
 
     private val album = AlbumUiState.Loaded(
@@ -52,6 +53,7 @@ internal class ListDetailScreenshotTest : ScreenshotTest() {
         isReordering = false,
         download = CollectionDownloadState.NotDownloaded,
         downloadStatuses = emptyMap(),
+        songAlreadyQueued = null,
     )
 
     private val player = PlayerUiState.Loaded(

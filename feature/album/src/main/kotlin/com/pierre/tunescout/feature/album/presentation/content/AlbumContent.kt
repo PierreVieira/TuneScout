@@ -44,6 +44,7 @@ import com.pierre.tunescout.ui.component.Artwork
 import com.pierre.tunescout.ui.component.CollectionDownloadButton
 import com.pierre.tunescout.ui.component.CollectionPlaybackRow
 import com.pierre.tunescout.ui.component.DownloadIndicator
+import com.pierre.tunescout.ui.component.DuplicateInQueueDialog
 import com.pierre.tunescout.ui.component.NoticeBar
 import com.pierre.tunescout.ui.component.NowPlayingState
 import com.pierre.tunescout.ui.component.ReorderableSongSwipeBox
@@ -131,6 +132,13 @@ fun AlbumContent(
                         uiState = uiState,
                         isHeaderInline = isHeaderInline,
                         onEvent = onEvent,
+                    )
+                }
+                uiState.songAlreadyQueued?.let { song ->
+                    DuplicateInQueueDialog(
+                        songTitle = song.title,
+                        onConfirm = { onEvent(AlbumUiEvent.OnDuplicateInQueueConfirmed) },
+                        onCancel = { onEvent(AlbumUiEvent.OnDuplicateInQueueDismissed) },
                     )
                 }
             }

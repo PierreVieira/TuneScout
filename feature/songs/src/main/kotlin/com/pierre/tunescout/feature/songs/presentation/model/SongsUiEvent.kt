@@ -30,6 +30,10 @@ sealed interface SongsUiEvent {
         val song: Song,
     ) : SongsUiEvent
 
+    data object OnDuplicateInQueueConfirmed : SongsUiEvent
+
+    data object OnDuplicateInQueueDismissed : SongsUiEvent
+
     data class OnSongSwipedToFavorite(
         val song: Song,
     ) : SongsUiEvent

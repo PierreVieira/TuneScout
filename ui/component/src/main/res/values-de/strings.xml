@@ -27,6 +27,14 @@
     <string name="ui_favorite">Gefällt mir</string>
     <string name="ui_unfavorite">Aus Lieblingssongs entfernen</string>
     <string name="ui_added_to_queue">Zur Warteschlange hinzugefügt</string>
+    <string name="ui_duplicate_in_queue_title">Schon in der Warteschlange</string>
+    <string name="ui_duplicate_in_queue_message">„%1$s“ ist schon in deiner Warteschlange. Noch einmal hinzufügen?</string>
+    <string name="ui_duplicate_in_queue_confirm">Erneut hinzufügen</string>
+    <string name="ui_duplicate_in_queue_cancel">Abbrechen</string>
+    <plurals name="ui_duplicates_in_queue_message">
+        <item quantity="one">Einer dieser Songs ist schon in deiner Warteschlange. Trotzdem alle hinzufügen?</item>
+        <item quantity="other">%1$d dieser Songs sind schon in deiner Warteschlange. Trotzdem alle hinzufügen?</item>
+    </plurals>
     <string name="ui_added_to_favorites">Zu Lieblingssongs hinzugefügt</string>
     <string name="ui_removed_from_favorites">Aus Lieblingssongs entfernt</string>
     <string name="ui_move_up">Nach oben verschieben</string>

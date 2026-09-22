@@ -74,6 +74,15 @@ class AlbumViewModel(
 
     private val refreshFailed = MutableStateFlow(false)
 
+    private val songAlreadyQueued = MutableStateFlow<Song?>(null)
+
+    /** The dialog asking about a song already queued is read with the player, which answers it. */
+    private val queueing: Flow<Queueing> = combine(
+        observablePlayback.observePlaybackState(),
+        songAlreadyQueued,
+        ::Queueing,
+    )
+
     /**
      * Whether an album put together from the saved tracks may be drawn. Not before the first refresh
      * fails: online, the whole album is a moment away, and one track flashing before it would be
@@ -101,7 +110,7 @@ class AlbumViewModel(
 
     val uiState: StateFlow<AlbumUiState> = combine(
         albumReach,
-        observablePlayback.observePlaybackState(),
+        queueing,
         refreshFailed,
         showsPartialAlbum,
         useCases.isAlbumFavorite(route.albumId),
@@ -131,6 +140,8 @@ class AlbumViewModel(
         is AlbumUiEvent.OnSongClicked -> play(event.song)
         is AlbumUiEvent.OnSongOptionsClicked -> openSongOptions(event.song)
         is AlbumUiEvent.OnSongSwipedToQueue -> addToQueue(event.song)
+        AlbumUiEvent.OnDuplicateInQueueConfirmed -> addToQueueAgain()
+        AlbumUiEvent.OnDuplicateInQueueDismissed -> songAlreadyQueued.value = null
         is AlbumUiEvent.OnSongSwipedToFavorite -> toggleSongFavorite(event.song)
         AlbumUiEvent.OnPlayPauseClicked -> togglePlayback()
         AlbumUiEvent.OnShuffleClicked -> transportControls.toggleShuffle()
@@ -236,9 +247,26 @@ class AlbumViewModel(
         }
     }
 
-    /** A song the player cannot reach never enters the queue, so it does not stall on it. */
+    /**
+     * A song the player cannot reach never enters the queue, so it does not stall on it. One the
+     * user already queued only goes in again once they confirm it.
+     */
     private fun addToQueue(song: Song) {
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        if (observablePlayback.observePlaybackState().value.isQueuedByUser(song.id)) {
+            songAlreadyQueued.value = song
+        } else {
+            enqueue(song)
+        }
+    }
+
+    private fun addToQueueAgain() {
+        val song = songAlreadyQueued.value ?: return
+        songAlreadyQueued.value = null
+        enqueue(song)
+    }
+
+    private fun enqueue(song: Song) {
         enqueuer.addToQueue(listOf(song))
         emitAction(AlbumUiAction.ShowSnackBar(R.string.ui_added_to_queue))
     }
@@ -274,12 +302,13 @@ class AlbumViewModel(
 
     private fun toUiState(
         reach: AlbumReach,
-        playback: PlaybackState,
+        queueing: Queueing,
         refreshFailed: Boolean,
         showsPartialAlbum: Boolean,
         isFavorite: Boolean,
     ): AlbumUiState {
         val album = reach.album
+        val playback = queueing.playback
         return when {
             album != null && (album.isComplete || showsPartialAlbum) -> AlbumUiState.Loaded(
                 album = album,
@@ -297,6 +326,7 @@ class AlbumViewModel(
                     statuses = reach.downloads.statuses,
                 ),
                 downloadStatuses = reach.downloads.statuses,
+                songAlreadyQueued = queueing.songAlreadyQueued,
             )
 
             refreshFailed -> AlbumUiState.Error
@@ -306,6 +336,16 @@ class AlbumViewModel(
     }
 
     private fun PlaybackState.isOnAlbum(albumId: Long): Boolean = (context as? PlaybackContext.Album)?.id == albumId
+
+    /**
+     * @property playback what the player holds.
+     * @property songAlreadyQueued the song swiped into the queue while the user already had it
+     * queued, while the screen asks whether to add it again.
+     */
+    private data class Queueing(
+        val playback: PlaybackState,
+        val songAlreadyQueued: Song?,
+    )
 
     /**
      * @property album the album as the device has it, or null before it has one.

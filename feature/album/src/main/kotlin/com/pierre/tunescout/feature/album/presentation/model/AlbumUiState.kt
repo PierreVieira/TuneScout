@@ -3,6 +3,7 @@ package com.pierre.tunescout.feature.album.presentation.model
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.CollectionDownloadState
 import com.pierre.tunescout.core.model.NowPlaying
+import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.SongDownloadStatus
 
 sealed interface AlbumUiState {
@@ -30,6 +31,8 @@ sealed interface AlbumUiState {
      * @property download whether the user asked for the whole album, and how far it has got.
      * @property downloadStatuses how far each track the user asked to keep has got, whether on its
      * own or with a collection; a track absent from it has no download.
+     * @property songAlreadyQueued the track swiped into the queue while the user already had it
+     * queued there, while the screen asks whether to add it again.
      */
     data class Loaded(
         val album: Album,
@@ -43,5 +46,6 @@ sealed interface AlbumUiState {
         val isReordering: Boolean,
         val download: CollectionDownloadState,
         val downloadStatuses: Map<Long, SongDownloadStatus>,
+        val songAlreadyQueued: Song?,
     ) : AlbumUiState
 }

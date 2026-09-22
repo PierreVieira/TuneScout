@@ -1,6 +1,7 @@
 package com.pierre.tunescout.feature.songoptions.presentation.model
 
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.core.playback.QueuePlacement
 
 /**
  * @property song the song the sheet acts on, once the device has it.
@@ -11,6 +12,8 @@ import com.pierre.tunescout.core.model.Song
  * song out of it.
  * @property isReorderable the sheet was opened from a list the user can reorder — an album or a
  * playlist — so it offers to start reordering it.
+ * @property duplicatePlacement where the song was asked to go while the user already has it queued,
+ * so the sheet asks before adding it again. Null while nothing waits on that answer.
  */
 data class SongOptionsUiState(
     val song: Song?,
@@ -18,4 +21,5 @@ data class SongOptionsUiState(
     val isDownloaded: Boolean,
     val isRemovableFromPlaylist: Boolean,
     val isReorderable: Boolean,
+    val duplicatePlacement: QueuePlacement?,
 )

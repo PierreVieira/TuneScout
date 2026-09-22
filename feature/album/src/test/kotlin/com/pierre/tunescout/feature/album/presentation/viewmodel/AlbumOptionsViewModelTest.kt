@@ -2,14 +2,21 @@ package com.pierre.tunescout.feature.album.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
+import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
 import com.pierre.tunescout.core.navigation.reorder.ReorderTarget
 import com.pierre.tunescout.core.navigation.route.AlbumOptionsRoute
+import com.pierre.tunescout.core.playback.DuplicatesInQueue
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
+import com.pierre.tunescout.core.playback.QueuePlacement
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fixture.album
+import com.pierre.tunescout.core.testing.fixture.playbackState
+import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.album.presentation.model.AlbumOptionsUiAction
 import com.pierre.tunescout.feature.album.presentation.model.AlbumOptionsUiEvent
@@ -17,6 +24,7 @@ import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -134,9 +142,92 @@ class AlbumOptionsViewModelTest {
         verify(exactly = 0) { navigator.navigateBack() }
     }
 
+    @Test
+    fun `GIVEN the user already queued some of the album WHEN adding it to the queue THEN asks first`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = album.songs[1], source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+
+            // When
+            viewModel.onEvent(AlbumOptionsUiEvent.OnAddToQueueClicked)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicates)
+                .isEqualTo(DuplicatesInQueue(placement = QueuePlacement.End, count = 1))
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN the user already queued some of the album WHEN confirming play next THEN queues all of it next`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = album.songs[1], source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(AlbumOptionsUiEvent.OnPlayNextClicked)
+            runCurrent()
+
+            // When
+            viewModel.onEvent(AlbumOptionsUiEvent.OnDuplicatesInQueueConfirmed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicates).isNull()
+            verifyOrder {
+                enqueuer.queueNext(album.songs)
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
+    fun `GIVEN the user already queued some of the album WHEN cancelling THEN nothing is queued`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = album.songs[1], source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(AlbumOptionsUiEvent.OnAddToQueueClicked)
+            runCurrent()
+
+            // When
+            viewModel.onEvent(AlbumOptionsUiEvent.OnDuplicatesInQueueDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicates).isNull()
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
     private fun TestScope.prepareScenario(
         cached: Album?,
         playableSongIds: Set<Long>? = null,
+        playback: PlaybackState = PlaybackState.Idle,
     ) {
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
@@ -146,6 +237,7 @@ class AlbumOptionsViewModelTest {
             route = AlbumOptionsRoute(albumId = 10),
             observeAlbum = { flowOf(cached) },
             enqueuer = enqueuer,
+            observablePlayback = ObservablePlayback { MutableStateFlow(playback) },
             playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             navigator = navigator,
             reorderRequests = reorderRequests,

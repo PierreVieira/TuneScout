@@ -10,6 +10,8 @@ import com.pierre.tunescout.core.model.SongDownloadStatus
  * @property recentlyPlayed the songs played last, newest first.
  * @property nowPlaying which song is playing, when one is.
  * @property songPendingRemoval the recent song asked to be removed, while the removal can still be undone.
+ * @property songAlreadyQueued the song swiped into the queue while the user already had it queued
+ * there, while the screen asks whether to add it again.
  * @property favoriteSongIds the songs the user liked, which is what a swipe toward the start of a row
  * — a recent one or a search result — would take back.
  * @property isOffline the device has no connection right now.
@@ -25,6 +27,7 @@ data class SongsUiState(
     val recentlyPlayed: List<Song>,
     val nowPlaying: NowPlaying?,
     val songPendingRemoval: Song?,
+    val songAlreadyQueued: Song?,
     val favoriteSongIds: Set<Long>,
     val isOffline: Boolean,
     val unplayableSongIds: Set<Long>,

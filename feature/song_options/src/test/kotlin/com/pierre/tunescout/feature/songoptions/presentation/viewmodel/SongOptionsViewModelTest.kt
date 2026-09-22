@@ -1,6 +1,8 @@
 package com.pierre.tunescout.feature.songoptions.presentation.viewmodel
 
 import com.google.common.truth.Truth.assertThat
+import com.pierre.tunescout.core.model.PlaybackState
+import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.reorder.ReorderRequests
@@ -9,8 +11,12 @@ import com.pierre.tunescout.core.navigation.route.AddToPlaylistRoute
 import com.pierre.tunescout.core.navigation.route.AlbumRoute
 import com.pierre.tunescout.core.navigation.route.SongOptionsRoute
 import com.pierre.tunescout.core.playback.Enqueuer
+import com.pierre.tunescout.core.playback.ObservablePlayback
 import com.pierre.tunescout.core.playback.PlayableSongs
+import com.pierre.tunescout.core.playback.QueuePlacement
 import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
+import com.pierre.tunescout.core.testing.fixture.playbackState
+import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songoptions.domain.usecase.SongOptionsUseCases
 import com.pierre.tunescout.feature.songoptions.presentation.model.SongOptionsUiAction
@@ -19,6 +25,7 @@ import com.pierre.tunescout.ui.component.R
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -161,6 +168,75 @@ class SongOptionsViewModelTest {
                 enqueuer.queueNext(listOf(song(id = 1)))
                 navigator.navigateBack()
             }
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN clicking add to queue THEN asks before adding it again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), playback = playbackWithQueued(song(id = 1)))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnAddToQueueClicked)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicatePlacement).isEqualTo(QueuePlacement.End)
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN confirming play next THEN queues it next and closes the sheet`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), playback = playbackWithQueued(song(id = 1)))
+            viewModel.onEvent(SongOptionsUiEvent.OnPlayNextClicked)
+            runCurrent()
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnDuplicateInQueueConfirmed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicatePlacement).isNull()
+            verifyOrder {
+                enqueuer.queueNext(listOf(song(id = 1)))
+                navigator.navigateBack()
+            }
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN cancelling THEN nothing is queued and the sheet stays`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), playback = playbackWithQueued(song(id = 1)))
+            viewModel.onEvent(SongOptionsUiEvent.OnAddToQueueClicked)
+            runCurrent()
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnDuplicateInQueueDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicatePlacement).isNull()
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            verify(exactly = 0) { navigator.navigateBack() }
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN clicking play now THEN it plays without asking`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), playback = playbackWithQueued(song(id = 1)))
+
+            // When
+            viewModel.onEvent(SongOptionsUiEvent.OnPlayNowClicked)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.duplicatePlacement).isNull()
+            verify { enqueuer.playNow(listOf(song(id = 1))) }
         }
 
     @Test
@@ -339,6 +415,7 @@ class SongOptionsViewModelTest {
         playlistId: Long? = null,
         reorderTarget: ReorderTarget? = null,
         isDownloaded: Boolean = false,
+        playback: PlaybackState = PlaybackState.Idle,
     ) {
         downloadToggles = mutableListOf()
         reorderRequests = mockk(relaxUnitFun = true)
@@ -361,6 +438,7 @@ class SongOptionsViewModelTest {
                 },
             ),
             enqueuer = enqueuer,
+            observablePlayback = ObservablePlayback { MutableStateFlow(playback) },
             playableSongs = PlayableSongs { isPlayable },
             navigator = navigator,
             reorderRequests = reorderRequests,
@@ -369,6 +447,13 @@ class SongOptionsViewModelTest {
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
         runCurrent()
     }
+
+    private fun playbackWithQueued(queued: Song): PlaybackState = playbackState(
+        entries = listOf(
+            queueEntry(song = song(id = 99)),
+            queueEntry(song = queued, source = QueueSource.UserQueue),
+        ),
+    )
 
     companion object {
         @JvmField

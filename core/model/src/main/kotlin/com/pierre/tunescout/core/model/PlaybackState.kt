@@ -83,6 +83,16 @@ data class PlaybackState(
     val upcomingEntries: List<QueueEntry>
         get() = if (currentIndex < 0) emptyList() else entries.drop(currentIndex + 1)
 
+    /**
+     * The context's own songs don't count: a song coming up again because the album or playlist
+     * holds it is not the user adding it twice.
+     *
+     * @return whether the user already queued the song and it has yet to play.
+     */
+    fun isQueuedByUser(songId: Long): Boolean = upcomingEntries.any { entry ->
+        entry.source == QueueSource.UserQueue && entry.song.id == songId
+    }
+
     companion object {
         /**
          * How far into a song asking for the previous one still means the song before it. The

@@ -28,6 +28,7 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         isOffline = false,
         unplayableSongIds = emptySet(),
         downloadStatuses = emptyMap(),
+        songAlreadyQueued = null,
     )
 
     @Test

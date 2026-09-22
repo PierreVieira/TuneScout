@@ -5,5 +5,9 @@ sealed interface AlbumOptionsUiEvent {
 
     data object OnAddToQueueClicked : AlbumOptionsUiEvent
 
+    data object OnDuplicatesInQueueConfirmed : AlbumOptionsUiEvent
+
+    data object OnDuplicatesInQueueDismissed : AlbumOptionsUiEvent
+
     data object OnReorderClicked : AlbumOptionsUiEvent
 }

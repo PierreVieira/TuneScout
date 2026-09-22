@@ -131,6 +131,7 @@ class AlbumContentTest {
                         isReordering = false,
                         download = CollectionDownloadState.NotDownloaded,
                         downloadStatuses = emptyMap(),
+                        songAlreadyQueued = null,
                     ),
                     onEvent = events::add,
                 )
@@ -166,6 +167,7 @@ class AlbumContentTest {
                         isReordering = false,
                         download = CollectionDownloadState.NotDownloaded,
                         downloadStatuses = emptyMap(),
+                        songAlreadyQueued = null,
                     ),
                     onEvent = events::add,
                 )
@@ -340,6 +342,7 @@ class AlbumContentTest {
         isReordering = isReordering,
         download = download,
         downloadStatuses = downloadStatuses,
+        songAlreadyQueued = null,
     )
 
     private fun hasStateDescription(state: String): SemanticsMatcher =

@@ -259,6 +259,7 @@ class SongsContentTest {
         isOffline = isOffline,
         unplayableSongIds = unplayableSongIds,
         downloadStatuses = emptyMap(),
+        songAlreadyQueued = null,
     )
 
     private val loadedStates = LoadStates(

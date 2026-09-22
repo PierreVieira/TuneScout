@@ -8,6 +8,7 @@ import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
@@ -26,6 +27,7 @@ import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
 import com.pierre.tunescout.core.testing.fake.SongPlayRequest
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.playbackState
+import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.album.domain.usecase.AlbumUseCases
 import com.pierre.tunescout.feature.album.presentation.model.AlbumUiAction
@@ -416,6 +418,84 @@ class AlbumViewModelTest {
             // Then
             verify { enqueuer.addToQueue(listOf(album.songs[1])) }
             assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN the user already queued the track WHEN swiping it toward the end THEN asks before adding it again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = album.songs[1], source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnSongSwipedToQueue(album.songs[1]))
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).songAlreadyQueued).isEqualTo(album.songs[1])
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            assertThat(actions).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN the user already queued the track WHEN confirming THEN it is queued again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = album.songs[1], source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(AlbumUiEvent.OnSongSwipedToQueue(album.songs[1]))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnDuplicateInQueueConfirmed)
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).songAlreadyQueued).isNull()
+            verify { enqueuer.addToQueue(listOf(album.songs[1])) }
+            assertThat(actions).containsExactly(AlbumUiAction.ShowSnackBar(R.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN the user already queued the track WHEN cancelling THEN the queue is left alone`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            val album = album(id = 10)
+            prepareScenario(
+                cached = album,
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = album.songs[1], source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(AlbumUiEvent.OnSongSwipedToQueue(album.songs[1]))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(AlbumUiEvent.OnDuplicateInQueueDismissed)
+            runCurrent()
+
+            // Then
+            assertThat((viewModel.uiState.value as AlbumUiState.Loaded).songAlreadyQueued).isNull()
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
         }
 
     @Test

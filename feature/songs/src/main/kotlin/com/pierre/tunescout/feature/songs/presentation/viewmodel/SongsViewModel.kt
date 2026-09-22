@@ -9,6 +9,7 @@ import androidx.paging.map
 import com.pierre.tunescout.core.audiosearch.AudioSearchAvailability
 import com.pierre.tunescout.core.audiosearch.ObservableAudioSearchQueries
 import com.pierre.tunescout.core.model.PlaybackContext
+import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
@@ -60,7 +61,7 @@ class SongsViewModel(
     private val enqueuer: Enqueuer,
     private val playableSongs: PlayableSongs,
     private val navigator: Navigator,
-    observablePlayback: ObservablePlayback,
+    private val observablePlayback: ObservablePlayback,
     observablePlayableSongs: ObservablePlayableSongs,
     observableDownloads: ObservableDownloads,
     audioSearchAvailability: AudioSearchAvailability,
@@ -75,6 +76,14 @@ class SongsViewModel(
     private val isAudioSearchAvailable = audioSearchAvailability.isAvailable()
     private val query = MutableStateFlow("")
     private val songPendingRemoval = MutableStateFlow<Song?>(null)
+    private val songAlreadyQueued = MutableStateFlow<Song?>(null)
+
+    /** The dialog asking about a song already queued is read with the player, which answers it. */
+    private val queueing: Flow<Queueing> = combine(
+        observablePlayback.observePlaybackState(),
+        songAlreadyQueued,
+        ::Queueing,
+    )
 
     /**
      * Started optimistically: the monitor reports the real state as soon as something collects it,
@@ -113,17 +122,18 @@ class SongsViewModel(
     val uiState: StateFlow<SongsUiState> = combine(
         query,
         savedSongs,
-        observablePlayback.observePlaybackState(),
+        queueing,
         songPendingRemoval,
         connection,
-    ) { query, saved, playback, pendingRemoval, connection ->
+    ) { query, saved, queueing, pendingRemoval, connection ->
         val recentlyPlayed = saved.recentlyPlayed
         SongsUiState(
             query = query,
             isAudioSearchAvailable = isAudioSearchAvailable,
             recentlyPlayed = recentlyPlayed,
-            nowPlaying = playback.nowPlaying,
+            nowPlaying = queueing.playback.nowPlaying,
             songPendingRemoval = pendingRemoval,
+            songAlreadyQueued = queueing.songAlreadyQueued,
             favoriteSongIds = saved.favoriteSongIds,
             isOffline = !connection.isOnline,
             unplayableSongIds = connection.playableSongs.findUnplayableIds(recentlyPlayed),
@@ -138,6 +148,7 @@ class SongsViewModel(
             recentlyPlayed = emptyList(),
             nowPlaying = null,
             songPendingRemoval = null,
+            songAlreadyQueued = null,
             favoriteSongIds = emptySet(),
             isOffline = false,
             unplayableSongIds = emptySet(),
@@ -184,6 +195,8 @@ class SongsViewModel(
         is SongsUiEvent.OnSongClicked -> play(event.song)
         is SongsUiEvent.OnSongOptionsClicked -> navigator.navigate(SongOptionsRoute(songId = event.song.id))
         is SongsUiEvent.OnSongSwipedToQueue -> addToQueue(event.song)
+        SongsUiEvent.OnDuplicateInQueueConfirmed -> addToQueueAgain()
+        SongsUiEvent.OnDuplicateInQueueDismissed -> songAlreadyQueued.value = null
         is SongsUiEvent.OnSongSwipedToFavorite -> toggleFavorite(event.song)
         is SongsUiEvent.OnRemoveRecentClicked -> songPendingRemoval.value = event.song
         SongsUiEvent.OnRemoveRecentConfirmed -> removeFromRecentlyPlayed()
@@ -228,9 +241,26 @@ class SongsViewModel(
         emitAction(SongsUiAction.ShowSnackBar(ComponentR.string.ui_song_unavailable_offline))
     }
 
-    /** A song the player cannot reach never enters the queue, so it does not stall on it. */
+    /**
+     * A song the player cannot reach never enters the queue, so it does not stall on it. One the
+     * user already queued only goes in again once they confirm it.
+     */
     private fun addToQueue(song: Song) {
         if (!playableSongs.isPlayable(song)) return showSongUnavailableOffline()
+        if (observablePlayback.observePlaybackState().value.isQueuedByUser(song.id)) {
+            songAlreadyQueued.value = song
+        } else {
+            enqueue(song)
+        }
+    }
+
+    private fun addToQueueAgain() {
+        val song = songAlreadyQueued.value ?: return
+        songAlreadyQueued.value = null
+        enqueue(song)
+    }
+
+    private fun enqueue(song: Song) {
         enqueuer.addToQueue(listOf(song))
         emitAction(SongsUiAction.ShowSnackBar(ComponentR.string.ui_added_to_queue))
     }
@@ -263,6 +293,16 @@ class SongsViewModel(
         val recentlyPlayed: List<Song>,
         val favoriteSongIds: Set<Long>,
         val downloadStatuses: Map<Long, SongDownloadStatus>,
+    )
+
+    /**
+     * @property playback what the player holds.
+     * @property songAlreadyQueued the song swiped into the queue while the user already had it
+     * queued, while the screen asks whether to add it again.
+     */
+    private data class Queueing(
+        val playback: PlaybackState,
+        val songAlreadyQueued: Song?,
     )
 
     /**

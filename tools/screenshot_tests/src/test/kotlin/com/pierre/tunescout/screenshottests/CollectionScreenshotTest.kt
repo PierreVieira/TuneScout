@@ -25,6 +25,7 @@ internal class CollectionScreenshotTest : ScreenshotTest() {
         isDownloadable = true,
         download = CollectionDownloadState.NotDownloaded,
         downloadStatuses = emptyMap(),
+        songAlreadyQueued = null,
     )
 
     @Test

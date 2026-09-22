@@ -9,6 +9,7 @@ import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.PlaybackContext
 import com.pierre.tunescout.core.model.PlaybackState
 import com.pierre.tunescout.core.model.PlaybackStatus
+import com.pierre.tunescout.core.model.QueueSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.model.SongDownloadStatus
 import com.pierre.tunescout.core.navigation.Navigator
@@ -22,6 +23,7 @@ import com.pierre.tunescout.core.testing.extension.MainDispatcherExtension
 import com.pierre.tunescout.core.testing.fake.FakeSongPlayback
 import com.pierre.tunescout.core.testing.fake.SongPlayRequest
 import com.pierre.tunescout.core.testing.fixture.playbackState
+import com.pierre.tunescout.core.testing.fixture.queueEntry
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.songs.R
 import com.pierre.tunescout.feature.songs.domain.usecase.SongsUseCases
@@ -210,6 +212,81 @@ class SongsViewModelTest {
             // Then
             verify { enqueuer.addToQueue(listOf(song(id = 7))) }
             assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(ComponentR.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN swiping it toward the end THEN asks before adding it again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                recentlyPlayed = listOf(song(id = 7)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 7), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnSongSwipedToQueue(song(id = 7)))
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.songAlreadyQueued).isEqualTo(song(id = 7))
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
+            assertThat(actions).isEmpty()
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN confirming THEN it is queued again`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                recentlyPlayed = listOf(song(id = 7)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 7), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(SongsUiEvent.OnSongSwipedToQueue(song(id = 7)))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnDuplicateInQueueConfirmed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.songAlreadyQueued).isNull()
+            verify { enqueuer.addToQueue(listOf(song(id = 7))) }
+            assertThat(actions).containsExactly(SongsUiAction.ShowSnackBar(ComponentR.string.ui_added_to_queue))
+        }
+
+    @Test
+    fun `GIVEN the user already queued the song WHEN cancelling THEN the queue is left alone`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                recentlyPlayed = listOf(song(id = 7)),
+                playback = playbackState(
+                    entries = listOf(
+                        queueEntry(song = song(id = 99)),
+                        queueEntry(song = song(id = 7), source = QueueSource.UserQueue),
+                    ),
+                ),
+            )
+            viewModel.onEvent(SongsUiEvent.OnSongSwipedToQueue(song(id = 7)))
+            runCurrent()
+
+            // When
+            viewModel.onEvent(SongsUiEvent.OnDuplicateInQueueDismissed)
+            runCurrent()
+
+            // Then
+            assertThat(viewModel.uiState.value.songAlreadyQueued).isNull()
+            verify(exactly = 0) { enqueuer.addToQueue(any()) }
         }
 
     @Test
