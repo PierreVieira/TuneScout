@@ -2,6 +2,41 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-22 — The library's list and grid are one grid
+
+**A change of view mode moves the items instead of replacing them.** The list and the grid used to
+be a `LazyColumn` and a `LazyVerticalGrid`, so picking the other mode composed every item anew and
+the screen simply cut from one to the other. They are now one `LazyVerticalGrid`, of one column or
+of as many as fit, so every item keeps its composition and its key: `animateItem` slides it to its
+place in the other layout, and the scroll position carries over. Each item is a `Layout` of the
+cover, the name and the subtitle, interpolating between the row's geometry and the cell's by a
+fraction one spring drives for the whole grid; the texts fade out and back in through the move,
+since halfway a name is over the cover's corner and ellipsized to a width that changes every
+frame. Cost: the row of the list is drawn twice over — by `LibraryItemRow` for the search results
+and by the cell at a fraction of 0 — and `LibraryItemCell` is a hand-written measure policy where
+a `Row` and a `Column` used to be.
+
+**The fraction is read at measure and draw time, never in the composition.** Every visible cell,
+the space between the grid's lines and the fade of the texts follow it on each frame, and a value
+read while composing would recompose them all on each frame. So the cells get a `() -> Float`, the
+line spacing is an `Arrangement.Vertical` whose `spacing` reads it, and the texts fade through a
+`saveLayer` taken only while they are translucent: a `graphicsLayer` would rasterize the glyphs
+through a layer of their own even at rest, and the README's list would no longer be the pixels it
+was.
+
+**A cell knows the two widths it rests at.** The grid hands an item its new width the moment the
+columns change, before the fraction has moved: a cell becoming a row would grow its cover to the
+whole width of the list and shrink it back, and a row becoming a cell would have its name clipped
+at the edge of the cell. So `LibraryContent` measures the list's width once, cuts the cell's from
+it the way `GridCells.Adaptive` does, and the item lays the row out at the one and the cell at the
+other whatever width it is being constrained to; it is clipped to its corners only at rest, so the
+row's name may overflow the cell it is becoming. Cost: a `BoxWithConstraints` around the grid.
+
+**The cover an item showed stays up until the one for its new size arrives.** The cell asks for
+the medium cover where the row asked for the thumbnail, and a tile growing between the two would
+go blank while the larger one loads, so `CoverImage` keeps the previous url's painter as the
+placeholder of the next.
+
 ## 2026-09-22 — Releases
 
 **A release is a GitHub release with the signed APK, cut by hand from `main` by the `release`
