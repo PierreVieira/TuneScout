@@ -51,6 +51,10 @@ private val buttonSize = 48.dp
 private val iconSize = 24.dp
 private val progressHeight = 2.dp
 
+/**
+ * The bar sits on the accent's container rather than on a neutral surface, so the song playing
+ * stands out from the list above it, and its progress is drawn in the accent itself.
+ */
 @Composable
 fun MiniPlayerContent(
     song: Song,
@@ -67,7 +71,7 @@ fun MiniPlayerContent(
                 .fillMaxWidth()
                 .padding(horizontal = TuneScoutSpacing.small, vertical = TuneScoutSpacing.extraSmall)
                 .clip(RoundedCornerShape(cardCornerRadius))
-                .background(TuneScoutColors.surfaceSubtle)
+                .background(TuneScoutColors.accentContainer)
                 .clickable(onClickLabel = openLabel) {
                     tappedSurface.surface = SharedArtworkSurface.MINI_PLAYER
                     onEvent(MiniPlayerUiEvent.OnClicked)
@@ -101,7 +105,7 @@ fun MiniPlayerContent(
                     Text(
                         text = song.artistName,
                         style = MaterialTheme.typography.bodySmall,
-                        color = TuneScoutColors.textSecondary,
+                        color = TuneScoutColors.textEmphasis,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.sharedTextBounds(
@@ -140,8 +144,8 @@ fun MiniPlayerContent(
 @Composable
 private fun ProgressLine(progress: Float) {
     val animated by animateFloatAsState(targetValue = progress, label = "miniPlayerProgress")
-    val trackColor = TuneScoutColors.surfaceSubtle
-    val playedColor = TuneScoutColors.trackActive
+    val trackColor = TuneScoutColors.elementSubtle
+    val playedColor = TuneScoutColors.accent
     Box(
         modifier = Modifier
             .fillMaxWidth()

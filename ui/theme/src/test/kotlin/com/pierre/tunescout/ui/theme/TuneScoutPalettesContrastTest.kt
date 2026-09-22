@@ -32,9 +32,10 @@ class TuneScoutPalettesContrastTest {
 
     /**
      * Muted text and the accent of a playing song's title sit on the background, on a sheet and on
-     * a subtle surface over the background (the mini player, the notice bar). The error colour
-     * labels a dialog's confirm button, on a sheet. A placeholder is only ever inside a field, which
-     * is a subtle surface over the background or over a sheet.
+     * a subtle surface over the background (the notice bar). The error colour labels a dialog's
+     * confirm button, on a sheet. A placeholder is only ever inside a field, which is a subtle
+     * surface over the background or over a sheet. The mini player draws its song's title and
+     * artist on the accent's container.
      *
      * @return the contrast of each of those pairs, by a name that says which one failed.
      */
@@ -53,6 +54,8 @@ class TuneScoutPalettesContrastTest {
             ("accent" to accent) to everywhere,
             ("error" to error) to mapOf("background" to background, "sheet" to sheet),
             ("textPlaceholder" to textPlaceholder) to fields,
+            ("textPrimary" to textPrimary) to mapOf("accentContainer" to accentContainer),
+            ("textEmphasis" to textEmphasis) to mapOf("accentContainer" to accentContainer),
         )
         return surfacesByText
             .flatMap { (text, surfaces) ->

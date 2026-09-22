@@ -18,7 +18,8 @@ Body text needs **4.5:1** against what it is drawn on, and an icon the user can 
 
 `TuneScoutPalettesContrastTest` measures each text token against every surface it is drawn on, in
 both palettes: `textSecondary`, `textTertiary` and the `accent` of a playing song's title on the
-background, a sheet and a subtle surface over the background; `error` on a sheet, where it labels a
+background, a sheet and a subtle surface over the background; `textPrimary` and `textEmphasis` on
+`accentContainer`, where the mini player draws its song; `error` on a sheet, where it labels a
 dialog's confirm button; `textPlaceholder` inside a field, on either. A new value that fails it is
 too light, however good it looks on one of them. Under dynamic colour `textSecondary` is
 `onSurfaceVariant`, which Material builds for text; `outline` is built for 3:1 and only feeds
