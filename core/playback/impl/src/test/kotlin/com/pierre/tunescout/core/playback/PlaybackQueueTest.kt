@@ -183,6 +183,44 @@ internal class PlaybackQueueTest {
     }
 
     @Test
+    fun `WHEN clearing the queue THEN only the currently playing entry survives`() {
+        // Given
+        startAlbum(startingAt = 1)
+        queue.addToQueue(listOf(song(id = 9)))
+
+        // When
+        queue.clear()
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(1L)
+        assertThat(entryIds()).isEqualTo(fakeExoPlayer.mediaIds)
+    }
+
+    @Test
+    fun `GIVEN the queue is playing mid-album WHEN clearing THEN everything but what is playing is dropped`() {
+        // Given
+        startAlbum(startingAt = 2)
+        queue.addToQueue(listOf(song(id = 9)))
+
+        // When
+        queue.clear()
+
+        // Then
+        assertThat(queuedSongIds()).containsExactly(2L)
+        assertThat(entryIds()).isEqualTo(fakeExoPlayer.mediaIds)
+    }
+
+    @Test
+    fun `GIVEN nothing was ever played WHEN clearing THEN nothing changes`() {
+        // When
+        queue.clear()
+
+        // Then
+        assertThat(queue.entries).isEmpty()
+        verify(exactly = 0) { fakeExoPlayer.player.removeMediaItems(any(), any()) }
+    }
+
+    @Test
     fun `WHEN moving an entry THEN the queue and the player timeline move together`() {
         // Given
         startAlbum(startingAt = 1)

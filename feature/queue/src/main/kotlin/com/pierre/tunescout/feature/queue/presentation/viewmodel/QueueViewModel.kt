@@ -17,6 +17,7 @@ import com.pierre.tunescout.feature.queue.presentation.model.QueueUiEvent
 import com.pierre.tunescout.feature.queue.presentation.model.QueueUiState
 import com.pierre.tunescout.ui.component.R
 import com.pierre.tunescout.ui.utils.ActionViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -37,18 +38,29 @@ class QueueViewModel(
         upNext = emptyList(),
         unplayableSongIds = emptySet(),
     )
+    private val isConfirmingClear = MutableStateFlow(false)
 
     val uiState: StateFlow<QueueUiState> = combine(
         observablePlayback.observePlaybackState(),
         observablePlayableSongs.observePlayableSongs(),
-        ::toUiState,
-    ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
+        isConfirmingClear,
+    ) { playback, playable, isConfirming ->
+        toUiState(playback, playable).copy(isConfirmingClear = isConfirming)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyUiState)
 
     fun onEvent(event: QueueUiEvent) = when (event) {
         QueueUiEvent.OnNowPlayingClicked -> openPlayer()
         is QueueUiEvent.OnEntryClicked -> skipTo(event.entryId)
         is QueueUiEvent.OnRemoveClicked -> queueControls.removeFromQueue(event.entryId)
         is QueueUiEvent.OnEntryMoved -> move(from = event.fromEntryId, to = event.toEntryId)
+        QueueUiEvent.OnClearQueueClicked -> isConfirmingClear.value = true
+        QueueUiEvent.OnClearQueueConfirmed -> clearQueue()
+        QueueUiEvent.OnClearQueueDismissed -> isConfirmingClear.value = false
+    }
+
+    private fun clearQueue() {
+        isConfirmingClear.value = false
+        queueControls.clearQueue()
     }
 
     /**

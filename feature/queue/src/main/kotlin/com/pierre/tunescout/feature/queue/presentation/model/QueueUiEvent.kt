@@ -15,4 +15,10 @@ sealed interface QueueUiEvent {
         val fromEntryId: String,
         val toEntryId: String,
     ) : QueueUiEvent
+
+    data object OnClearQueueClicked : QueueUiEvent
+
+    data object OnClearQueueConfirmed : QueueUiEvent
+
+    data object OnClearQueueDismissed : QueueUiEvent
 }

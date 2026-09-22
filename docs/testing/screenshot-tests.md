@@ -85,7 +85,7 @@ the repository. `isLandscape = true` covers the layouts that switch on width (`i
 | `SongsScreenshotTest` | recently played, empty, searching, searching scrolled under the header's shadow, searching with the header hidden, no results, offline with unplayable rows, unavailable search results, remove confirmation, inline header, no audio search |
 | `LibraryScreenshotTest` | list, grid, two-pane (top-bar create action), filtered, empty, search: recent, results and no results |
 | `CollectionScreenshotTest` | loading, loaded, favourites, empty, remove confirmation |
-| `QueueScreenshotTest` | playing, paused, context only, empty |
+| `QueueScreenshotTest` | playing, paused, context only, clear confirmation, empty |
 | `MiniPlayerScreenshotTest` | playing, paused, ended |
 | `AudioSearchScreenshotTest` | waiting for speech, hearing with a transcript, failed |
 | `ThemeSelectionScreenshotTest` | the three themes, dynamic colour on, dynamic colour unsupported, its info dialog |

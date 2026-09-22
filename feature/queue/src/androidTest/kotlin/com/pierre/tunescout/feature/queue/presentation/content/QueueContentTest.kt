@@ -129,6 +129,59 @@ class QueueContentTest {
     }
 
     @Test
+    fun clickingClearQueueEmitsAskingForConfirmation() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Clear queue").performClick()
+
+        assertThat(events).containsExactly(QueueUiEvent.OnClearQueueClicked)
+    }
+
+    @Test
+    fun givenNothingButTheNowPlayingSongThereIsNoClearQueueButton() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(
+                    uiState = loaded().copy(queuedByUser = emptyList(), upNext = emptyList()),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Clear queue").assertDoesNotExist()
+    }
+
+    @Test
+    fun confirmingClearQueueEmitsTheConfirmedEvent() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(isConfirmingClear = true), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Clear").performClick()
+
+        assertThat(events).containsExactly(QueueUiEvent.OnClearQueueConfirmed)
+    }
+
+    @Test
+    fun dismissingClearQueueEmitsTheDismissedEvent() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                QueueContent(uiState = loaded(isConfirmingClear = true), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Cancel").performClick()
+
+        assertThat(events).containsExactly(QueueUiEvent.OnClearQueueDismissed)
+    }
+
+    @Test
     fun movingAQueuedSongDownEmitsAMoveOntoTheNextEntry() = compose.use {
         setContent {
             TuneScoutTheme {
@@ -158,13 +211,17 @@ class QueueContentTest {
         )
     }
 
-    private fun loaded(status: PlaybackStatus = PlaybackStatus.Playing): QueueUiState = QueueUiState(
+    private fun loaded(
+        status: PlaybackStatus = PlaybackStatus.Playing,
+        isConfirmingClear: Boolean = false,
+    ): QueueUiState = QueueUiState(
         contextTitle = QueueContextTitle.Custom("Random Access Memories"),
         nowPlaying = queueEntry(song = song(id = 1, title = "Get Lucky")),
         status = status,
         queuedByUser = listOf(userEntry(id = 9, title = "One More Time")),
         upNext = listOf(queueEntry(song = song(id = 2, title = "Around the World"))),
         unplayableSongIds = emptySet(),
+        isConfirmingClear = isConfirmingClear,
     )
 
     private fun userEntry(

@@ -89,6 +89,15 @@ internal class PlaybackQueue(
         player.removeMediaItem(index)
     }
 
+    /** Drops every entry but the one at [currentIndex], which keeps playing undisturbed. */
+    fun clear() {
+        val index = currentIndex
+        if (index < 0) return
+        entries = entries.filterIndexed { position, _ -> position == index }
+        player.removeMediaItems(index + 1, player.mediaItemCount)
+        player.removeMediaItems(0, index)
+    }
+
     fun move(
         fromIndex: Int,
         toIndex: Int,

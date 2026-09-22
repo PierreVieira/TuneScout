@@ -49,6 +49,13 @@ internal class QueueScreenshotTest : ScreenshotTest() {
     }
 
     @Test
+    fun confirmingClear() {
+        snapshot(name = "confirming_clear") {
+            QueueSheet(playing.copy(isConfirmingClear = true))
+        }
+    }
+
+    @Test
     fun empty() {
         snapshot(name = "empty") {
             QueueSheet(

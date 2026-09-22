@@ -68,6 +68,27 @@ class QueueFlowTest {
         assertBothQueueTiersAreOnScreen()
     }
 
+    @Test
+    fun clearingTheQueueDropsEverythingButWhatIsPlaying() = compose.use {
+        waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
+        searchFor("daft")
+        waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
+
+        playSearchResult("Get Lucky")
+        queueSecondResultFromItsOptionsSheet()
+
+        onAllNodesWithText("Get Lucky")[0].performClick()
+        onNodeWithContentDescription("Open the queue").performClick()
+        assertBothQueueTiersAreOnScreen()
+
+        onNodeWithContentDescription("Clear queue").performClick()
+        waitUntilAtLeastOneExists(hasText("Clear the queue?"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Clear").performClick()
+
+        waitUntilDoesNotExist(hasText("Next in queue"), SCREEN_TIMEOUT_MILLIS)
+        onNode(hasTestTag("queue_entry") and hasText("Instant Crush")).assertDoesNotExist()
+    }
+
     /**
      * A landscape window leaves no room for results under the keyboard, so once [term] is typed this
      * closes it the way the search key does.

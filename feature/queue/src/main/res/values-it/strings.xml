@@ -12,4 +12,9 @@
     <string name="queue_empty_title">La coda è vuota</string>
     <string name="queue_empty_description">Aggiungi un brano o un intero album alla coda e apparirà qui.</string>
     <string name="queue_remove">Rimuovi dalla coda</string>
+    <string name="queue_clear">Svuota coda</string>
+    <string name="queue_clear_confirm_title">Svuotare la coda?</string>
+    <string name="queue_clear_confirm_message">Questo rimuove tutto tranne il brano in riproduzione.</string>
+    <string name="queue_clear_confirm_action">Svuota</string>
+    <string name="queue_confirm_cancel">Annulla</string>
 </resources>

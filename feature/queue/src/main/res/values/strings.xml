@@ -12,4 +12,9 @@
     <string name="queue_empty_title">The queue is empty</string>
     <string name="queue_empty_description">Add a song or a whole album to the queue and it will show up here.</string>
     <string name="queue_remove">Remove from the queue</string>
+    <string name="queue_clear">Clear queue</string>
+    <string name="queue_clear_confirm_title">Clear the queue?</string>
+    <string name="queue_clear_confirm_message">This removes everything except what\'s playing now.</string>
+    <string name="queue_clear_confirm_action">Clear</string>
+    <string name="queue_confirm_cancel">Cancel</string>
 </resources>
