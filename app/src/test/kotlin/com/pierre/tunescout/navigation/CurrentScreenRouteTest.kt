@@ -53,10 +53,14 @@ class CurrentScreenRouteTest {
     }
 
     @Test
-    fun `GIVEN two panes and the tabs on screen WHEN asking THEN the player pane replaces the mini player`() {
+    fun `GIVEN two panes and the tabs alone WHEN asking THEN the player pane replaces the mini player`() {
         assertThat(listOf(HomeRoute).isMiniPlayerAllowed(isTwoPane = true)).isFalse()
-        assertThat(listOf(HomeRoute, AlbumRoute(albumId = 10)).isMiniPlayerAllowed(isTwoPane = true)).isFalse()
         assertThat(listOf(HomeRoute, SongOptionsRoute(songId = 1)).isMiniPlayerAllowed(isTwoPane = true)).isFalse()
+    }
+
+    @Test
+    fun `GIVEN two panes and a detail beside the tabs WHEN asking THEN the mini player is still allowed`() {
+        assertThat(listOf(HomeRoute, AlbumRoute(albumId = 10)).isMiniPlayerAllowed(isTwoPane = true)).isTrue()
     }
 
     @Test

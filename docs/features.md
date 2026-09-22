@@ -24,7 +24,7 @@ screenshots.
   repeat mode it had.
 - **Two tabs**: Home, which is search and recently played, and Your Library. The bar at the bottom
   becomes a navigation rail as soon as the window has width to spare, so a phone turned sideways
-  gives the list its height back. On a window wider still — a tablet, or most phones on their side —
+  gives the list its height back. From 800dp wide — a tablet, or most phones on their side —
   the player sits beside the tabs in place of the mini player, with an empty state until something
   plays. An album opens in that pane, over the player, and Back brings the player back.
 - **Library** of your own: liked songs, the playlists you create and the albums you like, as a list
