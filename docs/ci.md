@@ -117,14 +117,14 @@ python3 scripts/bump_version.py none
 
 The run, in order:
 
-1. Refuses a version that is already released, as a tag `v<version>`. After a bump, that means the
-   previous bump pull request is not merged, so `main` still has the old version and the bump lands
-   on the same number. Merge it and run again.
+1. Refuses a version that is already released, as a tag named after it: `1.0.0`, no `v`. After a
+   bump, that means the previous bump pull request is not merged, so `main` still has the old
+   version and the bump lands on the same number. Merge it and run again.
 2. Builds `:app:assembleRelease` with the bumped version, signed with the release key. A build
    failure stops here, with nothing pushed.
 3. On a bump, commits the two version lines as `github-actions[bot]` on
    `chore/bump-version-<version>` and pushes the branch.
-4. Creates the release `v<version>`, tagged on that commit, or on `main`'s head for `none`, with
+4. Creates the release `<version>`, tagged on that commit, or on `main`'s head for `none`, with
    notes generated from the pull requests since the previous tag. It carries two files: the APK,
    `tunescout-<version>.apk`, and the R8 `mapping.txt` of that build, which is the only way to read
    a stack trace from it.

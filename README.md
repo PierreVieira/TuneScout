@@ -89,11 +89,11 @@ The checks CI runs, and how to run each locally, are in [Getting started](docs/g
 
 ## 📦 Releases
 
-Every [release](https://github.com/PierreVieira/TuneScout/releases) carries the signed APK, ready
-to install on any device on API 26+. Releases are cut by the `release` workflow, run by hand from
+Every [release](https://github.com/PierreVieira/TuneScout/releases) carries the signed APK, ready to
+install on any device on API 26+. Releases are cut by the `release` workflow, run by hand from
 `main`: it bumps the version by a patch, minor or major step, or keeps the one `main` has, builds
-and signs the APK, publishes it as `v<version>`, and opens the pull request that brings the bump
-back to `main`. How to run it, and how the signing key is set up, are in
+and signs the APK, publishes it as a release named after the version, and opens the pull request
+that brings the bump back to `main`. How to run it, and how the signing key is set up, are in
 [Continuous integration](docs/ci.md#release).
 
 ## 🚧 Not done

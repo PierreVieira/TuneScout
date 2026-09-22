@@ -1,7 +1,7 @@
 name: release
 
 # Cuts a release from main, by hand: bumps the version, builds the release APK signed with the
-# project's key, publishes it on a GitHub release tagged v<version>, and opens the pull request
+# project's key, publishes it on a GitHub release tagged <version>, and opens the pull request
 # that carries the bump back to main. See docs/ci.md#release.
 on:
   workflow_dispatch:
@@ -81,8 +81,8 @@ jobs:
           BUMP: ${{ inputs.bump }}
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" > /dev/null; then
-            echo "::error::v$VERSION is already released. Merge its bump pull request, or pick a bump."
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" > /dev/null; then
+            echo "::error::$VERSION is already released. Merge its bump pull request, or pick a bump."
             exit 1
           fi
           if [ "$BUMP" != none ] \
@@ -133,9 +133,9 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "tunescout-$VERSION.apk"
           # Deobfuscates the stack traces of this build; the APK alone cannot
           cp app/build/outputs/mapping/release/mapping.txt "tunescout-$VERSION-mapping.txt"
-          gh release create "v$VERSION" "tunescout-$VERSION.apk" "tunescout-$VERSION-mapping.txt" \
-            --target "$(git rev-parse HEAD)" --title "v$VERSION" --generate-notes
-          echo "url=$(gh release view "v$VERSION" --json url --jq .url)" >> "$GITHUB_OUTPUT"
+          gh release create "$VERSION" "tunescout-$VERSION.apk" "tunescout-$VERSION-mapping.txt" \
+            --target "$(git rev-parse HEAD)" --title "$VERSION" --generate-notes
+          echo "url=$(gh release view "$VERSION" --json url --jq .url)" >> "$GITHUB_OUTPUT"
 
       # Pushed from the workflow's own token, so the checks do not run on this pull request: the
       # only change is the two version lines, on the commit this very run built and released.
@@ -147,7 +147,7 @@ jobs:
           RELEASE_URL: ${{ steps.release.outputs.url }}
         run: |
           cat > "$RUNNER_TEMP/pr-body.md" <<EOF
-          Brings the version of [v$VERSION]($RELEASE_URL) to \`main\`: \`versionName\` $VERSION,
+          Brings the version of [$VERSION]($RELEASE_URL) to \`main\`: \`versionName\` $VERSION,
           \`versionCode\` $VERSION_CODE.
 
           Opened by the \`release\` workflow. The release was built from this branch's commit and

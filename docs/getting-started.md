@@ -40,9 +40,9 @@ gh workflow run release -f bump=patch
 ```
 
 `bump` is `patch`, `minor`, `major` or `none`. The workflow builds and signs the APK, publishes it
-on a GitHub release tagged `v<version>` and, when the version changed, opens the pull request that
-carries the bump to `main`. What it needs and what each step does are in
-[Continuous integration](ci.md#release).
+on a GitHub release named after the version, `1.0.0`, and, when the version changed, opens the pull
+request that carries the bump to `main`. What it needs and what each step does are in [Continuous
+integration](ci.md#release).
 
 ## Measuring performance
 
