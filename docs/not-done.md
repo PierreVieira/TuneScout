@@ -14,7 +14,6 @@ larger ones is in [Decisions and trade-offs](decisions.md).
   be read.
 - The light palette is derived from the Figma dark one rather than designed: the file only
   specifies dark.
-- On a wide window the player sits beside the tabs, but does not put its queue beside it.
 
 ## Search and playback
 
