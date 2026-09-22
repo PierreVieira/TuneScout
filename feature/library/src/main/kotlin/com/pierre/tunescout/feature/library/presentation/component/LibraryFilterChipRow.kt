@@ -25,6 +25,8 @@ import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
 private const val CLEAR_KEY = "clear"
+private const val CONTENT_TYPE_CLEAR = "clear"
+private const val CONTENT_TYPE_FILTER = "filter"
 
 /**
  * Nothing selected means everything, and tapping a chip that is on turns it off — the way the same
@@ -52,11 +54,11 @@ internal fun LibraryFilterChipRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (selected.isNotEmpty()) {
-            item(key = CLEAR_KEY) {
+            item(key = CLEAR_KEY, contentType = CONTENT_TYPE_CLEAR) {
                 ClearFiltersButton(onClick = onClearClick, modifier = Modifier.animateItem())
             }
         }
-        items(items = filters, key = { filter -> filter.name }) { filter ->
+        items(items = filters, key = { filter -> filter.name }, contentType = { CONTENT_TYPE_FILTER }) { filter ->
             FilterChip(
                 selected = filter in selected,
                 onClick = { onFilterClick(filter) },

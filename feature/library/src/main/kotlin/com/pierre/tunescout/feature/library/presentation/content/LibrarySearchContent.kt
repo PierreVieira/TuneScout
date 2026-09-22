@@ -37,6 +37,8 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 import com.pierre.tunescout.ui.utils.semantics.screenPane
 import com.pierre.tunescout.ui.component.R as ComponentR
 
+private const val CONTENT_TYPE_ITEM = "item"
+
 @Composable
 fun LibrarySearchContent(
     uiState: LibrarySearchUiState,
@@ -158,7 +160,7 @@ private fun ItemList(
             .fillMaxHeight(),
         contentPadding = PaddingValues(bottom = TuneScoutSpacing.extraLarge),
     ) {
-        items(items = items, key = { item -> item.key.toString() }) { item ->
+        items(items = items, key = { item -> item.key.toString() }, contentType = { CONTENT_TYPE_ITEM }) { item ->
             LibraryItemRow(
                 item = item,
                 name = item.getName(favoritesName, stringResource(R.string.library_downloaded_songs)),
