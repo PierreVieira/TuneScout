@@ -127,16 +127,26 @@ internal class PlaybackQueue(
      * Puts [timeline] in place around the entry playing, which it keeps at [QueueTimeline.startIndex]:
      * the songs before and after it are replaced, never the song itself, so it plays on without a
      * gap.
+     *
+     * The songs before it go in first. Asked from inside one of the player's own callbacks — the
+     * way the media session's shuffle switch reaches the queue — both edits reach the session only
+     * once the callback returns, each paired with where the player is by then. Were the songs after
+     * the current one put in first, that first timeline could end short of where the player is
+     * once the ones before it are back, and the session refuses a position past the end.
      */
     private fun rearrange(timeline: QueueTimeline) {
         val index = currentIndex
         unshuffledOrder = timeline.unshuffledOrder
         entries = timeline.entries
         if (index < 0) return
-        val upcoming = timeline.entries.drop(timeline.startIndex + 1)
         val played = timeline.entries.take(timeline.startIndex)
-        player.replaceMediaItems(index + 1, player.mediaItemCount, upcoming.map(mediaItemFactory::createMediaItem))
+        val upcoming = timeline.entries.drop(timeline.startIndex + 1)
         player.replaceMediaItems(0, index, played.map(mediaItemFactory::createMediaItem))
+        player.replaceMediaItems(
+            timeline.startIndex + 1,
+            player.mediaItemCount,
+            upcoming.map(mediaItemFactory::createMediaItem),
+        )
     }
 
     private fun replaceWith(

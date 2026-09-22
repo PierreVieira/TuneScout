@@ -37,9 +37,13 @@ internal class FakeExoPlayer {
         }
         every { removeMediaItem(any()) } answers { timeline.removeAt(firstArg()) }
         every { replaceMediaItems(any(), any(), any()) } answers {
-            val range = timeline.subList(firstArg(), secondArg())
+            val fromIndex = firstArg<Int>()
+            val toIndex = secondArg<Int>()
+            val items = thirdArg<List<MediaItem>>()
+            val range = timeline.subList(fromIndex, toIndex)
             range.clear()
-            range.addAll(thirdArg<List<MediaItem>>())
+            range.addAll(items)
+            if (currentItemIndex >= toIndex) currentItemIndex += items.size - (toIndex - fromIndex)
         }
         every { moveMediaItem(any(), any()) } answers {
             timeline.add(secondArg(), timeline.removeAt(firstArg()))
