@@ -64,7 +64,7 @@ internal class RoomDownloadLocalDataSource(
 
     override suspend fun removeCollection(key: LibraryItemKey) {
         val kind = key.toDownloadedCollectionKindOrNull() ?: return
-        downloadDao.deleteCollection(
+        downloadDao.deleteCollectionWithItsSongs(
             kind = kind.name,
             collectionId = key.toDownloadedCollectionId(),
         )

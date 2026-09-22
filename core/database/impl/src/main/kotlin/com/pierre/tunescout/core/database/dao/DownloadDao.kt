@@ -2,6 +2,7 @@ package com.pierre.tunescout.core.database.dao
 
 import androidx.room3.Dao
 import androidx.room3.Query
+import androidx.room3.Transaction
 import androidx.room3.Upsert
 import com.pierre.tunescout.core.database.entity.DownloadedCollectionEntity
 import com.pierre.tunescout.core.database.entity.DownloadedSongEntity
@@ -36,6 +37,38 @@ internal interface DownloadDao {
         kind: String,
         collectionId: Long,
     )
+
+    /** The songs of the collection are picked the same way [observeWantedSongs] picks them. */
+    @Query(
+        """
+        DELETE FROM downloaded_songs
+        WHERE songId IN (
+            SELECT id FROM songs WHERE :kind = 'Album' AND albumId = :collectionId
+            UNION
+            SELECT songId FROM playlist_songs WHERE :kind = 'Playlist' AND playlistId = :collectionId
+            UNION
+            SELECT songId FROM favorite_songs WHERE :kind = 'Favorites'
+        )
+        """,
+    )
+    suspend fun deleteSongsOfCollection(
+        kind: String,
+        collectionId: Long,
+    )
+
+    /**
+     * Taking a collection back also takes back the own request of each of its songs, so none of
+     * them stays on the device just because it was once downloaded by itself too. A song another
+     * downloaded collection still holds stays, since nothing excludes it.
+     */
+    @Transaction
+    suspend fun deleteCollectionWithItsSongs(
+        kind: String,
+        collectionId: Long,
+    ) {
+        deleteSongsOfCollection(kind = kind, collectionId = collectionId)
+        deleteCollection(kind = kind, collectionId = collectionId)
+    }
 
     @Query(
         """
