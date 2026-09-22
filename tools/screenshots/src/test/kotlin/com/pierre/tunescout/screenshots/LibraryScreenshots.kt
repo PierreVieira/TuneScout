@@ -1,5 +1,6 @@
 package com.pierre.tunescout.screenshots
 
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.content.LibraryContent
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
@@ -42,6 +43,7 @@ internal class LibraryScreenshots : ReadmeScreenshotsTest() {
             ),
         ),
         viewMode = LibraryViewMode.LIST,
+        gridColumns = LibraryGridColumns.TWO,
         filters = emptySet(),
         downloadedKeys = emptySet(),
     )
@@ -62,7 +64,7 @@ internal class LibraryScreenshots : ReadmeScreenshotsTest() {
         capture(
             fileName = "library_grid",
             title = "Or see them as covers",
-            description = "The same library in a grid, remembered between launches",
+            description = "The same library as covers, two to four per row, remembered between launches",
         ) {
             LibraryContent(uiState = library.copy(viewMode = LibraryViewMode.GRID), isTwoPane = false, onEvent = {})
         }

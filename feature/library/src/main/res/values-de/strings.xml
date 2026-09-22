@@ -19,6 +19,8 @@
     <string name="library_create_playlist">Playlist erstellen</string>
     <string name="library_view_as_grid">Als Raster anzeigen</string>
     <string name="library_view_as_list">Als Liste anzeigen</string>
+    <string name="library_grid_columns">Elemente pro Zeile</string>
+    <string name="library_grid_columns_state">%1$d pro Zeile</string>
     <string name="library_open_item">Öffnen</string>
     <string name="library_search_placeholder">In deiner Bibliothek suchen</string>
     <string name="library_recent_searches">Letzte Suchen</string>

@@ -19,6 +19,8 @@
     <string name="library_create_playlist">Crear playlist</string>
     <string name="library_view_as_grid">Ver en cuadrícula</string>
     <string name="library_view_as_list">Ver en lista</string>
+    <string name="library_grid_columns">Elementos por fila</string>
+    <string name="library_grid_columns_state">%1$d por fila</string>
     <string name="library_open_item">Abrir</string>
     <string name="library_search_placeholder">Buscar en tu biblioteca</string>
     <string name="library_recent_searches">Búsquedas recientes</string>

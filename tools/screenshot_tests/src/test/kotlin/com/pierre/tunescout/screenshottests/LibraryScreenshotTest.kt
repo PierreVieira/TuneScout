@@ -2,6 +2,7 @@ package com.pierre.tunescout.screenshottests
 
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.content.LibraryContent
 import com.pierre.tunescout.feature.library.presentation.content.LibrarySearchContent
@@ -39,6 +40,7 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
         LibraryUiState(
             items = items,
             viewMode = LibraryViewMode.LIST,
+            gridColumns = LibraryGridColumns.TWO,
             filters = emptySet(),
             downloadedKeys = emptySet(),
         )
@@ -54,6 +56,18 @@ internal class LibraryScreenshotTest : ScreenshotTest() {
     fun grid() {
         snapshot(name = "grid") {
             LibraryContent(uiState = library.copy(viewMode = LibraryViewMode.GRID), isTwoPane = false, onEvent = {})
+        }
+    }
+
+    /** The tightest of the three sizes, where a name has the least room under its cover. */
+    @Test
+    fun gridFourPerRow() {
+        snapshot(name = "grid_four_per_row") {
+            LibraryContent(
+                uiState = library.copy(viewMode = LibraryViewMode.GRID, gridColumns = LibraryGridColumns.FOUR),
+                isTwoPane = false,
+                onEvent = {},
+            )
         }
     }
 

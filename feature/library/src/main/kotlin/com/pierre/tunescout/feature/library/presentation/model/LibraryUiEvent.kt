@@ -16,6 +16,8 @@ sealed interface LibraryUiEvent {
         val viewMode: LibraryViewMode,
     ) : LibraryUiEvent
 
+    data object OnGridColumnsClicked : LibraryUiEvent
+
     data class OnFilterClicked(
         val filter: LibraryFilter,
     ) : LibraryUiEvent

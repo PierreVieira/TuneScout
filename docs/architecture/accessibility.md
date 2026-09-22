@@ -90,7 +90,7 @@ A new endless animation makes the same check.
   - one of several → `selectable(role = Role.RadioButton)` inside a `selectableGroup()` (the theme
     cards, the library's list/grid toggle);
   - more than two states → a button with a `stateDescription` (repeat: "Off", "Whole queue",
-    "This song").
+    "This song"; the library grid's items per row: "2 per row", "3 per row", "4 per row").
 - **What a tap does.** A clickable row passes `onClickLabel`, so TalkBack says "double tap to play"
   instead of "to activate". `SongRow` defaults to "Play".
 - **Outcomes the user did not navigate to.** A result that appears on its own is a live region:

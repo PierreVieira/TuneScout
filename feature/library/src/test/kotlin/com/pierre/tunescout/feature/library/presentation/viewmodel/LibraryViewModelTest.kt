@@ -18,6 +18,7 @@ import com.pierre.tunescout.core.testing.fixture.albumSummary
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.LibraryUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
@@ -38,6 +39,7 @@ class LibraryViewModelTest {
     private lateinit var viewModel: LibraryViewModel
     private lateinit var navigator: Navigator
     private lateinit var storedViewMode: MutableStateFlow<LibraryViewMode>
+    private lateinit var storedGridColumns: MutableStateFlow<LibraryGridColumns>
 
     @Test
     fun `GIVEN liked songs and playlists WHEN observing THEN puts liked songs first`() =
@@ -135,6 +137,33 @@ class LibraryViewModelTest {
         // Then
         assertThat(storedViewMode.value).isEqualTo(LibraryViewMode.GRID)
         assertThat(viewModel.uiState.value.viewMode).isEqualTo(LibraryViewMode.GRID)
+    }
+
+    @Test
+    fun `GIVEN two per row WHEN tapping items per row THEN three are stored`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(gridColumns = LibraryGridColumns.TWO)
+
+        // When
+        viewModel.onEvent(LibraryUiEvent.OnGridColumnsClicked)
+        runCurrent()
+
+        // Then
+        assertThat(storedGridColumns.value).isEqualTo(LibraryGridColumns.THREE)
+        assertThat(viewModel.uiState.value.gridColumns).isEqualTo(LibraryGridColumns.THREE)
+    }
+
+    @Test
+    fun `GIVEN four per row WHEN tapping items per row THEN it is back to two`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(gridColumns = LibraryGridColumns.FOUR)
+
+        // When
+        viewModel.onEvent(LibraryUiEvent.OnGridColumnsClicked)
+        runCurrent()
+
+        // Then
+        assertThat(storedGridColumns.value).isEqualTo(LibraryGridColumns.TWO)
     }
 
     @Test
@@ -509,10 +538,12 @@ class LibraryViewModelTest {
         playlists: List<Playlist> = emptyList(),
         albums: List<AlbumSummary> = emptyList(),
         viewMode: LibraryViewMode = LibraryViewMode.LIST,
+        gridColumns: LibraryGridColumns = LibraryGridColumns.TWO,
         downloadedCollections: Set<LibraryItemKey> = emptySet(),
         downloadedSongs: List<Song> = emptyList(),
     ) {
         storedViewMode = MutableStateFlow(viewMode)
+        storedGridColumns = MutableStateFlow(gridColumns)
         navigator = mockk(relaxUnitFun = true)
         viewModel = LibraryViewModel(
             useCases = LibraryUseCases(
@@ -521,6 +552,8 @@ class LibraryViewModelTest {
                 observeFavoriteAlbums = { flowOf(albums) },
                 observeViewMode = { storedViewMode },
                 setViewMode = { mode -> storedViewMode.value = mode },
+                observeGridColumns = { storedGridColumns },
+                setGridColumns = { columns -> storedGridColumns.value = columns },
                 observeCollectionDownloads = { flowOf(downloadedCollections) },
                 observeDownloadedSongs = { flowOf(downloadedSongs) },
             ),

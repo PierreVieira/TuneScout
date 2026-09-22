@@ -9,12 +9,14 @@ import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.albumSummary
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.domain.repository.LibraryRepository
 import com.pierre.tunescout.feature.library.domain.usecase.impl.CreatePlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.DeletePlaylistUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveFavoriteAlbumsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveFavoritesUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveLibraryGridColumnsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveLibraryViewModeUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistSongsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ObservePlaylistUseCase
@@ -23,6 +25,7 @@ import com.pierre.tunescout.feature.library.domain.usecase.impl.ObserveRecentLib
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RecordLibrarySearchUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.RemoveLibrarySearchUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ReorderPlaylistSongsUseCase
+import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryGridColumnsUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.SetLibraryViewModeUseCase
 import com.pierre.tunescout.feature.library.domain.usecase.impl.ToggleSongFavoriteUseCase
 import kotlinx.coroutines.flow.Flow
@@ -130,6 +133,21 @@ class LibraryUseCasesTest {
     }
 
     @Test
+    fun `GIVEN a chosen grid size WHEN observing it THEN it comes back`() = runTest {
+        // Given
+        prepareScenario(gridColumns = LibraryGridColumns.FOUR)
+
+        // When
+        val observed = ObserveLibraryGridColumnsUseCase(repository)()
+
+        // Then
+        observed.test {
+            assertThat(awaitItem()).isEqualTo(LibraryGridColumns.FOUR)
+            awaitComplete()
+        }
+    }
+
+    @Test
     fun `GIVEN recent searches WHEN observing them THEN they come back in order`() = runTest {
         // Given
         val keys = listOf(LibraryItemKey.Favorites, LibraryItemKey.Playlist(playlistId = 7))
@@ -221,6 +239,18 @@ class LibraryUseCasesTest {
     }
 
     @Test
+    fun `WHEN choosing a grid size THEN it is stored`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        SetLibraryGridColumnsUseCase(repository)(LibraryGridColumns.THREE)
+
+        // Then
+        assertThat(repository.storedGridColumns).containsExactly(LibraryGridColumns.THREE)
+    }
+
+    @Test
     fun `WHEN opening an item from the search THEN it becomes a recent search`() = runTest {
         // Given
         prepareScenario()
@@ -251,6 +281,7 @@ class LibraryUseCasesTest {
         favoriteAlbums: List<AlbumSummary> = emptyList(),
         recentSearches: List<LibraryItemKey> = emptyList(),
         viewMode: LibraryViewMode = LibraryViewMode.LIST,
+        gridColumns: LibraryGridColumns = LibraryGridColumns.TWO,
         createdPlaylistId: Long = 1,
     ) {
         repository = FakeLibraryRepository(
@@ -260,6 +291,7 @@ class LibraryUseCasesTest {
             favoriteAlbums = favoriteAlbums,
             recentSearches = recentSearches,
             viewMode = viewMode,
+            gridColumns = gridColumns,
             createdPlaylistId = createdPlaylistId,
         )
     }
@@ -272,6 +304,7 @@ private class FakeLibraryRepository(
     private val favoriteAlbums: List<AlbumSummary>,
     private val recentSearches: List<LibraryItemKey>,
     private val viewMode: LibraryViewMode,
+    private val gridColumns: LibraryGridColumns,
     private val createdPlaylistId: Long,
 ) : LibraryRepository {
     val observedPlaylistIds = mutableListOf<Long>()
@@ -282,6 +315,7 @@ private class FakeLibraryRepository(
     val addedFavorites = mutableListOf<Song>()
     val removedFavoriteIds = mutableListOf<Long>()
     val storedViewModes = mutableListOf<LibraryViewMode>()
+    val storedGridColumns = mutableListOf<LibraryGridColumns>()
     val recordedSearches = mutableListOf<LibraryItemKey>()
     val removedSearches = mutableListOf<LibraryItemKey>()
 
@@ -303,10 +337,16 @@ private class FakeLibraryRepository(
 
     override fun observeViewMode(): Flow<LibraryViewMode> = flowOf(viewMode)
 
+    override fun observeGridColumns(): Flow<LibraryGridColumns> = flowOf(gridColumns)
+
     override fun observeRecentSearches(): Flow<List<LibraryItemKey>> = flowOf(recentSearches)
 
     override suspend fun setViewMode(viewMode: LibraryViewMode) {
         storedViewModes += viewMode
+    }
+
+    override suspend fun setGridColumns(columns: LibraryGridColumns) {
+        storedGridColumns += columns
     }
 
     override suspend fun createPlaylist(name: String): Long {

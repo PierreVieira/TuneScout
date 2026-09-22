@@ -4,6 +4,7 @@ import com.pierre.tunescout.core.model.AlbumSummary
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import kotlinx.coroutines.flow.Flow
 
@@ -20,9 +21,13 @@ interface LibraryRepository {
 
     fun observeViewMode(): Flow<LibraryViewMode>
 
+    fun observeGridColumns(): Flow<LibraryGridColumns>
+
     fun observeRecentSearches(): Flow<List<LibraryItemKey>>
 
     suspend fun setViewMode(viewMode: LibraryViewMode)
+
+    suspend fun setGridColumns(columns: LibraryGridColumns)
 
     suspend fun createPlaylist(name: String): Long
 

@@ -1,14 +1,20 @@
 package com.pierre.tunescout.feature.library.presentation.content
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,9 +40,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.library.R
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.component.LibraryArtworkSize
 import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChipRow
+import com.pierre.tunescout.feature.library.presentation.component.LibraryGridColumnsButton
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemCell
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemWidths
 import com.pierre.tunescout.feature.library.presentation.component.LibraryViewModeToggle
@@ -53,8 +61,6 @@ import com.pierre.tunescout.ui.utils.scroll.hideableTopBar
 import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.utils.semantics.screenPane
 
-private val minCellWidth = 160.dp
-private val gridColumns = GridCells.Adaptive(minSize = minCellWidth)
 private val gridColumnSpacing = TuneScoutSpacing.medium
 private val fabSize = 56.dp
 private val fabListBottomPadding = fabSize + TuneScoutSpacing.screen * 2
@@ -162,7 +168,7 @@ private fun Header(
             horizontalPadding = TuneScoutSpacing.large,
             modifier = Modifier.padding(vertical = TuneScoutSpacing.small),
         )
-        SectionBar(viewMode = uiState.viewMode, onEvent = onEvent)
+        SectionBar(viewMode = uiState.viewMode, gridColumns = uiState.gridColumns, onEvent = onEvent)
     }
 }
 
@@ -203,6 +209,7 @@ private fun TitleRow(
 @Composable
 private fun SectionBar(
     viewMode: LibraryViewMode,
+    gridColumns: LibraryGridColumns,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
     Row(
@@ -219,6 +226,11 @@ private fun SectionBar(
                 .weight(1f)
                 .semantics { heading() },
         )
+        GridColumnsAction(
+            isVisible = viewMode == LibraryViewMode.GRID,
+            columns = gridColumns,
+            onClick = { onEvent(LibraryUiEvent.OnGridColumnsClicked) },
+        )
         LibraryViewModeToggle(
             viewMode = viewMode,
             onViewModeClick = { mode -> onEvent(LibraryUiEvent.OnViewModeSelected(mode)) },
@@ -227,7 +239,27 @@ private fun SectionBar(
 }
 
 /**
- * The list and the grid are one grid, of one column or of as many as fit, so a change of view mode
+ * The size of the grid is only offered while there is a grid: a list has one column and nothing to
+ * size. The button slides out from beside the toggle as the grid is picked and back behind it as the
+ * list is, so the list's bar stays as bare as it was.
+ */
+@Composable
+private fun RowScope.GridColumnsAction(
+    isVisible: Boolean,
+    columns: LibraryGridColumns,
+    onClick: () -> Unit,
+) {
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn() + expandHorizontally(),
+        exit = fadeOut() + shrinkHorizontally(),
+    ) {
+        LibraryGridColumnsButton(columns = columns, onClick = onClick)
+    }
+}
+
+/**
+ * The list and the grid are one grid, of one column or of as many as the user picked, so a change of view mode
  * keeps every item in the composition and moves it instead of replacing it: each cell morphs between
  * its row and its cell shape at the pace of [rememberGridFraction] while `animateItem` slides it to
  * its new place, and the scroll position carries over.
@@ -241,9 +273,12 @@ private fun LibraryItemGrid(
     val gridFraction = rememberGridFraction(uiState.viewMode)
     val artworkSize = LibraryArtworkSize.of(uiState.viewMode)
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val widths = rememberItemWidths(availableWidth = maxWidth)
+        val columns = remember(uiState.viewMode, uiState.gridColumns) {
+            columnsOf(viewMode = uiState.viewMode, gridColumns = uiState.gridColumns)
+        }
+        val widths = rememberItemWidths(availableWidth = maxWidth, gridColumns = uiState.gridColumns)
         LazyVerticalGrid(
-            columns = columnsOf(uiState.viewMode),
+            columns = columns,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = TuneScoutSpacing.small,
@@ -273,17 +308,22 @@ private fun LibraryItemGrid(
 
 /**
  * The widths an item rests at, from the width the grid has: the whole of it as a row, and as a
- * cell the first of the columns [gridColumns] cuts it into, the way the grid itself cuts it.
+ * cell the first of the [gridColumns] the grid cuts it into, the way the grid itself cuts it.
  *
  * @return the widths for every item of a grid [availableWidth] wide.
  */
 @Composable
-private fun rememberItemWidths(availableWidth: Dp): LibraryItemWidths {
+private fun rememberItemWidths(
+    availableWidth: Dp,
+    gridColumns: LibraryGridColumns,
+): LibraryItemWidths {
     val density = LocalDensity.current
-    return remember(availableWidth, density) {
+    return remember(availableWidth, gridColumns, density) {
         val listWidth = with(density) { availableWidth.roundToPx() }
         val spacing = with(density) { gridColumnSpacing.roundToPx() }
-        val cellWidths = with(gridColumns) { density.calculateCrossAxisCellSizes(listWidth, spacing) }
+        val cellWidths = with(GridCells.Fixed(gridColumns.count)) {
+            density.calculateCrossAxisCellSizes(listWidth, spacing)
+        }
         LibraryItemWidths(list = listWidth, cell = cellWidths.first())
     }
 }
@@ -305,9 +345,12 @@ private fun rememberGridFraction(viewMode: LibraryViewMode): () -> Float {
     return remember(fraction) { { fraction.value } }
 }
 
-private fun columnsOf(viewMode: LibraryViewMode): GridCells = when (viewMode) {
+private fun columnsOf(
+    viewMode: LibraryViewMode,
+    gridColumns: LibraryGridColumns,
+): GridCells = when (viewMode) {
     LibraryViewMode.LIST -> GridCells.Fixed(LIST_COLUMNS)
-    LibraryViewMode.GRID -> gridColumns
+    LibraryViewMode.GRID -> GridCells.Fixed(gridColumns.count)
 }
 
 /**

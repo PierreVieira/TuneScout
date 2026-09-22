@@ -43,7 +43,7 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded and liked, with the overflow beside the heart and on every track. |
 | `theme.png` | `ThemeSelectionScreenshots` | Light, dark, or whatever the phone says | The theme sheet over the songs screen, dark selected, dynamic colors off. |
 | `library.png` | `LibraryScreenshots.library` | Keep what you like | The library tab as a list: liked songs, three playlists (one still empty) and a liked album, with no filter chip picked. |
-| `library_grid.png` | `LibraryScreenshots.libraryGrid` | Or see them as covers | The same library in the grid view. |
+| `library_grid.png` | `LibraryScreenshots.libraryGrid` | Or see them as covers | The same library in the grid view, two covers per row, with the items-per-row button beside the toggle. |
 | `two_pane_songs.png` | `TwoPaneScreenshots.songsBesidePlayer` | One breakpoint, one more pane | A landscape tablet, past the 800dp two-pane breakpoint: the songs list beside the player it opened, Get Lucky playing. |
 | `two_pane_library.png` | `TwoPaneScreenshots.libraryBesideAlbum` | The same pane, every detail | The same tablet: the library beside Random Access Memories, opened from it. |
 | `widget_shortcuts.png` | — | — | **Manual capture**: the 4×2 widget, now playing with the five songs played last, cropped out of the home screen. |

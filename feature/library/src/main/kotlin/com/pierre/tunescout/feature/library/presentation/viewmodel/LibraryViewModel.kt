@@ -6,6 +6,7 @@ import com.pierre.tunescout.core.navigation.Navigator
 import com.pierre.tunescout.core.navigation.route.CreatePlaylistRoute
 import com.pierre.tunescout.core.navigation.route.LibrarySearchRoute
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.domain.usecase.LibraryUseCases
 import com.pierre.tunescout.feature.library.presentation.mapper.LibraryItemUiModelMapper
@@ -30,6 +31,7 @@ class LibraryViewModel(
     private val emptyUiState = LibraryUiState(
         items = emptyList(),
         viewMode = LibraryViewMode.LIST,
+        gridColumns = LibraryGridColumns.TWO,
         filters = emptySet(),
         downloadedKeys = emptySet(),
     )
@@ -45,6 +47,7 @@ class LibraryViewModel(
     val uiState: StateFlow<LibraryUiState> = combine(
         items,
         useCases.observeViewMode(),
+        useCases.observeGridColumns(),
         filters,
         useCases.observeCollectionDownloads(),
         ::LibraryUiState,
@@ -59,12 +62,17 @@ class LibraryViewModel(
         LibraryUiEvent.OnSearchClicked -> navigator.navigate(LibrarySearchRoute)
         LibraryUiEvent.OnCreatePlaylistClicked -> navigator.navigate(CreatePlaylistRoute)
         is LibraryUiEvent.OnViewModeSelected -> selectViewMode(event.viewMode)
+        LibraryUiEvent.OnGridColumnsClicked -> cycleGridColumns()
         is LibraryUiEvent.OnFilterClicked -> toggleFilter(event.filter)
         LibraryUiEvent.OnClearFiltersClicked -> filters.value = emptySet()
     }
 
     private fun selectViewMode(viewMode: LibraryViewMode) {
         viewModelScope.launch { useCases.setViewMode(viewMode) }
+    }
+
+    private fun cycleGridColumns() {
+        viewModelScope.launch { useCases.setGridColumns(uiState.value.gridColumns.next) }
     }
 
     /**

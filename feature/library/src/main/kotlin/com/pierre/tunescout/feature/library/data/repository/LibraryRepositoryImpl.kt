@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.library.data.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.pierre.tunescout.core.database.FavoriteAlbumLocalDataSource
 import com.pierre.tunescout.core.database.FavoriteSongLocalDataSource
@@ -12,6 +13,7 @@ import com.pierre.tunescout.core.model.AlbumSummary
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.model.Playlist
 import com.pierre.tunescout.core.model.Song
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.domain.repository.LibraryRepository
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +27,7 @@ class LibraryRepositoryImpl(
     private val dataStore: DataStore<Preferences>,
 ) : LibraryRepository {
     private val viewModeKey = stringPreferencesKey("library_view_mode")
+    private val gridColumnsKey = intPreferencesKey("library_grid_columns")
 
     override fun observePlaylists(): Flow<List<Playlist>> = playlistLocalDataSource.observeAll()
 
@@ -43,10 +46,20 @@ class LibraryRepositoryImpl(
             ?: LibraryViewMode.LIST
     }
 
+    override fun observeGridColumns(): Flow<LibraryGridColumns> = dataStore.data.map { preferences ->
+        preferences[gridColumnsKey]
+            ?.let { stored -> LibraryGridColumns.entries.firstOrNull { columns -> columns.count == stored } }
+            ?: LibraryGridColumns.TWO
+    }
+
     override fun observeRecentSearches(): Flow<List<LibraryItemKey>> = librarySearchLocalDataSource.observeRecent()
 
     override suspend fun setViewMode(viewMode: LibraryViewMode) {
         dataStore.write(key = viewModeKey, value = viewMode.name)
+    }
+
+    override suspend fun setGridColumns(columns: LibraryGridColumns) {
+        dataStore.write(key = gridColumnsKey, value = columns.count)
     }
 
     override suspend fun createPlaylist(name: String): Long = playlistLocalDataSource.create(name)

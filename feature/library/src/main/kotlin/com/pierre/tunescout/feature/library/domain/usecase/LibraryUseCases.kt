@@ -6,6 +6,8 @@ data class LibraryUseCases(
     val observeFavoriteAlbums: ObserveFavoriteAlbums,
     val observeViewMode: ObserveLibraryViewMode,
     val setViewMode: SetLibraryViewMode,
+    val observeGridColumns: ObserveLibraryGridColumns,
+    val setGridColumns: SetLibraryGridColumns,
     val observeCollectionDownloads: ObserveCollectionDownloads,
     val observeDownloadedSongs: ObserveDownloadedSongs,
 )

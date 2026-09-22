@@ -2,7 +2,7 @@ package com.pierre.tunescout.feature.library.data.repository
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.mutablePreferencesOf
 import androidx.datastore.preferences.core.stringPreferencesKey
 import app.cash.turbine.test
@@ -19,6 +19,7 @@ import com.pierre.tunescout.core.testing.fake.FakeFavoriteSongLocalDataSource
 import com.pierre.tunescout.core.testing.fixture.albumSummary
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -165,6 +166,42 @@ class LibraryRepositoryImplTest {
     }
 
     @Test
+    fun `GIVEN an empty store WHEN observing the grid size THEN two share a row`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        val columns = repository.observeGridColumns().first()
+
+        // Then
+        assertThat(columns).isEqualTo(LibraryGridColumns.TWO)
+    }
+
+    @Test
+    fun `WHEN choosing three per row THEN the observed grid size follows`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        repository.setGridColumns(LibraryGridColumns.THREE)
+
+        // Then
+        assertThat(repository.observeGridColumns().first()).isEqualTo(LibraryGridColumns.THREE)
+    }
+
+    @Test
+    fun `GIVEN a stored grid size this version does not offer WHEN observing THEN it falls back to two`() = runTest {
+        // Given
+        prepareScenario(storedGridColumns = 5)
+
+        // When
+        val columns = repository.observeGridColumns().first()
+
+        // Then
+        assertThat(columns).isEqualTo(LibraryGridColumns.TWO)
+    }
+
+    @Test
     fun `WHEN creating a playlist THEN its new id comes back`() = runTest {
         // Given
         prepareScenario(createdPlaylistId = 42)
@@ -257,6 +294,7 @@ class LibraryRepositoryImplTest {
         favoriteAlbums: List<AlbumSummary> = emptyList(),
         recentSearches: List<LibraryItemKey> = emptyList(),
         storedViewMode: String? = null,
+        storedGridColumns: Int? = null,
         createdPlaylistId: Long = 1,
     ) {
         playlistLocalDataSource = FakePlaylistLocalDataSource(
@@ -272,19 +310,24 @@ class LibraryRepositoryImplTest {
             favoriteSongLocalDataSource = favoriteSongLocalDataSource,
             favoriteAlbumLocalDataSource = favoriteAlbumLocalDataSource,
             librarySearchLocalDataSource = librarySearchLocalDataSource,
-            dataStore = FakePreferencesDataStore(storedViewMode = storedViewMode),
+            dataStore = FakePreferencesDataStore(
+                storedViewMode = storedViewMode,
+                storedGridColumns = storedGridColumns,
+            ),
         )
     }
 }
 
 private class FakePreferencesDataStore(
     storedViewMode: String?,
+    storedGridColumns: Int?,
 ) : DataStore<Preferences> {
     override val data: Flow<Preferences>
-        field = MutableStateFlow(
-            storedViewMode
-                ?.let { stored -> mutablePreferencesOf(stringPreferencesKey("library_view_mode") to stored) }
-                ?: emptyPreferences(),
+        field = MutableStateFlow<Preferences>(
+            mutablePreferencesOf().apply {
+                storedViewMode?.let { stored -> this[stringPreferencesKey("library_view_mode")] = stored }
+                storedGridColumns?.let { stored -> this[intPreferencesKey("library_grid_columns")] = stored }
+            },
         )
 
     override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences =

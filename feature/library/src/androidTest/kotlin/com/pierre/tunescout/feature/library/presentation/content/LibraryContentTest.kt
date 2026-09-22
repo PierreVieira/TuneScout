@@ -4,7 +4,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -12,7 +14,9 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
+import com.pierre.tunescout.feature.library.presentation.component.LibraryGridColumnsButton
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiEvent
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiState
@@ -125,6 +129,32 @@ class LibraryContentTest {
         assertThat(events).containsExactly(LibraryUiEvent.OnViewModeSelected(LibraryViewMode.GRID))
     }
 
+    /**
+     * The size of the grid is only offered in the grid, as one button that says which of the three
+     * sizes is on and moves to the next on a tap — see [LibraryGridColumnsButton].
+     */
+    @Test
+    fun theItemsPerRowButtonOnlyShowsInTheGridAndAsksForTheNextSize() = compose.use {
+        var viewMode by mutableStateOf(LibraryViewMode.LIST)
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(
+                    uiState = state(viewMode = viewMode, gridColumns = LibraryGridColumns.THREE),
+                    isTwoPane = false,
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Items per row").assertDoesNotExist()
+        viewMode = LibraryViewMode.GRID
+        onNodeWithContentDescription("Items per row")
+            .assert(hasStateDescription("3 per row"))
+            .performClick()
+
+        assertThat(events).containsExactly(LibraryUiEvent.OnGridColumnsClicked)
+    }
+
     @Test
     fun theHeaderOpensSearch() = compose.use {
         setContent {
@@ -178,12 +208,14 @@ class LibraryContentTest {
 
     private fun state(
         viewMode: LibraryViewMode = LibraryViewMode.LIST,
+        gridColumns: LibraryGridColumns = LibraryGridColumns.TWO,
         filters: Set<LibraryFilter> = emptySet(),
         items: List<LibraryItemUiModel> = listOf(favorites, downloadedSongs, roadTrip, toxicity),
         downloadedKeys: Set<LibraryItemKey> = emptySet(),
     ): LibraryUiState = LibraryUiState(
         items = items,
         viewMode = viewMode,
+        gridColumns = gridColumns,
         filters = filters,
         downloadedKeys = downloadedKeys,
     )

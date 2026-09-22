@@ -2,17 +2,20 @@ package com.pierre.tunescout.feature.library.presentation.model
 
 import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
+import com.pierre.tunescout.feature.library.domain.model.LibraryGridColumns
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 
 /**
  * @property items everything in the library.
  * @property viewMode whether the items are laid out as a list or a grid.
+ * @property gridColumns how many items a row of the grid holds; the list ignores it.
  * @property filters the chips that are on. None on means all of the library.
  * @property downloadedKeys the items the user asked to keep on the device as a whole.
  */
 data class LibraryUiState(
     val items: List<LibraryItemUiModel>,
     val viewMode: LibraryViewMode,
+    val gridColumns: LibraryGridColumns,
     val filters: Set<LibraryFilter>,
     val downloadedKeys: Set<LibraryItemKey>,
 ) {
