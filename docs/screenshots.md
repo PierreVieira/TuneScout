@@ -43,6 +43,8 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `theme.png` | `ThemeSelectionScreenshots` | Light, dark, or whatever the phone says | The theme sheet over the songs screen, dark selected, dynamic colors off. |
 | `library.png` | `LibraryScreenshots.library` | Keep what you like | The library tab as a list: liked songs, three playlists (one still empty) and a liked album, with no filter chip picked. |
 | `library_grid.png` | `LibraryScreenshots.libraryGrid` | Or see them as covers | The same library in the grid view. |
+| `two_pane_songs.png` | `TwoPaneScreenshots.songsBesidePlayer` | One breakpoint, one more pane | A landscape tablet, past the 800dp two-pane breakpoint: the songs list beside the player it opened, Get Lucky playing. |
+| `two_pane_library.png` | `TwoPaneScreenshots.libraryBesideAlbum` | The same pane, every detail | The same tablet: the library beside Random Access Memories, opened from it. |
 | `widget_shortcuts.png` | — | — | **Manual capture**: the 4×2 widget, now playing with the five songs played last, cropped out of the home screen. |
 | `widget_now_playing.png` | — | — | **Manual capture**: the 4×1 widget, from the same home screen capture. |
 | `lock_screen.png` | — | — | **Manual capture**: the media controls on the locked screen. |
@@ -89,8 +91,10 @@ regeneration deletes it.
 The generators live in `tools/screenshots/src/test/kotlin/.../screenshots/`:
 
 ```
-ReadmeScreenshotsTest.kt   # base class: phone form factor, canvas background, theme, Coil setup
-<Screen>Screenshots.kt     # one class per screen: the UiState it renders and the file name
+ReadmeScreenshotStyle.kt        # constants and the canvas background shared by both base classes below
+ReadmeScreenshotsTest.kt        # base class: phone form factor, `capture`
+ReadmeTabletScreenshotsTest.kt  # base class: landscape tablet, `captureTwoPane`
+<Screen>Screenshots.kt          # one class per screen: the UiState it renders and the file name
 ```
 
 What they render comes from `:tools:screenshot_fixtures`, shared with the screenshot tests in
@@ -150,3 +154,14 @@ around the real `SongOptionsContent`.
 **Images are scaled in halving steps.** `updateReadmeScreenshots` halves the 1242px render until
 it is close to the 520px target instead of drawing straight down to it; a single draw skips too
 many pixels and leaves the app's hairline dividers and small text ragged.
+
+**The two-pane shots build the frame by hand.** `FormFactor.Tablet10`'s built-in frame always
+measures its content portrait — `TabletFrame` reads `FormFactor.logicalSize`, which comes from the
+form factor's own fixed qualifiers, not from a `ScreenshotCanvas` override — so going through
+`capture()` can never trigger the app's list-detail layout, which only turns on past 800dp of
+*width*. `ReadmeTabletScreenshotsTest` instead renders on a landscape `ScreenshotCanvas.dp(1280,
+800)` and draws its own banner and device bezel through `DeviceMockup(orientation =
+MockupOrientation.Landscape)`, which swaps the frame's native width/height so the content inside it
+is actually measured at 1280dp wide. `two_pane_songs.png` and `two_pane_library.png` then compose
+two real `*Content` screens side by side through the app's own `ListDetailScaffold`, the same
+component `ListDetailScene` renders behind the real two-pane navigation.
