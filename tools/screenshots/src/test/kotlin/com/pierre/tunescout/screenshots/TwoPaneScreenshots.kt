@@ -121,6 +121,7 @@ internal class TwoPaneScreenshots : ReadmeTabletScreenshotsTest() {
                             filters = emptySet(),
                             downloadedKeys = emptySet(),
                         ),
+                        isTwoPane = true,
                         onEvent = {},
                     )
                 },
