@@ -13,7 +13,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -27,6 +26,7 @@ import com.pierre.tunescout.feature.themeselection.R
 import com.pierre.tunescout.feature.themeselection.presentation.component.ThemeOptionCard
 import com.pierre.tunescout.feature.themeselection.presentation.model.ThemeSelectionUiEvent
 import com.pierre.tunescout.feature.themeselection.presentation.model.ThemeSelectionUiState
+import com.pierre.tunescout.ui.component.SwitchToggle
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -116,8 +116,8 @@ private fun DynamicColorRow(
                 modifier = Modifier.size(infoIconSize),
             )
         }
-        Switch(
-            checked = isEnabled,
+        SwitchToggle(
+            isChecked = isEnabled,
             onCheckedChange = null,
         )
     }

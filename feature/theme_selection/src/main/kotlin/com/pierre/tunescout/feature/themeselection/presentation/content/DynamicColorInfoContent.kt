@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.themeselection.R
 import com.pierre.tunescout.feature.themeselection.presentation.model.DynamicColorInfoUiEvent
 import com.pierre.tunescout.feature.themeselection.presentation.model.DynamicColorInfoUiState
+import com.pierre.tunescout.ui.component.SwitchToggle
 import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
@@ -121,8 +121,8 @@ private fun ToggleRow(
             color = TuneScoutColors.textPrimary,
             modifier = Modifier.weight(1f),
         )
-        Switch(
-            checked = isEnabled,
+        SwitchToggle(
+            isChecked = isEnabled,
             onCheckedChange = null,
         )
     }

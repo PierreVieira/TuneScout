@@ -74,7 +74,9 @@ layout should be mirrored in its preview layout in the same change.
 2. builds the palette — from the platform's dynamic `ColorScheme` when dynamic color is on and the
    device is on API 31+, otherwise from the static light/dark palette;
 3. provides it through `LocalTuneScoutColorPalette` and hands Material 3 a matching `ColorScheme`,
-   so the Material components (`Switch`, `HorizontalDivider`, ...) agree with the palette.
+   so the Material components (`Switch`, `HorizontalDivider`, ...) agree with the palette. That
+   scheme's `primary` is the text colour, so a switch goes through `SwitchToggle` (`ui/component`)
+   to wear the accent when it is on.
 
 `colorPalette(isDark, isDynamicColorEnabled)` returns the palette a theme *would* render with,
 regardless of the one in force. The preview cards in the theme sheet are drawn with it.
