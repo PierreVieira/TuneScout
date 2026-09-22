@@ -70,7 +70,7 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
     val fadeStrategy = remember { FadeSceneDecoratorStrategy<NavKey>() }
     val tabsState = rememberHomeTabsState()
     val windowSize = rememberWindowSize()
-    val isTwoPane = windowSize.isWidthExpanded
+    val isTwoPane = windowSize.isTwoPane
     val listDetailStrategy = remember(isTwoPane) {
         ListDetailSceneStrategy<NavKey>(isTwoPane = isTwoPane, emptyDetailPane = { NowPlayingScreen() })
     }

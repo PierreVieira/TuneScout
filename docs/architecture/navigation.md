@@ -110,10 +110,10 @@ entryProvider = entryProvider<NavKey> {
 
 ## List and detail on a wide window
 
-On a window of expanded width, an album opens **beside** the tab host instead of covering it.
+On a window at least 800dp wide, an album opens **beside** the tab host instead of covering it.
 `ListDetailSceneStrategy` (`core/navigation/scene/`) draws the two entries as one `ListDetailScene`:
 the list on the left, the detail on a raised card on the right (`ListDetailScaffold`, `:ui:component`).
-The strategy is created in `TuneScoutNavigationContent` from `rememberWindowSize().isWidthExpanded`,
+The strategy is created in `TuneScoutNavigationContent` from `rememberWindowSize().isTwoPane`,
 keyed on it, since `NavDisplay` only calculates its scenes again when its strategies or entries change.
 It comes after the sheet and dialog strategies, so a sheet opened over the two panes covers both.
 

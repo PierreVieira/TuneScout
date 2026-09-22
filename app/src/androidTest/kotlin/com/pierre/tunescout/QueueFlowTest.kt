@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.network.SongSearchRemoteDataSource
@@ -86,10 +87,11 @@ class QueueFlowTest {
         onAllNodesWithText(title).assertCountEquals(2)
     }
 
+    /** A window as short as a phone on its side cuts the options sheet short, so it is scrolled first. */
     private fun ComposeContext.queueSecondResultFromItsOptionsSheet() {
         onAllNodesWithContentDescription("More options")[1].performClick()
         waitUntilAtLeastOneExists(hasText("Add to queue") and isEnabled(), SCREEN_TIMEOUT_MILLIS)
-        onNodeWithText("Add to queue").performClick()
+        onNodeWithText("Add to queue").performScrollTo().performClick()
         waitUntilDoesNotExist(hasText("Add to queue"), SCREEN_TIMEOUT_MILLIS)
     }
 
