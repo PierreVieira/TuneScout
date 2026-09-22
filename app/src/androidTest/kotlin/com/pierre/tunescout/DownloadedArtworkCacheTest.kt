@@ -6,7 +6,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.DownloadLocalDataSource
 import com.pierre.tunescout.core.model.Artwork
 import com.pierre.tunescout.core.testing.fixture.song
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import okio.Buffer
@@ -129,7 +129,7 @@ class DownloadedArtworkCacheTest {
         val downloadedSong = song(id = SONG_ID, artwork = artwork, previewUrl = dataPreviewUrl())
 
         // When
-        runBlocking { downloads.addSong(downloadedSong) }
+        runTest { downloads.addSong(downloadedSong) }
 
         // Then
         assertThat(waitUntilCached(artwork.thumbnailUrl)).isTrue()

@@ -22,8 +22,11 @@ A fake only needs real behavior for the methods under test; stub the rest with `
 
 ## Coroutines
 
-- Wrap test bodies in `runTest { }`. Virtual time auto-advances, so timeouts/`delay` resolve without
-  real waiting.
+- Wrap test bodies in `runTest { }`, on the JVM and on device alike (`kotlinx-coroutines-test` is on
+  both classpaths). Virtual time auto-advances, so timeouts/`delay` resolve without real waiting. A
+  `@BeforeEach`/`@AfterEach` that seeds or clears the database is `= runTest { }` too.
+- `runBlocking` is only for a helper that hands a value back to synchronous Compose test code — a
+  `waitUntil { storedIds() == expected }` predicate cannot suspend. Everything else is `runTest`.
 - **ViewModels** (which use `viewModelScope` / `Dispatchers.Main`): set the main dispatcher in
   `@BeforeEach` and reset it in `@AfterEach`, and opt in to the experimental test API:
 
@@ -68,8 +71,7 @@ fun removingAnEntry() {
 }
 ```
 
-Give any `runBlocking` test a block body. When a test you just wrote does not show up in the run,
-check its return type first.
+When a test you just wrote does not show up in the run, check its return type first.
 
 ## Gotcha: exception identity
 

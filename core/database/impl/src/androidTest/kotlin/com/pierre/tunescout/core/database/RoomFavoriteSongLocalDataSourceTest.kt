@@ -8,7 +8,7 @@ import com.pierre.tunescout.core.database.internal.RoomFavoriteSongLocalDataSour
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,72 +38,62 @@ class RoomFavoriteSongLocalDataSourceTest {
     }
 
     @Test
-    fun theMostRecentlyLikedSongComesFirst() {
-        runBlocking {
-            // Given
-            listOf(song(id = 1), song(id = 2), song(id = 3)).forEach { liked -> dataSource.add(liked) }
+    fun theMostRecentlyLikedSongComesFirst() = runTest {
+        // Given
+        listOf(song(id = 1), song(id = 2), song(id = 3)).forEach { liked -> dataSource.add(liked) }
 
-            // When
-            val ids = dataSource.observeAll().first().map(Song::id)
+        // When
+        val ids = dataSource.observeAll().first().map(Song::id)
 
-            // Then
-            assertThat(ids).containsExactly(3L, 2L, 1L).inOrder()
-        }
+        // Then
+        assertThat(ids).containsExactly(3L, 2L, 1L).inOrder()
     }
 
     @Test
-    fun likingASongThatWasOnlyASearchResultCachesIt() {
-        runBlocking {
-            // When
-            dataSource.add(song(id = 1, title = "Get Lucky"))
+    fun likingASongThatWasOnlyASearchResultCachesIt() = runTest {
+        // When
+        dataSource.add(song(id = 1, title = "Get Lucky"))
 
-            // Then
-            assertThat(database.songDao().getById(1)?.title).isEqualTo("Get Lucky")
-        }
+        // Then
+        assertThat(database.songDao().getById(1)?.title).isEqualTo("Get Lucky")
     }
 
     @Test
-    fun unlikingASongDropsItFromTheListAndKeepsItCached() {
-        runBlocking {
-            // Given
-            dataSource.add(song(id = 1))
+    fun unlikingASongDropsItFromTheListAndKeepsItCached() = runTest {
+        // Given
+        dataSource.add(song(id = 1))
 
-            // When
-            dataSource.remove(songId = 1)
+        // When
+        dataSource.remove(songId = 1)
 
-            // Then
-            assertThat(dataSource.observeAll().first()).isEmpty()
-            assertThat(database.songDao().getById(1)).isNotNull()
-        }
+        // Then
+        assertThat(dataSource.observeAll().first()).isEmpty()
+        assertThat(database.songDao().getById(1)).isNotNull()
     }
 
     @Test
-    fun aSongReportsWhetherItIsLiked() {
-        runBlocking {
-            // Given
-            dataSource.add(song(id = 1))
+    fun aSongReportsWhetherItIsLiked() = runTest {
+        // Given
+        dataSource.add(song(id = 1))
 
-            // When
-            val isLiked = dataSource.observeIsFavorite(songId = 1).first()
-            val isOtherLiked = dataSource.observeIsFavorite(songId = 2).first()
+        // When
+        val isLiked = dataSource.observeIsFavorite(songId = 1).first()
+        val isOtherLiked = dataSource.observeIsFavorite(songId = 2).first()
 
-            // Then
-            assertThat(isLiked).isTrue()
-            assertThat(isOtherLiked).isFalse()
-        }
+        // Then
+        assertThat(isLiked).isTrue()
+        assertThat(isOtherLiked).isFalse()
     }
 
     @Test
-    fun likingTheSameSongTwiceKeepsOneEntry() {
-        runBlocking {
-            // Given
-            dataSource.add(song(id = 1))
+    fun likingTheSameSongTwiceKeepsOneEntry() = runTest {
+        // Given
+        dataSource.add(song(id = 1))
 
-            // When
-            dataSource.add(song(id = 1))
+        // When
+        dataSource.add(song(id = 1))
 
-            // Then
-            assertThat(dataSource.observeAll().first()).hasSize(1)
-        }
+        // Then
+        assertThat(dataSource.observeAll().first()).hasSize(1)
     }
 }

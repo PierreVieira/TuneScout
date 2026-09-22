@@ -20,6 +20,7 @@ import de.mannodermaus.junit5.compose.ComposeContext
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -50,17 +51,15 @@ class LikedSongsQueueFlowTest {
     }
 
     @BeforeEach
-    fun setUp() {
+    fun setUp() = runTest {
         loadKoinModules(fakeRemoteModule)
-        runBlocking {
-            storedFavorites().forEach { song -> favorites.remove(song.id) }
-            likedSongs.forEach { song -> favorites.add(song) }
-        }
+        storedFavorites().forEach { song -> favorites.remove(song.id) }
+        likedSongs.forEach { song -> favorites.add(song) }
     }
 
     @AfterEach
-    fun tearDown() {
-        runBlocking { storedFavorites().forEach { song -> favorites.remove(song.id) } }
+    fun tearDown() = runTest {
+        storedFavorites().forEach { song -> favorites.remove(song.id) }
         unloadKoinModules(fakeRemoteModule)
     }
 

@@ -32,6 +32,7 @@ fun Project.addInstrumentedTestDependencies() {
         add("androidTestImplementation", libs.findLibrary("junit-jupiter-api").get())
         add("androidTestImplementation", libs.findLibrary("junit-jupiter-params").get())
         add("androidTestImplementation", libs.findLibrary("truth").get())
+        add("androidTestImplementation", libs.findLibrary("kotlinx-coroutines-test").get())
         add("androidTestImplementation", libs.findLibrary("androidx-test-runner").get())
         add("androidTestImplementation", libs.findLibrary("androidx-test-espresso-core").get())
     }

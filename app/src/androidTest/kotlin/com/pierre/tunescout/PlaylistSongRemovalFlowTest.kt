@@ -15,6 +15,7 @@ import com.pierre.tunescout.core.testing.fixture.song
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -41,17 +42,15 @@ class PlaylistSongRemovalFlowTest {
     private var playlistId: Long = 0
 
     @BeforeEach
-    fun setUp() {
+    fun setUp() = runTest {
         loadKoinModules(fakeRemoteModule)
-        runBlocking {
-            playlistId = playlists.create(PLAYLIST_NAME)
-            playlists.addSong(playlistId = playlistId, song = song(id = 401, title = "Veridis Quo"))
-        }
+        playlistId = playlists.create(PLAYLIST_NAME)
+        playlists.addSong(playlistId = playlistId, song = song(id = 401, title = "Veridis Quo"))
     }
 
     @AfterEach
-    fun tearDown() {
-        runBlocking { playlists.delete(playlistId) }
+    fun tearDown() = runTest {
+        playlists.delete(playlistId)
         unloadKoinModules(fakeRemoteModule)
     }
 

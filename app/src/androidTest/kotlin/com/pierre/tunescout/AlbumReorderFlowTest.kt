@@ -28,6 +28,7 @@ import de.mannodermaus.junit5.compose.ComposeContext
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -65,8 +66,8 @@ class AlbumReorderFlowTest {
 
     /** The order is kept apart from the album and outlives it, so it is cleared by hand. */
     @AfterEach
-    fun tearDown() {
-        runBlocking { albums.saveTrackOrder(albumId = REORDER_ALBUM_ID, songIds = emptyList()) }
+    fun tearDown() = runTest {
+        albums.saveTrackOrder(albumId = REORDER_ALBUM_ID, songIds = emptyList())
         unloadKoinModules(fakeRemoteModule)
     }
 
