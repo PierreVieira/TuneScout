@@ -20,7 +20,7 @@ native Android app built with Kotlin and Jetpack Compose.
 
 | Album | Queue | Theme |
 | :--: | :--: | :--: |
-| <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks, with the queue actions in the top bar"> | <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with songs added by hand playing before the rest of the album"> | <img src="docs/screenshots/theme.png" width="260" alt="The theme sheet over the songs screen, with light, dark and system previews and a dynamic colors toggle"> |
+| <img src="docs/screenshots/album.png" width="260" alt="An album and its tracks, with the queue actions in the top bar"> | <img src="docs/screenshots/queue.png" width="260" alt="The queue sheet over the player, with a clear button beside its title and songs added by hand playing before the rest of the album"> | <img src="docs/screenshots/theme.png" width="260" alt="The theme sheet over the songs screen, with light, dark and system previews and a dynamic colors toggle"> |
 
 | Library | Library as a grid |
 | :--: | :--: |
