@@ -1,7 +1,7 @@
 # TuneScout
 
 Search the iTunes catalog, play 30-second previews, and pick up where you left off. TuneScout is a
-native Android app written for the Music AI Android code challenge.
+native Android app built with Kotlin and Jetpack Compose.
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)](https://developer.android.com/compose)
