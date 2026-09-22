@@ -17,7 +17,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
-import androidx.test.espresso.Espresso.pressBack
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Album
 import com.pierre.tunescout.core.model.Song
@@ -74,7 +73,7 @@ class ListDetailFlowTest {
             assertThat(onAllNodes(hasSetTextAction()).fetchSemanticsNodes()).isEmpty()
         }
 
-        pressBack()
+        compose.activity.pressBack()
 
         waitUntilDoesNotExist(hasText(ALBUM_ONLY_TRACK), SCREEN_TIMEOUT_MILLIS)
         onNode(hasSetTextAction()).assertIsDisplayed()
@@ -93,12 +92,12 @@ class ListDetailFlowTest {
 
         onNodeWithText("Library").performClick()
         waitUntilAtLeastOneExists(hasText("Your Library"), SCREEN_TIMEOUT_MILLIS)
-        pressBack()
+        compose.activity.pressBack()
 
         waitUntilDoesNotExist(hasText(ALBUM_ONLY_TRACK), SCREEN_TIMEOUT_MILLIS)
         onNodeWithText("Your Library").assertIsDisplayed()
 
-        pressBack()
+        compose.activity.pressBack()
 
         waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
     }
@@ -121,7 +120,7 @@ class ListDetailFlowTest {
         openTheAlbumOfTheFirstResult()
         waitUntilDoesNotExist(isPlayerPane, SCREEN_TIMEOUT_MILLIS)
 
-        pressBack()
+        compose.activity.pressBack()
 
         waitUntilAtLeastOneExists(isPlayerPane, SCREEN_TIMEOUT_MILLIS)
         onNode(hasSetTextAction()).assertIsDisplayed()
