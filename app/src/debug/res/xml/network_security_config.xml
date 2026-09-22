@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Debug only: instrumented tests stand a local server in for artwork's remote host, and that
+    server has no certificate to serve HTTPS with. Release keeps the platform default of refusing
+    cleartext everywhere.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+    </domain-config>
+</network-security-config>

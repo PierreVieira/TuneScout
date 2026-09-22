@@ -30,6 +30,7 @@ import com.pierre.tunescout.core.playback.QueueControls
 import com.pierre.tunescout.core.playback.SongPlayback
 import com.pierre.tunescout.core.playback.TransportControls
 import com.pierre.tunescout.core.playback.internal.AndroidMediaItemFactory
+import com.pierre.tunescout.core.playback.internal.ArtworkCachingDownloadCommands
 import com.pierre.tunescout.core.playback.internal.ConnectivityPlayableSongs
 import com.pierre.tunescout.core.playback.internal.DownloadCommands
 import com.pierre.tunescout.core.playback.internal.DownloadReconciler
@@ -110,7 +111,14 @@ val playbackModule: Module = module {
             resumeDownloads()
         }
     }
-    single<DownloadCommands> { ServiceDownloadCommands(context = androidContext(), downloadManager = get()) }
+    single<DownloadCommands> {
+        ArtworkCachingDownloadCommands(
+            delegate = ServiceDownloadCommands(context = androidContext(), downloadManager = get()),
+            imageLoader = get(),
+            context = androidContext(),
+            scope = get(named(PLAYBACK_SCOPE)),
+        )
+    }
     single(createdAtStart = true) {
         SongDownloadTracker(downloadManager = get(), dispatcherProvider = get())
             .also { tracker -> tracker.start(get(named(PLAYBACK_SCOPE))) }
