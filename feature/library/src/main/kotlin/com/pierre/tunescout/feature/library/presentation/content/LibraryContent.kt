@@ -1,7 +1,11 @@
 package com.pierre.tunescout.feature.library.presentation.content
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,27 +14,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
+import com.pierre.tunescout.feature.library.presentation.component.LibraryArtworkSize
 import com.pierre.tunescout.feature.library.presentation.component.LibraryFilterChipRow
 import com.pierre.tunescout.feature.library.presentation.component.LibraryItemCell
-import com.pierre.tunescout.feature.library.presentation.component.LibraryItemRow
+import com.pierre.tunescout.feature.library.presentation.component.LibraryItemWidths
 import com.pierre.tunescout.feature.library.presentation.component.LibraryViewModeToggle
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 import com.pierre.tunescout.feature.library.presentation.model.LibraryUiEvent
@@ -46,10 +54,13 @@ import com.pierre.tunescout.ui.utils.scroll.hidesBarsOnScroll
 import com.pierre.tunescout.ui.utils.semantics.screenPane
 
 private val minCellWidth = 160.dp
+private val gridColumns = GridCells.Adaptive(minSize = minCellWidth)
+private val gridColumnSpacing = TuneScoutSpacing.medium
 private val fabSize = 56.dp
 private val fabListBottomPadding = fabSize + TuneScoutSpacing.screen * 2
-private const val CONTENT_TYPE_ROW = "row"
-private const val CONTENT_TYPE_CELL = "cell"
+private const val LIST_COLUMNS = 1
+private const val LIST_FRACTION = 0f
+private const val GRID_FRACTION = 1f
 
 /**
  * The create-playlist action is a FAB on a single pane, where the list has the whole width to spare.
@@ -101,10 +112,7 @@ fun LibraryContent(
                         isAnnounced = true,
                     )
 
-                    uiState.viewMode == LibraryViewMode.LIST ->
-                        LibraryList(uiState = uiState, isTwoPane = isTwoPane, onEvent = onEvent)
-
-                    else -> LibraryGrid(uiState = uiState, isTwoPane = isTwoPane, onEvent = onEvent)
+                    else -> LibraryItemGrid(uiState = uiState, isTwoPane = isTwoPane, onEvent = onEvent)
                 }
             }
         }
@@ -218,65 +226,115 @@ private fun SectionBar(
     }
 }
 
+/**
+ * The list and the grid are one grid, of one column or of as many as fit, so a change of view mode
+ * keeps every item in the composition and moves it instead of replacing it: each cell morphs between
+ * its row and its cell shape at the pace of [rememberGridFraction] while `animateItem` slides it to
+ * its new place, and the scroll position carries over.
+ */
 @Composable
-private fun LibraryList(
+private fun LibraryItemGrid(
     uiState: LibraryUiState,
     isTwoPane: Boolean,
     onEvent: (LibraryUiEvent) -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight(),
-        contentPadding = PaddingValues(
-            top = TuneScoutSpacing.small,
-            bottom = if (isTwoPane) TuneScoutSpacing.extraLarge else fabListBottomPadding,
-        ),
-    ) {
-        items(
-            items = uiState.filteredItems,
-            key = { item -> item.key.toString() },
-            contentType = { CONTENT_TYPE_ROW },
-        ) { item ->
-            LibraryItemRow(
-                item = item,
-                name = libraryItemName(item),
-                onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
-                modifier = Modifier.animateItem(),
-                isDownloaded = uiState.isDownloaded(item),
-            )
+    val gridFraction = rememberGridFraction(uiState.viewMode)
+    val artworkSize = LibraryArtworkSize.of(uiState.viewMode)
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val widths = rememberItemWidths(availableWidth = maxWidth)
+        LazyVerticalGrid(
+            columns = columnsOf(uiState.viewMode),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = TuneScoutSpacing.small,
+                bottom = if (isTwoPane) TuneScoutSpacing.extraLarge else fabListBottomPadding,
+            ),
+            horizontalArrangement = Arrangement.spacedBy(gridColumnSpacing),
+            verticalArrangement = remember(gridFraction) { LineSpacingArrangement(gridFraction) },
+        ) {
+            items(
+                items = uiState.filteredItems,
+                key = { item -> item.key.toString() },
+            ) { item ->
+                LibraryItemCell(
+                    item = item,
+                    name = libraryItemName(item),
+                    widths = widths,
+                    artworkSize = artworkSize,
+                    gridFraction = gridFraction,
+                    onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
+                    modifier = Modifier.animateItem(),
+                    isDownloaded = uiState.isDownloaded(item),
+                )
+            }
         }
     }
 }
 
+/**
+ * The widths an item rests at, from the width the grid has: the whole of it as a row, and as a
+ * cell the first of the columns [gridColumns] cuts it into, the way the grid itself cuts it.
+ *
+ * @return the widths for every item of a grid [availableWidth] wide.
+ */
 @Composable
-private fun LibraryGrid(
-    uiState: LibraryUiState,
-    isTwoPane: Boolean,
-    onEvent: (LibraryUiEvent) -> Unit,
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = minCellWidth),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            top = TuneScoutSpacing.small,
-            bottom = if (isTwoPane) TuneScoutSpacing.extraLarge else fabListBottomPadding,
-        ),
-        horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
-        verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
+private fun rememberItemWidths(availableWidth: Dp): LibraryItemWidths {
+    val density = LocalDensity.current
+    return remember(availableWidth, density) {
+        val listWidth = with(density) { availableWidth.roundToPx() }
+        val spacing = with(density) { gridColumnSpacing.roundToPx() }
+        val cellWidths = with(gridColumns) { density.calculateCrossAxisCellSizes(listWidth, spacing) }
+        LibraryItemWidths(list = listWidth, cell = cellWidths.first())
+    }
+}
+
+/**
+ * How far the items are from the list to the grid, as a read for a measure pass rather than a value:
+ * every cell and the space between the lines follow it on each frame, and a value read in the
+ * composition would recompose them all on each frame instead.
+ *
+ * @return a read of the fraction, 0 in the list, 1 in the grid, moving between the two on a change.
+ */
+@Composable
+private fun rememberGridFraction(viewMode: LibraryViewMode): () -> Float {
+    val fraction: State<Float> = animateFloatAsState(
+        targetValue = if (viewMode == LibraryViewMode.GRID) GRID_FRACTION else LIST_FRACTION,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "libraryGridFraction",
+    )
+    return remember(fraction) { { fraction.value } }
+}
+
+private fun columnsOf(viewMode: LibraryViewMode): GridCells = when (viewMode) {
+    LibraryViewMode.LIST -> GridCells.Fixed(LIST_COLUMNS)
+    LibraryViewMode.GRID -> gridColumns
+}
+
+/**
+ * The gap between the grid's lines, closed in the list, where each row carries its own padding and
+ * a gap on top of it would space them apart. The grid reads [spacing] as it measures, so the gap
+ * follows [gridFraction] with the cells, frame by frame, without the grid being recomposed.
+ *
+ * @property gridFraction how far the items are from the list (0) to the grid (1).
+ */
+private class LineSpacingArrangement(
+    private val gridFraction: () -> Float,
+) : Arrangement.Vertical {
+    private val gridLineSpacing = TuneScoutSpacing.medium
+
+    override val spacing: Dp
+        get() = gridLineSpacing * gridFraction()
+
+    override fun Density.arrange(
+        totalSize: Int,
+        sizes: IntArray,
+        outPositions: IntArray,
     ) {
-        items(
-            items = uiState.filteredItems,
-            key = { item -> item.key.toString() },
-            contentType = { CONTENT_TYPE_CELL },
-        ) { item ->
-            LibraryItemCell(
-                item = item,
-                name = libraryItemName(item),
-                onClick = { onEvent(LibraryUiEvent.OnItemClicked(item)) },
-                modifier = Modifier.animateItem(),
-                isDownloaded = uiState.isDownloaded(item),
-            )
+        val gap = spacing.roundToPx()
+        var position = 0
+        sizes.forEachIndexed { index, size ->
+            outPositions[index] = position
+            position += size + gap
         }
     }
 }

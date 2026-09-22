@@ -76,6 +76,28 @@ class LibraryContentTest {
         onNodeWithText("Road trip").assertIsDisplayed()
     }
 
+    /**
+     * The list and the grid are one grid whose items morph between the two shapes, so a change of
+     * mode keeps every item on screen and answering taps instead of composing it anew.
+     */
+    @Test
+    fun switchingToTheGridKeepsEveryItemOnScreenAndTappable() = compose.use {
+        var viewMode by mutableStateOf(LibraryViewMode.LIST)
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(uiState = state(viewMode = viewMode), isTwoPane = false, onEvent = events::add)
+            }
+        }
+
+        viewMode = LibraryViewMode.GRID
+        onNodeWithText("Liked songs").assertIsDisplayed()
+        onNodeWithText("Toxicity").assertIsDisplayed()
+        onNodeWithText("Album • System Of A Down").assertIsDisplayed()
+        onNodeWithText("Road trip").performClick()
+
+        assertThat(events).containsExactly(LibraryUiEvent.OnItemClicked(roadTrip))
+    }
+
     @Test
     fun clickingAPlaylistEmitsItsItem() = compose.use {
         setContent {
