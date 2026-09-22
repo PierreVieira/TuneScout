@@ -14,7 +14,8 @@ needs `sdk.dir`, which Android Studio writes on the first sync.
 ./gradlew :app:installDebug
 ```
 
-Or open the project in Android Studio and run the `app` configuration.
+Or open the project in Android Studio and run the `app` configuration. To try it without building,
+every [release](https://github.com/PierreVieira/TuneScout/releases) carries the signed APK.
 
 ## Checks
 
@@ -31,6 +32,17 @@ also builds a debug and a release APK and compares every screen with its committ
 every workflow is described in [Continuous integration](ci.md). What each check
 enforces is in [Code quality](code-quality.md); how the suites are organised is in
 [Testing](testing/README.md).
+
+## Cutting a release
+
+```bash
+gh workflow run release -f bump=patch
+```
+
+`bump` is `patch`, `minor`, `major` or `none`. The workflow builds and signs the APK, publishes it
+on a GitHub release named after the version, `1.0.0`, and, when the version changed, opens the pull
+request that carries the bump to `main`. What it needs and what each step does are in [Continuous
+integration](ci.md#release).
 
 ## Measuring performance
 
