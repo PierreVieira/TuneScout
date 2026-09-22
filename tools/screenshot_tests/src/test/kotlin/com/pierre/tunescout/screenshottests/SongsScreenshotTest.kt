@@ -2,6 +2,8 @@ package com.pierre.tunescout.screenshottests
 
 import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import com.pierre.tunescout.core.model.NowPlaying
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.feature.songs.presentation.content.SongsContent
@@ -81,6 +83,31 @@ internal class SongsScreenshotTest : ScreenshotTest() {
         snapshot(
             name = "searching_scrolled",
             beforeCapture = { onNode(hasScrollToIndexAction()).performScrollToIndex(SCROLLED_INDEX) },
+        ) {
+            SongsContent(
+                uiState = recent.copy(query = "daft punk"),
+                searchResults = pagingItems(searchResults(longerThanTheScreen)),
+                isHeaderInline = false,
+                onEvent = {},
+            )
+        }
+    }
+
+    /**
+     * A drag past the header's own height hides it completely. Nothing should be left drawn where
+     * it used to be: the shadow it casts while scrolled degenerates once the header has no height
+     * of its own to cast one from, and used to paint the gap solid black instead of leaving it
+     * empty.
+     */
+    @Test
+    fun searchingHeaderHidden() {
+        snapshot(
+            name = "searching_header_hidden",
+            beforeCapture = {
+                onNode(hasScrollToIndexAction()).performTouchInput {
+                    swipeUp(startY = visibleSize.height * 0.8f, endY = visibleSize.height * 0.2f)
+                }
+            },
         ) {
             SongsContent(
                 uiState = recent.copy(query = "daft punk"),

@@ -154,6 +154,7 @@ private fun Modifier.shadowBelow(fraction: State<Float>): Modifier = drawWithCac
     )
     onDrawWithContent {
         drawContent()
+        if (size.height == 0f) return@onDrawWithContent
         drawRect(
             brush = brush,
             topLeft = Offset(x = 0f, y = size.height),
