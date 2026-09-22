@@ -26,8 +26,6 @@ larger ones is in [Decisions and trade-offs](decisions.md).
 ## Library
 
 - A playlist holds a song once: adding it again leaves it where it already is.
-- A liked album is the album screen, not a screen of its own: the library row opens the same album
-  it would from search.
 
 ## Widgets
 
