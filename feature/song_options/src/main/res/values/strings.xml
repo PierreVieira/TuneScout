@@ -8,5 +8,4 @@
     <string name="song_options_play_next">Play next</string>
     <string name="song_options_add_to_queue">Add to queue</string>
     <string name="song_options_remove_from_playlist">Remove from this playlist</string>
-    <string name="song_options_download_kept_by_collection">This song stays downloaded with an album or playlist you downloaded.</string>
 </resources>

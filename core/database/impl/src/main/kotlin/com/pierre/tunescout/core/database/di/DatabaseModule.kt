@@ -29,6 +29,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_5_6
 import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
 import com.pierre.tunescout.core.database.internal.MIGRATION_7_8
 import com.pierre.tunescout.core.database.internal.MIGRATION_8_9
+import com.pierre.tunescout.core.database.internal.MIGRATION_9_10
 import com.pierre.tunescout.core.database.internal.RoomAlbumLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomDownloadLocalDataSource
 import com.pierre.tunescout.core.database.internal.RoomFavoriteAlbumLocalDataSource
@@ -66,6 +67,7 @@ val databaseModule: Module = module {
                 MIGRATION_6_7,
                 MIGRATION_7_8,
                 MIGRATION_8_9,
+                MIGRATION_9_10,
             ).build()
     }
     single<SongDao> { get<TuneScoutDatabase>().songDao() }

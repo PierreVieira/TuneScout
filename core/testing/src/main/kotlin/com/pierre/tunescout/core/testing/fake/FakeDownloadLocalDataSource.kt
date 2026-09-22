@@ -9,16 +9,14 @@ import kotlinx.coroutines.flow.map
 
 /**
  * The download requests kept in memory. What a collection holds is not worked out here: a test
- * says which songs are wanted through [wanted], and which of those a collection keeps through
- * [heldByCollectionIds], so taking a song's own request back leaves those wanted.
+ * says which songs are wanted through [wanted], and taking a song's own request back always takes
+ * it out of [wanted] too, whatever else asks for it — the same as the real removal does.
  *
- * @property heldByCollectionIds the songs a collection keeps wanted whatever their own request.
  * @param wanted the songs wanted when the test starts.
  * @param collections the collections asked for when the test starts.
  * @param ownSongs the songs downloaded by their own request when the test starts, the latest first.
  */
 class FakeDownloadLocalDataSource(
-    val heldByCollectionIds: Set<Long> = emptySet(),
     wanted: List<Song> = emptyList(),
     collections: Set<LibraryItemKey> = emptySet(),
     ownSongs: List<Song> = emptyList(),
@@ -47,7 +45,7 @@ class FakeDownloadLocalDataSource(
     override suspend fun removeSong(songId: Long) {
         removedSongIds += songId
         ownSongs.value = ownSongs.value.filterNot { song -> song.id == songId }
-        if (songId !in heldByCollectionIds) wanted.value = wanted.value.filterNot { song -> song.id == songId }
+        wanted.value = wanted.value.filterNot { song -> song.id == songId }
     }
 
     override suspend fun addCollection(key: LibraryItemKey) {

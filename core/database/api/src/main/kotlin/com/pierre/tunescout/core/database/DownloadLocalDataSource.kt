@@ -30,7 +30,10 @@ interface DownloadLocalDataSource {
     /** Saves [song] too, so a song only ever seen in a search is still there to be kept. */
     suspend fun addSong(song: Song)
 
-    /** Takes back the song's own request. A collection that holds it still keeps it. */
+    /**
+     * Takes back the song's own request and keeps it off the device even while an album, a
+     * playlist or the liked songs still want it, until it is asked for again.
+     */
     suspend fun removeSong(songId: Long)
 
     /** Does nothing for [LibraryItemKey.DownloadedSongs], which is not a collection to ask for. */

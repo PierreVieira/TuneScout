@@ -6,6 +6,7 @@ import com.pierre.tunescout.core.database.dao.DownloadDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.entity.DownloadedCollectionEntity
 import com.pierre.tunescout.core.database.entity.DownloadedSongEntity
+import com.pierre.tunescout.core.database.entity.DownloadedSongExclusionEntity
 import com.pierre.tunescout.core.database.entity.SongEntity
 import com.pierre.tunescout.core.database.mapper.toEntity
 import com.pierre.tunescout.core.model.LibraryItemKey
@@ -53,6 +54,34 @@ class RoomDownloadLocalDataSourceTest {
 
         // Then
         assertThat(downloadDao.songs.value).isEmpty()
+    }
+
+    @Test
+    fun `GIVEN a requested song WHEN taking the request back THEN it is excluded so a collection cannot keep it`() =
+        runTest {
+            // Given
+            prepareScenario()
+            localDataSource.addSong(song(id = 1))
+
+            // When
+            localDataSource.removeSong(songId = 1)
+
+            // Then
+            assertThat(downloadDao.exclusions.value).containsExactly(1L)
+        }
+
+    @Test
+    fun `GIVEN an excluded song WHEN asking for it again THEN it is no longer excluded`() = runTest {
+        // Given
+        prepareScenario()
+        localDataSource.addSong(song(id = 1))
+        localDataSource.removeSong(songId = 1)
+
+        // When
+        localDataSource.addSong(song(id = 1))
+
+        // Then
+        assertThat(downloadDao.exclusions.value).isEmpty()
     }
 
     @Test
@@ -157,6 +186,7 @@ private class FakeDownloadDao(
     private val wanted: List<SongEntity>,
 ) : DownloadDao {
     val songs = MutableStateFlow(emptyList<DownloadedSongEntity>())
+    val exclusions = MutableStateFlow(emptyList<Long>())
     private val collections = MutableStateFlow(emptyList<DownloadedCollectionEntity>())
 
     override suspend fun upsertSong(entry: DownloadedSongEntity) {
@@ -165,6 +195,14 @@ private class FakeDownloadDao(
 
     override suspend fun deleteSong(songId: Long) {
         songs.value = songs.value.filterNot { entry -> entry.songId == songId }
+    }
+
+    override suspend fun upsertExclusion(entry: DownloadedSongExclusionEntity) {
+        exclusions.value = exclusions.value.filterNot { songId -> songId == entry.songId } + entry.songId
+    }
+
+    override suspend fun deleteExclusion(songId: Long) {
+        exclusions.value = exclusions.value.filterNot { excludedId -> excludedId == songId }
     }
 
     override suspend fun upsertCollection(entry: DownloadedCollectionEntity) {

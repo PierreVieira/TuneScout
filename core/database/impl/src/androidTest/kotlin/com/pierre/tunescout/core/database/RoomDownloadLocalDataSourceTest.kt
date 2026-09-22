@@ -152,7 +152,7 @@ class RoomDownloadLocalDataSourceTest {
     }
 
     @Test
-    fun aSongHeldByTwoRequestsIsListedOnceAndStaysWhenOneIsTakenBack() {
+    fun aSongHeldByTwoRequestsIsListedOnceAndTakingEitherBackTakesItOffTheDevice() {
         runBlocking {
             // Given
             favorites.add(song(id = 1))
@@ -165,7 +165,7 @@ class RoomDownloadLocalDataSourceTest {
 
             // Then
             assertThat(heldTwice).containsExactly(1L)
-            assertThat(downloads.observeIsWanted(songId = 1).first()).isTrue()
+            assertThat(downloads.observeIsWanted(songId = 1).first()).isFalse()
         }
     }
 
@@ -180,6 +180,39 @@ class RoomDownloadLocalDataSourceTest {
 
             // Then
             assertThat(downloads.observeIsWanted(songId = 1).first()).isFalse()
+        }
+    }
+
+    @Test
+    fun aSongKeptOnlyByADownloadedAlbumIsTakenOffTheDeviceWhenItsOwnDownloadIsTakenBack() {
+        runBlocking {
+            // Given
+            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+            val heldByTheAlbum = wantedIds()
+
+            // When
+            downloads.removeSong(songId = 1)
+
+            // Then
+            assertThat(heldByTheAlbum).containsExactly(1L)
+            assertThat(wantedIds()).isEmpty()
+        }
+    }
+
+    @Test
+    fun aSongExcludedFromADownloadedAlbumIsWantedAgainOnceItIsAskedForOnItsOwn() {
+        runBlocking {
+            // Given
+            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+            downloads.removeSong(songId = 1)
+
+            // When
+            downloads.addSong(song(id = 1, albumId = 10))
+
+            // Then
+            assertThat(wantedIds()).containsExactly(1L)
         }
     }
 
