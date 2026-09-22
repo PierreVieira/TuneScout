@@ -200,6 +200,17 @@ subprojects {
 // manual capture. See docs/screenshots.md.
 private val generatedScreenshotsPath = "outputs/screenshots"
 private val readmeScreenshotWidth = 520
+
+// The two-pane tablet shots are 1280dp of logical width against the phone canvas's 414dp, so
+// scaling them down to the same 520px leaves far fewer pixels per dp of UI than the phone shots
+// get — every pane reads soft and the text in it ragged. Scaled instead to roughly the phone
+// shots' own px-per-dp (520px / 414dp), so two panes of real UI keep as much detail as one phone
+// screen does.
+private val readmeWideScreenshotWidth = 1600
+private val wideScreenshots = setOf(
+    "two_pane_songs.png",
+    "two_pane_library.png",
+)
 private val manualScreenshots = setOf(
     "notification.png",
     "widget_shortcuts.png",
@@ -222,7 +233,9 @@ tasks.register("updateReadmeScreenshots") {
     dependsOn(":tools:screenshots:testDebugUnitTest")
     val generatedDir = layout.buildDirectory.dir("$generatedScreenshotsPath/en-US/images/readme")
     val screenshotsDir = layout.projectDirectory.dir("docs/screenshots")
-    val targetWidth = readmeScreenshotWidth
+    val defaultWidth = readmeScreenshotWidth
+    val wideWidth = readmeWideScreenshotWidth
+    val wide = wideScreenshots
     val manual = manualScreenshots
     doLast {
         // Drawn down in halving steps before the last one: a single draw from 1242px samples too
@@ -264,6 +277,7 @@ tasks.register("updateReadmeScreenshots") {
             .orEmpty()
             .forEach { png -> png.delete() }
         generated.forEach { png ->
+            val targetWidth = if (png.name in wide) wideWidth else defaultWidth
             val scaled = ImageIO.read(png).renderScaledTo(targetWidth)
             ImageIO.write(scaled, "png", screenshotsDir.asFile.resolve(png.name))
         }

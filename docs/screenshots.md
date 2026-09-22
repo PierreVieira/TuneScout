@@ -22,8 +22,9 @@ or, the same thing without the wrapper:
 ```
 
 It runs the generators in `:tools:screenshots` (about 30 seconds, no device and no emulator),
-scales each 1242x2484 PNG down to 520px wide and rewrites `docs/screenshots/`. Review the diff and
-commit it with the change that caused it.
+scales each 1242x2484 phone PNG down to 520px wide, the two 2560x1600 tablet PNGs down to 1600px
+wide, and rewrites `docs/screenshots/`. Review the diff and commit it with the change that caused
+it.
 
 The task **deletes every PNG in `docs/screenshots/` except the five manual ones** before writing, so a
 shot that was renamed or dropped cannot stay in the folder — and in the README — forever.
@@ -165,3 +166,11 @@ MockupOrientation.Landscape)`, which swaps the frame's native width/height so th
 is actually measured at 1280dp wide. `two_pane_songs.png` and `two_pane_library.png` then compose
 two real `*Content` screens side by side through the app's own `ListDetailScaffold`, the same
 component `ListDetailScene` renders behind the real two-pane navigation.
+
+**The two-pane shots get their own target width.** They render two full screens beside each other
+on a canvas that is wide but, at 800dp, no taller than a phone canvas is wide — scaling them down
+to the same 520px as the phone shots would leave each pane with far fewer pixels per dp than a
+phone screenshot gets, and both text and icons would read soft. `updateReadmeScreenshots` scales
+`two_pane_songs.png` and `two_pane_library.png` to 1600px instead, in `wideScreenshots` in the root
+`build.gradle.kts` — roughly the phone shots' own px-per-dp (520px / 414dp) applied to the tablet
+canvas's 1280dp width.
