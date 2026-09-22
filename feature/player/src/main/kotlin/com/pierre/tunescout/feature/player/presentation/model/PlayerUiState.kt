@@ -22,6 +22,7 @@ sealed interface PlayerUiState {
         val isShuffleEnabled: Boolean,
         val hasPrevious: Boolean,
         val hasNext: Boolean,
+        val isFavorite: Boolean,
     ) : PlayerUiState {
         val isPlaying: Boolean
             get() = status == PlaybackStatus.Playing

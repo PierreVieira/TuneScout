@@ -37,6 +37,7 @@ class SongOptionsViewModel(
     private val emptyUiState = SongOptionsUiState(
         song = null,
         isFavorite = false,
+        isFavoriteVisible = !route.hidesFavorite,
         isDownloaded = false,
         isRemovableFromPlaylist = route.playlistId != null,
         isReorderable = route.reorderTarget != null,

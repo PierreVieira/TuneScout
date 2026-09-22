@@ -293,6 +293,26 @@ class SongOptionsViewModelTest {
         }
 
     @Test
+    fun `GIVEN the sheet was not asked to hide liking WHEN observing THEN offers to like the song`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1))
+
+            // When / Then
+            assertThat(viewModel.uiState.value.isFavoriteVisible).isTrue()
+        }
+
+    @Test
+    fun `GIVEN the sheet was opened from the player WHEN observing THEN does not offer to like the song`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(song = song(id = 1), hidesFavorite = true)
+
+            // When / Then
+            assertThat(viewModel.uiState.value.isFavoriteVisible).isFalse()
+        }
+
+    @Test
     fun `GIVEN a cached song WHEN clicking add to playlist THEN replaces the sheet with the picker`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
@@ -414,6 +434,7 @@ class SongOptionsViewModelTest {
         isPlayable: Boolean = true,
         playlistId: Long? = null,
         reorderTarget: ReorderTarget? = null,
+        hidesFavorite: Boolean = false,
         isDownloaded: Boolean = false,
         playback: PlaybackState = PlaybackState.Idle,
     ) {
@@ -425,7 +446,12 @@ class SongOptionsViewModelTest {
         enqueuer = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         viewModel = SongOptionsViewModel(
-            route = SongOptionsRoute(songId = 1, playlistId = playlistId, reorderTarget = reorderTarget),
+            route = SongOptionsRoute(
+                songId = 1,
+                playlistId = playlistId,
+                reorderTarget = reorderTarget,
+                hidesFavorite = hidesFavorite,
+            ),
             useCases = SongOptionsUseCases(
                 observeSong = { flowOf(song) },
                 isFavorite = { flowOf(isFavorite) },

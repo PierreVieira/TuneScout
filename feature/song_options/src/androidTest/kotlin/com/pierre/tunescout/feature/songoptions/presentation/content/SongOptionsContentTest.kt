@@ -123,6 +123,17 @@ class SongOptionsContentTest {
     }
 
     @Test
+    fun givenTheCallerAlreadyShowsLikingLikeIsNotOffered() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                SongOptionsContent(uiState = state(song = song(), isFavoriteVisible = false), onEvent = events::add)
+            }
+        }
+
+        onNodeWithText("Like").assertDoesNotExist()
+    }
+
+    @Test
     fun givenASongAlreadyQueuedTheSheetAsksBeforeAddingItAgain() = compose.use {
         setContent {
             SongOptionsContent(
@@ -154,6 +165,7 @@ class SongOptionsContentTest {
     private fun state(
         song: Song?,
         isFavorite: Boolean = false,
+        isFavoriteVisible: Boolean = true,
         isRemovableFromPlaylist: Boolean = false,
         isReorderable: Boolean = false,
         isDownloaded: Boolean = false,
@@ -161,6 +173,7 @@ class SongOptionsContentTest {
     ): SongOptionsUiState = SongOptionsUiState(
         song = song,
         isFavorite = isFavorite,
+        isFavoriteVisible = isFavoriteVisible,
         isRemovableFromPlaylist = isRemovableFromPlaylist,
         isReorderable = isReorderable,
         isDownloaded = isDownloaded,

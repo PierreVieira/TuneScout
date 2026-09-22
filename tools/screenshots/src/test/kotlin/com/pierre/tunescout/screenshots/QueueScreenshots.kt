@@ -30,6 +30,7 @@ internal class QueueScreenshots : ReadmeScreenshotsTest() {
         isShuffleEnabled = false,
         hasPrevious = true,
         hasNext = true,
+        isFavorite = false,
     )
     private val queue = QueueUiState(
         contextTitle = QueueContextTitle.Custom(randomAccessMemories.title),

@@ -22,6 +22,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
         isShuffleEnabled = false,
         hasPrevious = true,
         hasNext = true,
+        isFavorite = false,
     )
 
     @Test
@@ -29,7 +30,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
         capture(
             fileName = "options",
             title = "Queue it, or open its album",
-            description = "The same sheet from every list and from the player",
+            description = "The same sheet everywhere, minus liking here: the player's bar already carries the heart",
         ) {
             SheetOverScreen(
                 screen = { PlayerContent(uiState = playerBehindSheet, layout = PlayerLayout.Stacked, onEvent = {}) },
@@ -38,6 +39,7 @@ internal class SongOptionsScreenshots : ReadmeScreenshotsTest() {
                         uiState = SongOptionsUiState(
                             song = getLucky,
                             isFavorite = false,
+                            isFavoriteVisible = false,
                             isRemovableFromPlaylist = false,
                             isReorderable = false,
                             isDownloaded = false,

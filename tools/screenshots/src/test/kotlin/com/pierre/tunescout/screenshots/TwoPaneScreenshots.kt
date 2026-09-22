@@ -73,6 +73,7 @@ internal class TwoPaneScreenshots : ReadmeTabletScreenshotsTest() {
                             isShuffleEnabled = false,
                             hasPrevious = true,
                             hasNext = true,
+                            isFavorite = false,
                         ),
                         onEvent = {},
                     )

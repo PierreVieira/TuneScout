@@ -37,9 +37,9 @@ shot that was renamed or dropped cannot stay in the folder — and in the README
 | `songs.png` | `SongsScreenshots.songs` | Pick up where you left off | Recently played, five songs, under a mini player holding a restored, paused song. |
 | `search.png` | `SongsScreenshots.search` | Find any song as you type | The query `daft punk` over ten paged results. |
 | `audio_search.png` | `AudioSearchScreenshots` | Or just say it | The audio search sheet over the songs screen, mid-sentence: `Daft Punk get lucky` heard so far, with the halos wide open. |
-| `player.png` | `PlayerScreenshots` | A player, and the queue behind it | Get Lucky, playing, 18 seconds into a 29-second preview. |
+| `player.png` | `PlayerScreenshots` | A player, and the queue behind it | Get Lucky, playing and liked, 18 seconds into a 29-second preview. |
 | `queue.png` | `QueueScreenshots` | Queue what you want next | The queue sheet over the player: Random Access Memories playing, two songs queued by hand ahead of it, and the clear button beside the title. |
-| `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player. |
+| `options.png` | `SongOptionsScreenshots` | Queue it, or open its album | The song options sheet over the player, liking left out since the player's own bar already carries it. |
 | `album.png` | `AlbumScreenshots` | The album behind the song | Random Access Memories, loaded and liked, with the overflow beside the heart and on every track. |
 | `theme.png` | `ThemeSelectionScreenshots` | Light, dark, or whatever the phone says | The theme sheet over the songs screen, dark selected, dynamic colors off. |
 | `library.png` | `LibraryScreenshots.library` | Keep what you like | The library tab as a list: liked songs, three playlists (one still empty) and a liked album, with no filter chip picked. |

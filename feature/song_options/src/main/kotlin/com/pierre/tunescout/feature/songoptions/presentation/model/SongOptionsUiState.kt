@@ -6,6 +6,8 @@ import com.pierre.tunescout.core.playback.QueuePlacement
 /**
  * @property song the song the sheet acts on, once the device has it.
  * @property isFavorite whether the song is liked.
+ * @property isFavoriteVisible whether the sheet offers to like the song, false for a caller that
+ * already shows it of its own.
  * @property isDownloaded whether anything keeps the song on the device: its own request, or an
  * album or playlist downloaded with it.
  * @property isRemovableFromPlaylist the sheet was opened from a playlist, so it offers to take the
@@ -18,6 +20,7 @@ import com.pierre.tunescout.core.playback.QueuePlacement
 data class SongOptionsUiState(
     val song: Song?,
     val isFavorite: Boolean,
+    val isFavoriteVisible: Boolean,
     val isDownloaded: Boolean,
     val isRemovableFromPlaylist: Boolean,
     val isReorderable: Boolean,

@@ -37,6 +37,7 @@ class PlayerViewModelTest {
     private lateinit var transportControls: TransportControls
     private lateinit var navigator: Navigator
     private lateinit var actions: MutableList<PlayerUiAction>
+    private lateinit var favoriteToggles: MutableList<Pair<Long, Boolean>>
 
     @Test
     fun `GIVEN a cached song and idle playback WHEN observing THEN shows the route song paused at zero`() =
@@ -122,7 +123,7 @@ class PlayerViewModelTest {
         }
 
     @Test
-    fun `WHEN clicking more THEN navigates to the options sheet of the shown song`() =
+    fun `WHEN clicking more THEN navigates to the options sheet of the shown song, hiding liking`() =
         runTest(mainDispatcher.dispatcher) {
             // Given
             prepareScenario(routeSong = song(id = 1))
@@ -131,7 +132,64 @@ class PlayerViewModelTest {
             viewModel.onEvent(PlayerUiEvent.OnMoreClicked)
 
             // Then
-            verify { navigator.navigate(SongOptionsRoute(songId = 1)) }
+            verify { navigator.navigate(SongOptionsRoute(songId = 1, hidesFavorite = true)) }
+        }
+
+    @Test
+    fun `GIVEN the shown song is liked WHEN observing THEN exposes it`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(routeSong = song(id = 1), favoriteSongIds = setOf(1))
+
+        // When
+        val state = viewModel.uiState.value as PlayerUiState.Loaded
+
+        // Then
+        assertThat(state.isFavorite).isTrue()
+    }
+
+    @Test
+    fun `GIVEN the queue advanced to another song WHEN observing THEN shows whether that song is liked`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(
+                routeSong = song(id = 1),
+                playback = playing(song = song(id = 2), songs = listOf(song(id = 1), song(id = 2))),
+                favoriteSongIds = setOf(2),
+            )
+
+            // When
+            val state = viewModel.uiState.value as PlayerUiState.Loaded
+
+            // Then
+            assertThat(state.isFavorite).isTrue()
+        }
+
+    @Test
+    fun `GIVEN a song that is not liked WHEN clicking the favorite button THEN likes it`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(routeSong = song(id = 1))
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnFavoriteClicked)
+            runCurrent()
+
+            // Then
+            assertThat(favoriteToggles).containsExactly(1L to false)
+        }
+
+    @Test
+    fun `GIVEN a liked song WHEN clicking the favorite button THEN passes the current state through`() =
+        runTest(mainDispatcher.dispatcher) {
+            // Given
+            prepareScenario(routeSong = song(id = 1), favoriteSongIds = setOf(1))
+
+            // When
+            viewModel.onEvent(PlayerUiEvent.OnFavoriteClicked)
+            runCurrent()
+
+            // Then
+            assertThat(favoriteToggles).containsExactly(1L to true)
         }
 
     @Test
@@ -357,12 +415,14 @@ class PlayerViewModelTest {
         playback: PlaybackState = PlaybackState.Idle,
         playableSongIds: Set<Long>? = null,
         songId: Long? = 1,
+        favoriteSongIds: Set<Long> = emptySet(),
     ) {
         playbackStateFlow = MutableStateFlow(playback)
         playbackStarter = mockk(relaxUnitFun = true)
         transportControls = mockk(relaxUnitFun = true)
         navigator = mockk(relaxUnitFun = true)
         actions = mutableListOf()
+        favoriteToggles = mutableListOf()
         viewModel = PlayerViewModel(
             songId = songId,
             observeSong = { flowOf(routeSong) },
@@ -371,6 +431,8 @@ class PlayerViewModelTest {
             playableSongs = PlayableSongs { song -> playableSongIds?.contains(song.id) ?: true },
             transportControls = transportControls,
             navigator = navigator,
+            isFavorite = { id -> flowOf(id in favoriteSongIds) },
+            toggleFavorite = { song, isFavorite -> favoriteToggles += song.id to isFavorite },
         )
         backgroundScope.launch { viewModel.uiState.collect {} }
         backgroundScope.launch { viewModel.uiAction.collect { action -> actions += action } }
