@@ -71,6 +71,22 @@ class RoomDownloadLocalDataSourceTest {
     }
 
     @Test
+    fun onlyTheSongsAskedForOnTheirOwnAreTheirOwnLatestFirst() {
+        runBlocking {
+            // Given
+            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+
+            // When
+            downloads.addSong(song(id = 2))
+            downloads.addSong(song(id = 3))
+
+            // Then
+            assertThat(downloads.observeOwnSongs().first().map { song -> song.id }).containsExactly(3L, 2L).inOrder()
+        }
+    }
+
+    @Test
     fun aDownloadedAlbumWantsEveryTrackTheDeviceHasOfIt() {
         runBlocking {
             // Given

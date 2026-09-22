@@ -3,6 +3,12 @@
     <string name="library_album">Álbum</string>
     <string name="library_filter_playlists">Playlists</string>
     <string name="library_filter_albums">Álbuns</string>
+    <string name="library_filter_downloaded">Baixado</string>
+    <string name="library_clear_filters">Limpar filtros</string>
+    <string name="library_downloaded_songs">Músicas avulsas</string>
+    <string name="library_downloaded_songs_empty_description">As músicas que você baixar uma a uma aparecem aqui.</string>
+    <string name="library_downloaded_empty_title">Nada baixado ainda</string>
+    <string name="library_downloaded_empty_description">Baixe músicas, álbuns e playlists para ouvir sem internet.</string>
     <string name="library_title">Sua Biblioteca</string>
     <string name="library_favorites">Músicas curtidas</string>
     <string name="library_playlist">Playlist</string>

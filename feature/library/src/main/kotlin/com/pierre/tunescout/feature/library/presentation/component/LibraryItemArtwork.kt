@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
@@ -67,7 +68,9 @@ internal fun LibraryItemArtwork(
         contentAlignment = Alignment.Center,
     ) {
         when (item) {
-            is LibraryItemUiModel.Favorites -> FavoritesIcon()
+            is LibraryItemUiModel.Favorites -> CollectionIcon(icon = TuneScoutIcons.favoriteFilled)
+
+            is LibraryItemUiModel.DownloadedSongs -> CollectionIcon(icon = TuneScoutIcons.downloaded)
 
             is LibraryItemUiModel.Playlist -> PlaylistCover(artworks = item.artworks, size = size)
 
@@ -82,7 +85,7 @@ internal fun LibraryItemArtwork(
 
 @Composable
 private fun backgroundOf(item: LibraryItemUiModel): Color = when (item) {
-    is LibraryItemUiModel.Favorites -> TuneScoutColors.accentContainer
+    is LibraryItemUiModel.Favorites, is LibraryItemUiModel.DownloadedSongs -> TuneScoutColors.accentContainer
     is LibraryItemUiModel.Playlist, is LibraryItemUiModel.Album -> TuneScoutColors.surfaceSubtle
 }
 
@@ -167,10 +170,11 @@ private fun CoverImage(
     }
 }
 
+/** The lists the app keeps for the user wear a glyph of what they hold rather than their songs' covers. */
 @Composable
-private fun FavoritesIcon() {
+private fun CollectionIcon(icon: ImageVector) {
     Icon(
-        imageVector = TuneScoutIcons.favoriteFilled,
+        imageVector = icon,
         contentDescription = null,
         tint = TuneScoutColors.accent,
         modifier = Modifier.fillMaxSize(fraction = ICON_FRACTION),

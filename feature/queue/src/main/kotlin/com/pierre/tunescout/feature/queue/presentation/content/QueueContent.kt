@@ -59,6 +59,7 @@ fun QueueContent(
 private fun QueueContextTitle.resolve(): String = when (this) {
     is QueueContextTitle.Custom -> name
     QueueContextTitle.LikedSongs -> stringResource(R.string.queue_context_liked_songs)
+    QueueContextTitle.DownloadedSongs -> stringResource(R.string.queue_context_downloaded_songs)
     QueueContextTitle.RecentlyPlayed -> stringResource(R.string.queue_context_recently_played)
 }
 

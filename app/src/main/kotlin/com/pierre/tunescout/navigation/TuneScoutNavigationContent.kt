@@ -25,6 +25,8 @@ import com.pierre.tunescout.feature.album.presentation.navigation.albumEntry
 import com.pierre.tunescout.feature.album.presentation.navigation.albumOptionsEntry
 import com.pierre.tunescout.feature.audiosearch.presentation.navigation.audioSearchEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.createPlaylistEntry
+import com.pierre.tunescout.feature.library.presentation.navigation.downloadedSongsEntry
+import com.pierre.tunescout.feature.library.presentation.navigation.downloadedSongsOptionsEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.favoritesEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.favoritesOptionsEntry
 import com.pierre.tunescout.feature.library.presentation.navigation.librarySearchEntry
@@ -111,6 +113,8 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
                             favoritesOptionsEntry()
                             playlistEntry()
                             playlistOptionsEntry()
+                            downloadedSongsEntry()
+                            downloadedSongsOptionsEntry()
                             createPlaylistEntry()
                             songOptionsEntry()
                             addToPlaylistEntry()

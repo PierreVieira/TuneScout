@@ -7,7 +7,7 @@ import com.pierre.tunescout.feature.library.R
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
 
 /**
- * Only a playlist says it is one: calling the liked songs a playlist would name a row the user
+ * Only a playlist says it is one: calling the liked songs or the downloaded songs a playlist would name a row the user
  * never created, and an album is better described by who made it than by how long it is.
  *
  * @return the line drawn under the name of [item].
@@ -15,6 +15,8 @@ import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiMode
 @Composable
 internal fun libraryItemSubtitle(item: LibraryItemUiModel): String = when (item) {
     is LibraryItemUiModel.Favorites -> songCountText(item.songCount)
+
+    is LibraryItemUiModel.DownloadedSongs -> songCountText(item.songCount)
 
     is LibraryItemUiModel.Playlist ->
         "${stringResource(R.string.library_playlist)} • ${songCountText(item.songCount)}"

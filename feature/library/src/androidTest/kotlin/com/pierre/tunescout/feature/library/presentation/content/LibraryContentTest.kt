@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Artwork
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.feature.library.domain.model.LibraryFilter
 import com.pierre.tunescout.feature.library.domain.model.LibraryViewMode
 import com.pierre.tunescout.feature.library.presentation.model.LibraryItemUiModel
@@ -34,6 +35,7 @@ class LibraryContentTest {
         artistName = "System Of A Down",
         artwork = Artwork("https://example.com/art/10/100x100bb.jpg"),
     )
+    private val downloadedSongs = LibraryItemUiModel.DownloadedSongs(songCount = 4, artworks = emptyList())
     private val roadTrip = LibraryItemUiModel.Playlist(
         id = 7,
         name = "Road trip",
@@ -132,19 +134,21 @@ class LibraryContentTest {
 
     private fun state(
         viewMode: LibraryViewMode = LibraryViewMode.LIST,
-        filter: LibraryFilter? = null,
+        filters: Set<LibraryFilter> = emptySet(),
+        items: List<LibraryItemUiModel> = listOf(favorites, downloadedSongs, roadTrip, toxicity),
+        downloadedKeys: Set<LibraryItemKey> = emptySet(),
     ): LibraryUiState = LibraryUiState(
-        items = listOf(favorites, roadTrip, toxicity),
+        items = items,
         viewMode = viewMode,
-        filter = filter,
-        downloadedKeys = emptySet(),
+        filters = filters,
+        downloadedKeys = downloadedKeys,
     )
 
     @Test
     fun theAlbumsChipLeavesOnlyTheAlbums() = compose.use {
         setContent {
             TuneScoutTheme {
-                LibraryContent(uiState = state(filter = LibraryFilter.ALBUMS), onEvent = events::add)
+                LibraryContent(uiState = state(filters = setOf(LibraryFilter.ALBUMS)), onEvent = events::add)
             }
         }
 
@@ -164,5 +168,56 @@ class LibraryContentTest {
         onNodeWithText("Albums").performClick()
 
         assertThat(events).containsExactly(LibraryUiEvent.OnFilterClicked(LibraryFilter.ALBUMS))
+    }
+
+    @Test
+    fun theSongsDownloadedOnTheirOwnOnlyShowUnderTheDownloadedChip() = compose.use {
+        var filters by mutableStateOf(emptySet<LibraryFilter>())
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(
+                    uiState = state(filters = filters, downloadedKeys = setOf(LibraryItemKey.Album(albumId = 10))),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithText("Individual songs").assertDoesNotExist()
+        filters = setOf(LibraryFilter.DOWNLOADED)
+        onNodeWithText("Individual songs").assertIsDisplayed()
+        onNodeWithText("4 songs").assertIsDisplayed()
+        onNodeWithText("Toxicity").assertIsDisplayed()
+        onNodeWithText("Road trip").assertDoesNotExist()
+        onNodeWithText("Liked songs").assertDoesNotExist()
+    }
+
+    @Test
+    fun theClearButtonOnlyShowsWithAChipOnAndClearsThem() = compose.use {
+        var filters by mutableStateOf(emptySet<LibraryFilter>())
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(uiState = state(filters = filters), onEvent = events::add)
+            }
+        }
+
+        onNodeWithContentDescription("Clear filters").assertDoesNotExist()
+        filters = setOf(LibraryFilter.DOWNLOADED)
+        onNodeWithContentDescription("Clear filters").performClick()
+
+        assertThat(events).containsExactly(LibraryUiEvent.OnClearFiltersClicked)
+    }
+
+    @Test
+    fun nothingDownloadedSaysSoUnderTheDownloadedChip() = compose.use {
+        setContent {
+            TuneScoutTheme {
+                LibraryContent(
+                    uiState = state(filters = setOf(LibraryFilter.DOWNLOADED), items = listOf(favorites, roadTrip)),
+                    onEvent = events::add,
+                )
+            }
+        }
+
+        onNodeWithText("Nothing downloaded yet", substring = true).assertIsDisplayed()
     }
 }

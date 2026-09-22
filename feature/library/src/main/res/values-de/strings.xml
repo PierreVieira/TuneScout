@@ -3,6 +3,12 @@
     <string name="library_album">Album</string>
     <string name="library_filter_playlists">Playlists</string>
     <string name="library_filter_albums">Alben</string>
+    <string name="library_filter_downloaded">Heruntergeladen</string>
+    <string name="library_clear_filters">Filter entfernen</string>
+    <string name="library_downloaded_songs">Einzelne Songs</string>
+    <string name="library_downloaded_songs_empty_description">Songs, die du einzeln herunterlädst, erscheinen hier.</string>
+    <string name="library_downloaded_empty_title">Noch nichts heruntergeladen</string>
+    <string name="library_downloaded_empty_description">Lade Songs, Alben und Playlists herunter, um sie ohne Verbindung zu hören.</string>
     <string name="library_title">Deine Bibliothek</string>
     <string name="library_favorites">Lieblingssongs</string>
     <string name="library_playlist">Playlist</string>

@@ -14,6 +14,7 @@ internal class LibraryItemKeyMapperTest {
             LibraryItemKey.Favorites,
             LibraryItemKey.Playlist(playlistId = 7),
             LibraryItemKey.Album(albumId = 10),
+            LibraryItemKey.DownloadedSongs,
         )
 
         // When

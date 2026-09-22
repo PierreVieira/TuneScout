@@ -103,6 +103,18 @@ class QueueViewModelTest {
     }
 
     @Test
+    fun `GIVEN the downloaded songs are playing WHEN observing THEN says so`() = runTest(mainDispatcher.dispatcher) {
+        // Given
+        prepareScenario(playback = queuedOver(PlaybackContext.DownloadedSongs))
+
+        // When
+        val state = viewModel.uiState.value
+
+        // Then
+        assertThat(state.contextTitle).isEqualTo(QueueContextTitle.DownloadedSongs)
+    }
+
+    @Test
     fun `GIVEN the recently played are playing WHEN observing THEN says so`() = runTest(mainDispatcher.dispatcher) {
         // Given
         prepareScenario(playback = queuedOver(PlaybackContext.RecentlyPlayed))

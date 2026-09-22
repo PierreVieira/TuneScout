@@ -84,6 +84,7 @@ class CollectionContentTest {
         isShuffleEnabled = false,
         isReorderable = true,
         isReordering = isReordering,
+        isDownloadable = true,
         download = CollectionDownloadState.NotDownloaded,
         downloadStatuses = emptyMap(),
     )

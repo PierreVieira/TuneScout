@@ -2,6 +2,7 @@ package com.pierre.tunescout.feature.library.presentation.mapper
 
 import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.model.Artwork
+import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.testing.fixture.albumSummary
 import com.pierre.tunescout.core.testing.fixture.playlist
 import com.pierre.tunescout.core.testing.fixture.song
@@ -48,14 +49,43 @@ class LibraryItemUiModelMapperTest {
             favorites = listOf(song()),
             playlists = listOf(playlist(id = 7)),
             albums = listOf(albumSummary(id = 10)),
+            downloadedSongs = listOf(song(id = 2)),
         )
 
         // Then
         assertThat(items.map { item -> item::class.java })
             .containsExactly(
                 LibraryItemUiModel.Favorites::class.java,
+                LibraryItemUiModel.DownloadedSongs::class.java,
                 LibraryItemUiModel.Playlist::class.java,
                 LibraryItemUiModel.Album::class.java,
             ).inOrder()
+    }
+
+    @Test
+    fun `GIVEN no song downloaded on its own WHEN building the library THEN there is no item for them`() {
+        // When
+        val items = LibraryItemUiModelMapper().buildLibraryItems(
+            favorites = emptyList(),
+            playlists = emptyList(),
+            albums = emptyList(),
+            downloadedSongs = emptyList(),
+        )
+
+        // Then
+        assertThat(items.map { item -> item.key }).containsExactly(LibraryItemKey.Favorites)
+    }
+
+    @Test
+    fun `GIVEN more downloaded songs than a cover holds WHEN building the item THEN keeps the count and four covers`() {
+        // Given
+        val songs = (1L..6L).map { id -> song(id = id) }
+
+        // When
+        val item = songs.toDownloadedSongsItem()
+
+        // Then
+        assertThat(item.songCount).isEqualTo(6)
+        assertThat(item.artworks).hasSize(4)
     }
 }

@@ -7,6 +7,7 @@
     <string name="queue_next_from">Successivo da %1$s</string>
     <string name="queue_next_up">Prossimo</string>
     <string name="queue_context_liked_songs">Brani preferiti</string>
+    <string name="queue_context_downloaded_songs">Brani singoli</string>
     <string name="queue_context_recently_played">Riprodotti di recente</string>
     <string name="queue_empty_title">La coda è vuota</string>
     <string name="queue_empty_description">Aggiungi un brano o un intero album alla coda e apparirà qui.</string>

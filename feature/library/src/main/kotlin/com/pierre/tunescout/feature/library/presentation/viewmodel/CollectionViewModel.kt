@@ -103,6 +103,7 @@ class CollectionViewModel(
                 songs = songs,
                 nowPlaying = playback.nowPlaying,
                 isDeletable = key is CollectionKey.Playlist,
+                isDownloadable = key != CollectionKey.DownloadedSongs,
                 favoriteSongIds = favoriteSongIds,
                 unplayableSongIds = playable.findUnplayableIds(songs),
                 isPlaying = playback.isPlaying && playback.isOnCollection(),
@@ -150,6 +151,7 @@ class CollectionViewModel(
 
     private fun toggleDownload() {
         val loaded = uiState.value as? CollectionUiState.Loaded ?: return
+        if (!loaded.isDownloadable) return
         viewModelScope.launch {
             useCases.toggleCollectionDownload(
                 key = downloadKey,
@@ -225,6 +227,7 @@ class CollectionViewModel(
     private fun PlaybackState.isOnCollection(): Boolean = when (key) {
         CollectionKey.Favorites -> context == PlaybackContext.LikedSongs
         is CollectionKey.Playlist -> (context as? PlaybackContext.Playlist)?.id == key.playlistId
+        CollectionKey.DownloadedSongs -> context == PlaybackContext.DownloadedSongs
     }
 
     private fun CollectionUiState.Loaded.toPlaybackContext(): PlaybackContext = when (key) {
@@ -234,6 +237,8 @@ class CollectionViewModel(
             id = key.playlistId,
             title = (title as? CollectionTitle.Custom)?.name.orEmpty(),
         )
+
+        CollectionKey.DownloadedSongs -> PlaybackContext.DownloadedSongs
     }
 
     private fun showSongUnavailableOffline() {

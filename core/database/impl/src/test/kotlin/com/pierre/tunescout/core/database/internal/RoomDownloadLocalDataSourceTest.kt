@@ -93,6 +93,32 @@ class RoomDownloadLocalDataSourceTest {
     }
 
     @Test
+    fun `GIVEN the downloaded songs WHEN asking to keep them as a collection THEN nothing is asked for`() = runTest {
+        // Given
+        prepareScenario()
+
+        // When
+        localDataSource.addCollection(LibraryItemKey.DownloadedSongs)
+        localDataSource.removeCollection(LibraryItemKey.DownloadedSongs)
+
+        // Then
+        localDataSource.observeCollections().test {
+            assertThat(awaitItem()).isEmpty()
+        }
+    }
+
+    @Test
+    fun `GIVEN songs downloaded on their own WHEN observing them THEN they come back as songs`() = runTest {
+        // Given
+        prepareScenario(wanted = listOf(song(id = 2), song(id = 1)))
+
+        // When / Then
+        localDataSource.observeOwnSongs().test {
+            assertThat(awaitItem().map { song -> song.id }).containsExactly(2L, 1L).inOrder()
+        }
+    }
+
+    @Test
     fun `GIVEN songs the database wants WHEN observing them THEN they come back as songs`() = runTest {
         // Given
         prepareScenario(wanted = listOf(song(id = 1), song(id = 2)))
@@ -153,6 +179,8 @@ private class FakeDownloadDao(
             entry.kind == kind && entry.collectionId == collectionId
         }
     }
+
+    override fun observeOwnSongs(): Flow<List<SongEntity>> = MutableStateFlow(wanted)
 
     override fun observeCollections(): Flow<List<DownloadedCollectionEntity>> = collections
 

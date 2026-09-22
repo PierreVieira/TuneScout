@@ -4,9 +4,9 @@ import com.pierre.tunescout.core.database.DownloadLocalDataSource
 import com.pierre.tunescout.core.database.dao.DownloadDao
 import com.pierre.tunescout.core.database.dao.SongDao
 import com.pierre.tunescout.core.database.entity.DownloadedSongEntity
-import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionEntity
+import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionEntityOrNull
 import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionId
-import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionKind
+import com.pierre.tunescout.core.database.mapper.toDownloadedCollectionKindOrNull
 import com.pierre.tunescout.core.database.mapper.toEntity
 import com.pierre.tunescout.core.database.mapper.toLibraryItemKeyOrNull
 import com.pierre.tunescout.core.database.mapper.toSong
@@ -29,6 +29,11 @@ internal class RoomDownloadLocalDataSource(
     override fun observeIsWanted(songId: Long): Flow<Boolean> =
         downloadDao.observeIsWanted(songId).distinctUntilChanged()
 
+    override fun observeOwnSongs(): Flow<List<Song>> = downloadDao
+        .observeOwnSongs()
+        .map { entities -> entities.map { entity -> entity.toSong() } }
+        .distinctUntilChanged()
+
     override fun observeCollections(): Flow<Set<LibraryItemKey>> = downloadDao
         .observeCollections()
         .map { entities -> entities.mapNotNullTo(mutableSetOf()) { entity -> entity.toLibraryItemKeyOrNull() } }
@@ -44,12 +49,14 @@ internal class RoomDownloadLocalDataSource(
     }
 
     override suspend fun addCollection(key: LibraryItemKey) {
-        downloadDao.upsertCollection(key.toDownloadedCollectionEntity(requestedAt = timestampProvider.provide()))
+        val entry = key.toDownloadedCollectionEntityOrNull(requestedAt = timestampProvider.provide()) ?: return
+        downloadDao.upsertCollection(entry)
     }
 
     override suspend fun removeCollection(key: LibraryItemKey) {
+        val kind = key.toDownloadedCollectionKindOrNull() ?: return
         downloadDao.deleteCollection(
-            kind = key.toDownloadedCollectionKind().name,
+            kind = kind.name,
             collectionId = key.toDownloadedCollectionId(),
         )
     }

@@ -12,5 +12,7 @@ sealed interface QueueContextTitle {
 
     data object LikedSongs : QueueContextTitle
 
+    data object DownloadedSongs : QueueContextTitle
+
     data object RecentlyPlayed : QueueContextTitle
 }

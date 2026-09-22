@@ -17,7 +17,7 @@ internal class DownloadedCollectionMapperTest {
 
         // When
         val roundTripped = keys.map { key ->
-            key.toDownloadedCollectionEntity(requestedAt = 1).toLibraryItemKeyOrNull()
+            key.toDownloadedCollectionEntityOrNull(requestedAt = 1)?.toLibraryItemKeyOrNull()
         }
 
         // Then
@@ -27,10 +27,19 @@ internal class DownloadedCollectionMapperTest {
     @Test
     fun `GIVEN the liked songs WHEN storing them THEN the row has the kind the queries read and no id`() {
         // When
-        val entity = LibraryItemKey.Favorites.toDownloadedCollectionEntity(requestedAt = 5)
+        val entity = LibraryItemKey.Favorites.toDownloadedCollectionEntityOrNull(requestedAt = 5)
 
         // Then
         assertThat(entity).isEqualTo(DownloadedCollectionEntity(kind = "Favorites", collectionId = 0, requestedAt = 5))
+    }
+
+    @Test
+    fun `GIVEN the downloaded songs WHEN storing them THEN there is no row, since each song is asked for on its own`() {
+        // When
+        val entity = LibraryItemKey.DownloadedSongs.toDownloadedCollectionEntityOrNull(requestedAt = 5)
+
+        // Then
+        assertThat(entity).isNull()
     }
 
     @Test

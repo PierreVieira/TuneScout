@@ -105,7 +105,7 @@ private fun CollectionLoadedContent(
         if (uiState.songs.isEmpty()) {
             StateMessage(
                 title = stringResource(R.string.library_collection_empty_title),
-                description = stringResource(R.string.library_collection_empty_description),
+                description = stringResource(emptyDescriptionOf(uiState.title)),
             )
         } else {
             SongList(
@@ -147,12 +147,16 @@ private fun SongList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = TuneScoutSpacing.small),
-                download = {
-                    CollectionDownloadButton(
-                        progress = uiState.download.progress,
-                        totalCount = uiState.songs.size,
-                        onClick = { onEvent(CollectionUiEvent.OnDownloadClicked) },
-                    )
+                download = if (uiState.isDownloadable) {
+                    {
+                        CollectionDownloadButton(
+                            progress = uiState.download.progress,
+                            totalCount = uiState.songs.size,
+                            onClick = { onEvent(CollectionUiEvent.OnDownloadClicked) },
+                        )
+                    }
+                } else {
+                    null
                 },
             )
         }
@@ -207,5 +211,11 @@ private fun SongList(
 @Composable
 internal fun collectionTitleText(title: CollectionTitle): String = when (title) {
     CollectionTitle.Favorites -> stringResource(R.string.library_favorites)
+    CollectionTitle.DownloadedSongs -> stringResource(R.string.library_downloaded_songs)
     is CollectionTitle.Custom -> title.name
+}
+
+private fun emptyDescriptionOf(title: CollectionTitle): Int = when (title) {
+    CollectionTitle.DownloadedSongs -> R.string.library_downloaded_songs_empty_description
+    CollectionTitle.Favorites, is CollectionTitle.Custom -> R.string.library_collection_empty_description
 }

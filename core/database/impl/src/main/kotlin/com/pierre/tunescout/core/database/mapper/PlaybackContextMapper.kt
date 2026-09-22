@@ -8,6 +8,7 @@ private const val ALBUM = "Album"
 private const val PLAYLIST = "Playlist"
 private const val LIKED_SONGS = "LikedSongs"
 private const val RECENTLY_PLAYED = "RecentlyPlayed"
+private const val DOWNLOADED_SONGS = "DownloadedSongs"
 
 /**
  * How a [PlaybackContext] is spread over the session's context columns.
@@ -28,6 +29,7 @@ internal fun PlaybackContext?.toColumns(): PlaybackContextColumns = when (this) 
     is PlaybackContext.Playlist -> PlaybackContextColumns(type = PLAYLIST, id = id, title = title)
     PlaybackContext.LikedSongs -> PlaybackContextColumns(type = LIKED_SONGS)
     PlaybackContext.RecentlyPlayed -> PlaybackContextColumns(type = RECENTLY_PLAYED)
+    PlaybackContext.DownloadedSongs -> PlaybackContextColumns(type = DOWNLOADED_SONGS)
 }
 
 /**
@@ -39,5 +41,6 @@ internal fun PlaybackSessionEntity.toPlaybackContext(): PlaybackContext = when (
     PLAYLIST -> contextId?.let { id -> PlaybackContext.Playlist(id = id, title = contextTitle.orEmpty()) }
     LIKED_SONGS -> PlaybackContext.LikedSongs
     RECENTLY_PLAYED -> PlaybackContext.RecentlyPlayed
+    DOWNLOADED_SONGS -> PlaybackContext.DownloadedSongs
     else -> null
 } ?: PlaybackContext.SingleSong

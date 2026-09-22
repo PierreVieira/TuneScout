@@ -7,6 +7,7 @@
     <string name="queue_next_from">A continuación de %1$s</string>
     <string name="queue_next_up">A continuación</string>
     <string name="queue_context_liked_songs">Canciones que te gustan</string>
+    <string name="queue_context_downloaded_songs">Canciones sueltas</string>
     <string name="queue_context_recently_played">Escuchado recientemente</string>
     <string name="queue_empty_title">La cola está vacía</string>
     <string name="queue_empty_description">Añade una canción o un álbum completo a la cola y aparecerá aquí.</string>

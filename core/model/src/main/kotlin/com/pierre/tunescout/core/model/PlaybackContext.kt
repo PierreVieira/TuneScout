@@ -23,6 +23,9 @@ sealed interface PlaybackContext {
 
     data object LikedSongs : PlaybackContext
 
+    /** The songs the user downloaded one by one. */
+    data object DownloadedSongs : PlaybackContext
+
     /** The songs played last, as the widget's shortcuts offer them. */
     data object RecentlyPlayed : PlaybackContext
 }

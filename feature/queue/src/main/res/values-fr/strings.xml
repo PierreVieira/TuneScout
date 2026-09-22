@@ -7,6 +7,7 @@
     <string name="queue_next_from">Ensuite depuis %1$s</string>
     <string name="queue_next_up">À suivre</string>
     <string name="queue_context_liked_songs">Titres likés</string>
+    <string name="queue_context_downloaded_songs">Titres à l\'unité</string>
     <string name="queue_context_recently_played">Écoutés récemment</string>
     <string name="queue_empty_title">La file d\'attente est vide</string>
     <string name="queue_empty_description">Ajoute un titre ou un album entier à la file d\'attente et il apparaîtra ici.</string>

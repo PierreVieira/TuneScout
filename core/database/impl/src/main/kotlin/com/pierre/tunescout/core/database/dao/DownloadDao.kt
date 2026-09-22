@@ -30,6 +30,15 @@ internal interface DownloadDao {
         collectionId: Long,
     )
 
+    @Query(
+        """
+        SELECT songs.* FROM songs
+        INNER JOIN downloaded_songs ON downloaded_songs.songId = songs.id
+        ORDER BY downloaded_songs.requestedAt DESC
+        """,
+    )
+    fun observeOwnSongs(): Flow<List<SongEntity>>
+
     @Query("SELECT * FROM downloaded_collections ORDER BY requestedAt ASC")
     fun observeCollections(): Flow<List<DownloadedCollectionEntity>>
 

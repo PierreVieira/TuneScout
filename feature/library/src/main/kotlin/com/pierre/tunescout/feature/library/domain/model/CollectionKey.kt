@@ -10,4 +10,7 @@ sealed interface CollectionKey {
     data class Playlist(
         val playlistId: Long,
     ) : CollectionKey
+
+    /** The songs the user downloaded one by one, rather than with an album or a playlist. */
+    data object DownloadedSongs : CollectionKey
 }
