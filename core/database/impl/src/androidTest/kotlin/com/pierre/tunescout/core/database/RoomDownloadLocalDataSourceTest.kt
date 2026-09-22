@@ -217,6 +217,78 @@ class RoomDownloadLocalDataSourceTest {
     }
 
     @Test
+    fun undoingAnAlbumDownloadTakesOffTheDeviceItsSongsDownloadedOnTheirOwnToo() {
+        runBlocking {
+            // Given
+            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10), song(id = 2, albumId = 10))))
+            downloads.addSong(song(id = 1, albumId = 10))
+            downloads.addSong(song(id = 3, albumId = 99))
+            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+
+            // When
+            downloads.removeCollection(LibraryItemKey.Album(albumId = 10))
+
+            // Then
+            assertThat(wantedIds()).containsExactly(3L)
+            assertThat(downloads.observeOwnSongs().first().map { song -> song.id }).containsExactly(3L)
+        }
+    }
+
+    @Test
+    fun undoingAPlaylistDownloadTakesOffTheDeviceItsSongsDownloadedOnTheirOwnToo() {
+        runBlocking {
+            // Given
+            val playlistId = playlists.create(name = "Road trip")
+            playlists.addSong(playlistId = playlistId, song = song(id = 1))
+            downloads.addSong(song(id = 1))
+            downloads.addSong(song(id = 2))
+            downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+
+            // When
+            downloads.removeCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+
+            // Then
+            assertThat(wantedIds()).containsExactly(2L)
+        }
+    }
+
+    @Test
+    fun undoingTheLikedSongsDownloadTakesOffTheDeviceTheLikedSongsDownloadedOnTheirOwnToo() {
+        runBlocking {
+            // Given
+            favorites.add(song(id = 1))
+            downloads.addSong(song(id = 1))
+            downloads.addSong(song(id = 2))
+            downloads.addCollection(LibraryItemKey.Favorites)
+
+            // When
+            downloads.removeCollection(LibraryItemKey.Favorites)
+
+            // Then
+            assertThat(wantedIds()).containsExactly(2L)
+        }
+    }
+
+    @Test
+    fun undoingAnAlbumDownloadKeepsASongAnotherDownloadedCollectionStillHolds() {
+        runBlocking {
+            // Given
+            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+            val playlistId = playlists.create(name = "Road trip")
+            playlists.addSong(playlistId = playlistId, song = song(id = 1, albumId = 10))
+            downloads.addSong(song(id = 1, albumId = 10))
+            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+            downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+
+            // When
+            downloads.removeCollection(LibraryItemKey.Album(albumId = 10))
+
+            // Then
+            assertThat(wantedIds()).containsExactly(1L)
+        }
+    }
+
+    @Test
     fun deletingADownloadedPlaylistTakesItsRequestWithIt() {
         runBlocking {
             // Given

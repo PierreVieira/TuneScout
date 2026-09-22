@@ -39,5 +39,10 @@ interface DownloadLocalDataSource {
     /** Does nothing for [LibraryItemKey.DownloadedSongs], which is not a collection to ask for. */
     suspend fun addCollection(key: LibraryItemKey)
 
+    /**
+     * Also takes back the own request of each song the collection holds, so undoing a collection's
+     * download takes its songs off the device even when one of them was downloaded by itself too.
+     * A song another downloaded collection still holds stays.
+     */
     suspend fun removeCollection(key: LibraryItemKey)
 }

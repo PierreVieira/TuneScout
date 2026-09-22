@@ -122,6 +122,19 @@ class RoomDownloadLocalDataSourceTest {
     }
 
     @Test
+    fun `GIVEN a collection asked for WHEN taking it back THEN the own requests of its songs go with it`() = runTest {
+        // Given
+        prepareScenario()
+        localDataSource.addCollection(LibraryItemKey.Playlist(playlistId = 7))
+
+        // When
+        localDataSource.removeCollection(LibraryItemKey.Playlist(playlistId = 7))
+
+        // Then
+        assertThat(downloadDao.collectionsWhoseSongsWereTakenBack).containsExactly("Playlist" to 7L)
+    }
+
+    @Test
     fun `GIVEN the downloaded songs WHEN asking to keep them as a collection THEN nothing is asked for`() = runTest {
         // Given
         prepareScenario()
@@ -187,6 +200,7 @@ private class FakeDownloadDao(
 ) : DownloadDao {
     val songs = MutableStateFlow(emptyList<DownloadedSongEntity>())
     val exclusions = MutableStateFlow(emptyList<Long>())
+    val collectionsWhoseSongsWereTakenBack = mutableListOf<Pair<String, Long>>()
     private val collections = MutableStateFlow(emptyList<DownloadedCollectionEntity>())
 
     override suspend fun upsertSong(entry: DownloadedSongEntity) {
@@ -216,6 +230,13 @@ private class FakeDownloadDao(
         collections.value = collections.value.filterNot { entry ->
             entry.kind == kind && entry.collectionId == collectionId
         }
+    }
+
+    override suspend fun deleteSongsOfCollection(
+        kind: String,
+        collectionId: Long,
+    ) {
+        collectionsWhoseSongsWereTakenBack += kind to collectionId
     }
 
     override fun observeOwnSongs(): Flow<List<SongEntity>> = MutableStateFlow(wanted)
