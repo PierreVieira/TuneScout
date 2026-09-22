@@ -2,6 +2,31 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-22 — Releases
+
+**A release is a GitHub release with the signed APK, cut by hand from `main` by the `release`
+workflow.** There is no store listing to keep in step with, and the people who install the app can
+do it from a link, so a release is one dispatch with a choice of `patch`, `minor` or `major`, or
+`none` to release what `main` already has. The version stays in `app/build.gradle.kts`, edited by
+`scripts/bump_version.py`, so the same script is the check locally; the `versionCode` goes up by
+one per bump, since a device only takes an update whose code is higher.
+
+**The tag sits on the bump commit, and a pull request carries the bump to `main`.** The APK is
+built from the bumped source, so the tag has to point at a commit that holds the bump, and the only
+one that exists when the release is created is the one on `chore/bump-version-<version>`. Merging
+the bump on its own from the workflow would put a commit on `main` no one reviewed, so it is a pull
+request, opened by the workflow and assigned to whoever ran it. Cost: after the squash merge the
+tag's commit is reachable only through the tag, and there is a window in which the release exists
+and `main` still says the old version; the next release stops on the existing tag until that pull
+request is merged. The pull request gets no checks, because the workflow's own token opened it, and
+it changes nothing but the two version lines on a commit the run already built.
+
+**The signing key comes from secrets, and a build without them signs with the debug key.** The
+release APK has to be signed with one key forever, or an update refuses to install over the
+previous release, so the workflow refuses to run until the four secrets exist. Locally and in the
+`build` job nothing needs a stable key, so `assembleRelease` falls back to the debug signing config
+instead of failing: R8 still runs, which is what that job is for.
+
 ## 2026-09-22 — Taking a song's own download back always takes it off the device
 
 **"Remove download" on a song now wins over the album, playlist or liked songs that also want it,**

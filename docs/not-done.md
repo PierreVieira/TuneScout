@@ -41,6 +41,11 @@ larger ones is in [Decisions and trade-offs](decisions.md).
 - The widget picker shows a preview rendered from the real widget only on Android 15+. Below that it
   shows a static XML layout drawn with the same palette, with placeholder text instead of your song.
 
+## Distribution
+
+- The app is not on the Play Store. Each release is a GitHub release carrying the signed APK,
+  installed by hand, and the app does not check for a newer one.
+
 ## Your data
 
 - Playlists, liked songs, liked albums and the theme stay on the device. There is no account, so

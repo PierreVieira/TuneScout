@@ -87,6 +87,15 @@ JDK 21 and a device or emulator on API 26+ — no API keys:
 
 The checks CI runs, and how to run each locally, are in [Getting started](docs/getting-started.md).
 
+## 📦 Releases
+
+Every [release](https://github.com/PierreVieira/TuneScout/releases) carries the signed APK, ready
+to install on any device on API 26+. Releases are cut by the `release` workflow, run by hand from
+`main`: it bumps the version by a patch, minor or major step, or keeps the one `main` has, builds
+and signs the APK, publishes it as `v<version>`, and opens the pull request that brings the bump
+back to `main`. How to run it, and how the signing key is set up, are in
+[Continuous integration](docs/ci.md#release).
+
 ## 🚧 Not done
 
 What the app leaves out, on purpose or for lack of time — the typeface, a queue built from a
@@ -103,7 +112,7 @@ playlist, backup, and a few more — is listed in [Not done](docs/not-done.md).
 | [Decisions and trade-offs](docs/decisions.md) | Why each larger choice was made, and what it costs. |
 | [Not done](docs/not-done.md) | What is left out, and why. |
 | [Code quality](docs/code-quality.md) | ktlint, the custom ruleset, coverage, and what CI runs. |
-| [Continuous integration](docs/ci.md) | Every workflow, when it runs, the Gradle cache, and how to add one. |
+| [Continuous integration](docs/ci.md) | Every workflow, when it runs, the Gradle cache, how a release is cut, and how to add one. |
 | [Performance](docs/performance.md) | The Baseline Profile, the macrobenchmarks and their numbers, and Compose stability. |
 | [Testing](docs/testing/README.md) | How the suites are organised and what each layer covers. |
 | [README screenshots](docs/screenshots.md) | How the images above are generated, and which ones are captured by hand. |

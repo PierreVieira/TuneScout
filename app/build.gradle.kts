@@ -6,10 +6,25 @@ plugins {
 android {
     namespace = "com.pierre.tunescout"
 
+    // Edited by scripts/bump_version.py, which the release workflow runs. See docs/ci.md#release.
     defaultConfig {
         applicationId = "com.pierre.tunescout"
         versionCode = 1
         versionName = "1.0.0"
+    }
+
+    // The release workflow signs with the project's key, handed over through the environment so
+    // the keystore never enters the repository. Without it — a local build, the build job on CI —
+    // the release APK is signed with the debug key: it installs, but cannot update a published one.
+    signingConfigs {
+        providers.environmentVariable("RELEASE_KEYSTORE").orNull?.let { keystore ->
+            create("release") {
+                storeFile = file(keystore)
+                storePassword = providers.environmentVariable("RELEASE_KEYSTORE_PASSWORD").orNull
+                keyAlias = providers.environmentVariable("RELEASE_KEY_ALIAS").orNull
+                keyPassword = providers.environmentVariable("RELEASE_KEY_PASSWORD").orNull
+            }
+        }
     }
 
     buildTypes {
@@ -20,6 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 
