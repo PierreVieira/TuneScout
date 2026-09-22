@@ -30,6 +30,9 @@ import com.pierre.tunescout.ui.component.TuneScoutIcons
 import com.pierre.tunescout.ui.theme.TuneScoutColors
 import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 
+private const val CONTENT_TYPE_HEADER = "header"
+private const val CONTENT_TYPE_SONG = "song"
+
 @Composable
 internal fun RecentlyPlayedList(
     songs: List<Song>,
@@ -59,7 +62,7 @@ internal fun RecentlyPlayedList(
             bottom = TuneScoutSpacing.extraLarge,
         ),
     ) {
-        item(key = "header") {
+        item(key = "header", contentType = CONTENT_TYPE_HEADER) {
             Text(
                 text = stringResource(R.string.songs_recently_played),
                 style = MaterialTheme.typography.bodySmall,
@@ -69,7 +72,7 @@ internal fun RecentlyPlayedList(
                     .semantics { heading() },
             )
         }
-        items(items = songs, key = { song -> song.id }) { song ->
+        items(items = songs, key = { song -> song.id }, contentType = { CONTENT_TYPE_SONG }) { song ->
             SongSwipeActionsBox(
                 isFavorite = song.id in favoriteSongIds,
                 onAddToQueue = { onEvent(SongsUiEvent.OnSongSwipedToQueue(song)) },

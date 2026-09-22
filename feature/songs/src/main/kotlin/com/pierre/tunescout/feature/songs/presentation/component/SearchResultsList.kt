@@ -41,6 +41,8 @@ import com.pierre.tunescout.ui.theme.TuneScoutSpacing
 private const val APPEND_SKELETON_ROWS = 2
 private const val SEARCH_RESULTS_TAG = "search_results"
 private val resultsCountLabelSize = 1.dp
+private const val CONTENT_TYPE_MESSAGE = "message"
+private const val CONTENT_TYPE_SONG = "song"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,11 +76,12 @@ internal fun SearchResultsList(
             ),
         ) {
             when {
-                refreshState is LoadState.Loading && searchResults.itemCount == 0 -> item(key = "loading") {
-                    SongListSkeleton(hasMoreAction = true)
-                }
+                refreshState is LoadState.Loading && searchResults.itemCount == 0 ->
+                    item(key = "loading", contentType = CONTENT_TYPE_MESSAGE) {
+                        SongListSkeleton(hasMoreAction = true)
+                    }
 
-                refreshState is LoadState.Error -> item(key = "error") {
+                refreshState is LoadState.Error -> item(key = "error", contentType = CONTENT_TYPE_MESSAGE) {
                     ErrorMessage(
                         error = refreshState.error,
                         isOffline = isOffline,
@@ -86,17 +89,19 @@ internal fun SearchResultsList(
                     )
                 }
 
-                refreshState is LoadState.NotLoading && searchResults.itemCount == 0 -> item(key = "empty") {
-                    StateMessage(
-                        title = stringResource(R.string.songs_no_results_title),
-                        description = stringResource(R.string.songs_no_results_description),
-                        isAnnounced = true,
-                    )
-                }
+                refreshState is LoadState.NotLoading && searchResults.itemCount == 0 ->
+                    item(key = "empty", contentType = CONTENT_TYPE_MESSAGE) {
+                        StateMessage(
+                            title = stringResource(R.string.songs_no_results_title),
+                            description = stringResource(R.string.songs_no_results_description),
+                            isAnnounced = true,
+                        )
+                    }
             }
             items(
                 count = searchResults.itemCount,
                 key = searchResults.itemKey { result -> result.song.id },
+                contentType = { CONTENT_TYPE_SONG },
             ) { index ->
                 val result = searchResults[index] ?: return@items
                 val song = result.song
@@ -127,11 +132,11 @@ internal fun SearchResultsList(
                 }
             }
             when (appendState) {
-                is LoadState.Loading -> item(key = "appending") {
+                is LoadState.Loading -> item(key = "appending", contentType = CONTENT_TYPE_MESSAGE) {
                     SongListSkeleton(rows = APPEND_SKELETON_ROWS, hasMoreAction = true)
                 }
 
-                is LoadState.Error -> item(key = "append-error") {
+                is LoadState.Error -> item(key = "append-error", contentType = CONTENT_TYPE_MESSAGE) {
                     ErrorMessage(
                         error = appendState.error,
                         isOffline = isOffline,

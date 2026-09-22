@@ -45,6 +45,9 @@ import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import com.pierre.tunescout.ui.component.R as ComponentR
 
+private const val CONTENT_TYPE_PLAYBACK = "playback"
+private const val CONTENT_TYPE_SONG = "song"
+
 @Composable
 fun CollectionContent(
     uiState: CollectionUiState,
@@ -137,7 +140,7 @@ private fun SongList(
             .fillMaxHeight(),
         contentPadding = PaddingValues(top = TuneScoutSpacing.small, bottom = TuneScoutSpacing.extraLarge),
     ) {
-        item(key = "playback") {
+        item(key = "playback", contentType = CONTENT_TYPE_PLAYBACK) {
             CollectionPlaybackRow(
                 isPlaying = uiState.isPlaying,
                 isShuffleEnabled = uiState.isShuffleEnabled,
@@ -160,7 +163,11 @@ private fun SongList(
                 },
             )
         }
-        itemsIndexed(items = uiState.songs, key = { _, song -> song.id }) { index, song ->
+        itemsIndexed(
+            items = uiState.songs,
+            key = { _, song -> song.id },
+            contentType = { _, _ -> CONTENT_TYPE_SONG },
+        ) { index, song ->
             val moveTo: (Song) -> () -> Unit = { target ->
                 { onEvent(CollectionUiEvent.OnSongMoved(fromSongId = song.id, toSongId = target.id)) }
             }

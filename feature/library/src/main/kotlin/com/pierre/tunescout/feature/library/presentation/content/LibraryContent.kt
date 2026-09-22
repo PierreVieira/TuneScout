@@ -48,6 +48,8 @@ import com.pierre.tunescout.ui.utils.semantics.screenPane
 private val minCellWidth = 160.dp
 private val fabSize = 56.dp
 private val fabListBottomPadding = fabSize + TuneScoutSpacing.screen * 2
+private const val CONTENT_TYPE_ROW = "row"
+private const val CONTENT_TYPE_CELL = "cell"
 
 /**
  * The create-playlist action is a FAB on a single pane, where the list has the whole width to spare.
@@ -225,7 +227,11 @@ private fun LibraryList(
             bottom = if (isTwoPane) TuneScoutSpacing.extraLarge else fabListBottomPadding,
         ),
     ) {
-        items(items = uiState.filteredItems, key = { item -> item.key.toString() }) { item ->
+        items(
+            items = uiState.filteredItems,
+            key = { item -> item.key.toString() },
+            contentType = { CONTENT_TYPE_ROW },
+        ) { item ->
             LibraryItemRow(
                 item = item,
                 name = libraryItemName(item),
@@ -253,7 +259,11 @@ private fun LibraryGrid(
         horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
         verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),
     ) {
-        items(items = uiState.filteredItems, key = { item -> item.key.toString() }) { item ->
+        items(
+            items = uiState.filteredItems,
+            key = { item -> item.key.toString() },
+            contentType = { CONTENT_TYPE_CELL },
+        ) { item ->
             LibraryItemCell(
                 item = item,
                 name = libraryItemName(item),
