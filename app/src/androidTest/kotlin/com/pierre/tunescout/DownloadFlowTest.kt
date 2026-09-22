@@ -30,6 +30,7 @@ import de.mannodermaus.junit5.compose.ComposeContext
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -242,12 +243,10 @@ class DownloadFlowTest {
      * with them, without anyone asking for it on its own.
      */
     @Test
-    fun aSongLikedAfterTheLikedSongsWereDownloadedIsDownloadedWithThem() {
-        runBlocking {
-            favorites.add(likedBefore)
-            downloads.addCollection(LibraryItemKey.Favorites)
-            recentlyPlayed.record(likedAfter)
-        }
+    fun aSongLikedAfterTheLikedSongsWereDownloadedIsDownloadedWithThem() = runTest {
+        favorites.add(likedBefore)
+        downloads.addCollection(LibraryItemKey.Favorites)
+        recentlyPlayed.record(likedAfter)
         compose.use {
             waitUntilAtLeastOneExists(hasText(likedAfter.title), SCREEN_TIMEOUT_MILLIS)
             waitUntil(DOWNLOAD_TIMEOUT_MILLIS) { likedBefore.id in downloadedSongIds() }

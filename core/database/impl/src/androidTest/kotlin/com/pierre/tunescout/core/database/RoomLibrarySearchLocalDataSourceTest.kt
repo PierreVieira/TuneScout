@@ -7,7 +7,7 @@ import com.google.common.truth.Truth.assertThat
 import com.pierre.tunescout.core.database.internal.RoomLibrarySearchLocalDataSource
 import com.pierre.tunescout.core.model.LibraryItemKey
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,68 +37,60 @@ class RoomLibrarySearchLocalDataSourceTest {
     }
 
     @Test
-    fun theMostRecentlyOpenedItemComesFirst() {
-        runBlocking {
-            // Given
-            dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
-            dataSource.record(LibraryItemKey.Favorites)
+    fun theMostRecentlyOpenedItemComesFirst() = runTest {
+        // Given
+        dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
+        dataSource.record(LibraryItemKey.Favorites)
 
-            // When
-            val keys = dataSource.observeRecent().first()
+        // When
+        val keys = dataSource.observeRecent().first()
 
-            // Then
-            assertThat(keys)
-                .containsExactly(LibraryItemKey.Favorites, LibraryItemKey.Playlist(playlistId = 1))
-                .inOrder()
-        }
+        // Then
+        assertThat(keys)
+            .containsExactly(LibraryItemKey.Favorites, LibraryItemKey.Playlist(playlistId = 1))
+            .inOrder()
     }
 
     @Test
-    fun openingAnItemAgainMovesItToTheTopWithoutDuplicatingIt() {
-        runBlocking {
-            // Given
-            dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
-            dataSource.record(LibraryItemKey.Favorites)
+    fun openingAnItemAgainMovesItToTheTopWithoutDuplicatingIt() = runTest {
+        // Given
+        dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
+        dataSource.record(LibraryItemKey.Favorites)
 
-            // When
-            dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
+        // When
+        dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
 
-            // Then
-            assertThat(dataSource.observeRecent().first())
-                .containsExactly(LibraryItemKey.Playlist(playlistId = 1), LibraryItemKey.Favorites)
-                .inOrder()
-        }
+        // Then
+        assertThat(dataSource.observeRecent().first())
+            .containsExactly(LibraryItemKey.Playlist(playlistId = 1), LibraryItemKey.Favorites)
+            .inOrder()
     }
 
     @Test
-    fun removingOneRecentSearchLeavesTheOthers() {
-        runBlocking {
-            // Given
-            dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
-            dataSource.record(LibraryItemKey.Favorites)
+    fun removingOneRecentSearchLeavesTheOthers() = runTest {
+        // Given
+        dataSource.record(LibraryItemKey.Playlist(playlistId = 1))
+        dataSource.record(LibraryItemKey.Favorites)
 
-            // When
-            dataSource.remove(LibraryItemKey.Favorites)
+        // When
+        dataSource.remove(LibraryItemKey.Favorites)
 
-            // Then
-            assertThat(dataSource.observeRecent().first())
-                .containsExactly(LibraryItemKey.Playlist(playlistId = 1))
-        }
+        // Then
+        assertThat(dataSource.observeRecent().first())
+            .containsExactly(LibraryItemKey.Playlist(playlistId = 1))
     }
 
     @Test
-    fun theOldestSearchFallsOffOnceTheCapIsReached() {
-        runBlocking {
-            // When
-            (1L..(MAX_ENTRIES + 2L)).forEach { id ->
-                dataSource.record(LibraryItemKey.Playlist(playlistId = id))
-            }
-
-            // Then
-            val keys = dataSource.observeRecent().first()
-            assertThat(keys).hasSize(MAX_ENTRIES)
-            assertThat(keys).doesNotContain(LibraryItemKey.Playlist(playlistId = 1))
+    fun theOldestSearchFallsOffOnceTheCapIsReached() = runTest {
+        // When
+        (1L..(MAX_ENTRIES + 2L)).forEach { id ->
+            dataSource.record(LibraryItemKey.Playlist(playlistId = id))
         }
+
+        // Then
+        val keys = dataSource.observeRecent().first()
+        assertThat(keys).hasSize(MAX_ENTRIES)
+        assertThat(keys).doesNotContain(LibraryItemKey.Playlist(playlistId = 1))
     }
 
     private companion object {

@@ -15,7 +15,7 @@ import com.pierre.tunescout.core.database.internal.MIGRATION_6_7
 import com.pierre.tunescout.core.database.internal.MIGRATION_7_8
 import com.pierre.tunescout.core.database.internal.MIGRATION_8_9
 import com.pierre.tunescout.core.database.internal.MIGRATION_9_10
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -44,7 +44,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionOneDatabaseTheMigrationKeepsTheHistoryAndAddsTheQueueTables() = runBlocking {
+    fun givenAVersionOneDatabaseTheMigrationKeepsTheHistoryAndAddsTheQueueTables() = runTest {
         // Given
         helper.createDatabase(version = 1).use { connection ->
             connection.execSQL(
@@ -67,7 +67,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionOneDatabaseTheQueueTableAcceptsARowAfterTheMigration() = runBlocking {
+    fun givenAVersionOneDatabaseTheQueueTableAcceptsARowAfterTheMigration() = runTest {
         // Given
         helper.createDatabase(version = 1).use { connection ->
             connection.execSQL(
@@ -89,7 +89,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionTwoDatabaseTheMigrationKeepsTheHistoryAndAddsTheLibraryTables() = runBlocking {
+    fun givenAVersionTwoDatabaseTheMigrationKeepsTheHistoryAndAddsTheLibraryTables() = runTest {
         // Given
         helper.createDatabase(version = 2).use { connection ->
             connection.execSQL(
@@ -114,7 +114,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionTwoDatabaseTheLibraryTablesAcceptRowsAfterTheMigration() = runBlocking {
+    fun givenAVersionTwoDatabaseTheLibraryTablesAcceptRowsAfterTheMigration() = runTest {
         // Given
         helper.createDatabase(version = 2).use { connection ->
             connection.execSQL(
@@ -145,7 +145,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionThreeDatabaseTheMigrationKeepsTheSessionAndMarksItAsNotEnded() = runBlocking {
+    fun givenAVersionThreeDatabaseTheMigrationKeepsTheSessionAndMarksItAsNotEnded() = runTest {
         // Given
         helper.createDatabase(version = 3).use { connection ->
             connection.execSQL("INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 0, 10, 'Album')")
@@ -162,7 +162,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionFourDatabaseTheMigrationKeepsTheSongsAndTreatsThemAsTheOldestCached() = runBlocking {
+    fun givenAVersionFourDatabaseTheMigrationKeepsTheSongsAndTreatsThemAsTheOldestCached() = runTest {
         // Given
         helper.createDatabase(version = 4).use { connection ->
             connection.execSQL(
@@ -182,7 +182,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionFiveSessionThatRepeatedItsSongTheMigrationKeepsItRepeatingAndNotShuffled() = runBlocking {
+    fun givenAVersionFiveSessionThatRepeatedItsSongTheMigrationKeepsItRepeatingAndNotShuffled() = runTest {
         // Given
         helper.createDatabase(version = 5).use { connection ->
             connection.execSQL("INSERT INTO playback_session VALUES (0, 'entry-1', 5000, 1, 10, 'Album', 1)")
@@ -202,7 +202,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionFiveSessionThatDidNotRepeatTheMigrationTurnsRepeatOffAndKeepsTheQueue() = runBlocking {
+    fun givenAVersionFiveSessionThatDidNotRepeatTheMigrationTurnsRepeatOffAndKeepsTheQueue() = runTest {
         // Given
         helper.createDatabase(version = 5).use { connection ->
             connection.execSQL(
@@ -227,7 +227,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionSixSessionOnAnAlbumTheMigrationKeepsTheAlbumAsItsContext() = runBlocking {
+    fun givenAVersionSixSessionOnAnAlbumTheMigrationKeepsTheAlbumAsItsContext() = runTest {
         // Given
         helper.createDatabase(version = 6).use { connection ->
             connection.execSQL(
@@ -251,7 +251,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionSixSessionWithoutAnAlbumTheMigrationMakesItASingleSongAndKeepsTheQueue() = runBlocking {
+    fun givenAVersionSixSessionWithoutAnAlbumTheMigrationMakesItASingleSongAndKeepsTheQueue() = runTest {
         // Given
         helper.createDatabase(version = 6).use { connection ->
             connection.execSQL(
@@ -276,7 +276,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionSixDatabaseTheSessionAcceptsAPlaylistContextAfterTheMigration() = runBlocking {
+    fun givenAVersionSixDatabaseTheSessionAcceptsAPlaylistContextAfterTheMigration() = runTest {
         // Given
         helper.createDatabase(version = 6).close()
 
@@ -294,7 +294,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionSevenDatabaseTheMigrationKeepsTheSongsAndAcceptsAnAlbumTrackOrder() = runBlocking {
+    fun givenAVersionSevenDatabaseTheMigrationKeepsTheSongsAndAcceptsAnAlbumTrackOrder() = runTest {
         // Given
         helper.createDatabase(version = 7).use { connection ->
             connection.execSQL(
@@ -315,7 +315,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionEightDatabaseTheMigrationKeepsTheSongsAndAcceptsDownloadRequests() = runBlocking {
+    fun givenAVersionEightDatabaseTheMigrationKeepsTheSongsAndAcceptsDownloadRequests() = runTest {
         // Given
         helper.createDatabase(version = 8).use { connection ->
             connection.execSQL(
@@ -338,7 +338,7 @@ class TuneScoutDatabaseMigrationTest {
     }
 
     @Test
-    fun givenAVersionNineDatabaseTheMigrationKeepsTheSongsAndAcceptsDownloadExclusions() = runBlocking {
+    fun givenAVersionNineDatabaseTheMigrationKeepsTheSongsAndAcceptsDownloadExclusions() = runTest {
         // Given
         helper.createDatabase(version = 9).use { connection ->
             connection.execSQL(

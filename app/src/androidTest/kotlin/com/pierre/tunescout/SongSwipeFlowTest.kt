@@ -24,6 +24,7 @@ import com.pierre.tunescout.core.testing.fixture.song
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -51,17 +52,15 @@ class SongSwipeFlowTest {
     }
 
     @BeforeEach
-    fun setUp() {
+    fun setUp() = runTest {
         loadKoinModules(fakeRemoteModule)
-        runBlocking {
-            storedFavorites().forEach { song -> favorites.remove(song.id) }
-            storedHistory().forEach { song -> recentlyPlayed.remove(song.id) }
-        }
+        storedFavorites().forEach { song -> favorites.remove(song.id) }
+        storedHistory().forEach { song -> recentlyPlayed.remove(song.id) }
     }
 
     @AfterEach
-    fun tearDown() {
-        runBlocking { storedFavorites().forEach { song -> favorites.remove(song.id) } }
+    fun tearDown() = runTest {
+        storedFavorites().forEach { song -> favorites.remove(song.id) }
         unloadKoinModules(fakeRemoteModule)
     }
 
@@ -93,7 +92,7 @@ class SongSwipeFlowTest {
      */
     @Test
     fun swipingASongTowardTheStartLikesItAndSwipingItAgainFromTheLikedSongsTakesItBack() = compose.use {
-        runBlocking { recentlyPlayed.record(liked) }
+        runTest { recentlyPlayed.record(liked) }
         waitUntilAtLeastOneExists(hasText("Digital Love"), SCREEN_TIMEOUT_MILLIS)
 
         onNodeWithText("Digital Love").performTouchInput { swipeLeft() }

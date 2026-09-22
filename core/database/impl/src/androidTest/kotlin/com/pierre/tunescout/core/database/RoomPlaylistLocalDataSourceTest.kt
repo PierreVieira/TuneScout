@@ -8,7 +8,7 @@ import com.pierre.tunescout.core.database.internal.RoomPlaylistLocalDataSource
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,152 +38,134 @@ class RoomPlaylistLocalDataSourceTest {
     }
 
     @Test
-    fun aNewPlaylistIsListedWithNoSongs() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
+    fun aNewPlaylistIsListedWithNoSongs() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
 
-            // When
-            val playlists = dataSource.observeAll().first()
+        // When
+        val playlists = dataSource.observeAll().first()
 
-            // Then
-            assertThat(playlists).hasSize(1)
-            assertThat(playlists.single().id).isEqualTo(playlistId)
-            assertThat(playlists.single().songCount).isEqualTo(0)
-        }
+        // Then
+        assertThat(playlists).hasSize(1)
+        assertThat(playlists.single().id).isEqualTo(playlistId)
+        assertThat(playlists.single().songCount).isEqualTo(0)
     }
 
     @Test
-    fun theNewestPlaylistIsListedFirst() {
-        runBlocking {
-            // Given
-            dataSource.create(name = "Focus")
-            dataSource.create(name = "Road trip")
+    fun theNewestPlaylistIsListedFirst() = runTest {
+        // Given
+        dataSource.create(name = "Focus")
+        dataSource.create(name = "Road trip")
 
-            // When
-            val names = dataSource.observeAll().first().map { playlist -> playlist.name }
+        // When
+        val names = dataSource.observeAll().first().map { playlist -> playlist.name }
 
-            // Then
-            assertThat(names).containsExactly("Road trip", "Focus").inOrder()
-        }
+        // Then
+        assertThat(names).containsExactly("Road trip", "Focus").inOrder()
     }
 
     @Test
-    fun addedSongsKeepTheOrderTheyWereAddedIn() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
+    fun addedSongsKeepTheOrderTheyWereAddedIn() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
 
-            // When
-            listOf(song(id = 3), song(id = 1), song(id = 2)).forEach { added ->
-                dataSource.addSong(playlistId = playlistId, song = added)
-            }
-
-            // Then
-            assertThat(dataSource.observeSongs(playlistId).first().map(Song::id))
-                .containsExactly(3L, 1L, 2L)
-                .inOrder()
+        // When
+        listOf(song(id = 3), song(id = 1), song(id = 2)).forEach { added ->
+            dataSource.addSong(playlistId = playlistId, song = added)
         }
+
+        // Then
+        assertThat(dataSource.observeSongs(playlistId).first().map(Song::id))
+            .containsExactly(3L, 1L, 2L)
+            .inOrder()
     }
 
     @Test
-    fun aSongThatWasOnlyASearchResultIsCachedWhenItIsAdded() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
+    fun aSongThatWasOnlyASearchResultIsCachedWhenItIsAdded() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
 
-            // When
-            dataSource.addSong(playlistId = playlistId, song = song(id = 1, title = "Get Lucky"))
+        // When
+        dataSource.addSong(playlistId = playlistId, song = song(id = 1, title = "Get Lucky"))
 
-            // Then
-            assertThat(database.songDao().getById(1)?.title).isEqualTo("Get Lucky")
-        }
+        // Then
+        assertThat(database.songDao().getById(1)?.title).isEqualTo("Get Lucky")
     }
 
     @Test
-    fun addingTheSameSongTwiceLeavesItInPlaceOnce() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
-            dataSource.addSong(playlistId = playlistId, song = song(id = 1))
-            dataSource.addSong(playlistId = playlistId, song = song(id = 2))
+    fun addingTheSameSongTwiceLeavesItInPlaceOnce() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
+        dataSource.addSong(playlistId = playlistId, song = song(id = 1))
+        dataSource.addSong(playlistId = playlistId, song = song(id = 2))
 
-            // When
-            dataSource.addSong(playlistId = playlistId, song = song(id = 1))
+        // When
+        dataSource.addSong(playlistId = playlistId, song = song(id = 1))
 
-            // Then
-            assertThat(dataSource.observeSongs(playlistId).first().map(Song::id))
-                .containsExactly(1L, 2L)
-                .inOrder()
-        }
+        // Then
+        assertThat(dataSource.observeSongs(playlistId).first().map(Song::id))
+            .containsExactly(1L, 2L)
+            .inOrder()
     }
 
     @Test
-    fun removingASongLeavesTheRestInOrder() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
-            listOf(song(id = 1), song(id = 2), song(id = 3)).forEach { added ->
-                dataSource.addSong(playlistId = playlistId, song = added)
-            }
-
-            // When
-            dataSource.removeSong(playlistId = playlistId, songId = 2)
-
-            // Then
-            assertThat(dataSource.observeSongs(playlistId).first().map(Song::id))
-                .containsExactly(1L, 3L)
-                .inOrder()
+    fun removingASongLeavesTheRestInOrder() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
+        listOf(song(id = 1), song(id = 2), song(id = 3)).forEach { added ->
+            dataSource.addSong(playlistId = playlistId, song = added)
         }
+
+        // When
+        dataSource.removeSong(playlistId = playlistId, songId = 2)
+
+        // Then
+        assertThat(dataSource.observeSongs(playlistId).first().map(Song::id))
+            .containsExactly(1L, 3L)
+            .inOrder()
     }
 
     @Test
-    fun deletingAPlaylistTakesItsSongEntriesWithItAndKeepsTheSongs() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
-            dataSource.addSong(playlistId = playlistId, song = song(id = 1))
+    fun deletingAPlaylistTakesItsSongEntriesWithItAndKeepsTheSongs() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
+        dataSource.addSong(playlistId = playlistId, song = song(id = 1))
 
-            // When
-            dataSource.delete(playlistId)
+        // When
+        dataSource.delete(playlistId)
 
-            // Then
-            assertThat(dataSource.observeAll().first()).isEmpty()
-            assertThat(dataSource.observeSongs(playlistId).first()).isEmpty()
-            assertThat(database.songDao().getById(1)).isNotNull()
-        }
+        // Then
+        assertThat(dataSource.observeAll().first()).isEmpty()
+        assertThat(dataSource.observeSongs(playlistId).first()).isEmpty()
+        assertThat(database.songDao().getById(1)).isNotNull()
     }
 
     @Test
-    fun renamingAPlaylistKeepsItsSongs() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
-            dataSource.addSong(playlistId = playlistId, song = song(id = 1))
+    fun renamingAPlaylistKeepsItsSongs() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
+        dataSource.addSong(playlistId = playlistId, song = song(id = 1))
 
-            // When
-            dataSource.rename(playlistId = playlistId, name = "Long drive")
+        // When
+        dataSource.rename(playlistId = playlistId, name = "Long drive")
 
-            // Then
-            assertThat(dataSource.observe(playlistId).first()?.name).isEqualTo("Long drive")
-            assertThat(dataSource.observeSongs(playlistId).first()).hasSize(1)
-        }
+        // Then
+        assertThat(dataSource.observe(playlistId).first()?.name).isEqualTo("Long drive")
+        assertThat(dataSource.observeSongs(playlistId).first()).hasSize(1)
     }
 
     @Test
-    fun aPlaylistReportsWhetherItAlreadyHoldsASong() {
-        runBlocking {
-            // Given
-            val playlistId = dataSource.create(name = "Road trip")
-            dataSource.addSong(playlistId = playlistId, song = song(id = 1))
+    fun aPlaylistReportsWhetherItAlreadyHoldsASong() = runTest {
+        // Given
+        val playlistId = dataSource.create(name = "Road trip")
+        dataSource.addSong(playlistId = playlistId, song = song(id = 1))
 
-            // When
-            val holdsAdded = dataSource.observeContains(playlistId = playlistId, songId = 1).first()
-            val holdsOther = dataSource.observeContains(playlistId = playlistId, songId = 2).first()
+        // When
+        val holdsAdded = dataSource.observeContains(playlistId = playlistId, songId = 1).first()
+        val holdsOther = dataSource.observeContains(playlistId = playlistId, songId = 2).first()
 
-            // Then
-            assertThat(holdsAdded).isTrue()
-            assertThat(holdsOther).isFalse()
-        }
+        // Then
+        assertThat(holdsAdded).isTrue()
+        assertThat(holdsOther).isFalse()
     }
 }

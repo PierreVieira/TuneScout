@@ -16,6 +16,7 @@ import com.pierre.tunescout.core.testing.fixture.song
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -45,12 +46,10 @@ class RecentlyPlayedRemovalFlowTest {
     }
 
     @BeforeEach
-    fun setUp() {
+    fun setUp() = runTest {
         loadKoinModules(fakeRemoteModule)
-        runBlocking {
-            clearHistory()
-            history.forEach { song -> recentlyPlayed.record(song) }
-        }
+        clearHistory()
+        history.forEach { song -> recentlyPlayed.record(song) }
     }
 
     @AfterEach

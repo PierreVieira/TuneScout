@@ -12,7 +12,7 @@ import com.pierre.tunescout.core.model.LibraryItemKey
 import com.pierre.tunescout.core.testing.fixture.album
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -60,247 +60,217 @@ class RoomDownloadLocalDataSourceTest {
     }
 
     @Test
-    fun aSongAskedForOnItsOwnIsWanted() {
-        runBlocking {
-            // When
-            downloads.addSong(song(id = 1))
+    fun aSongAskedForOnItsOwnIsWanted() = runTest {
+        // When
+        downloads.addSong(song(id = 1))
 
-            // Then
-            assertThat(wantedIds()).containsExactly(1L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(1L)
     }
 
     @Test
-    fun onlyTheSongsAskedForOnTheirOwnAreTheirOwnLatestFirst() {
-        runBlocking {
-            // Given
-            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
-            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+    fun onlyTheSongsAskedForOnTheirOwnAreTheirOwnLatestFirst() = runTest {
+        // Given
+        albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+        downloads.addCollection(LibraryItemKey.Album(albumId = 10))
 
-            // When
-            downloads.addSong(song(id = 2))
-            downloads.addSong(song(id = 3))
+        // When
+        downloads.addSong(song(id = 2))
+        downloads.addSong(song(id = 3))
 
-            // Then
-            assertThat(downloads.observeOwnSongs().first().map { song -> song.id }).containsExactly(3L, 2L).inOrder()
-        }
+        // Then
+        assertThat(downloads.observeOwnSongs().first().map { song -> song.id }).containsExactly(3L, 2L).inOrder()
     }
 
     @Test
-    fun aDownloadedAlbumWantsEveryTrackTheDeviceHasOfIt() {
-        runBlocking {
-            // Given
-            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10), song(id = 2, albumId = 10))))
-            favorites.add(song(id = 3, albumId = 99))
+    fun aDownloadedAlbumWantsEveryTrackTheDeviceHasOfIt() = runTest {
+        // Given
+        albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10), song(id = 2, albumId = 10))))
+        favorites.add(song(id = 3, albumId = 99))
 
-            // When
-            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+        // When
+        downloads.addCollection(LibraryItemKey.Album(albumId = 10))
 
-            // Then
-            assertThat(wantedIds()).containsExactly(1L, 2L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(1L, 2L)
     }
 
     @Test
-    fun aSongAddedToADownloadedPlaylistIsWantedWithItAndOneTakenOutIsNot() {
-        runBlocking {
-            // Given
-            val playlistId = playlists.create(name = "Road trip")
-            playlists.addSong(playlistId = playlistId, song = song(id = 1))
-            downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+    fun aSongAddedToADownloadedPlaylistIsWantedWithItAndOneTakenOutIsNot() = runTest {
+        // Given
+        val playlistId = playlists.create(name = "Road trip")
+        playlists.addSong(playlistId = playlistId, song = song(id = 1))
+        downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
 
-            // When
-            playlists.addSong(playlistId = playlistId, song = song(id = 2))
-            playlists.removeSong(playlistId = playlistId, songId = 1)
+        // When
+        playlists.addSong(playlistId = playlistId, song = song(id = 2))
+        playlists.removeSong(playlistId = playlistId, songId = 1)
 
-            // Then
-            assertThat(wantedIds()).containsExactly(2L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(2L)
     }
 
     @Test
-    fun theLikedSongsAreOnlyWantedWhileTheLikedSongsAreDownloaded() {
-        runBlocking {
-            // Given
-            favorites.add(song(id = 1))
-            val beforeTheRequest = wantedIds()
+    fun theLikedSongsAreOnlyWantedWhileTheLikedSongsAreDownloaded() = runTest {
+        // Given
+        favorites.add(song(id = 1))
+        val beforeTheRequest = wantedIds()
 
-            // When
-            downloads.addCollection(LibraryItemKey.Favorites)
-            favorites.add(song(id = 2))
+        // When
+        downloads.addCollection(LibraryItemKey.Favorites)
+        favorites.add(song(id = 2))
 
-            // Then
-            assertThat(beforeTheRequest).isEmpty()
-            assertThat(wantedIds()).containsExactly(1L, 2L)
-        }
+        // Then
+        assertThat(beforeTheRequest).isEmpty()
+        assertThat(wantedIds()).containsExactly(1L, 2L)
     }
 
     @Test
-    fun aSongNoLongerLikedLeavesTheDownloadedLikedSongs() {
-        runBlocking {
-            // Given
-            favorites.add(song(id = 1))
-            favorites.add(song(id = 2))
-            downloads.addCollection(LibraryItemKey.Favorites)
+    fun aSongNoLongerLikedLeavesTheDownloadedLikedSongs() = runTest {
+        // Given
+        favorites.add(song(id = 1))
+        favorites.add(song(id = 2))
+        downloads.addCollection(LibraryItemKey.Favorites)
 
-            // When
-            favorites.remove(songId = 1)
+        // When
+        favorites.remove(songId = 1)
 
-            // Then
-            assertThat(wantedIds()).containsExactly(2L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(2L)
     }
 
     @Test
-    fun aSongHeldByTwoRequestsIsListedOnceAndTakingEitherBackTakesItOffTheDevice() {
-        runBlocking {
-            // Given
-            favorites.add(song(id = 1))
-            downloads.addCollection(LibraryItemKey.Favorites)
-            downloads.addSong(song(id = 1))
-            val heldTwice = wantedIds()
+    fun aSongHeldByTwoRequestsIsListedOnceAndTakingEitherBackTakesItOffTheDevice() = runTest {
+        // Given
+        favorites.add(song(id = 1))
+        downloads.addCollection(LibraryItemKey.Favorites)
+        downloads.addSong(song(id = 1))
+        val heldTwice = wantedIds()
 
-            // When
-            downloads.removeSong(songId = 1)
+        // When
+        downloads.removeSong(songId = 1)
 
-            // Then
-            assertThat(heldTwice).containsExactly(1L)
-            assertThat(downloads.observeIsWanted(songId = 1).first()).isFalse()
-        }
+        // Then
+        assertThat(heldTwice).containsExactly(1L)
+        assertThat(downloads.observeIsWanted(songId = 1).first()).isFalse()
     }
 
     @Test
-    fun aSongNothingHoldsAnyMoreIsNotWanted() {
-        runBlocking {
-            // Given
-            downloads.addSong(song(id = 1))
+    fun aSongNothingHoldsAnyMoreIsNotWanted() = runTest {
+        // Given
+        downloads.addSong(song(id = 1))
 
-            // When
-            downloads.removeSong(songId = 1)
+        // When
+        downloads.removeSong(songId = 1)
 
-            // Then
-            assertThat(downloads.observeIsWanted(songId = 1).first()).isFalse()
-        }
+        // Then
+        assertThat(downloads.observeIsWanted(songId = 1).first()).isFalse()
     }
 
     @Test
-    fun aSongKeptOnlyByADownloadedAlbumIsTakenOffTheDeviceWhenItsOwnDownloadIsTakenBack() {
-        runBlocking {
-            // Given
-            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
-            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
-            val heldByTheAlbum = wantedIds()
+    fun aSongKeptOnlyByADownloadedAlbumIsTakenOffTheDeviceWhenItsOwnDownloadIsTakenBack() = runTest {
+        // Given
+        albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+        downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+        val heldByTheAlbum = wantedIds()
 
-            // When
-            downloads.removeSong(songId = 1)
+        // When
+        downloads.removeSong(songId = 1)
 
-            // Then
-            assertThat(heldByTheAlbum).containsExactly(1L)
-            assertThat(wantedIds()).isEmpty()
-        }
+        // Then
+        assertThat(heldByTheAlbum).containsExactly(1L)
+        assertThat(wantedIds()).isEmpty()
     }
 
     @Test
-    fun aSongExcludedFromADownloadedAlbumIsWantedAgainOnceItIsAskedForOnItsOwn() {
-        runBlocking {
-            // Given
-            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
-            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
-            downloads.removeSong(songId = 1)
+    fun aSongExcludedFromADownloadedAlbumIsWantedAgainOnceItIsAskedForOnItsOwn() = runTest {
+        // Given
+        albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+        downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+        downloads.removeSong(songId = 1)
 
-            // When
-            downloads.addSong(song(id = 1, albumId = 10))
+        // When
+        downloads.addSong(song(id = 1, albumId = 10))
 
-            // Then
-            assertThat(wantedIds()).containsExactly(1L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(1L)
     }
 
     @Test
-    fun undoingAnAlbumDownloadTakesOffTheDeviceItsSongsDownloadedOnTheirOwnToo() {
-        runBlocking {
-            // Given
-            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10), song(id = 2, albumId = 10))))
-            downloads.addSong(song(id = 1, albumId = 10))
-            downloads.addSong(song(id = 3, albumId = 99))
-            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+    fun undoingAnAlbumDownloadTakesOffTheDeviceItsSongsDownloadedOnTheirOwnToo() = runTest {
+        // Given
+        albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10), song(id = 2, albumId = 10))))
+        downloads.addSong(song(id = 1, albumId = 10))
+        downloads.addSong(song(id = 3, albumId = 99))
+        downloads.addCollection(LibraryItemKey.Album(albumId = 10))
 
-            // When
-            downloads.removeCollection(LibraryItemKey.Album(albumId = 10))
+        // When
+        downloads.removeCollection(LibraryItemKey.Album(albumId = 10))
 
-            // Then
-            assertThat(wantedIds()).containsExactly(3L)
-            assertThat(downloads.observeOwnSongs().first().map { song -> song.id }).containsExactly(3L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(3L)
+        assertThat(downloads.observeOwnSongs().first().map { song -> song.id }).containsExactly(3L)
     }
 
     @Test
-    fun undoingAPlaylistDownloadTakesOffTheDeviceItsSongsDownloadedOnTheirOwnToo() {
-        runBlocking {
-            // Given
-            val playlistId = playlists.create(name = "Road trip")
-            playlists.addSong(playlistId = playlistId, song = song(id = 1))
-            downloads.addSong(song(id = 1))
-            downloads.addSong(song(id = 2))
-            downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+    fun undoingAPlaylistDownloadTakesOffTheDeviceItsSongsDownloadedOnTheirOwnToo() = runTest {
+        // Given
+        val playlistId = playlists.create(name = "Road trip")
+        playlists.addSong(playlistId = playlistId, song = song(id = 1))
+        downloads.addSong(song(id = 1))
+        downloads.addSong(song(id = 2))
+        downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
 
-            // When
-            downloads.removeCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+        // When
+        downloads.removeCollection(LibraryItemKey.Playlist(playlistId = playlistId))
 
-            // Then
-            assertThat(wantedIds()).containsExactly(2L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(2L)
     }
 
     @Test
-    fun undoingTheLikedSongsDownloadTakesOffTheDeviceTheLikedSongsDownloadedOnTheirOwnToo() {
-        runBlocking {
-            // Given
-            favorites.add(song(id = 1))
-            downloads.addSong(song(id = 1))
-            downloads.addSong(song(id = 2))
-            downloads.addCollection(LibraryItemKey.Favorites)
+    fun undoingTheLikedSongsDownloadTakesOffTheDeviceTheLikedSongsDownloadedOnTheirOwnToo() = runTest {
+        // Given
+        favorites.add(song(id = 1))
+        downloads.addSong(song(id = 1))
+        downloads.addSong(song(id = 2))
+        downloads.addCollection(LibraryItemKey.Favorites)
 
-            // When
-            downloads.removeCollection(LibraryItemKey.Favorites)
+        // When
+        downloads.removeCollection(LibraryItemKey.Favorites)
 
-            // Then
-            assertThat(wantedIds()).containsExactly(2L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(2L)
     }
 
     @Test
-    fun undoingAnAlbumDownloadKeepsASongAnotherDownloadedCollectionStillHolds() {
-        runBlocking {
-            // Given
-            albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
-            val playlistId = playlists.create(name = "Road trip")
-            playlists.addSong(playlistId = playlistId, song = song(id = 1, albumId = 10))
-            downloads.addSong(song(id = 1, albumId = 10))
-            downloads.addCollection(LibraryItemKey.Album(albumId = 10))
-            downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+    fun undoingAnAlbumDownloadKeepsASongAnotherDownloadedCollectionStillHolds() = runTest {
+        // Given
+        albums.save(album(id = 10, songs = listOf(song(id = 1, albumId = 10))))
+        val playlistId = playlists.create(name = "Road trip")
+        playlists.addSong(playlistId = playlistId, song = song(id = 1, albumId = 10))
+        downloads.addSong(song(id = 1, albumId = 10))
+        downloads.addCollection(LibraryItemKey.Album(albumId = 10))
+        downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
 
-            // When
-            downloads.removeCollection(LibraryItemKey.Album(albumId = 10))
+        // When
+        downloads.removeCollection(LibraryItemKey.Album(albumId = 10))
 
-            // Then
-            assertThat(wantedIds()).containsExactly(1L)
-        }
+        // Then
+        assertThat(wantedIds()).containsExactly(1L)
     }
 
     @Test
-    fun deletingADownloadedPlaylistTakesItsRequestWithIt() {
-        runBlocking {
-            // Given
-            val playlistId = playlists.create(name = "Road trip")
-            downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
+    fun deletingADownloadedPlaylistTakesItsRequestWithIt() = runTest {
+        // Given
+        val playlistId = playlists.create(name = "Road trip")
+        downloads.addCollection(LibraryItemKey.Playlist(playlistId = playlistId))
 
-            // When
-            playlists.delete(playlistId)
+        // When
+        playlists.delete(playlistId)
 
-            // Then
-            assertThat(downloads.observeCollections().first()).isEmpty()
-        }
+        // Then
+        assertThat(downloads.observeCollections().first()).isEmpty()
     }
 
     private suspend fun wantedIds(): List<Long> = downloads.observeWantedSongs().first().map { song -> song.id }

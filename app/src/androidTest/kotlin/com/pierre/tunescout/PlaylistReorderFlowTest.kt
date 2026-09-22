@@ -22,6 +22,7 @@ import de.mannodermaus.junit5.compose.ComposeContext
 import de.mannodermaus.junit5.compose.createAndroidComposeExtension
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -51,19 +52,17 @@ class PlaylistReorderFlowTest {
     private val harderBetter = song(id = 703, title = "Harder, Better, Faster, Stronger")
 
     @BeforeEach
-    fun setUp() {
+    fun setUp() = runTest {
         loadKoinModules(fakeRemoteModule)
-        runBlocking {
-            playlistId = playlists.create(PLAYLIST_NAME)
-            listOf(veridisQuo, digitalLove, harderBetter).forEach { song ->
-                playlists.addSong(playlistId = playlistId, song = song)
-            }
+        playlistId = playlists.create(PLAYLIST_NAME)
+        listOf(veridisQuo, digitalLove, harderBetter).forEach { song ->
+            playlists.addSong(playlistId = playlistId, song = song)
         }
     }
 
     @AfterEach
-    fun tearDown() {
-        runBlocking { playlists.delete(playlistId) }
+    fun tearDown() = runTest {
+        playlists.delete(playlistId)
         unloadKoinModules(fakeRemoteModule)
     }
 

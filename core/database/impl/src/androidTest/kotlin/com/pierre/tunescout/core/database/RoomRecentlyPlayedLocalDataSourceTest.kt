@@ -8,7 +8,7 @@ import com.pierre.tunescout.core.database.internal.RoomRecentlyPlayedLocalDataSo
 import com.pierre.tunescout.core.model.Song
 import com.pierre.tunescout.core.testing.fixture.song
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
@@ -23,103 +23,89 @@ class RoomRecentlyPlayedLocalDataSourceTest {
     }
 
     @Test
-    fun removingAnEntryDropsOnlyThatSongFromTheHistory() {
-        runBlocking {
-            // Given
-            prepareScenario(recorded = listOf(song(id = 1), song(id = 2), song(id = 3)))
+    fun removingAnEntryDropsOnlyThatSongFromTheHistory() = runTest {
+        // Given
+        prepareScenario(recorded = listOf(song(id = 1), song(id = 2), song(id = 3)))
 
-            // When
-            dataSource.remove(songId = 2)
+        // When
+        dataSource.remove(songId = 2)
 
-            // Then
-            assertThat(observedIds()).containsExactly(3L, 1L).inOrder()
-        }
+        // Then
+        assertThat(observedIds()).containsExactly(3L, 1L).inOrder()
     }
 
     @Test
-    fun removingAnEntryKeepsTheSongItselfCached() {
-        runBlocking {
-            // Given
-            prepareScenario(recorded = listOf(song(id = 1, title = "Get Lucky")))
+    fun removingAnEntryKeepsTheSongItselfCached() = runTest {
+        // Given
+        prepareScenario(recorded = listOf(song(id = 1, title = "Get Lucky")))
 
-            // When
-            dataSource.remove(songId = 1)
+        // When
+        dataSource.remove(songId = 1)
 
-            // Then
-            assertThat(observedIds()).isEmpty()
-            assertThat(database.songDao().getById(1)?.title).isEqualTo("Get Lucky")
-        }
+        // Then
+        assertThat(observedIds()).isEmpty()
+        assertThat(database.songDao().getById(1)?.title).isEqualTo("Get Lucky")
     }
 
     @Test
-    fun removingASongThatWasNeverPlayedLeavesTheHistoryAlone() {
-        runBlocking {
-            // Given
-            prepareScenario(recorded = listOf(song(id = 1)))
+    fun removingASongThatWasNeverPlayedLeavesTheHistoryAlone() = runTest {
+        // Given
+        prepareScenario(recorded = listOf(song(id = 1)))
 
-            // When
-            dataSource.remove(songId = 99)
+        // When
+        dataSource.remove(songId = 99)
 
-            // Then
-            assertThat(observedIds()).containsExactly(1L)
-        }
+        // Then
+        assertThat(observedIds()).containsExactly(1L)
     }
 
     @Test
-    fun aRemovedSongComesBackWhenItIsPlayedAgain() {
-        runBlocking {
-            // Given
-            prepareScenario(recorded = listOf(song(id = 1), song(id = 2)))
-            dataSource.remove(songId = 1)
+    fun aRemovedSongComesBackWhenItIsPlayedAgain() = runTest {
+        // Given
+        prepareScenario(recorded = listOf(song(id = 1), song(id = 2)))
+        dataSource.remove(songId = 1)
 
-            // When
-            dataSource.record(song(id = 1))
+        // When
+        dataSource.record(song(id = 1))
 
-            // Then
-            assertThat(observedIds()).containsExactly(1L, 2L).inOrder()
-        }
+        // Then
+        assertThat(observedIds()).containsExactly(1L, 2L).inOrder()
     }
 
     @Test
-    fun aRecordedSongIsReportedAsRecentlyPlayed() {
-        runBlocking {
-            // Given
-            prepareScenario(recorded = listOf(song(id = 1)))
+    fun aRecordedSongIsReportedAsRecentlyPlayed() = runTest {
+        // Given
+        prepareScenario(recorded = listOf(song(id = 1)))
 
-            // When
-            val isRecentlyPlayed = dataSource.observeIsRecentlyPlayed(songId = 1).first()
+        // When
+        val isRecentlyPlayed = dataSource.observeIsRecentlyPlayed(songId = 1).first()
 
-            // Then
-            assertThat(isRecentlyPlayed).isTrue()
-        }
+        // Then
+        assertThat(isRecentlyPlayed).isTrue()
     }
 
     @Test
-    fun aSongOutsideTheHistoryIsNotReportedAsRecentlyPlayed() {
-        runBlocking {
-            // Given
-            prepareScenario(recorded = listOf(song(id = 1)))
+    fun aSongOutsideTheHistoryIsNotReportedAsRecentlyPlayed() = runTest {
+        // Given
+        prepareScenario(recorded = listOf(song(id = 1)))
 
-            // When
-            val isRecentlyPlayed = dataSource.observeIsRecentlyPlayed(songId = 2).first()
+        // When
+        val isRecentlyPlayed = dataSource.observeIsRecentlyPlayed(songId = 2).first()
 
-            // Then
-            assertThat(isRecentlyPlayed).isFalse()
-        }
+        // Then
+        assertThat(isRecentlyPlayed).isFalse()
     }
 
     @Test
-    fun aRemovedSongStopsBeingReportedAsRecentlyPlayed() {
-        runBlocking {
-            // Given
-            prepareScenario(recorded = listOf(song(id = 1)))
+    fun aRemovedSongStopsBeingReportedAsRecentlyPlayed() = runTest {
+        // Given
+        prepareScenario(recorded = listOf(song(id = 1)))
 
-            // When
-            dataSource.remove(songId = 1)
+        // When
+        dataSource.remove(songId = 1)
 
-            // Then
-            assertThat(dataSource.observeIsRecentlyPlayed(songId = 1).first()).isFalse()
-        }
+        // Then
+        assertThat(dataSource.observeIsRecentlyPlayed(songId = 1).first()).isFalse()
     }
 
     private suspend fun observedIds(): List<Long> =
