@@ -93,8 +93,8 @@ internal fun PlayerSkeleton(
         PlayerLayout.Compact -> Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.medium),
-            verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen, Alignment.CenterVertically),
+                .padding(horizontal = TuneScoutSpacing.medium, vertical = TuneScoutSpacing.small),
+            verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium, Alignment.CenterVertically),
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),

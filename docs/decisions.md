@@ -2,6 +2,24 @@
 
 A running log, newest first. Each entry states the decision, why, and what it costs.
 
+## 2026-09-21 — Two panes from 800dp
+
+**The tabs get a pane beside them from 800dp, not from Material's expanded 840dp.** A Galaxy A56 on
+its side, at its default display size, is 832dp wide: it missed the pane by 8dp and kept the mini
+player, though half of it is as roomy as half of the phones that did reach 840dp. From 800dp each
+pane keeps at least 360dp once the rail takes its share, which the songs list and the compact player
+both fit. `TuneScoutWindowSize.isTwoPane` reads the window's width in dp itself: the size class only
+knows which of Material's buckets the window falls in, and 800dp is not one of them. Cost: the rule
+no longer follows Material's breakpoints, so a phone just over 800dp gets two narrow panes where
+Material would give it one. `isWidthExpanded` still decides the rest, such as the inline headers.
+A Pixel Tablet held upright is exactly 800dp wide, so it gets the two panes as well.
+
+**Half of a phone on its side is narrower than it was at 840dp, and two layouts gave way.** The
+songs header laid its title, search field and actions in one row, which squeezed the field to a few
+letters: `isTabHeaderInline` now stacks it wherever a pane sits beside the tabs on a short window.
+The compact player needed its six controls on one row in some 330dp: its artwork went down to 64dp
+and its padding and gaps to the tighter steps, or the modes wrapped under the fold.
+
 ## 2026-09-21 — Downloading songs, albums, playlists and the liked songs
 
 **A request is saved with the library, and the files follow it.** Asking to keep a song or a
@@ -61,7 +79,7 @@ the player from them. Cost: a phone on its side shows the bar on those screens a
 **In the pane the player stacks, unless the window is short.** Half of a tablet is tall and narrow,
 where the artwork over the controls reads best. Half of a phone on its side is about 400dp by 330dp,
 where the stacked layout pushed the controls below the fold, and a large artwork beside them left the
-controls a cramped column. There the artwork shrinks to an 80dp thumbnail beside the title, and the
+controls a cramped column. There the artwork shrinks to a 64dp thumbnail beside the title, and the
 timeline and the controls take the full width under them: the controls come first in a pane that
 short.
 

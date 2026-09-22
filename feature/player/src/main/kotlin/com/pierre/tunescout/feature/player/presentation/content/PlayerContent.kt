@@ -44,7 +44,7 @@ import com.pierre.tunescout.ui.component.R as ComponentR
 
 private val maxArtworkSize = 264.dp
 private val minArtworkSize = 120.dp
-private val compactArtworkSize = 80.dp
+private val compactArtworkSize = 64.dp
 private val maxArtworkTopSpacing = 100.dp
 private const val ARTWORK_CORNER_PERCENT = 12
 private val detailsControlsHeight = 170.dp
@@ -234,8 +234,10 @@ private fun SideBySideContent(
 
 /**
  * The artwork shrinks to a thumbnail beside the title, so the timeline and the controls under them
- * fit a pane as short as half a phone on its side. The column is centred in the [viewportHeight], and
- * scrolls when even that does not fit — the largest font.
+ * fit a pane as short as half a phone on its side. The padding and the gaps are tighter too: at 800dp
+ * the pane is some 330dp wide inside, and the six controls only share one row with this much room.
+ * The column is centred in the [viewportHeight], and scrolls when even that does not fit — the
+ * largest font.
  */
 @Composable
 private fun CompactContent(
@@ -248,10 +250,11 @@ private fun CompactContent(
         uiState = uiState,
         onEvent = onEvent,
         headingArtworkSize = artworkSize,
+        spacing = TuneScoutSpacing.medium,
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .heightIn(min = viewportHeight)
-            .padding(horizontal = TuneScoutSpacing.large, vertical = TuneScoutSpacing.medium),
+            .padding(horizontal = TuneScoutSpacing.medium, vertical = TuneScoutSpacing.small),
     )
 }
 
@@ -272,6 +275,7 @@ private fun SongArtwork(
 /**
  * @param headingArtworkSize the size of the artwork drawn beside the heading, or null when the
  * artwork is drawn elsewhere.
+ * @param spacing the gap between the heading, the timeline and the controls.
  */
 @Composable
 private fun PlayerDetailsContent(
@@ -279,10 +283,11 @@ private fun PlayerDetailsContent(
     onEvent: (PlayerUiEvent) -> Unit,
     modifier: Modifier = Modifier,
     headingArtworkSize: Dp? = null,
+    spacing: Dp = TuneScoutSpacing.screen,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(TuneScoutSpacing.screen, Alignment.CenterVertically),
+        verticalArrangement = Arrangement.spacedBy(spacing, Alignment.CenterVertically),
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(TuneScoutSpacing.medium),

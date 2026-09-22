@@ -49,7 +49,7 @@ fun SongsScreen(viewModel: SongsViewModel = koinViewModel()) {
         SongsContent(
             uiState = uiState,
             searchResults = searchResults,
-            isHeaderInline = rememberWindowSize().isSideBySide,
+            isHeaderInline = rememberWindowSize().isTabHeaderInline,
             onEvent = viewModel::onEvent,
         )
     }

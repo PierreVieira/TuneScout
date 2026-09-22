@@ -6,11 +6,11 @@ import org.junit.jupiter.api.Test
 
 class PlayerLayoutTest {
     private val phoneUpright =
-        TuneScoutWindowSize(isWidthCompact = true, isWidthExpanded = false, isHeightCompact = false)
+        TuneScoutWindowSize(isWidthCompact = true, isWidthExpanded = false, isHeightCompact = false, isTwoPane = false)
     private val phoneOnItsSide =
-        TuneScoutWindowSize(isWidthCompact = false, isWidthExpanded = true, isHeightCompact = true)
+        TuneScoutWindowSize(isWidthCompact = false, isWidthExpanded = true, isHeightCompact = true, isTwoPane = true)
     private val tabletOnItsSide =
-        TuneScoutWindowSize(isWidthCompact = false, isWidthExpanded = true, isHeightCompact = false)
+        TuneScoutWindowSize(isWidthCompact = false, isWidthExpanded = true, isHeightCompact = false, isTwoPane = true)
 
     @Test
     fun `GIVEN the whole window WHEN choosing THEN stacks upright and goes side by side on its side`() {
