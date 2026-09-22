@@ -13,6 +13,7 @@ import com.pierre.tunescout.core.navigation.route.LibrarySearchRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistOptionsRoute
 import com.pierre.tunescout.core.navigation.route.PlaylistRoute
 import com.pierre.tunescout.core.navigation.scene.BottomSheetSceneStrategy
+import com.pierre.tunescout.core.navigation.scene.ListDetailSceneStrategy
 import com.pierre.tunescout.feature.library.domain.model.CollectionKey
 import com.pierre.tunescout.feature.library.presentation.content.CollectionOptionsScreen
 import com.pierre.tunescout.feature.library.presentation.content.CollectionScreen
@@ -33,19 +34,19 @@ fun EntryProviderScope<NavKey>.librarySearchEntry() {
 }
 
 fun EntryProviderScope<NavKey>.favoritesEntry() {
-    entry<FavoritesRoute> {
+    entry<FavoritesRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
         CollectionScreen(key = CollectionKey.Favorites)
     }
 }
 
 fun EntryProviderScope<NavKey>.playlistEntry() {
-    entry<PlaylistRoute> { route ->
+    entry<PlaylistRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         CollectionScreen(key = CollectionKey.Playlist(playlistId = route.playlistId))
     }
 }
 
 fun EntryProviderScope<NavKey>.downloadedSongsEntry() {
-    entry<DownloadedSongsRoute> {
+    entry<DownloadedSongsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
         CollectionScreen(key = CollectionKey.DownloadedSongs)
     }
 }

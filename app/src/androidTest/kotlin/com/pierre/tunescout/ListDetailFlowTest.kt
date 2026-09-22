@@ -127,6 +127,37 @@ class ListDetailFlowTest {
     }
 
     /**
+     * A collection of the library opens beside it like an album does, and the mini player that comes
+     * back once the player pane is covered stays under the tabs rather than running under both panes.
+     */
+    @Test
+    fun aCollectionOpensBesideTheLibraryWithTheMiniPlayerUnderTheTabsOnly() = compose.use {
+        if (!isTwoPaneWindow) return@use
+        waitUntilAtLeastOneExists(hasSetTextAction(), SCREEN_TIMEOUT_MILLIS)
+        searchFor("daft")
+        waitUntilAtLeastOneExists(hasText("Get Lucky"), SCREEN_TIMEOUT_MILLIS)
+        onAllNodesWithText("Get Lucky")[0].performClick()
+        waitUntilAtLeastOneExists(hasText("Get Lucky") and hasAnyAncestor(isPlayerPane), SCREEN_TIMEOUT_MILLIS)
+
+        onNodeWithText("Library").performClick()
+        waitUntilAtLeastOneExists(hasText("Liked songs"), SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Liked songs").performClick()
+
+        waitUntilAtLeastOneExists(isMiniPlayer, SCREEN_TIMEOUT_MILLIS)
+        onNodeWithText("Your Library").assertIsDisplayed()
+        val detailPaneTitleLeft = onAllNodesWithText("Liked songs")
+            .fetchSemanticsNodes()
+            .maxOf { node -> node.boundsInRoot.left }
+        val miniPlayerRight = onNode(isMiniPlayer).fetchSemanticsNode().boundsInRoot.right
+        assertThat(miniPlayerRight).isLessThan(detailPaneTitleLeft)
+
+        compose.activity.pressBack()
+
+        waitUntilAtLeastOneExists(isPlayerPane, SCREEN_TIMEOUT_MILLIS)
+        assertThat(onAllNodes(isMiniPlayer).fetchSemanticsNodes()).isEmpty()
+    }
+
+    /**
      * A landscape window leaves no room for results under the keyboard, so once [term] is typed this
      * closes it the way the search key does.
      */

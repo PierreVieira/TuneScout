@@ -26,6 +26,7 @@ import com.pierre.tunescout.ui.utils.navigation.LocalIsInDetailPane
  * @property listEntry the entry drawn in the list pane.
  * @property detailEntry the entry drawn in the detail pane, or null while the list is alone.
  * @property emptyDetailPane what the detail pane shows while no entry is open in it.
+ * @property listPaneDecorator what the list pane is wrapped in.
  */
 internal data class ListDetailScene<T : Any>(
     override val key: Any,
@@ -33,11 +34,12 @@ internal data class ListDetailScene<T : Any>(
     private val listEntry: NavEntry<T>,
     private val detailEntry: NavEntry<T>?,
     private val emptyDetailPane: @Composable () -> Unit,
+    private val listPaneDecorator: @Composable (content: @Composable () -> Unit) -> Unit,
 ) : Scene<T> {
     override val entries: List<NavEntry<T>> = listOfNotNull(listEntry, detailEntry)
 
     override val content: @Composable () -> Unit = {
-        ListDetailSceneContent(listEntry, detailEntry, emptyDetailPane)
+        ListDetailSceneContent(listEntry, detailEntry, emptyDetailPane, listPaneDecorator)
     }
 }
 
@@ -46,11 +48,14 @@ private fun <T : Any> ListDetailSceneContent(
     listEntry: NavEntry<T>,
     detailEntry: NavEntry<T>?,
     emptyDetailPane: @Composable () -> Unit,
+    listPaneDecorator: @Composable (content: @Composable () -> Unit) -> Unit,
 ) {
     ListDetailScaffold(
         listPane = {
-            CompositionLocalProvider(LocalIsBesideDetailPane provides (detailEntry != null)) {
-                listEntry.Content()
+            listPaneDecorator {
+                CompositionLocalProvider(LocalIsBesideDetailPane provides (detailEntry != null)) {
+                    listEntry.Content()
+                }
             }
         },
         detailPane = {

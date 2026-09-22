@@ -110,7 +110,7 @@ entryProvider = entryProvider<NavKey> {
 
 ## List and detail on a wide window
 
-On a window at least 800dp wide, an album opens **beside** the tab host instead of covering it.
+On a window at least 800dp wide, an album — or a collection of the library: a playlist, the liked songs, the downloaded songs — opens **beside** the tab host instead of covering it.
 `ListDetailSceneStrategy` (`core/navigation/scene/`) draws the two entries as one `ListDetailScene`:
 the list on the left, the detail on a raised card on the right (`ListDetailScaffold`, `:ui:component`).
 The strategy is created in `TuneScoutNavigationContent` from `rememberWindowSize().isTwoPane`,
@@ -141,6 +141,11 @@ Back brings it back. The list alone has a scene key of its own, so opening the f
 closing the last one change the scene, as they did when the list alone was a single pane; only a
 detail swapped for another crossfades inside the right pane. An entry leaving a scene that stays
 kept Compose from ever going idle under the test clock, and Back then timed out in the flow tests.
+While a detail sits beside the tabs, the mini player belongs to the tabs: the strategy's
+`listPaneDecorator` wraps the list pane in a `MiniPlayerScaffold` of its own, so the bar runs under
+the left pane only and the detail keeps its full height. The one around the `NavDisplay` stands aside
+then — `isMiniPlayerInListPaneAllowed` and `isMiniPlayerAcrossWindowAllowed` split the rule between
+the two, so the bar is never drawn in both.
 `PlayerRoute` is a detail too: a song tapped while it is already playing opens the player in the
 right pane — over an album, if one is open — rather than over the tabs.
 

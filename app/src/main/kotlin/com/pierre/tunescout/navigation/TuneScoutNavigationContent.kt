@@ -58,7 +58,8 @@ import com.pierre.tunescout.ui.utils.window.rememberWindowSize
  * flies between the two, so both halves have to sit in the same shared transition scope.
  *
  * On a wide window the tab host always has a pane beside it: the player, which takes the place of the
- * mini player there, or whatever detail was opened over it.
+ * mini player there, or whatever detail was opened over it. With a detail, the mini player comes back
+ * under the tabs only: the two-pane scene draws it in the list pane, so the detail keeps its full height.
  *
  * The list-detail strategy comes after the overlays: a sheet opened over the two panes is drawn over
  * both of them, which `NavDisplay` works out by asking the strategies again for what is under it.
@@ -74,7 +75,15 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
     val windowSize = rememberWindowSize()
     val isTwoPane = windowSize.isTwoPane
     val listDetailStrategy = remember(isTwoPane) {
-        ListDetailSceneStrategy<NavKey>(isTwoPane = isTwoPane, emptyDetailPane = { NowPlayingScreen() })
+        ListDetailSceneStrategy<NavKey>(
+            isTwoPane = isTwoPane,
+            emptyDetailPane = { NowPlayingScreen() },
+            listPaneDecorator = { content ->
+                MiniPlayerScaffold(isAllowed = backStack.isMiniPlayerInListPaneAllowed(isTwoPane = isTwoPane)) {
+                    content()
+                }
+            },
+        )
     }
 
     NavigationCommandCollector(backStackController = backStackController)
@@ -91,7 +100,7 @@ fun TuneScoutNavigationContent(modifier: Modifier = Modifier) {
                 isVisible = backStack.isHomeVisible(isTwoPane = isTwoPane),
                 windowSize = windowSize,
             ) {
-                MiniPlayerScaffold(isAllowed = backStack.isMiniPlayerAllowed(isTwoPane = isTwoPane)) {
+                MiniPlayerScaffold(isAllowed = backStack.isMiniPlayerAcrossWindowAllowed(isTwoPane = isTwoPane)) {
                     NavDisplay(
                         backStack = backStack,
                         onBack = backStackController::navigateBack,
