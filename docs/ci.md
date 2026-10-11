@@ -72,15 +72,15 @@ compilation error fails the job before it pays for the boot. Tests run one modul
 [`scripts/instrumented_shard.sh`](../scripts/instrumented_shard.sh) finds every module with a
 `src/androidTest` directory. Shard 0 gets `:app` alone, and the library modules are dealt
 round-robin between the other shards. A new module joins a shard without anyone editing the
-workflow. To add a shard, add the next index to `matrix.shard`; the script reads the count from
-the size of the matrix. A shard with no module makes the script fail, and the steps check that:
-`./gradlew` with no task would run `help` and pass without a test. The test step has its own
-25-minute timeout, well under the job's 45, so a run that hangs still uploads
-`instrumented-test-reports-shard-<n>`.
+workflow. To add a shard, add the next index to `matrix.shard`; the workflow passes the size of
+the matrix (`strategy.job-total`) to the script as the count. The steps call the script with
+`--run`, which hands Gradle the tasks itself and fails on a shard with no module: `./gradlew` with
+no task would run `help` and pass without a test. The test step has its own 25-minute timeout,
+well under the job's 45, so a run that hangs still uploads `instrumented-test-reports-shard-<n>`.
 
 `:app` has a shard of its own because its end-to-end flows run through the Test Orchestrator with
 `clearPackageData`: every test clears the app's data and starts a new process, so the module takes
-3 to 6 minutes on the device, more than the ten library modules together (about 6 and a half).
+3 to 6 minutes on the device, about as long as the ten library modules together (about 6 and a half).
 Measured over 16 runs with two alphabetical round-robin shards, `:app` landed with five libraries
 in shard 0, which ran 8 to 14 minutes while shard 1 finished in 4 to 7. With three shards, each
 one's test phase is at most the app's, and the two library shards take about 3 minutes each.
