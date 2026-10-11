@@ -72,9 +72,11 @@ compilation error fails the job before it pays for the boot. Tests run one modul
 [`scripts/instrumented_shard.sh`](../scripts/instrumented_shard.sh) finds every module with a
 `src/androidTest` directory. Shard 0 gets `:app` alone, and the library modules are dealt
 round-robin between the other shards. A new module joins a shard without anyone editing the
-workflow. To add a shard, raise `SHARD_COUNT` and add an index to `matrix.shard`; the two must stay
-equal. The test step has its own 25-minute timeout, well under the job's 45, so a run that hangs
-still uploads `instrumented-test-reports-shard-<n>`.
+workflow. To add a shard, add the next index to `matrix.shard`; the script reads the count from
+the size of the matrix. A shard with no module makes the script fail, and the steps check that:
+`./gradlew` with no task would run `help` and pass without a test. The test step has its own
+25-minute timeout, well under the job's 45, so a run that hangs still uploads
+`instrumented-test-reports-shard-<n>`.
 
 `:app` has a shard of its own because its end-to-end flows run through the Test Orchestrator with
 `clearPackageData`: every test clears the app's data and starts a new process, so the module takes

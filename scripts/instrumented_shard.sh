@@ -16,10 +16,17 @@
 
 set -euo pipefail
 
-if [ "$#" -ne 3 ] || { [ "$1" != "assemble" ] && [ "$1" != "connected" ]; }; then
+usage() {
     echo "Usage: $0 <assemble|connected> <shard-index> <shard-count>" >&2
     exit 1
-fi
+}
+
+[ "$#" -eq 3 ] || usage
+case "$1" in assemble | connected) ;; *) usage ;; esac
+for NUMBER in "$2" "$3"; do
+    case "$NUMBER" in *[!0-9]* | "") usage ;; esac
+done
+[ "$2" -lt "$3" ] || usage
 
 MODE="$1"
 SHARD_INDEX="$2"
@@ -52,13 +59,6 @@ else
         'NF && (NR - 1) % (count - 1) == shard - 1' <<< "$LIBRARY_DIRS")
 fi
 
-# An empty shard would hand ./gradlew no task at all, and Gradle then runs `help` and the job
-# passes without a single test.
-if [ -z "${MODULE_DIRS//[[:space:]]/}" ]; then
-    echo "Shard $SHARD_INDEX of $SHARD_COUNT has no module with src/androidTest" >&2
-    exit 1
-fi
-
 TASKS=""
 for MODULE_DIR in $MODULE_DIRS; do
     MODULE=":${MODULE_DIR//\//:}"
@@ -73,5 +73,13 @@ for MODULE_DIR in $MODULE_DIRS; do
         TASKS="$TASKS $MODULE:assembleDebug"
     fi
 done
+
+# An empty shard would hand ./gradlew no task at all, and Gradle then runs `help` and the job
+# passes without a single test. The callers check this exit status: a command substitution's is
+# otherwise lost.
+if [ -z "$TASKS" ]; then
+    echo "Shard $SHARD_INDEX of $SHARD_COUNT has no module with src/androidTest" >&2
+    exit 1
+fi
 
 echo "${TASKS# }"
