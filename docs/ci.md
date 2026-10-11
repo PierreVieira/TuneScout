@@ -12,7 +12,7 @@ they share in [`.github/actions`](../.github/actions).
 | Workflow | What it runs | When |
 |---|---|---|
 | `build-and-test` | `unit-tests`: the JVM tests and the coverage rules. `build`: `:app:assembleDebug` and `:app:assembleRelease`. | Any change outside Markdown, `docs/` and `.claude/` |
-| `instrumented-tests` | Compose screen tests and end-to-end flows on an API 35 emulator, split into two shards | Same as `build-and-test` |
+| `instrumented-tests` | Compose screen tests and end-to-end flows on an API 35 emulator, split into three shards | Same as `build-and-test` |
 | `screenshot-tests` | `verify` compares every screen with its committed reference; `record` renders new ones | Same as `build-and-test`, and when a label is added |
 | `static-analysis` | `ktlint`: the project's custom rules, through `scripts/ktlint.sh`. `lint`: Android lint over every module, `:app:lintDebug` | `.kt`/`.kts` files, resources and manifests, `.editorconfig`, the version catalog, the ktlint script or action |
 | `module-graph` | `assertModuleGraph` | Build scripts, `build-logic`, the version catalog or the Gradle wrapper |
@@ -70,10 +70,18 @@ compilation error fails the job before it pays for the boot. Tests run one modul
 (`--max-workers=1`) on a single emulator, so the log shows which module is stuck.
 
 [`scripts/instrumented_shard.sh`](../scripts/instrumented_shard.sh) finds every module with a
-`src/androidTest` directory and deals them round-robin between the shards. A new module joins a
-shard without anyone editing the workflow. To add a shard, raise `SHARD_COUNT` and add an index to
-`matrix.shard`; the two must stay equal. The test step has its own 25-minute timeout, well under the
-job's 45, so a run that hangs still uploads `instrumented-test-reports-shard-<n>`.
+`src/androidTest` directory. Shard 0 gets `:app` alone, and the library modules are dealt
+round-robin between the other shards. A new module joins a shard without anyone editing the
+workflow. To add a shard, raise `SHARD_COUNT` and add an index to `matrix.shard`; the two must stay
+equal. The test step has its own 25-minute timeout, well under the job's 45, so a run that hangs
+still uploads `instrumented-test-reports-shard-<n>`.
+
+`:app` has a shard of its own because its end-to-end flows run through the Test Orchestrator with
+`clearPackageData`: every test clears the app's data and starts a new process, so the module takes
+3 to 6 minutes on the device, more than the ten library modules together (about 6 and a half).
+Measured over 16 runs with two alphabetical round-robin shards, `:app` landed with five libraries
+in shard 0, which ran 8 to 14 minutes while shard 1 finished in 4 to 7. With three shards, each
+one's test phase is at most the app's, and the two library shards take about 3 minutes each.
 
 The AVD is not cached. Measured, it saved about 20 seconds, and its 1.3 GB entry pushed the Gradle
 caches out of the budget.
@@ -222,7 +230,7 @@ repository's 10 GB cache budget:
 - **`main`** always writes. Every pull request restores from those entries.
 - **`GRADLE_CACHE_WRITE_ON_PULL_REQUESTS=true`** lets a job write on a pull request too, scoped to
   that pull request's ref, so the next push compiles only what changed. Only the jobs on the
-  critical path set it: `build` and the two `instrumented-tests` shards. `unit-tests` stays
+  critical path set it: `build` and the three `instrumented-tests` shards. `unit-tests` stays
   read-only, since even a cold run of it finishes before those.
 - **`GRADLE_CACHE_READ_ONLY=true`** never writes, even on `main`. It is for jobs that barely use
   Gradle (`ktlint`, `module-graph`), and for `lint` and `release`, which compile what `build`
