@@ -73,9 +73,9 @@ compilation error fails the job before it pays for the boot. Tests run one modul
 `src/androidTest` directory. Shard 0 gets `:app` alone, and the library modules are dealt
 round-robin between the other shards. A new module joins a shard without anyone editing the
 workflow. To add a shard, add the next index to `matrix.shard`; the workflow passes the size of
-the matrix (`strategy.job-total`) to the script as the count. The steps call the script with
-`--run`, which hands Gradle the tasks itself and fails on a shard with no module: `./gradlew` with
-no task would run `help` and pass without a test. The test step has its own 25-minute timeout,
+the matrix (`strategy.job-total`) to the script as the count. The script runs Gradle itself and
+fails on a shard with no module: `./gradlew` with no task would run `help` and pass without a
+test. The test step has its own 25-minute timeout,
 well under the job's 45, so a run that hangs still uploads `instrumented-test-reports-shard-<n>`.
 
 `:app` has a shard of its own because its end-to-end flows run through the Test Orchestrator with

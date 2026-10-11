@@ -30,7 +30,8 @@ jobs:
   # longest part of this job. Each shard boots its own emulator. Shard 0 runs :app alone, whose
   # end-to-end flows take longer on the device than every library module together, and the other
   # shards deal the library modules with a src/androidTest directory between them;
-  # scripts/instrumented_shard.sh does the dealing, so nothing here needs editing when a module is
+  # scripts/instrumented_shard.sh does the dealing and runs Gradle, so nothing here needs editing
+  # when a module is
   # added. To add a shard, add the next index to matrix.shard: SHARD_COUNT is strategy.job-total,
   # the size of the matrix as long as shard stays its only axis.
   instrumented-tests:
@@ -65,7 +66,7 @@ jobs:
       # Compiling before the emulator exists gives Gradle all four cores, and a compilation error
       # fails the job without paying for the SDK download and the boot.
       - name: Assemble the shard's APKs
-        run: ./scripts/instrumented_shard.sh --run assemble ${{ matrix.shard }} "$SHARD_COUNT"
+        run: ./scripts/instrumented_shard.sh assemble ${{ matrix.shard }} "$SHARD_COUNT"
 
       # The emulator runner downloads these two packages on every run and fails the job the first
       # time a download comes back corrupt ("Error on ZipFile unknown archive"), which happened
@@ -103,7 +104,7 @@ jobs:
           # otherwise installs and drives several test APKs on it at once — which interleaves the
           # log past the point of telling which module is stuck.
           script: >-
-            ./scripts/instrumented_shard.sh --run connected ${{ matrix.shard }} "$SHARD_COUNT"
+            ./scripts/instrumented_shard.sh connected ${{ matrix.shard }} "$SHARD_COUNT"
             --continue --max-workers=1
 
       - name: Upload instrumented test reports
