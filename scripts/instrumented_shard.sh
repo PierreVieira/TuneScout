@@ -39,10 +39,9 @@ SHARD_COUNT="$3"
 shift 3
 
 # The search runs in a subshell at the project root, so the paths are relative and the folders
-# above the checkout stay out of the filters, while the caller's working directory is untouched: a
-# relative path among the Gradle arguments means what it would with ./gradlew. .claude/worktrees
-# holds other checkouts of this repository, each with the same modules. A fixed locale, so a shard
-# holds the same modules on the runner and on a developer's machine.
+# above the checkout stay out of the filters. .claude/worktrees holds other checkouts of this
+# repository, each with the same modules. A fixed locale, so a shard holds the same modules on the
+# runner and on a developer's machine.
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ALL_MODULE_DIRS=$(cd "$PROJECT_ROOT" && find . -type d -path '*/src/androidTest' -not -path '*/build/*' \
     -not -path './.claude/*' \
@@ -88,6 +87,7 @@ if [ -z "$TASKS" ]; then
     exit 1
 fi
 
-# -p builds this checkout whatever the caller's directory, which Gradle keeps for relative paths.
+# -p builds this checkout whatever the caller's directory. Gradle then reads a relative path among
+# the arguments from the project root, as it would after a cd there.
 # shellcheck disable=SC2086 # the tasks are meant to be split
 exec "$PROJECT_ROOT/gradlew" -p "$PROJECT_ROOT" $TASKS "$@"
