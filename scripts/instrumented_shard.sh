@@ -38,14 +38,15 @@ SHARD_INDEX="$2"
 SHARD_COUNT="$3"
 shift 3
 
-# The working directory stays the caller's, so a relative path among the Gradle arguments means
-# what it would with ./gradlew. .claude/worktrees holds other checkouts of this repository, each
-# with the same modules. A fixed locale, so a shard holds the same modules on the runner and on a
-# developer's machine.
+# The search runs in a subshell at the project root, so the paths are relative and the folders
+# above the checkout stay out of the filters, while the caller's working directory is untouched: a
+# relative path among the Gradle arguments means what it would with ./gradlew. .claude/worktrees
+# holds other checkouts of this repository, each with the same modules. A fixed locale, so a shard
+# holds the same modules on the runner and on a developer's machine.
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ALL_MODULE_DIRS=$(find "$PROJECT_ROOT" -type d -path '*/src/androidTest' -not -path '*/build/*' \
-    -not -path "$PROJECT_ROOT/.claude/*" \
-    | sed -E "s#^$PROJECT_ROOT/##; s#/src/androidTest\$##" \
+ALL_MODULE_DIRS=$(cd "$PROJECT_ROOT" && find . -type d -path '*/src/androidTest' -not -path '*/build/*' \
+    -not -path './.claude/*' \
+    | sed -E 's#^\./##; s#/src/androidTest$##' \
     | LC_ALL=C sort)
 
 APPLICATION_DIRS=""
