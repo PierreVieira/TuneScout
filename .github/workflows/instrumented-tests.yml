@@ -31,9 +31,8 @@ jobs:
   # end-to-end flows take longer on the device than every library module together, and the other
   # shards deal the library modules with a src/androidTest directory between them;
   # scripts/instrumented_shard.sh does the dealing and runs Gradle, so nothing here needs editing
-  # when a module is
-  # added. To add a shard, add the next index to matrix.shard: SHARD_COUNT is strategy.job-total,
-  # the size of the matrix as long as shard stays its only axis.
+  # when a module is added. To add a shard, add the next index to matrix.shard: SHARD_COUNT is
+  # strategy.job-total, the size of the matrix as long as shard stays its only axis.
   instrumented-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
