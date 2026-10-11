@@ -52,6 +52,13 @@ else
         'NF && (NR - 1) % (count - 1) == shard - 1' <<< "$LIBRARY_DIRS")
 fi
 
+# An empty shard would hand ./gradlew no task at all, and Gradle then runs `help` and the job
+# passes without a single test.
+if [ -z "${MODULE_DIRS//[[:space:]]/}" ]; then
+    echo "Shard $SHARD_INDEX of $SHARD_COUNT has no module with src/androidTest" >&2
+    exit 1
+fi
+
 TASKS=""
 for MODULE_DIR in $MODULE_DIRS; do
     MODULE=":${MODULE_DIR//\//:}"
