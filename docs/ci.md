@@ -12,7 +12,7 @@ they share in [`.github/actions`](../.github/actions).
 | Workflow | What it runs | When |
 |---|---|---|
 | `build-and-test` | `unit-tests`: the JVM tests and the coverage rules. `build`: `:app:assembleDebug` and `:app:assembleRelease`. | Any change outside Markdown, `docs/` and `.claude/` |
-| `instrumented-tests` | Compose screen tests and end-to-end flows on an API 35 emulator, split into three shards | Same as `build-and-test` |
+| `instrumented-tests` | Compose screen tests and end-to-end flows on an API 35 emulator, split into shards | Same as `build-and-test` |
 | `screenshot-tests` | `verify` compares every screen with its committed reference; `record` renders new ones | Same as `build-and-test`, and when a label is added |
 | `static-analysis` | `ktlint`: the project's custom rules, through `scripts/ktlint.sh`. `lint`: Android lint over every module, `:app:lintDebug` | `.kt`/`.kts` files, resources and manifests, `.editorconfig`, the version catalog, the ktlint script or action |
 | `module-graph` | `assertModuleGraph` | Build scripts, `build-logic`, the version catalog or the Gradle wrapper |
@@ -232,7 +232,7 @@ repository's 10 GB cache budget:
 - **`main`** always writes. Every pull request restores from those entries.
 - **`GRADLE_CACHE_WRITE_ON_PULL_REQUESTS=true`** lets a job write on a pull request too, scoped to
   that pull request's ref, so the next push compiles only what changed. Only the jobs on the
-  critical path set it: `build` and the three `instrumented-tests` shards. `unit-tests` stays
+  critical path set it: `build` and the `instrumented-tests` shards. `unit-tests` stays
   read-only, since even a cold run of it finishes before those.
 - **`GRADLE_CACHE_READ_ONLY=true`** never writes, even on `main`. It is for jobs that barely use
   Gradle (`ktlint`, `module-graph`), and for `lint` and `release`, which compile what `build`
